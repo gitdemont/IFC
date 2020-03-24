@@ -75,7 +75,7 @@ getIFD <- function(fileName, offsets = "first", trunc_bytes = 8, force_trunc = F
         attr(foo, "class") <- c("IFC_ifd_list", "IFC_first_ifd")
         return(foo)
       } else {
-        offsets = suppressWarnings(getOffsets(fileName, display_progress = display_progress, verbose = verbose, fast = TRUE))
+        offsets = suppressMessages(getOffsets(fileName, display_progress = display_progress, verbose = verbose, fast = TRUE))
       }
     }
   }
