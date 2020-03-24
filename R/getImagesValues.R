@@ -1,0 +1,143 @@
+#' @title RIF/CIF Image Values Extraction
+#' @description
+#' Extracts the image values from RIF or CIF as what can be found in DAF files
+#' @param fileName path to file.
+#' @param offsets Object of class IFC_offsets. If missing, the default, offsets will be extracted from fileName.\cr
+#' This param is not mandatory but it may allow to save time when exporting repeated image value on same file.
+#' @param objects integers, indices of objects to extract.\cr
+#' If missing, the default, ImagesValues from all objects will be extracted.
+#' @param display_progress whether to display a progress bar. Default is FALSE.
+#' @param fast when no offsets are provided whether to fast extract objects offsets or not. Default is TRUE.\cr
+#' Meaning that 'objects' will be extracting expecting that raw object are stored in ascending order.\cr
+#' Only apply when offsets are not provided.\cr
+#' Note that a warning will be sent if an object is found at an unexpected order.
+#' @examples
+#' if(requireNamespace("IFCdata", quietly = TRUE)) {
+#'   ## use a daf file
+#'   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
+#'   ## extract image values stored daf file
+#'   daf_im_val <- ExtractFromDAF(file_daf, extract_images = TRUE, extract_offsets = FALSE,
+#'                         extract_features = FALSE, extract_stats = FALSE)$images
+#'   ## use a cif file
+#'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
+#'   ## extract image values stored cif file  
+#'   cif_im_val <- getImagesValues(file_cif)
+#'   identical(daf_im_val, cif_im_val)
+#' } else {
+#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'                   'https://gitdemont.github.io/IFCdata/',
+#'                   'to install extra files required to run this example.'))
+#' }
+#' @return A data.frame is returned.
+getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE, fast = TRUE) {
+  fileName = normalizePath(fileName, winslash = "/", mustWork = TRUE)
+  display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
+  IFD_first = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE, verbosity = 1)[[1]]
+  bits = IFD_first$tags$`258`$map
+  tmp = read_xml(getFullTag(fileName, IFD_first, "33027"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  in_use = as.logical(as.numeric(strsplit(xml_text(xml_find_first(tmp, "//Imaging//ChannelInUseIndicators_0_11")), " ", useBytes = TRUE, fixed=TRUE)[[1]]))
+  rm(tmp)
+  nobj = IFD_first$tags$`33018`$map
+  chan_number = sum(in_use)
+  
+  if(missing(objects)) {
+    objects = as.integer(0:(nobj - 1))
+  } else {
+    objects = na.omit(as.integer(objects))
+    tokeep = (objects >= 0) & (objects < nobj)
+    if(length(tokeep) == 0) {
+      warning("getImagesValues: No objects to extract, check the objects you provided.", immediate. = TRUE, call. = FALSE)
+      return(data.frame())
+    }
+    if(!all(tokeep)) {
+      warning("Some objects that are not in ", fileName, " have been automatically removed from extraction process:\n", paste0(objects[!tokeep], collapse=", "))
+      objects = objects[tokeep]
+    }
+  }
+  
+  compute_offsets = TRUE
+  if(!missing(offsets)) {
+    if(!("IFC_offsets" %in% class(offsets))) {
+      warning("provided offsets do not match with expected ones, offsets will be recomputed", immediate. = TRUE, call. = FALSE)
+    } else {
+      if(attr(offsets, "checksum") != checksumXIF(fileName)) {
+        warning("provided offsets do not match with expected ones, offsets will be recomputed", immediate. = TRUE, call. = FALSE)
+      } else {
+        compute_offsets = FALSE
+      }
+    }
+  }
+  if(compute_offsets) {
+    offsets = suppressMessages(getOffsets(fileName = fileName, fast = fast, display_progress = display_progress))
+  }
+  sel = split(objects, ceiling(seq_along(objects)/20))
+  L = length(sel)
+  if(display_progress) {
+    if(.Platform$OS.type == "windows") {
+      pb = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
+      pb_fun = setWinProgressBar
+    } else {
+      pb = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
+      pb_fun = setTxtProgressBar
+    }
+    on.exit(close(pb))
+    ans = lapply(1:L, FUN=function(i) {
+      k=i/L*100
+      pb_fun(pb, value = k, label = sprintf("Extracting images information %.0f%%", k))
+      t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8,
+                      force_trunc = FALSE, verbose = FALSE, verbosity = 1), FUN = function(IFD) {
+                        c(IFD$infos$OBJECT_ID, # id
+                          IFD$curr_IFD_offset, # imgIFD
+                          IFD$next_IFD_offset, # mskIFD
+                          bits,                # spIFD
+                          IFD$tags$`256`$map,  # w
+                          IFD$tags$`257`$map,  # l
+                          IFD$tags$`33012`$map,# fs
+                          IFD$tags$`33016`$map,# cl
+                          IFD$tags$`33017`$map,# ct
+                          IFD$tags$`33071`$map,# objCenterX
+                          IFD$tags$`33072`$map,# objCenterY
+                          IFD$tags$`33053`$map[1:chan_number],# bgstd
+                          IFD$tags$`33052`$map[1:chan_number],# bgmean
+                          IFD$tags$`33054`$map[1:chan_number],# satcount
+                          IFD$tags$`33055`$map[1:chan_number])# satpercent
+                      }))
+    })
+  } else {
+    ans = lapply(1:L, FUN=function(i) {
+      t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8,
+                      force_trunc = FALSE, verbose = FALSE, verbosity = 1), FUN = function(IFD) {
+                        c(IFD$infos$OBJECT_ID, # id
+                          IFD$curr_IFD_offset, # imgIFD
+                          IFD$next_IFD_offset, # mskIFD
+                          bits,                # spIFD
+                          IFD$tags$`256`$map,  # w
+                          IFD$tags$`257`$map,  # l
+                          IFD$tags$`33012`$map,# fs
+                          IFD$tags$`33016`$map,# cl
+                          IFD$tags$`33017`$map,# ct
+                          IFD$tags$`33071`$map,# objCenterX
+                          IFD$tags$`33072`$map,# objCenterY
+                          IFD$tags$`33053`$map[1:chan_number],# bgstd
+                          IFD$tags$`33052`$map[1:chan_number],# bgmean
+                          IFD$tags$`33054`$map[1:chan_number],# satcount
+                          IFD$tags$`33055`$map[1:chan_number])# satpercent
+                      }))
+    })
+  }
+  if(L>1) {
+    ans = do.call(what="rbind", args=ans)
+  } else {
+    ans = ans[[1]]
+  }
+  images=as.data.frame(ans, stringsAsFactors = FALSE)
+  names(images)=c("id","imgIFD","mskIFD","spIFD","w","l","fs","cl","ct","objCenterX","objCenterY",
+                  paste0("bgstd",(1:chan_number)),
+                  paste0("bgmean",(1:chan_number)),
+                  paste0("satcount",(1:chan_number)),
+                  paste0("satpercent",(1:chan_number)))
+  row.names(images) <- 1:nrow(images)
+  if(!all(objects == images$id)) warning("Extracted object_ids differ from expected ones. Concider running with 'fast' = FALSE", call. = FALSE, immediate. = TRUE)
+  class(images) <- c("data.frame", "IFC_images")
+  return(images)
+}

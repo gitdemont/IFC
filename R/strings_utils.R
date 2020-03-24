@@ -1,0 +1,150 @@
+#' @title String Truncation
+#' @description Truncs character strings
+#' @param x a string
+#' @param n desired length
+#' @details x will be trunc according to 'n' parameter. If x is longer than n '...' are appended.
+#' @keywords internal
+trunc_string = function(x, n=22) {
+  L = nchar(x)
+  if(L > n) return(paste0(substr(x, 1, n),"..."))
+  return(x)
+}
+
+#' @title Special Character Replacement
+#' @description
+#' Helper to replace special character.
+#' @param string string where specials will be replaced if found.
+#' @param replacement string replacement. Default is "_".
+#' @param specials  Default is '\\\\|\\/|\\:|\\*|\\?|\\"|\\<|\\>|\\|'.
+#' @keywords internal
+specialr <- function(string = "", replacement = "_", specials = '\\\\|\\/|\\:|\\*|\\?|\\"|\\<|\\>|\\|') {
+  assert(replacement, len = 1, typ = "character")
+  assert(specials, len = 1, typ = "character")
+  if(grepl(pattern = specials, x = replacement, perl = TRUE)) stop("'replacement' can't contain 'specials'")
+  return(gsub(pattern = specials, replacement = replacement, x = string, perl =TRUE))
+}
+
+#' @title Name Protection
+#' @description
+#' Helper to protect population/region name.
+#' @param name population/region names
+#' @keywords internal
+protectn <- function(name) {
+  assert(name, typ="character")
+  foo = gsub("([[:punct:]])", "\\\\\\1", name, perl=TRUE)
+  paste0("(",paste0(sapply(foo, FUN = function(i) {
+    return(paste0("[", i, "]"))
+  }), collapse = "|"),")")
+}
+
+#' @title String Decomposition with Operators
+#' @description
+#' Helper that will split population definition into chunks of names and operators.
+#' @param definition population definition to be splitted
+#' @param all_names the names of all allowed populations
+#' @param operators operators used. Default is c("And", "Or", "Not", "(", ")").
+#' @param splitter the splitter that will be used to help splitting
+#' @keywords internal
+splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(", ")"), splitter = "[`~splitter~`]") {
+  assert(definition, len=1, typ="character")
+  if(substr(definition, 1, 1) == "|") definition = substr(definition, 2, nchar(definition)) # got a file where graph order start with "|"
+  assert(all_names, typ="character")
+  assert(operators, typ="character")
+  assert(splitter, len=1, typ="character")
+  return(gsub(splitter, "", strsplit(gsub(protectn(c(all_names, operators)), paste0(splitter, "\\1", splitter), definition, perl=TRUE), split=paste0(splitter, "|", splitter), fixed = TRUE)[[1]], fixed=TRUE))
+}
+
+#' @title String Decomposition with Placeholders
+#' @description
+#' Helper aiming to detect placeholder pattern
+#' @param export_to string. Default is "\%d/\%s_fromR.\%e"
+#' @details 
+#' -\%s: shortname (i.e. basename without extension)\cr
+#' -\%p: first parent directory\cr
+#' -\%d: full path directory\cr
+#' -\%e: file extension\cr
+#' -\%o: object id\cr
+#' -\%c: channel
+#' @keywords internal
+splitp = function(export_to = "%d/%s_fromR.%e") {
+  assert(export_to, len = 1, typ = "character")
+  foo = strsplit(export_to, split = "%", fixed = TRUE)[[1]]
+  if(length(foo) > 1) {
+    foo = gsub("^(s|p|d|e|o|c)(.*)$", "\\1%\\2", foo[-1])
+    foo = unlist(strsplit(foo, split = "%", fixed = TRUE))
+    out = lapply(c("d","p","s","e","o","c"), FUN=function(char) {
+      which(foo == char)
+    })
+  } else {
+    out = list(0,0,0,0,0,0)
+  }
+  names(out) = c("dir", "parent", "short", "ext", "object", "channel")
+  names(foo) <- rep("", length(foo))
+  names(foo)[out[["dir"]]] <- "dir"
+  names(foo)[out[["parent"]]] <- "parent"
+  names(foo)[out[["short"]]] <- "short"
+  names(foo)[out[["ext"]]] <- "ext"
+  names(foo)[out[["object"]]] <- "object"
+  names(foo)[out[["channel"]]] <- "channel"
+  out = c(out, decomp = list(foo))
+  attr(out, "class") <- "splitp_obj"
+  return(out)
+}
+
+#' @title File Path Decomposition
+#' @description
+#' Helper that will split file name into chunks
+#' @param file path to file
+#' @return a named vector with chunks of 'file'\cr
+#' dir: full path directory of 'file'\cr
+#' parent: first parent directory of 'file'\cr
+#' ext: 'file' extension without leading dot\cr
+#' short: 'file' with no extension nor dir\cr
+#' input: 'file' path as it was provided.
+#' @keywords internal
+splitf <- function(file = NULL) {
+  dir = NULL
+  b_name = basename(file)
+  dir = dirname(file)
+  if(dir == "") {
+    dir = suppressWarnings(normalizePath(file, mustWork = FALSE, winslash = "/"))
+  } else {
+    dir = suppressWarnings(normalizePath(dir, mustWork = FALSE, winslash = "/"))
+  }
+  ext = getFileExt(file)
+  short = gsub(paste0("\\.", ext, "$"), "", b_name, ignore.case = TRUE)
+  out = c("dir" = dir, "parent" = basename(dir), "ext" = ext, "short" = short, "input" = file)
+  class(out) <- "splitf_obj"
+  return(out)
+}
+
+#' @title File Path Placeholders Formatting
+#' @description
+#' Helper to format splitp_obj using splitf_obj, channel and object information.
+#' @param splitp_obj object returned by \code{\link{splitp}}. 
+#' @param splitf_obj object returned by \code{\link{splitf}}. It will be used to substitute \%d, \%p, \%s and \%e.
+#' @param channel string to be used to substitute \%c
+#' @param object string to be used to substitute \%o
+#' @param bypass logical to avoid several checking. Default is FALSE.
+#' @keywords internal
+formatn <- function(splitp_obj, splitf_obj, channel = "", object = "", bypass = FALSE) {
+  if(missing(splitf_obj)) {
+    splitf_obj = list(dir = "", parent = "", file = "", ext = "")
+    class(splitf_obj) <- c("splitf_obj", oldClass(splitf_obj))
+  }
+  if(!bypass) {
+    if(missing(splitp_obj)) stop("'splitp_obj' can't be missing")
+    assert(splitp_obj, cla = "splitp_obj")
+    assert(splitf_obj, cla = c("splitf_obj"))
+    channel = as.character(channel); assert(channel, len = 1, typ = "character")
+    object = as.character(object); assert(object, len = 1, typ = "character")
+  }
+  N = names(splitp_obj$decomp)
+  splitp_obj$decomp[N == "dir"] <- splitf_obj["dir"]
+  splitp_obj$decomp[N == "parent"] <- splitf_obj["parent"]
+  splitp_obj$decomp[N == "short"] <- splitf_obj["short"]
+  splitp_obj$decomp[N == "ext"] <- splitf_obj["ext"]
+  splitp_obj$decomp[N == "object"] <- object
+  splitp_obj$decomp[N == "channel"] <- channel
+  return(paste0(splitp_obj$decomp, collapse=""))
+}

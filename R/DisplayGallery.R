@@ -1,0 +1,295 @@
+#' @title Gallery Display
+#' @description
+#' Displays gallery of IFC objects
+#' @param display object of class IFC_display, rich information extracted by \code{\link{getDisplayInfo}}. This parameter can't be missing.
+#' @param offsets object of class IFC_offsets. If missing, the default, offsets will be extracted from display$fileName.\cr
+#' This param is not mandatory but it may allow to save time for repeated image export on same file.
+#' @param objects integers, indices of objects to use.
+#' This param is not mandatory, if missing, the default, all objects will be used.
+#' @param objects_type objects_type of desired offsets. Either "img" or "msk". Default is "img".
+#' @param layout a character vector of [acquired channels + 'composite' images] members to export. Default is missing to export everything.\cr
+#' Note that members can be missing to be removed from final display.\cr
+#' Note that members not found will be automatically removed and a warning will be thrown.
+#' @param name id of the datatable container. Default is DisplayGallery.
+#' @param caption wether to display caption name or not. Default is FALSE.
+#' @param pageLength integer, number of objects to display per page. Default is 10.
+#' @param pdf_pageSize string, page dimension when exporting to pdf. Default is "A2".
+#' @param pdf_pageOrientation string, page orientation when exporting to pdf. Default is "landscape". Allowed are "landscape" or "portrait".
+#' @param pdf_image_dpi integer, desired image resolution. Default is 96, for full resolution.
+#' @param extract_max maximum number of objects to extract. Default is 10. Use +Inf to extract all.
+#' @param sampling whether to sample objects or not. Default is FALSE.
+#' @param display_progress whether to display a progress bar. Default is TRUE.
+#' @param mode (\code{\link{objectExtract}} argument) color mode export. Either "rgb" or "gray". Default is "rgb".
+#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and 'bypass'(=TRUE).
+#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.
+#' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{DisplayGallery}} input arguments.\cr
+#' Please note that PDF export link will be available if export_to wil not result in a "bmp".\cr
+#' Please note that a warning may be sent if gallery to display contains large amount of data. This is due to use of datatable() from \pkg{DT}.\cr
+#' Warning message:\cr
+#' In instance$preRenderHook(instance) :\cr
+#' It seems your data is too big for client-side DataTables. You may consider server-side processing: http://rstudio.github.io/DT/server.html
+#' @examples
+# #' \dontrun{
+#' if(requireNamespace("IFCdata", quietly = TRUE)) {
+#'   ## use a cif file
+#'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
+#'   cif <- ExtractFromXIF(fileName = file_cif)
+#'   disp <- getDisplayInfo(fileName = file_cif, from = "analysis")
+#'   ## randomly show at most 10 "img" objects from file
+#'   DisplayGallery(display = disp, objects_type = "img", extract_max = 10,
+#'                  sampling = TRUE, export_to = "example.png")
+#' } else {
+#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'                   'https://gitdemont.github.io/IFCdata/',
+#'                   'to install extra files required to run this example.'))
+#' }
+# #' }
+#' @export
+DisplayGallery <- function(display, offsets, objects, objects_type = "img", layout, 
+                           name = "DisplayGallery", caption = FALSE, pageLength = 10L, 
+                           pdf_pageSize = "A2", pdf_pageOrientation = "landscape", pdf_image_dpi = 96,
+                           extract_max = 10, sampling = FALSE, display_progress = TRUE, 
+                           mode = c("rgb", "gray")[1], ...) {
+  dots = list(...)
+  # backup last state of device ask newpage and set to FALSE
+  old_ask <- devAskNewPage(ask = FALSE)
+  on.exit(devAskNewPage(ask = old_ask))
+  # change locale
+  locale_back = Sys.getlocale("LC_ALL")
+  on.exit(Sys.setlocale("LC_ALL", locale_back), add = TRUE)
+  Sys.setlocale("LC_ALL", "en_US.UTF-8")
+  
+  # check mandatory param
+  if(missing(display)) stop("'display' can't be missing")
+  if(!("IFC_display"%in%class(display))) stop("'display' is not of class IFC_display")
+  name = as.character(name); assert(name, len = 1, typ = "character")
+  assert(objects_type, len = 1, alw = c("img", "msk"))
+  caption = as.logical(caption); assert(caption, len = 1, alw=c(TRUE,FALSE))
+  assert(mode, len = 1, alw = c("rgb", "gray"))
+  sampling = as.logical(sampling); assert(sampling, len = 1, alw = c(TRUE,FALSE))
+  display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE,FALSE))
+  extract_max = as.numeric(extract_max); extract_max = extract_max[extract_max>=0]
+  assert(extract_max, len = 1, typ = "numeric")
+  pageLength = na.omit(as.integer(pageLength)); pageLength = pageLength[pageLength>=0]
+  assert(pageLength, len = 1, typ = "integer")
+  name = as.character(name); assert(name, len = 1, typ = "character")
+  cap = NULL; if(caption) cap = name
+  assert(pdf_pageSize, len = 1, alw = c("4A0", "2A0", "A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10",
+                                        "B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7", "B8", "B9", "B10",
+                                        "C0", "C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10",
+                                        "RA0", "RA1", "RA2", "RA3", "RA4",
+                                        "SRA0", "SRA1", "SRA2", "SRA3", "SRA4",
+                                        "EXECUTIVE", "FOLIO", "LEGAL", "LETTER", "TABLOID"))
+  assert(pdf_pageOrientation, len = 1, alw = c("landscape", "portrait"))
+  pdf_image_dpi = na.omit(as.integer(pdf_image_dpi)); pdf_image_dpi = pdf_image_dpi[pdf_image_dpi>=0]
+  assert(pdf_image_dpi, len = 1, typ = "integer")
+  fileName = display$fileName
+  channels = display$Images[display$Images$physicalChannel %in% which(display$in_use), ]
+  
+  # process extra parameters
+  param_extra = names(dots) %in% c("ifd","export","mode","size","force_width","verbose","bypass")
+  if(length(dots[["verbose"]]) == 0) {
+    verbose = FALSE
+  } else {
+    verbose = dots[["verbose"]]
+  }
+  if(length(dots[["verbosity"]]) == 0) {
+    verbosity = 1
+  } else {
+    verbosity = dots[["verbosity"]]
+  }
+  if(length(dots[["fast"]]) == 0) {
+    fast = TRUE
+  } else {
+    fast = dots[["fast"]]
+  }
+  if(length(dots[["size"]]) == 0) {
+    size = c(0,0)
+  } else {
+    size = dots[["size"]]
+  }
+  if(length(dots[["force_width"]]) == 0) {
+    force_width = TRUE
+  } else {
+    force_width = dots[["force_width"]]
+  }
+  dots = dots[!param_extra]
+  
+  # check objects to extract
+  nobj = as.numeric(display$objcount)
+  if(missing(objects)) {
+    objects = as.integer(0:(nobj - 1))
+  } else {
+    objects = na.omit(as.integer(objects))
+    tokeep = (objects >= 0) & (objects < nobj)
+    if(length(tokeep) == 0) {
+      warning("DisplayGallery: No objects to display, check the objects you provided.", immediate. = TRUE, call. = FALSE)
+      return(invisible(NULL))
+    }
+    if(!all(tokeep)) {
+      warning("Some objects that are not in ", fileName, " have been automatically removed from extraction process:\n", paste0(objects[!tokeep], collapse=", "))
+      objects = objects[tokeep]
+    }
+  }
+  extract_max = as.integer(min(extract_max, length(objects)))
+  if(sampling) {objects=sample(objects,extract_max)} else {objects=objects[1:extract_max]}
+  
+  # check size
+  force_width = as.logical(force_width); assert(force_width, len = 1, alw = c(TRUE,FALSE)) 
+  size = na.omit(as.integer(size[1:2]))
+  assert(size, len=2, typ="integer")
+  if(!force_width) {
+    if(length(objects)!=1) if(size[2] == 0) stop("'size' width should be provided when 'force_width' is set to FALSE and 'objects' length not equal to one")
+  } else {
+    size = c(size[1], as.integer(display$channelwidth))
+  }
+  
+  # check input offsets if any
+  compute_offsets = TRUE
+  if(!missing(offsets)) {
+    if(!("IFC_offsets" %in% class(offsets))) {
+      warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
+    } else {
+      if(attr(offsets, "checksum") != display$checksum) {
+        warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
+      } else {
+        compute_offsets = FALSE
+      }
+    }
+  }
+  if(compute_offsets) {
+    offsets = suppressMessages(getOffsets(fileName = display$fileName_image, fast = fast, display_progress = display_progress))
+  }
+  
+  
+  # extract objects
+  sel = split(objects, ceiling(seq_along(objects)/20))
+  L=length(sel)
+  if(display_progress) {
+    if(.Platform$OS.type == "windows") {
+      pb = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
+      pb_fun = setWinProgressBar
+    } else {
+      pb = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
+      pb_fun = setTxtProgressBar
+    }
+    on.exit(close(pb), add = TRUE)
+    ans = lapply(1:L, FUN=function(i) {
+      k=i/L*100
+      pb_fun(pb, value = k, label = sprintf("Exporting objects %.0f%%", k))
+      do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
+                                                    display = display, 
+                                                    param = do.call(what = "objectParam", args = c(list(display = display, 
+                                                                                                        size = size,
+                                                                                                        force_width = force_width,
+                                                                                                        bypass = TRUE), dots)),
+                                                    export = "base64",
+                                                    mode = mode,
+                                                    verbose = verbose, 
+                                                    bypass = TRUE),
+                                               dots))
+    })
+  } else {
+    ans = lapply(1:L, FUN=function(i) {
+      do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
+                                                    display = display,  
+                                                    param = do.call(what = "objectParam", args = c(list(display = display,
+                                                                                                        size = size,
+                                                                                                        force_width = force_width,
+                                                                                                        bypass = TRUE), dots)),
+                                                    export = "base64",
+                                                    mode = mode,
+                                                    verbose = verbose, 
+                                                    bypass = TRUE),
+                                               dots))
+    })
+  }
+  channel_id = attr(ans[[1]][[1]], "channel_id")
+  if(L>1) {
+    ans = do.call(what="c", args=ans)
+  } else {
+    ans = ans[[1]]
+  }
+  
+  # change layout
+  if(missing(layout)) layout = channel_id
+  layout = as.character(layout)
+  mess = assert(layout, alw = channel_id, fun = "return")
+  if(length(mess) != 0) warning(paste0(mess, "\n - and has been automatically removed from 'layout'"), call. = FALSE, immediate. = TRUE)
+  layout = unlist(lapply(layout, FUN = function(x) {
+    which(channel_id %in% x)
+  }))
+  if(length(layout) == 0) stop("'layout' is of length 0 which is not allowed")
+  
+  # check object_ids
+  if(objects_type == "img") {
+    ids = sapply(ans, attr, which="object_id")
+    if(!all(objects == ids)) {
+      warning("Extracted object_ids differ from expected ones. Concider running with 'fast' = FALSE", call. = FALSE, immediate. = TRUE)
+      ans = cbind(true_ids = names(ans), ids, do.call(what = "rbind", args = lapply(ans, FUN=function(i) i[layout])))
+      txt_col = 2
+    } else {
+      ans = cbind(ids, do.call(what = "rbind", args = lapply(ans, FUN=function(i) i[layout])))
+      txt_col = 1
+    }
+  } else {
+    ans = cbind(ids = as.integer(gsub("^.*_(.*)$", "\\1", sapply(ans, attr, which="offset_id"))),
+                do.call(what = "rbind", args = lapply(ans, FUN=function(i) i[layout])))
+    txt_col = 1
+  }
+  
+  # disable pdf export if export_to is not tiff or png
+  dt_dom = ifelse(length(dots[["export_to"]]) !=0 && !("bmp" %in% getFileExt(dots[["export_to"]])), "Btp", "tp")
+  # TODO, find a way to remove warning
+  oop = options("DT.warn.size" = FALSE); on.exit(options(oop), add = TRUE)
+  # (object.size(ans) > 1.5e6 && getOption('DT.warn.size', TRUE)) is FALSE but I am still getting warning
+  
+  # create datatable
+  datatable(escape = FALSE, rownames = FALSE, extensions = "Buttons",
+            data = ans,
+            selection = list(mode = 'api'), style = "bootstrap", 
+            caption = cap,
+            elementId = name,
+            autoHideNavigation = TRUE,
+            # callback = JS(sprintf("$('#%s').css({'width':'%spx'}); # TODO try make display more beautiful when names are too long
+                                  # return table;", name, 60*txt_col + ncol(ans)*size[length(size)])),
+            options = list(pageLength = pageLength,
+                           dom = dt_dom,
+                           autoWidth = FALSE,
+                           columnDefs = list(list(orderable = FALSE, targets = "_all"),
+                                             list(className = "dt-center",targets = "_all")),
+                           buttons = list(list(
+                             extend = 'pdf',
+                             title = ifelse(caption, name, ' '),
+                             text = 'PDF',
+                             pageSize = pdf_pageSize,
+                             extension = '.pdf',
+                             header = TRUE,
+                             footer = FALSE,
+                             orientation = pdf_pageOrientation,
+                             customize = JS("function (doc) {",
+                                            "if (doc) {", 
+                                            "doc.margin = [0,0,0,12];",
+                                            "for (var i = 1; i < doc.content[1].table.body.length; i++) {",
+                                            "for (var j = 1; j < doc.content[1].table.body[i].length; j++) {",
+                                            "var foo = doc.content[1].table.body[i][j].text;",
+                                            "var w = foo.indexOf('width=');",
+                                            "var h = foo.indexOf('height=');",
+                                            "var s = foo.indexOf('src=');",
+                                            "var e = foo.length;",
+                                            sprintf("var wid = parseInt(foo.substring(w + 7, h - 2))*%s;", pdf_image_dpi/96*.75),
+                                            sprintf("var hei = parseInt(foo.substring(h + 8, s - 2))*%s;", pdf_image_dpi/96*.75),
+                                            "foo = foo.substring(s + 5, e - 2);",
+                                            "doc.content[1].table.body[i][j] = { image: foo, alignment: 'center', width: wid, height: hei };",
+                                            "}",
+                                            "}",
+                                            sprintf("doc.header = { text: '%s', alignment: 'center', fontSize: 15};", display$fileName),
+                                            "doc.footer = function(currentPage, pageCount) { return [ { text: currentPage.toString() + ' - ' + pageCount, alignment: 'center' } ] };",
+                                            "}",
+                                            "}"),
+                             exportOptions = list(
+                               columns = (txt_col-1):length(layout),
+                               stripHtml = FALSE)
+                           )))
+  )
+}
