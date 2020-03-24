@@ -62,8 +62,8 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
   dots = list(...)
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
-  on.exit(Sys.setlocale("LC_ALL", locale_back), add = TRUE)
-  Sys.setlocale("LC_ALL", "en_US.UTF-8")
+  on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
+  suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
   
   # check madatory param
   if(missing(fileName)) stop("'fileName' can't be missing")

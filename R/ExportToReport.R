@@ -68,8 +68,8 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
   on.exit(devAskNewPage(ask = old_ask))
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
-  on.exit(Sys.setlocale("LC_ALL", locale_back), add = TRUE)
-  Sys.setlocale("LC_ALL", "en_US.UTF-8")
+  on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
+  suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
   
   # check mandatory param
   if(missing(obj)) stop("'obj' can't be missing")

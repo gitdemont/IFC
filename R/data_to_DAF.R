@@ -57,8 +57,8 @@ data_to_DAF = function(obj, export_to, viewing_pop = "All", overwrite = FALSE,
   dots = list(...)
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
-  on.exit(Sys.setlocale("LC_ALL", locale_back), add = TRUE)
-  Sys.setlocale("LC_ALL", "en_US.UTF-8")
+  on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
+  suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
   
   # check mandatory param
   assert(obj, cla = "IFC_data")
@@ -79,7 +79,7 @@ data_to_DAF = function(obj, export_to, viewing_pop = "All", overwrite = FALSE,
   }
   assert(verbose, c(TRUE, FALSE))
   cifdir = na.omit(as.character(cifdir)); assert(cifdir, len = 1, typ = "character")
-  ntry = na.omit(as.numeric(ntry)); assert(ntry, len = 1, typ = "double")
+  ntry = na.omit(as.numeric(ntry)); assert(ntry, len = 1, typ = "numeric")
   if(ntry < 0) ntry = 0
   assert(fullname, len=1, alw=c(TRUE, FALSE))
   

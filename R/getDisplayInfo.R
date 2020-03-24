@@ -60,7 +60,7 @@ getDisplayInfo <- function(fileName, from = c("acquisition","analysis")[2], verb
   warn = as.logical(warn); assert(warn, len = 1, alw = c(TRUE, FALSE))
   force_default = as.logical(force_default); assert(force_default, len = 1, alw = c(TRUE, FALSE))
   cifdir = na.omit(as.character(cifdir)); assert(cifdir, len = 1, typ = "character")
-  ntry = na.omit(as.numeric(ntry)); assert(ntry, len = 1, typ = "double")
+  ntry = na.omit(as.numeric(ntry)); assert(ntry, len = 1, typ = "numeric")
   if(ntry < 0) ntry = 0
   
   if(warn & file_extension == "rif" & from == "analysis") warning("Only information from 'acquisition' can be retrieved from 'rif' file", call. = FALSE, immediate. = TRUE)
