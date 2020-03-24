@@ -14,7 +14,7 @@ data_to_DAF(
   display_progress = TRUE,
   verbose = FALSE,
   fullname = TRUE,
-  cifdir = dirname(fileName),
+  cifdir = dirname(obj$fileName),
   ntry = +Inf,
   ...
 )
@@ -52,7 +52,7 @@ Note that it can represent a convenient way to make file written in binary mode 
 \item{fullname}{whether to export daf file with full name of its corresponding cif, if found. Default is TRUE.
 If cif can't be found, daf file will be exported with the original cif file name.}
 
-\item{cifdir}{the path of the directory to initially look to cif file. Default is dirname(fileName). Only apply when 'fullname' is set to TRUE.}
+\item{cifdir}{the path of the directory to initially look to cif file. Default is dirname(obj$fileName). Only apply when 'fullname' is set to TRUE.}
 
 \item{ntry}{number of times \code{\link{data_to_DAF}} will be allowed to find corresponding cif file. Default is +Inf. Only apply when 'fullname' is set to TRUE.}
 
