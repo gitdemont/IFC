@@ -24,7 +24,7 @@
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param fullname whether to export daf file with full name of its corresponding cif, if found. Default is TRUE.
 #' If cif can't be found, daf file will be exported with the original cif file name.
-#' @param cifdir the path of the directory to initially look to cif file. Default is dirname(fileName). Only apply when 'fullname' is set to TRUE.
+#' @param cifdir the path of the directory to initially look to cif file. Default is dirname(obj$fileName). Only apply when 'fullname' is set to TRUE.
 #' @param ntry number of times \code{\link{data_to_DAF}} will be allowed to find corresponding cif file. Default is +Inf. Only apply when 'fullname' is set to TRUE.
 #' @param ... other arguments to be passed.
 #' @examples
@@ -53,7 +53,7 @@
 data_to_DAF = function(obj, export_to, viewing_pop = "All", overwrite = FALSE,
                        binary = TRUE, endianness = .Platform$endian, 
                        display_progress = TRUE, verbose = FALSE,
-                       fullname = TRUE, cifdir = dirname(fileName), ntry = +Inf, ...) {
+                       fullname = TRUE, cifdir = dirname(obj$fileName), ntry = +Inf, ...) {
   dots = list(...)
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
