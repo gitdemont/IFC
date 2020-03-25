@@ -59,6 +59,7 @@ data_to_DAF = function(obj, export_to, viewing_pop = "All", overwrite = FALSE,
   locale_back = Sys.getlocale("LC_ALL")
   on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
   suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
+  now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
   
   # check mandatory param
   assert(obj, cla = "IFC_data")
