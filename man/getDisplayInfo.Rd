@@ -35,8 +35,6 @@ getDisplayInfo(
 If cif can't be found, but 'ntry' is reached, then an error will be thrown.}
 
 \item{...}{other arguments to be passed.}
-
-\item{fullname}{whether to export daf file with full name of its corresponding cif, if found. Default is TRUE.}
 }
 \value{
 a list of information (open .daf file in an text editor for more details) about input fileName of class "IFC_display" and "acquistion" or "analysis", whose members are:\cr
