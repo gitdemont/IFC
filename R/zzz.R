@@ -3,11 +3,6 @@
 .onLoad <- function(libname, pkgname) {
   data_avl <- requireNamespace("IFCdata", quietly = TRUE)
   .pkgenv[["data_avl"]] <- data_avl
-  local(expr = {
-    r = getOption("repos")
-    r["gidemont/IFCdata"] <- "https://gitdemont.github.io/IFCdata/"
-    options(repos = r)
-  }, envir = .pkgenv)
   invisible()
 }
 
