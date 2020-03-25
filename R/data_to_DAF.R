@@ -148,11 +148,11 @@ data_to_DAF = function(obj, export_to, viewing_pop = "All", overwrite = FALSE,
     found = FALSE
     checksum = attr(obj$offsets, "checksum")
     
-    fileName_image = file.path(cifdir, basename(cname)) # look in cifdir 1st
+    fileName_image = file.path(cifdir, basename(obj$description$ID$file)) # look in cifdir 1st
     if(file.exists(fileName_image)) {
       if(checksumXIF(fileName_image) == checksum) found = TRUE
     } else {
-      fileName_image = cname
+      fileName_image = obj$description$ID$file
     }
     if((!found)&& file.exists(fileName_image)) {
       if(checksumXIF(fileName_image) == checksum) found = TRUE
