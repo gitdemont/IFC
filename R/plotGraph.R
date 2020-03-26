@@ -157,6 +157,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     smooth = (g$histogramsmoothingfactor != 0)
     # br = do.breaks(range(D[,"x2"], na.rm = TRUE, finite = TRUE), nbin)
     if(viewport == "ideas") {
+      if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
       D[D[,"x2"] < Xlim[1], "x2"] <- Xlim[1] # D = D[(D[,"x2"] >= Xlim[1]) & (D[,"x2"] <= Xlim[2]), ]
       D[D[,"x2"] > Xlim[2], "x2"] <- Xlim[2] #
     }
@@ -164,6 +165,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       Xlim = range(D[,"x1"], na.rm = TRUE, finite = TRUE)
       if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
+      if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
     }
     if(viewport == "max") {
       regx = sapply(reg_n, FUN=function(r) {
@@ -174,6 +176,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       Xlim = range(c(D[,"x1"], regx), na.rm = TRUE, finite = TRUE)
       if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
+      if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
     }
     br = do.breaks(Xlim, nbin)
     
@@ -182,8 +185,10 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     if(nrow(D) > 0) {
       if(viewport == "ideas") {
         Ylim = c(g$ymin, g$ymax)
+        if(Ylim[1] == Ylim[2]) Ylim = Ylim[1] + c(0,0.07)
       } else {
         Ylim = c(0,max(sapply(displayed_n, FUN=function(x) get_ylim(x=D[D[,x],"x2"], type=type, br=br))*1.07))
+        if(Ylim[1] == Ylim[2]) Ylim = Ylim[1] + c(0,0.07)
       } 
       foo = histogram(~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, main =  trunc_string(g$title, trunc_labels),
                       scales =  myScales(x=list("hyper"=trans_x)), border = "transparent",
