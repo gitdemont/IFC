@@ -89,11 +89,9 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
                     # sub_col=NULL, sub_pch=NULL, sub_alpha=NULL, sub_lwd=NULL, sub_lty=NULL,      # TODO: add graphical params
                     # col=NULL, alpha=NULL, pch=NULL, border=NULL, lwd=NULL, lty=NULL, fill=TRUE) {# TODO: add graphical params
   dots = list(...)
-  if(!(missing(obj))) {
-    if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class IFC_data")
-  } else {
-    stop("'obj' can't be missing")
-  }
+
+  if(missing(obj)) stop("'obj' can't be missing")
+  if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class IFC_data")
   # corrects variables
   subset = unique(subset)
   shown_pops = unique(shown_pops)
@@ -196,8 +194,10 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
   if(!is.null(type)) {
     if(type=="histogram") {
       # force histogram when type is set to histogram
-      foo = foo[!grepl("f2", names(foo))]
-      original = FALSE
+      if(any(grepl("f2", names(foo)))) {
+        foo = foo[!grepl("f2", names(foo))]
+        original = FALSE
+      }
     } else {
       # force scatter or density when type is not histogram and no f2 was found
       if(!any(grepl("f2", names(foo)))) {
@@ -323,24 +323,26 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
       xran = range(obj$features[SUB, foo$f1], na.rm = TRUE)
       if(length(foo$xlogrange)==0) foo$xlogrange = trans_x
       if(foo$xlogrange == "P") {
-        xran = xran + diff(xran) * c(-0.1,0.1)
+        xran = xran + diff(xran) * c(-0.07,0.07)
       } else {
         xran = smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
-        xran = xran + diff(xran) * c(-0.1,0.1)
+        xran = xran + diff(xran) * c(-0.07,0.07)
         xran = inv_smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
       }
+      if(xran[1] == xran[2]) xran = xran[1] + c(-0.07,0.07)
       foo$xmin = xran[1]
       foo$xmax = xran[2]
       if(foo$type!="histogram") {
         yran = range(obj$features[SUB, foo$f2], na.rm = TRUE)
         if(length(foo$ylogrange)==0) foo$ylogrange = trans_y
         if(foo$ylogrange == "P") {
-          yran = yran + diff(yran) * c(-0.1,0.1)
+          yran = yran + diff(yran) * c(-0.07,0.07)
         } else {
           yran = smoothLinLog(yran, hyper = as.numeric(foo$ylogrange))
-          yran = yran + diff(yran) * c(-0.1,0.1)
+          yran = yran + diff(yran) * c(-0.07,0.07)
           yran = inv_smoothLinLog(yran, hyper = as.numeric(foo$ylogrange))
         }
+        if(yran[1] == yran[2]) yran = yran[1] + c(-0.07,0.07)
         foo$ymin = yran[1]
         foo$ymax = yran[2]
       }
