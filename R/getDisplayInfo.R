@@ -92,7 +92,7 @@ getDisplayInfo <- function(fileName, from = c("acquisition","analysis")[2], verb
       } 
       message(paste0("daf file does not refer to: ", fileName_image))
       if(.Platform$OS.type == "windows") {
-        choose.files(caption = paste0("Looking for: ", basename(cname)), multi = FALSE, filters = cbind("Compensated Image File (*.cif)", "*.cif"))
+        fileName_image = choose.files(caption = paste0("Looking for: ", basename(cname)), multi = FALSE, filters = cbind("Compensated Image File (*.cif)", "*.cif"))
       } else {
         fileName_image = file.choose()
       }

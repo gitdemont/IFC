@@ -167,7 +167,7 @@ data_to_DAF = function(obj, export_to, viewing_pop = "All", overwrite = FALSE,
       } 
       message(paste0("daf file does not refer to: ", fileName_image))
       if(.Platform$OS.type == "windows") {
-        choose.files(caption = paste0("Looking for: ", basename(obj$description$ID$file)), multi = FALSE, filters = cbind("Compensated Image File (*.cif)", "*.cif"))
+        fileName_image = choose.files(caption = paste0("Looking for: ", basename(obj$description$ID$file)), multi = FALSE, filters = cbind("Compensated Image File (*.cif)", "*.cif"))
       } else {
         fileName_image = file.choose()
       }
