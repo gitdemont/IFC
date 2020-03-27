@@ -65,7 +65,7 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
   dots = list(...)
   # backup last state of device ask newpage and set to FALSE
   old_ask <- devAskNewPage(ask = FALSE)
-  on.exit(devAskNewPage(ask = old_ask))
+  on.exit(devAskNewPage(ask = old_ask), add = TRUE)
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
   on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
@@ -80,7 +80,7 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
   file_extension = getFileExt(export_to)
   assert(file_extension, alw = c("pdf", "csv"))
   if(any(duplicated(file_extension))) stop("'export_to' has to be only one .pdf and / or only one .csv")
-
+  title_progress = basename(obj$fileName)
   splitf_obj = splitf(obj$fileName)
   create_pdf = FALSE
   create_csv = FALSE
@@ -115,13 +115,6 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
     bin=na.omit(as.integer(bin)); assert(bin, len=1, typ="integer")
   }
   display_progress = as.logical(display_progress); assert(display_progress, len=1, alw=c(TRUE,FALSE))
-  if(display_progress) {
-    if(.Platform$OS.type == "windows") {
-      pb_fun = setWinProgressBar
-    } else {
-      pb_fun = setTxtProgressBar
-    }
-  }
   overwritten = FALSE
   tmp = file.exists(export_to)
   if(any(tmp)) {
@@ -190,12 +183,8 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
     }
     gl = length(G)
     if(display_progress) {
-      if(.Platform$OS.type == "windows") {
-        pb_gr = winProgressBar(title = basename(obj$fileName), min = 0, max = 100, initial=1, label="done")
-      } else {
-        pb_gr = txtProgressBar(title = basename(obj$fileName), min = 0, max = 100, initial=1, label="done", style = 3)
-      }
-      on.exit(close(pb_gr), add = TRUE)
+      pb_gr = newPB(min = 0, max = 1, initial = 0, style = 3)
+      on.exit(endPB(pb_gr), add = TRUE)
     }
     suppressWarnings({
       graphs = lapply(1:gl, FUN=function(i) {
@@ -226,20 +215,15 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
         tab$vp <- viewport(x=0.5, y=unit(1,"npc") - 0.5*sum(tab$heights))
         foo = arrangeGrob(foo, tab, layout_matrix = foo_lay, respect = TRUE)
         if(display_progress) {
-          k=i/gl*100
-          pb_fun(pb = pb_gr, value = k, label = paste0("Computing ",ifelse(create_pdf,"graphs and ",""),"stats ", sprintf("%.0f%%", k)))
+          setPB(pb = pb_gr, value = i/gl, title = title_progress, label = paste0("computing ",ifelse(create_pdf,"graphs and ",""),"stats"))
         }
         return(foo)
       })
     })
     if(create_pdf) {
       if(display_progress) {
-        if(.Platform$OS.type == "windows") {
-          pb_pdf = winProgressBar(title = basename(obj$fileName), label = "Writing to pdf\nPlease wait...", min = 0, max = 100, initial=1)
-        } else {
-          pb_pdf = txtProgressBar(title = basename(obj$fileName), label = "Writing to pdf. Please wait...", min = 0, max = 100, initial=1, style = 3)
-        }
-        on.exit(close(pb_pdf), add = TRUE)
+        pb_pdf = newPB(title = title_progress, label = "writing to pdf (no update but file processed)", min = 0, max = 1, initial = 0, style = 3)
+        on.exit(endPB(pb_pdf), add = TRUE)
       }
       if(onepage) {
         pdf(file=export_to_pdf, width = 3*max(lay$x)*2.54, height = 3*max(lay$y)*2.54, 
@@ -250,27 +234,25 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
         #   pos = matrix(NA, ncol = max(lay$x), nrow = max(lay$y))
         #   pos[lay_mat == lay$N[i]] <- i
         #   print(pos)
-        #   grid.arrange(grobs = graphs[lay$N[1]], top = basename(obj$fileName), newpage = TRUE, layout_matrix = lay_mat, as.table = FALSE)
+        #   grid.arrange(grobs = graphs[lay$N[1]], top = title_progress, newpage = TRUE, layout_matrix = lay_mat, as.table = FALSE)
         #   if(i == 1) {
         #     plot(graphs[lay$N[i]])
-        #     grid.arrange(grobs = graphs[lay$N[i]], top = basename(obj$fileName), newpage = TRUE, layout_matrix = pos, as.table = FALSE)
+        #     grid.arrange(grobs = graphs[lay$N[i]], top = title_progress, newpage = TRUE, layout_matrix = pos, as.table = FALSE)
         #   } else {
         #     grid.arrange(grobs = graphs[lay$N[i]], newpage = FALSE, layout_matrix = pos, as.table = FALSE)
         #   }
         #   if(display_progress) {
-        #     k=i/gl*100
-        #     pb_fun(pb_pdf, value = k, label = sprintf("Writing to pdf %.0f%%", k))
+        #     setPB(pb_pdf, value = i/gl, title = title_progress, label = "writing to pdf")
         #   }
         # }
-        grid.arrange(grobs = graphs[lay$N], top = basename(obj$fileName), newpage = TRUE, layout_matrix = lay_mat, as.table = FALSE)
+        grid.arrange(grobs = graphs[lay$N], top = title_progress, newpage = TRUE, layout_matrix = lay_mat, as.table = FALSE)
       } else {
         pdf(file=export_to_pdf, paper = "a4", onefile = TRUE, pagecentre = TRUE, useDingbats = FALSE, family = "serif")
         on.exit(dev.off(which = dev.cur()), add = TRUE)
         for(i in 1:gl) {
-          grid.arrange(graphs[[i]], top=basename(obj$fileName), newpage = TRUE) #, respect = TRUE)
+          grid.arrange(graphs[[i]], top = title_progress, newpage = TRUE) #, respect = TRUE)
           if(display_progress) {
-            k=i/gl*100
-            pb_fun(pb_pdf, value = k, label = sprintf("Writing to pdf %.0f%%", k))
+            setPB(pb_pdf, value = i/gl, title = title_progress, label = "writing to pdf")
           }
         }
       }

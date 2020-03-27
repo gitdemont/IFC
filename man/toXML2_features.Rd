@@ -8,13 +8,15 @@ toXML2_features(
   features,
   verbose = FALSE,
   display_progress = TRUE,
-  pb_title = ""
+  title_progress = ""
 )
 }
 \arguments{
 \item{features}{an IFC_features object.}
 
 \item{verbose}{whether to display message about current action. Default is FALSE.}
+
+\item{title_progress}{character string, giving the title of the progress bar. Default is "".}
 }
 \value{
 a xml_node.

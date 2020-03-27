@@ -24,6 +24,7 @@ ExtractImages_toBase64 <- function(fileName, display, offsets, objects, display_
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
   file_extension = getFileExt(fileName)
   assert(file_extension, len = 1, alw = c("daf", "rif", "cif"))
+  title_progress = basename(fileName)
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
   assert(mode, len = 1, alw = c("rgb", "gray"))
   
@@ -100,17 +101,10 @@ ExtractImages_toBase64 <- function(fileName, display, offsets, objects, display_
   
   # extract objects
   if(display_progress) {
-    if(.Platform$OS.type == "windows") {
-      pb = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
-      pb_fun = setWinProgressBar
-    } else {
-      pb = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-      pb_fun = setTxtProgressBar
-    }
-    on.exit(close(pb))
+    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) {
-      k=i/L*100
-      pb_fun(pb, value = k, label = sprintf("Exporting objects %.0f%%", k))
+      setPB(pb, value = i/L, title = title_progress, label = "exporting images to base64")
       do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = infos$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8, force_trunc = TRUE, verbose = verbose, verbosity = verbosity),
                                                     display = infos,
                                                     export = "base64",

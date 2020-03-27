@@ -31,6 +31,7 @@
 #' @return A data.frame is returned.
 getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE, fast = TRUE) {
   fileName = normalizePath(fileName, winslash = "/", mustWork = TRUE)
+  title_progress = basename(fileName)
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
   IFD_first = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE, verbosity = 1)[[1]]
   bits = IFD_first$tags$`258`$map
@@ -73,17 +74,10 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
   sel = split(objects, ceiling(seq_along(objects)/20))
   L = length(sel)
   if(display_progress) {
-    if(.Platform$OS.type == "windows") {
-      pb = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
-      pb_fun = setWinProgressBar
-    } else {
-      pb = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-      pb_fun = setTxtProgressBar
-    }
-    on.exit(close(pb))
+    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) {
-      k=i/L*100
-      pb_fun(pb, value = k, label = sprintf("Extracting images information %.0f%%", k))
+      setPB(pb, value = i/L, title = title_progress, label = "extracting images values (binary)")
       t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8,
                       force_trunc = FALSE, verbose = FALSE, verbosity = 1), FUN = function(IFD) {
                         c(IFD$infos$OBJECT_ID, # id

@@ -4,17 +4,17 @@
 #' @param images an IFC_images object.
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param pb_title character string, giving the window title on the dialog box. Default is "".
+#' @param title_progress character string, giving the title of the progress bar. Default is "".
 #' @return an raw vector of images binaries.
 #' @keywords internal
 toBIN_images = function(images, endianness = .Platform$endian,
-                        verbose = FALSE, display_progress = TRUE, pb_title = "") {
+                        verbose = FALSE, display_progress = TRUE, title_progress = "") {
   assert(verbose, alw = c(TRUE, FALSE))
   if(verbose) message("exporting images information as binary")
   assert(images, cla = "IFC_images")
   assert(endianness, alw = c("little", "big"))
   assert(display_progress, alw = c(TRUE, FALSE))
-  assert(pb_title, len = 1, typ = "character")
+  assert(title_progress, len = 1, typ = "character")
   
   L = nrow(images)
   SO_number = packBits(intToBits(L),"raw")
@@ -28,18 +28,11 @@ toBIN_images = function(images, endianness = .Platform$endian,
   n_p = packBits(intToBits(length(satp)),"raw")
   
   if(display_progress) {
-    if(.Platform$OS.type == "windows") {
-      pb = winProgressBar(title = pb_title, label = "information in %", min = 0, max = 100, initial = 1)
-      pb_fun = setWinProgressBar
-    } else {
-      pb = txtProgressBar(title = pb_title, label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-      pb_fun = setTxtProgressBar
-    }
-    on.exit(close(pb))
+    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    on.exit(endPB(pb))
     if(endianness == .Platform$endian)  {
       imgs = lapply(1:L, FUN=function(i_image) {
-        k=i_image/L*100
-        pb_fun(pb, value = k, label = sprintf("Converting images values %.0f%%", k))
+        setPB(pb, value = i_image/L, title = title_progress, label = "converting images values (binary)")
         c(packBits(intToBits(images[i_image,"id"]),"raw"), # id
           c(packBits(intToBits(images[i_image,"imgIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # imgIFD
           c(packBits(intToBits(images[i_image,"mskIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # mskIFD
@@ -67,8 +60,7 @@ toBIN_images = function(images, endianness = .Platform$endian,
       n_p = rev(n_p)
       SO_number = rev(SO_number)
       imgs = lapply(1:L, FUN=function(i_image) {
-        k=i_image/L*100
-        pb_fun(pb, value = k, label = sprintf("Converting images values %.0f%%", k))
+        setPB(pb, value = i_image/L, title = title_progress, label = "converting images values (binary)")
         c(rev(packBits(intToBits(images[i_image,"id"]),"raw")), # id
           rev(c(packBits(intToBits(images[i_image,"imgIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # imgIFD
           rev(c(packBits(intToBits(images[i_image,"mskIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # mskIFD

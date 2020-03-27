@@ -14,7 +14,7 @@ popsCompute(
   pnt_in_poly_algorithm = 1,
   pnt_in_poly_epsilon = 1e-12,
   display_progress = TRUE,
-  pb_title = "",
+  title_progress = "",
   bypass = FALSE
 )
 }
@@ -32,7 +32,7 @@ Note that for the moment only 1(Trigonometry) is available.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
-\item{pb_title}{character string, giving the window title on the dialog box. Default is "".}
+\item{title_progress}{character string, giving the title of the progress bar. Default is "".}
 
 \item{bypass}{logical to avoid passing pops to buildPopulation() checking. Default is FALSE.}
 }

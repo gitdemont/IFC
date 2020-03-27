@@ -30,7 +30,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   dots = list(...)
   # backup last state of device ask newpage and set to FALSE
   old_ask <- devAskNewPage(ask = FALSE)
-  on.exit(devAskNewPage(ask = old_ask))
+  on.exit(devAskNewPage(ask = old_ask), add = TRUE)
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
   on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)

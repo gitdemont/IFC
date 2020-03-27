@@ -74,6 +74,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   endianness = cpp_checkTIFF(fileName)
   IFD = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, verbose = verbose, verbosity = verbosity, force_trunc = FALSE)[[1]] # getIFD will perform all previous checking
   fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
+  title_progress = basename(fileName)
   
   ##### Initializes values
   merged = FALSE
@@ -233,25 +234,17 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         if((length(obj_number_r) == 0) | (length(feat_number_r) == 0)) stop(fileName, "\nBinary features is of length 0")
         if(!(merged | onefile)) if(IFD$tags[["33018"]]$val != obj_number_r) stop(fileName, "\nMismatch in object number")
         if(display_progress) {
-          if(.Platform$OS.type == "windows") {
-            pb = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
-            pb_fun = setWinProgressBar
-          } else {
-            pb = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-            pb_fun = setTxtProgressBar
-          }
-          # on.exit(close(pb), add = TRUE)
+          pb = newPB(min = 0, max = 1, initial = 0, style = 3)
           tryCatch({
           features=lapply(1:obj_number_r, FUN=function(i_obj) {
-            k=i_obj/obj_number_r*100
-            pb_fun(pb, value = k, label = sprintf("Extracting features information %.0f%%", k))
+            setPB(pb, value = i_obj/obj_number_r, title = title_progress, label = "extracting features values (binary)")
             # fid=readBin(toread, "integer", n = 1, endian = endianness) # no fid found
             fv=readBin(toread, "double", size = 4, n = feat_number_r, endian = endianness)
             return(fv)
           })
         }, error = function(e) {
           stop(e$message)
-        }, finally = close(pb))
+        }, finally = endPB(pb))
         } else{
           features=lapply(1:obj_number_r, FUN=function(i_obj) {
             # fid=readBin(toread, "integer", n = 1, endian = endianness) # no fid found
@@ -264,25 +257,17 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         stop("\nCan't deal with non-binary features")
         # feat_number=length(features)
         if(display_progress) {
-          if(.Platform$OS.type == "windows") {
-            pb = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
-            pb_fun = setWinProgressBar
-          } else {
-            pb = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-            pb_fun = setTxtProgressBar
-          }
-          # on.exit(close(pb), add = TRUE)
+          pb = newPB(min = 0, max = 1, initial = 0, style = 3)
           tryCatch({
           features=lapply(1:feat_number,FUN=function(i) {
-            k=i/feat_number*100
-            pb_fun(pb, value = k, label = sprintf("Extracting features information %.0f%%", k))
+            setPB(pb, value = i/feat_number, title = title_progress, label = "extracting features values (non-binary)")
             val = suppressWarnings(as.numeric(strsplit(features[i],"|", useBytes = TRUE, fixed=TRUE)[[1]]))
             val[is.na(val)] <- NaN
             val
           })
         }, error = function(e) {
           stop(e$message)
-        }, finally = close(pb))
+        }, finally = endPB(pb))
         } else {
           features=lapply(1:feat_number,FUN=function(i) {
             val = suppressWarnings(as.numeric(strsplit(features[i],"|", useBytes = TRUE, fixed=TRUE)[[1]]))
@@ -378,7 +363,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
       ##### reorders pops
       pops = popsOrderNodes(popsGetAffiliation(pops))
       ##### determines which object belongs to each population and changes styles and colors
-      pops = popsWithin(pops = pops, regions = regions, features = features, pnt_in_poly_algorithm = pnt_in_poly_algorithm, pnt_in_poly_epsilon = pnt_in_poly_epsilon, display_progress = display_progress, pb_title = basename(fileName))
+      pops = popsWithin(pops = pops, regions = regions, features = features, pnt_in_poly_algorithm = pnt_in_poly_algorithm, pnt_in_poly_epsilon = pnt_in_poly_epsilon, display_progress = display_progress, title_progress = title_progress)
       
       if(extract_stats) {
         stats = data.frame(stringsAsFactors = FALSE, check.rows = FALSE, check.names = FALSE, t(sapply(names(pops), FUN=function(p) {

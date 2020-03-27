@@ -23,6 +23,7 @@ ExtractMasks_toMatrix <- function(fileName, display, offsets, objects, display_p
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
   file_extension = getFileExt(fileName)
   assert(file_extension, len = 1, alw = c("daf", "rif", "cif"))
+  title_progress = basename(fileName)
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
   
   # process extra parameters
@@ -98,17 +99,10 @@ ExtractMasks_toMatrix <- function(fileName, display, offsets, objects, display_p
   
   # extract objects
   if(display_progress) {
-    if(.Platform$OS.type == "windows") {
-      pb = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
-      pb_fun = setWinProgressBar
-    } else {
-      pb = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-      pb_fun = setTxtProgressBar
-    }
-    on.exit(close(pb))
-    ans = lapply(1:L, FUN=function(i) { #s
-      k=i/L*100
-      pb_fun(pb, value = k, label = sprintf("Exporting objects %.0f%%", k))
+    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    on.exit(endPB(pb))
+    ans = lapply(1:L, FUN=function(i) {
+      setPB(pb, value = i/L, title = title_progress, label = "exporting masks to matrix")
       do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = infos$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "msk"), trunc_bytes = 8, force_trunc = TRUE, verbose = verbose, verbosity = verbosity),
                                                     display = infos,
                                                     export = "matrix",
@@ -116,7 +110,7 @@ ExtractMasks_toMatrix <- function(fileName, display, offsets, objects, display_p
                                                dots))
     })
   } else {
-    ans = lapply(1:L, FUN=function(i) { #s
+    ans = lapply(1:L, FUN=function(i) {
       do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = infos$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "msk"), trunc_bytes = 8, force_trunc = TRUE, verbose = verbose, verbosity = verbosity),
                                                     display = infos,
                                                     export = "matrix",

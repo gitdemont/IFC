@@ -8,11 +8,11 @@
 #' Note that for the moment only 1(Trigonometry) is available.
 #' @param pnt_in_poly_epsilon epsilon to determine if object belongs to a polygon region or not. It only applies when algorithm is 1. Default is 1e-12.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param pb_title character string, giving the window title on the dialog box. Default is "".
+#' @param title_progress character string, giving the title of the progress bar. Default is "".
 #' @source For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 #' @keywords internal
 popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_in_poly_epsilon = 1e-12,
-                       display_progress = TRUE, pb_title = "") {
+                       display_progress = TRUE, title_progress = "") {
   assert(pops, cla = c("IFC_pops","Affiliated","Ordered"))
   assert(regions, cla = "IFC_regions")
   assert(features, cla = "IFC_features")
@@ -20,20 +20,14 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
   pnt_in_poly_epsilon = as.numeric(pnt_in_poly_epsilon); pnt_in_poly_epsilon = pnt_in_poly_epsilon[pnt_in_poly_epsilon>0]; pnt_in_poly_epsilon = pnt_in_poly_epsilon[is.finite(pnt_in_poly_epsilon)]
   assert(pnt_in_poly_epsilon, len = 1, typ = "numeric")
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
-  assert(pb_title, len = 1, typ = "character")
+  assert(title_progress, len = 1, typ = "character")
   
   K = class(pops)
   l = length(pops)
   obj_number = nrow(features)
   if(display_progress) {
-    if(.Platform$OS.type == "windows") {
-      pb = winProgressBar(title = pb_title, label = "information in %", min = round(1/l)*100, max = 100, initial = 1)
-      pb_fun = setWinProgressBar
-    } else {
-      pb = txtProgressBar(title = pb_title, label = "information in %", min = round(1/l)*100, max = 100, initial = 1, style = 3)
-      pb_fun = setTxtProgressBar
-    }
-    on.exit(close(pb))
+    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    on.exit(endPB(pb))
   }
   for(i in 1:l) {
     fx.pos = NULL
@@ -112,8 +106,7 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
              if(obj_number != length(pops[[i]]$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
            })
     if(display_progress) {
-      k=i/l*100
-      pb_fun(pb, value = k, label = sprintf("Exporting populations %.0f%%", k))
+      setPB(pb, value = i/l, title = title_progress, label = "extacting populations")
     }
   }
   class(pops) = c(K, "Processed")

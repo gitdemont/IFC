@@ -9,7 +9,7 @@ toBIN_images(
   endianness = .Platform$endian,
   verbose = FALSE,
   display_progress = TRUE,
-  pb_title = ""
+  title_progress = ""
 )
 }
 \arguments{
@@ -19,7 +19,7 @@ toBIN_images(
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
-\item{pb_title}{character string, giving the window title on the dialog box. Default is "".}
+\item{title_progress}{character string, giving the title of the progress bar. Default is "".}
 }
 \value{
 an raw vector of images binaries.

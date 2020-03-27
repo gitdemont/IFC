@@ -40,7 +40,7 @@ Note that members not found will be automatically removed and a warning will be 
 
 \item{name}{id of the datatable container. Default is DisplayGallery.}
 
-\item{caption}{wether to display caption name or not. Default is FALSE.}
+\item{caption}{whether to display caption name or not. Default is FALSE.}
 
 \item{pageLength}{integer, number of objects to display per page. Default is 10.}
 
@@ -60,6 +60,11 @@ Note that members not found will be automatically removed and a warning will be 
 
 \item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and 'bypass'(=TRUE).
 If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.}
+}
+\value{
+it invisibly returns a list whose members are:\cr
+-data, data for DT::datatable(),\cr
+-args, associated arguments to pass to DT::datatable().
 }
 \description{
 Displays gallery of IFC objects

@@ -70,7 +70,7 @@ ExportToGallery <- function(display, offsets, objects, objects_type = "img", lay
   dots = list(...)
   # backup last state of device ask newpage and set to FALSE
   old_ask <- devAskNewPage(ask = FALSE)
-  on.exit(devAskNewPage(ask = old_ask))
+  on.exit(devAskNewPage(ask = old_ask), add = TRUE)
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
   on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
@@ -101,6 +101,7 @@ ExportToGallery <- function(display, offsets, objects, objects_type = "img", lay
     lum = getLuminance(bg_color)
   }
   fileName = display$fileName
+  title_progress = basename(fileName)
   file_extension = getFileExt(fileName)
   channels = display$Images[display$Images$physicalChannel %in% which(display$in_use), ]
 
@@ -214,16 +215,10 @@ ExportToGallery <- function(display, offsets, objects, objects_type = "img", lay
       message(paste0("file will be exported in :\n", normalizePath(dirname(export_to), winslash = "/")))
     }
   }
-
+  
   if(display_progress) {
-    if(.Platform$OS.type == "windows") {
-      pb = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
-      pb_fun = setWinProgressBar
-    } else {
-      pb = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-      pb_fun = setTxtProgressBar
-    }
-    on.exit(close(pb))
+    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    on.exit(endPB(pb), add = TRUE)
   }
   tryCatch({
     # extract objects
@@ -231,8 +226,7 @@ ExportToGallery <- function(display, offsets, objects, objects_type = "img", lay
     L = length(sel)
     if(display_progress) {
       ans = lapply(1:L, FUN = function(i) {
-        k = i/L*100
-        pb_fun(pb, value = k, label = sprintf("Exporting objects %.0f%%", k))
+        setPB(pb, value = i/L, title = title_progress, label = "exporting objects")
         do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
                                                       display = display, 
                                                       param = do.call(what = "objectParam", args = c(list(display = display, 

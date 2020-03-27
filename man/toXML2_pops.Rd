@@ -4,7 +4,12 @@
 \alias{toXML2_pops}
 \title{IFC_pops XML Conversion}
 \usage{
-toXML2_pops(pops, verbose = FALSE, display_progress = TRUE, pb_title = "")
+toXML2_pops(
+  pops,
+  verbose = FALSE,
+  display_progress = TRUE,
+  title_progress = ""
+)
 }
 \arguments{
 \item{pops}{an IFC_pops object.}
@@ -13,7 +18,7 @@ toXML2_pops(pops, verbose = FALSE, display_progress = TRUE, pb_title = "")
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
-\item{pb_title}{character string, giving the window title on the dialog box. Default is "".}
+\item{title_progress}{character string, giving the title of the progress bar. Default is "".}
 }
 \value{
 a xml_node.

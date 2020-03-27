@@ -77,10 +77,6 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   tmp <- tempdir(check = TRUE)
   ## use a cif file, but you can also subset rif
   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
-  ## Extract display information from file
-  disp <- getDisplayInfo(file_cif)
-  ## show the "img" 5st objects within file
-  DisplayGallery(display = disp, objects = 0:4, export_to = "example.png")
   ## subset "img" object 0,1 and 4 from file
   exported <- ExportToXIF(fileName = file_cif, export_to = paste0(tmp, "\\\\test.cif"),
                           overwrite = TRUE, objects = c(0,1,4))

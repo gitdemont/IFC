@@ -39,10 +39,6 @@
 #'   tmp <- tempdir(check = TRUE)
 #'   ## use a cif file, but you can also subset rif
 #'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
-#'   ## Extract display information from file
-#'   disp <- getDisplayInfo(file_cif)
-#'   ## show the "img" 5st objects within file
-#'   DisplayGallery(display = disp, objects = 0:4, export_to = "example.png")
 #'   ## subset "img" object 0,1 and 4 from file
 #'   exported <- ExportToXIF(fileName = file_cif, export_to = paste0(tmp, "\\test.cif"),
 #'                           overwrite = TRUE, objects = c(0,1,4))
@@ -71,16 +67,10 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
   if(missing(export_to)) stop("'export_to' can't be missing")
   extract_features = as.logical(extract_features); assert(extract_features, len = 1, alw = c(TRUE, FALSE))
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
-  if(display_progress) {
-    if(.Platform$OS.type == "windows") {
-      pb_fun = setWinProgressBar
-    } else {
-      pb_fun = setTxtProgressBar
-    }
-  }
   r_endian = cpp_checkTIFF(fileName)
   f_Ext = getFileExt(fileName)
   fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
+  title_progress = basename(fileName)
   assert(export_to, len = 1, typ = "character")
   splitf_obj = splitf(fileName)
   splitp_obj = splitp(export_to)
@@ -194,12 +184,8 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
     pos = 4
     
     if(display_progress) {
-      if(.Platform$OS.type == "windows") {
-        pb1 = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
-      } else {
-        pb1 = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-      }
-      on.exit(close(pb1), add = TRUE)
+      pb1 = newPB(min = 0, max = 1, initial = 0, style = 3)
+      on.exit(endPB(pb1), add = TRUE)
     }
     for(i_off in 1:off_number) {
       curr_obj = cpp_getTAGS(fname = fileName, offset = offsets[i_off], trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE)$infos
@@ -212,8 +198,7 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
         }
       }
       if(display_progress) {
-        k1=(obj_id+1)/L*50
-        pb_fun(pb1, value = k1, label = sprintf("Objects extraction %.0f%%", k1))
+        setPB(pb1, title = title_progress, value = (obj_id+1)/L/2, label = "objects subsetting")
       }
       # extracts IFD
       IFD = cpp_getTAGS(fname = fileName, offset = offsets[i_off], trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE)
@@ -284,20 +269,16 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
                   features = list()
                   stop(f, "\nMismatch in object number")
                 }
-
+                
+                title_progress = basename(f)
                 if(display_progress) {
-                  if(.Platform$OS.type == "windows") {
-                    pb3 = winProgressBar(title = basename(f), label = "information in %", min = 0, max = 100, initial = 1)
-                  } else {
-                    pb3 = txtProgressBar(title = basename(f), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-                  }
+                  pb3 = newPB(min = 0, max = 1, initial = 0, style = 3)
                   tryCatch({
                     features = c(features, lapply(1:obj_number, FUN = function(i_obj) {
-                      k3 = i_obj/obj_number * 100
-                      pb_fun(pb3, title = basename(f), value = k3, label = sprintf("Extracting features information %.0f%%", k3))
+                      setPB(pb3, value = i_obj/obj_number, title = title_progress, label = "extracting features information")
                       if((i_obj + obj_shift) %in% objects_1) return(readBin(toread2, "raw", n = feat_number * 4, endian = r_endian))
                       return(as.raw(c()))
-                    }))}, finally = close(pb3))
+                    }))}, finally = endPB(pb3))
                 } else {
                   features = c(features, lapply(1:obj_number, FUN = function(i_obj) {
                     fv = readBin(toread2, "raw", n = feat_number * 4, endian = r_endian)

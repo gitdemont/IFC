@@ -11,7 +11,7 @@
 #' Note that members can be missing to be removed from final display.\cr
 #' Note that members not found will be automatically removed and a warning will be thrown.
 #' @param name id of the datatable container. Default is DisplayGallery.
-#' @param caption wether to display caption name or not. Default is FALSE.
+#' @param caption whether to display caption name or not. Default is FALSE.
 #' @param pageLength integer, number of objects to display per page. Default is 10.
 #' @param pdf_pageSize string, page dimension when exporting to pdf. Default is "A2".
 #' @param pdf_pageOrientation string, page orientation when exporting to pdf. Default is "landscape". Allowed are "landscape" or "portrait".
@@ -44,6 +44,9 @@
 #'                   'to install extra files required to run this example.'))
 #' }
 # #' }
+#' @return it invisibly returns a list whose members are:\cr
+#' -data, data for DT::datatable(),\cr
+#' -args, associated arguments to pass to DT::datatable().
 #' @export
 DisplayGallery <- function(display, offsets, objects, objects_type = "img", layout, 
                            name = "DisplayGallery", caption = FALSE, pageLength = 10L, 
@@ -53,7 +56,7 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
   dots = list(...)
   # backup last state of device ask newpage and set to FALSE
   old_ask <- devAskNewPage(ask = FALSE)
-  on.exit(devAskNewPage(ask = old_ask))
+  on.exit(devAskNewPage(ask = old_ask), add = TRUE)
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
   on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
@@ -84,6 +87,7 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
   pdf_image_dpi = na.omit(as.integer(pdf_image_dpi)); pdf_image_dpi = pdf_image_dpi[pdf_image_dpi>=0]
   assert(pdf_image_dpi, len = 1, typ = "integer")
   fileName = display$fileName
+  title_progress = basename(fileName)
   channels = display$Images[display$Images$physicalChannel %in% which(display$in_use), ]
   
   # process extra parameters
@@ -161,22 +165,14 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
     offsets = suppressMessages(getOffsets(fileName = display$fileName_image, fast = fast, display_progress = display_progress))
   }
   
-  
   # extract objects
   sel = split(objects, ceiling(seq_along(objects)/20))
   L=length(sel)
   if(display_progress) {
-    if(.Platform$OS.type == "windows") {
-      pb = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
-      pb_fun = setWinProgressBar
-    } else {
-      pb = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-      pb_fun = setTxtProgressBar
-    }
-    on.exit(close(pb), add = TRUE)
+    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    on.exit(endPB(pb), add = TRUE)
     ans = lapply(1:L, FUN=function(i) {
-      k=i/L*100
-      pb_fun(pb, value = k, label = sprintf("Exporting objects %.0f%%", k))
+      setPB(pb, value = i/L, title = title_progress, label = "exporting objects")
       do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
                                                     display = display, 
                                                     param = do.call(what = "objectParam", args = c(list(display = display, 
@@ -246,13 +242,13 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
   
   # create datatable
   datatable(escape = FALSE, rownames = FALSE, extensions = "Buttons",
-            data = ans,
             selection = list(mode = 'api'), style = "bootstrap", 
             caption = cap,
             elementId = name,
+            data = ans,
             autoHideNavigation = TRUE,
             # callback = JS(sprintf("$('#%s').css({'width':'%spx'}); # TODO try make display more beautiful when names are too long
-                                  # return table;", name, 60*txt_col + ncol(ans)*size[length(size)])),
+            # return table;", name, 60*txt_col + ncol(ans)*size[length(size)])),
             options = list(pageLength = pageLength,
                            dom = dt_dom,
                            autoWidth = FALSE,

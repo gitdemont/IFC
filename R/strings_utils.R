@@ -2,12 +2,24 @@
 #' @description Truncs character strings
 #' @param x a string
 #' @param n desired length
-#' @details x will be trunc according to 'n' parameter. If x is longer than n '...' are appended.
+#' @details x will be truncated according to 'n' parameter. If x is longer than n '...' are appended.
 #' @keywords internal
 trunc_string = function(x, n=22) {
+  x = as.character(x)
   L = nchar(x)
   if(L > n) return(paste0(substr(x, 1, n),"..."))
   return(x)
+}
+
+#' @title File Extenstion Removal
+#' @description Remove file extension from file path
+#' @param x a file path
+#' @details file extension will be removed
+#' @keywords internal
+remove_ext <- function(x) {
+  x = as.character(x)
+  ext = getFileExt(x)
+  gsub(paste0("\\.",ext,"$"), "", x)
 }
 
 #' @title Special Character Replacement

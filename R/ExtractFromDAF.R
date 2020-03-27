@@ -49,6 +49,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
   file_extension = getFileExt(fileName)
   assert(file_extension, len = 1, alw = "daf")
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
+  title_progress = basename(fileName)
   extract_features = as.logical(extract_features); assert(extract_features, len = 1, alw = c(TRUE, FALSE))
   extract_images = as.logical(extract_images); assert(extract_images, len = 1, alw = c(TRUE, FALSE))
   extract_offsets = as.logical(extract_offsets); assert(extract_offsets, len = 1, alw = c(TRUE, FALSE))
@@ -58,13 +59,6 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
   pnt_in_poly_epsilon = as.numeric(pnt_in_poly_epsilon); pnt_in_poly_epsilon = pnt_in_poly_epsilon[pnt_in_poly_epsilon>0]; pnt_in_poly_epsilon = pnt_in_poly_epsilon[is.finite(pnt_in_poly_epsilon)]
   assert(pnt_in_poly_epsilon, len = 1, typ = "numeric")
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
-  if(display_progress) {
-    if(.Platform$OS.type == "windows") {
-      pb_fun = setWinProgressBar
-    } else {
-      pb_fun = setTxtProgressBar
-    }
-  }
   fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
   toskip=cpp_scanFirst(fname = fileName, target = "</Assay>", start = 0, end = 0)
   if(toskip == 0) stop(paste0(fileName, "\ndoes not seem to be well formatted: </Assay> not found")) 
@@ -141,16 +135,10 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       SO_number=cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness)) # number of SO
       if(SO_number != obj_number) stop("mismatch between expected object count and images numbers stored")
       if(display_progress) {
-        if(.Platform$OS.type == "windows") {
-          pb_im = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
-        } else {
-          pb_im = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-        }
-        # on.exit(close(pb_im), add = TRUE)
+        pb_im = newPB(min = 0, max = 1, initial = 0, style = 3)
         tryCatch({
         images=lapply(1:SO_number, FUN=function(i_image) {
-          k=i_image/SO_number*100
-          pb_fun(pb_im, value = k, label = sprintf("Extracting images information %.0f%%", k))
+          setPB(pb_im, value = i_image/SO_number, title = title_progress, label = "extracting images values (binary)")
           id = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
           imgIFD = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
           readBin(toread, "raw", size = 1, n = 4, endian = endianness) # not used, img offsets are uint32
@@ -182,7 +170,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
         })
         }, error = function(e) {
           stop(e$message)
-        }, finally = close(pb_im))
+        }, finally = endPB(pb_im))
       } else{
         images=lapply(1:SO_number, FUN=function(i_image) {
           id = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
@@ -275,23 +263,17 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     if(is_binary) {
       seek(toread, toskip+15)
       if(display_progress) {
-        if(.Platform$OS.type == "windows") {
-          pb_fe = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
-        } else {
-          pb_fe = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-        }
-        # on.exit(close(pb_fe), add = TRUE)
+        pb_fe = newPB(min = 0, max = 1, initial = 0, style = 3)
         tryCatch({
         features=lapply(1:feat_number, FUN=function(i_feat) {
-          k=i_feat/feat_number*100
-          pb_fun(pb_fe, value = k, label = sprintf("Extracting features information %.0f%%", k))
+          setPB(pb_fe, value = i_feat/feat_number, title = title_progress, label = "extracting features values (binary)")
           fid=cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
           fv=readBin(toread, "double", size = 8, n = obj_number, endian = endianness)
           return(c(fid,fv))
         })
       }, error = function(e) {
         stop(e$message)
-      }, finally = close(pb_fe))
+      }, finally = endPB(pb_fe))
       } else {
         features=lapply(1:feat_number, FUN=function(i_feat) {
           fid=cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
@@ -310,23 +292,17 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       features=xml_attr(xml_find_all(tmp, "//UDFValues"), attr = "fv")
       feat_number=length(features)
       if(display_progress) {
-        if(.Platform$OS.type == "windows") {
-          pb_fe = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
-        } else {
-          pb_fe = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-        }
-        # on.exit(close(pb_fe), add = TRUE)
+        pb_fe = newPB(min = 0, max = 1, initial = 0, style = 3)
         tryCatch({
         features=lapply(1:feat_number,FUN=function(i_feat) {
-          k=i_feat/feat_number*100
-          pb_fun(pb_fe, value = k, label = sprintf("Extracting features information %.0f%%", k))
+          setPB(pb_fe, value = i_feat/feat_number, title = title_progress, label = "extracting features values (xml)")
           val = suppressWarnings(as.numeric(strsplit(features[i_feat],"|", useBytes = TRUE, fixed=TRUE)[[1]]))
           val[is.na(val)] <- NaN
           val
         })
       }, error = function(e) {
         stop(e$message)
-      }, finally = close(pb_fe))
+      }, finally = endPB(pb_fe))
       } else {
         features=lapply(1:feat_number,FUN=function(i_feat) {
           val = suppressWarnings(as.numeric(strsplit(features[i_feat],"|", useBytes = TRUE, fixed=TRUE)[[1]]))
@@ -427,7 +403,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       ##### extracts populations dependencies/affiliations.
       ##### reorders pops
       ##### determines which object belongs to each population and changes styles and colors
-      pops = popsCompute(pops = pops, regions = regions, features = features, pnt_in_poly_algorithm = pnt_in_poly_algorithm, pnt_in_poly_epsilon = pnt_in_poly_epsilon, display_progress = display_progress, pb_title = basename(fileName), bypass = TRUE)
+      pops = popsCompute(pops = pops, regions = regions, features = features, pnt_in_poly_algorithm = pnt_in_poly_algorithm, pnt_in_poly_epsilon = pnt_in_poly_epsilon, display_progress = display_progress, title_progress = title_progress, bypass = TRUE)
       
       if(extract_stats) {
         stats = data.frame(stringsAsFactors = FALSE, check.rows = FALSE, check.names = FALSE, t(sapply(names(pops), FUN=function(p) {

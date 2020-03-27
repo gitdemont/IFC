@@ -4,31 +4,25 @@
 #' @param pops an IFC_pops object.
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param pb_title character string, giving the window title on the dialog box. Default is "".
+#' @param title_progress character string, giving the title of the progress bar. Default is "".
 #' @return a xml_node.
 #' @keywords internal
-toXML2_pops = function(pops, verbose = FALSE, display_progress = TRUE, pb_title = "") {
+toXML2_pops = function(pops, verbose = FALSE, display_progress = TRUE, title_progress = "") {
   assert(verbose, alw = c(TRUE, FALSE))
   if(verbose) message("creating pops node")
   assert(pops, cla = "IFC_pops")
   if(length(pops)==0) return(xml_new_node(name = "Pops", text = ""))
   assert(display_progress, alw = c(TRUE, FALSE))
-  assert(pb_title, len = 1, typ = "character")
+  assert(title_progress, len = 1, typ = "character")
   tmp_style = c(20, 4, 3, 1, 5, 0, 2, 18, 15, 17)
   names(tmp_style)=c("Simple Dot","Cross","Plus","Empty Circle","Empty Diamond","Empty Square","Empty Triangle","Solid Diamond","Solid Square","Solid Triangle")
   L = length(pops)
   if(display_progress) {
-    if(.Platform$OS.type == "windows") {
-      pb = winProgressBar(title = pb_title, label = "information in %", min = 0, max = 100, initial = 1)
-      pb_fun = setWinProgressBar
-    } else {
-      pb = txtProgressBar(title = pb_title, label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-      pb_fun = setTxtProgressBar
-    }
-    on.exit(close(pb))
+    pb = newPB(min = 0, max = 1, initial = 0)
+    on.exit(endPB(pb))
     pops_nodes = xml_new_node(name = "Pops", .children = lapply(1:L, FUN=function(i_pop) {
       k=i_pop/L*100
-      pb_fun(pb, value = k, label = sprintf("Creating pops nodes %.0f%%", k))
+      setPB(pb, value = k, title = title_progress, label = "converting pops (xml)")
       pop = pops[[i_pop]]
       if(pop$color=="Cyan4") pop$color <- "Teal"
       if(pop$lightModeColor=="Cyan4") pop$lightModeColor <- "Teal"

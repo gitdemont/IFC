@@ -15,6 +15,6 @@ trunc_string(x, n = 22)
 Truncs character strings
 }
 \details{
-x will be trunc according to 'n' parameter. If x is longer than n '...' are appended.
+x will be truncated according to 'n' parameter. If x is longer than n '...' are appended.
 }
 \keyword{internal}

@@ -3,9 +3,10 @@
 #' Helper to convert images (IFC_images object) to XML nodes.
 #' @param images an IFC_images object.
 #' @param verbose whether to display message about current action. Default is FALSE.
+#' @param title_progress character string, giving the title of the progress bar. Default is "".
 #' @return a xml_node.
 #' @keywords internal
-toXML2_images = function(images, verbose = FALSE, display_progress = TRUE, pb_title = "") {
+toXML2_images = function(images, verbose = FALSE, display_progress = TRUE, title_progress = "") {
   assert(verbose, alw = c(TRUE, FALSE))
   if(verbose) message("creating images node")
   assert(images, cla = "IFC_images")

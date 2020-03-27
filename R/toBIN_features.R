@@ -4,17 +4,17 @@
 #' @param features an IFC_features object.
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param pb_title character string, giving the window title on the dialog box. Default is "".
+#' @param title_progress character string, giving the title of the progress bar. Default is "".
 #' @return an raw vector of features binaries.
 #' @keywords internal
 toBIN_features = function(features, endianness = .Platform$endian, 
-                          verbose = FALSE, display_progress = TRUE, pb_title = "") {
+                          verbose = FALSE, display_progress = TRUE, title_progress = "") {
   assert(verbose, alw = c(TRUE, FALSE))
   if(verbose) message("exporting features information as binary")
   assert(features, cla = "IFC_features")
   assert(endianness, alw = c("little", "big"))
   assert(display_progress, alw = c(TRUE, FALSE))
-  assert(pb_title, len = 1, typ = "character")
+  assert(title_progress, len = 1, typ = "character")
   
   L = ncol(features)
   feat_version = packBits(intToBits(1),"raw")
@@ -26,24 +26,16 @@ toBIN_features = function(features, endianness = .Platform$endian,
     obj_number = rev(obj_number)
   }
   if(display_progress) {
-    if(.Platform$OS.type == "windows") {
-      pb = winProgressBar(title = pb_title, label = "information in %", min = 0, max = 100, initial = 1)
-      pb_fun = setWinProgressBar
-    } else {
-      pb = txtProgressBar(title = pb_title, label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-      pb_fun = setTxtProgressBar
-    }
-    on.exit(close(pb))
+    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    on.exit(endPB(pb))
     if(endianness == .Platform$endian) {
       feat = lapply(1:L, FUN=function(i_feat) {
-        k=i_feat/L*100
-        pb_fun(pb, value = k, label = sprintf("Converting features values %.0f%%", k))
+        setPB(pb, value = i_feat/L, title = title_progress, label = "converting features values (binary)")
         c(packBits(intToBits(i_feat-1),"raw"), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
       })
     } else {
       feat = lapply(1:L, FUN=function(i_feat) {
-        k=i_feat/L*100
-        pb_fun(pb, value = k, label = sprintf("Converting features values %.0f%%", k))
+        setPB(pb, value = i_feat/L, title = title_progress, label = "converting features values (binary)")
         c(rev(packBits(intToBits(i_feat-1),"raw")), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
       })
     }

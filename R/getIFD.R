@@ -43,6 +43,7 @@ getIFD <- function(fileName, offsets = "first", trunc_bytes = 8, force_trunc = F
                    verbose = FALSE, verbosity = 1, display_progress = FALSE, bypass = FALSE) {
   # various check
   endianness = cpp_checkTIFF(fileName) # used to determine endianness and check that file exists and is of XIF content.
+  title_progress = basename(fileName)
   bypass = as.logical(bypass); assert(bypass, len = 1, alw = c(TRUE, FALSE))
   if(!bypass) {
     trunc_bytes = as.integer(trunc_bytes); assert(trunc_bytes, len = 1, typ = "integer")
@@ -87,17 +88,10 @@ getIFD <- function(fileName, offsets = "first", trunc_bytes = 8, force_trunc = F
     if(L == obj_number*2) K = c("IFC_ifd_list", "IFC_full_ifd")
     VER = ifelse(verbose & (verbosity==2), TRUE, FALSE)
     if(display_progress) { 
-      if(.Platform$OS.type == "windows") {
-        pb = winProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1)
-        pb_fun = setWinProgressBar
-      } else {
-        pb = txtProgressBar(title = basename(fileName), label = "information in %", min = 0, max = 100, initial = 1, style = 3)
-        pb_fun = setTxtProgressBar
-      }
-      on.exit(close(pb), add = TRUE)
+      pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+      on.exit(endPB(pb), add = TRUE)
       ans = lapply(1:L, FUN=function(i_off) {
-        k=i_off/L*100
-        pb_fun(pb, value = k, label = sprintf("Extracting IFD %.0f%%", k))
+        setPB(pb, value = i_off/L, title = title_progress, label = "extracting IFDs")
         return(cpp_getTAGS(fname = fileName, offset = offsets[i_off], trunc_bytes = trunc_bytes, force_trunc = force_trunc, verbose = VER))
       }) 
     } else {

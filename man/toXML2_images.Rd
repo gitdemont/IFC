@@ -4,12 +4,19 @@
 \alias{toXML2_images}
 \title{IFC_images XML Conversion}
 \usage{
-toXML2_images(images, verbose = FALSE, display_progress = TRUE, pb_title = "")
+toXML2_images(
+  images,
+  verbose = FALSE,
+  display_progress = TRUE,
+  title_progress = ""
+)
 }
 \arguments{
 \item{images}{an IFC_images object.}
 
 \item{verbose}{whether to display message about current action. Default is FALSE.}
+
+\item{title_progress}{character string, giving the title of the progress bar. Default is "".}
 }
 \value{
 a xml_node.
