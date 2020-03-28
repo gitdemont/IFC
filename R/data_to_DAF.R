@@ -189,7 +189,7 @@ data_to_DAF = function(obj, export_to, viewing_pop = "All", overwrite = FALSE,
                    toXML2_masks(obj$description$masks, verbose = verbose),
                    toXML2_features_def(obj$features_def, verbose = verbose),
                    toXML2_regions(obj$regions, verbose = verbose),
-                   toXML2_pops(obj$pops, verbose = verbose, display_progress = display_progress, title_progress = title_progress))
+                   toXML2_pops(obj$pops, verbose = verbose, display_progress = display_progress, title_progress = title_progress, ...))
   
   
   

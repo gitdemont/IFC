@@ -72,7 +72,7 @@ getDisplayInfo <- function(fileName, from = c("acquisition","analysis")[2], verb
     fileName_image = file.path(cifdir, basename(cname)) # looks in same directory as fileName
     
     found = FALSE
-    checksum = attr(ExtractFromDAF(fileName, extract_offsets = TRUE, extract_features = FALSE, extract_images = TRUE, extract_stats = FALSE)$offsets, "checksum")
+    checksum = attr(ExtractFromDAF(fileName, extract_offsets = TRUE, extract_features = FALSE, extract_images = TRUE, extract_stats = FALSE, ...)$offsets, "checksum")
     
     fileName_image = file.path(cifdir, basename(cname)) # look in cifdir 1st
     if(file.exists(fileName_image)) {
@@ -99,11 +99,11 @@ getDisplayInfo <- function(fileName, from = c("acquisition","analysis")[2], verb
     }
     if(!found) stop("can't extract display information")
     fileName_image = normalizePath(fileName_image, winslash = "/")
-    IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity)[[1]]
+    IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity, ...)[[1]]
   }
   if(file_extension == "cif" | file_extension == "rif") {
     fileName_image = fileName
-    IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity)[[1]]
+    IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity, ...)[[1]]
   }
   Merged_cif = character()
   Merged_rif = character()

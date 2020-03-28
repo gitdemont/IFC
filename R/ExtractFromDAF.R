@@ -403,7 +403,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       ##### extracts populations dependencies/affiliations.
       ##### reorders pops
       ##### determines which object belongs to each population and changes styles and colors
-      pops = popsCompute(pops = pops, regions = regions, features = features, pnt_in_poly_algorithm = pnt_in_poly_algorithm, pnt_in_poly_epsilon = pnt_in_poly_epsilon, display_progress = display_progress, title_progress = title_progress, bypass = TRUE)
+      pops = popsCompute(pops = pops, regions = regions, features = features, pnt_in_poly_algorithm = pnt_in_poly_algorithm, pnt_in_poly_epsilon = pnt_in_poly_epsilon, display_progress = display_progress, title_progress = title_progress, bypass = TRUE, ...)
       
       if(extract_stats) {
         stats = data.frame(stringsAsFactors = FALSE, check.rows = FALSE, check.names = FALSE, t(sapply(names(pops), FUN=function(p) {

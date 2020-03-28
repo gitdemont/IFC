@@ -15,7 +15,8 @@ popsCompute(
   pnt_in_poly_epsilon = 1e-12,
   display_progress = TRUE,
   title_progress = "",
-  bypass = FALSE
+  bypass = FALSE,
+  ...
 )
 }
 \arguments{
@@ -35,6 +36,8 @@ Note that for the moment only 1(Trigonometry) is available.}
 \item{title_progress}{character string, giving the title of the progress bar. Default is "".}
 
 \item{bypass}{logical to avoid passing pops to buildPopulation() checking. Default is FALSE.}
+
+\item{...}{other arguments to be passed.}
 }
 \description{
 Function used to compute IFC_pops\cr

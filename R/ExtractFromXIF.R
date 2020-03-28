@@ -72,7 +72,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   force_default = as.logical(force_default); assert(force_default, len = 1, alw = c(TRUE, FALSE))
   recursive = as.logical(recursive); assert(recursive, len = 1, alw = c(TRUE, FALSE))
   endianness = cpp_checkTIFF(fileName)
-  IFD = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, verbose = verbose, verbosity = verbosity, force_trunc = FALSE)[[1]] # getIFD will perform all previous checking
+  IFD = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, verbose = verbose, verbosity = verbosity, force_trunc = FALSE, ...)[[1]] # getIFD will perform all previous checking
   fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
   title_progress = basename(fileName)
   
@@ -223,6 +223,8 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
     toread=file(description = fileName, open = "rb")
     on.exit(close(toread), add = TRUE)
     ##### extracts features values
+    
+    title_progress = basename(fileName)
     tryCatch({
       features = list()
       if(is.binary) {
@@ -363,7 +365,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
       ##### reorders pops
       pops = popsOrderNodes(popsGetAffiliation(pops))
       ##### determines which object belongs to each population and changes styles and colors
-      pops = popsWithin(pops = pops, regions = regions, features = features, pnt_in_poly_algorithm = pnt_in_poly_algorithm, pnt_in_poly_epsilon = pnt_in_poly_epsilon, display_progress = display_progress, title_progress = title_progress)
+      pops = popsWithin(pops = pops, regions = regions, features = features, pnt_in_poly_algorithm = pnt_in_poly_algorithm, pnt_in_poly_epsilon = pnt_in_poly_epsilon, display_progress = display_progress, title_progress = title_progress, ...)
       
       if(extract_stats) {
         stats = data.frame(stringsAsFactors = FALSE, check.rows = FALSE, check.names = FALSE, t(sapply(names(pops), FUN=function(p) {
@@ -399,7 +401,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   
   images = data.frame()
   if(extract_images) {
-    images = getImagesValues(fileName = fileName, offsets = offsets, fast = fast, display_progress = display_progress)
+    images = getImagesValues(fileName = fileName, offsets = offsets, fast = fast, display_progress = display_progress, ...)
     if(fast) {
       N = nchar(sprintf("%1.f",abs(obj_number-1)))
       tmp = c(paste0("img_", sprintf(paste0("%0",N,".f"), images$id)), paste0("msk_", sprintf(paste0("%0",N,".f"), images$id)))

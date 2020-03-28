@@ -77,7 +77,7 @@ newPB <- function(session = getDefaultReactiveDomain(),
     }
     fun = Progress$new
   }
-  return(do.call(what = fun, args = args))
+  pb = do.call(what = fun, args = args)
 }
 
 #' @title Progress Bar Modifyer
@@ -90,9 +90,23 @@ newPB <- function(session = getDefaultReactiveDomain(),
 #' @keywords internal
 setPB <- function(pb, value = NULL, title = NULL, label = NULL) {
   K = class(pb)
-  if("txtProgressBar" %in% K) utils::setTxtProgressBar(pb = pb, value = value, title = title, label = label)
-  if("txtProgressBar" %in% K) utils::setWinProgressBar(pb = pb, value = value, title = title, label = label)
-  if("Progress" %in% K) pb$set(value = value, message = title, detail = label)
+  if("txtProgressBar" %in% K) {
+    V = value * 20
+    if((V - as.integer(V)) != 0) return(NULL)
+    setTxtProgressBar(pb = pb, value = value, title = title, label = label)
+  }
+  if("winProgressBar" %in% K) {
+    V = value * 20
+    if((V - as.integer(V)) != 0) return(NULL)
+    setWinProgressBar(pb = pb, value = value, title = title, label = label)
+  }
+  if("Progress" %in% K) {
+    
+    V = value * 10
+    if((V - as.integer(V)) != 0) return(NULL)
+    pb$set(value = value, message = title, detail = label)
+  }
+  return(NULL)
 }
 
 #' @title Progress Bar Terminator

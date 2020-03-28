@@ -38,6 +38,7 @@
 #' @return an IFC_data object with pops added.
 #' @export
 data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsilon = 1e-12, display_progress = TRUE, ...) {
+  dots = list(...)
   assert(obj, cla = "IFC_data")
   
   # try to coerce inputs to compatible daf format
@@ -68,7 +69,7 @@ data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsi
                               pnt_in_poly_epsilon = pnt_in_poly_epsilon, 
                               display_progress = display_progress, 
                               title_progress = basename(obj$fileName),
-                              bypass = FALSE)
+                              bypass = FALSE, ...)
 
   obj$pops = exported_pops
   obj_count = as.integer(obj$description$ID$objcount)

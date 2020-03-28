@@ -32,7 +32,9 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
   verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
   fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
-  obj_count = as.integer(getDisplayInfo(fileName, warn = FALSE, force_default = TRUE)$objcount)
+  obj_count = as.integer(getDisplayInfo(fileName, warn = FALSE, force_default = TRUE, display_progress = FALSE)$objcount)
+  # obj_count = as.integer(getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE, verbosity = 1,
+  #                               display_progress = FALSE, bypass = FALSE)[[1]][["tags"]][["33018"]])
   if(fast) {
     offsets = cpp_getoffsets_noid(fileName, obj_count = obj_count, display_progress = display_progress, verbose = verbose)
     checksum = sum(offsets[2:11], na.rm = T)
