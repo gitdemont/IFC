@@ -9,7 +9,8 @@ toBIN_features(
   endianness = .Platform$endian,
   verbose = FALSE,
   display_progress = TRUE,
-  title_progress = ""
+  title_progress = "",
+  ...
 )
 }
 \arguments{
@@ -20,6 +21,8 @@ toBIN_features(
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
 \item{title_progress}{character string, giving the title of the progress bar. Default is "".}
+
+\item{...}{other arguments to be passed.}
 }
 \value{
 an raw vector of features binaries.

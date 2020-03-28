@@ -11,6 +11,7 @@
 #' Meaning that 'objects' will be extracting expecting that raw object are stored in ascending order.\cr
 #' Only apply when offsets are not provided.\cr
 #' Note that a warning will be sent if an object is found at an unexpected order.
+#' @param ... other arguments to be passed.
 #' @examples
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a daf file
@@ -29,7 +30,8 @@
 #'                   'to install extra files required to run this example.'))
 #' }
 #' @return A data.frame is returned.
-getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE, fast = TRUE) {
+getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE, fast = TRUE, ...) {
+  dots = list(...)
   fileName = normalizePath(fileName, winslash = "/", mustWork = TRUE)
   title_progress = basename(fileName)
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
@@ -74,7 +76,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
   sel = split(objects, ceiling(seq_along(objects)/20))
   L = length(sel)
   if(display_progress) {
-    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
     on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) {
       setPB(pb, value = i/L, title = title_progress, label = "extracting images values (binary)")

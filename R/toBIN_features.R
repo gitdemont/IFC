@@ -5,10 +5,12 @@
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param title_progress character string, giving the title of the progress bar. Default is "".
+#' @param ... other arguments to be passed.
 #' @return an raw vector of features binaries.
 #' @keywords internal
 toBIN_features = function(features, endianness = .Platform$endian, 
-                          verbose = FALSE, display_progress = TRUE, title_progress = "") {
+                          verbose = FALSE, display_progress = TRUE, title_progress = "", ...) {
+  dots = list(...)
   assert(verbose, alw = c(TRUE, FALSE))
   if(verbose) message("exporting features information as binary")
   assert(features, cla = "IFC_features")
@@ -26,7 +28,7 @@ toBIN_features = function(features, endianness = .Platform$endian,
     obj_number = rev(obj_number)
   }
   if(display_progress) {
-    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
     on.exit(endPB(pb))
     if(endianness == .Platform$endian) {
       feat = lapply(1:L, FUN=function(i_feat) {

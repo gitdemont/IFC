@@ -5,9 +5,11 @@
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param title_progress character string, giving the title of the progress bar. Default is "".
+#' @param ... other arguments to be passed.
 #' @return a xml_node.
 #' @keywords internal
-toXML2_pops = function(pops, verbose = FALSE, display_progress = TRUE, title_progress = "") {
+toXML2_pops = function(pops, verbose = FALSE, display_progress = TRUE, title_progress = "", ...) {
+  dots = list(...)
   assert(verbose, alw = c(TRUE, FALSE))
   if(verbose) message("creating pops node")
   assert(pops, cla = "IFC_pops")
@@ -18,7 +20,7 @@ toXML2_pops = function(pops, verbose = FALSE, display_progress = TRUE, title_pro
   names(tmp_style)=c("Simple Dot","Cross","Plus","Empty Circle","Empty Diamond","Empty Square","Empty Triangle","Solid Diamond","Solid Square","Solid Triangle")
   L = length(pops)
   if(display_progress) {
-    pb = newPB(min = 0, max = 1, initial = 0)
+    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
     on.exit(endPB(pb))
     pops_nodes = xml_new_node(name = "Pops", .children = lapply(1:L, FUN=function(i_pop) {
       k=i_pop/L*100

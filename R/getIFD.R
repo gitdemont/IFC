@@ -9,6 +9,7 @@
 #' @param verbosity quantity of information displayed when verbose is TRUE; 1: normal, 2: rich. Default is 1.
 #' @param display_progress whether to display a progress bar. Default is FALSE.
 #' @param bypass logical to avoid several checking. Default is FALSE.
+#' @param ... other arguments to be passed.
 #' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
 #' @details Function will return IFDs (image, mask or first) from the file using provided offsets argument.\cr
 #' IFDs contain several tags that can be viewed as descriptive meta-information of raw data stored within RIF or CIF file. For more details see TIFF specifications.\cr
@@ -40,7 +41,8 @@
 #' -next_IFD_offset, the position of next IFD offset
 #' @export
 getIFD <- function(fileName, offsets = "first", trunc_bytes = 8, force_trunc = FALSE,
-                   verbose = FALSE, verbosity = 1, display_progress = FALSE, bypass = FALSE) {
+                   verbose = FALSE, verbosity = 1, display_progress = FALSE, bypass = FALSE, ...) {
+  dots = list(...)
   # various check
   endianness = cpp_checkTIFF(fileName) # used to determine endianness and check that file exists and is of XIF content.
   title_progress = basename(fileName)
@@ -88,7 +90,7 @@ getIFD <- function(fileName, offsets = "first", trunc_bytes = 8, force_trunc = F
     if(L == obj_number*2) K = c("IFC_ifd_list", "IFC_full_ifd")
     VER = ifelse(verbose & (verbosity==2), TRUE, FALSE)
     if(display_progress) { 
-      pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+      pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
       on.exit(endPB(pb), add = TRUE)
       ans = lapply(1:L, FUN=function(i_off) {
         setPB(pb, value = i_off/L, title = title_progress, label = "extracting IFDs")

@@ -169,7 +169,7 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
   sel = split(objects, ceiling(seq_along(objects)/20))
   L=length(sel)
   if(display_progress) {
-    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
     on.exit(endPB(pb), add = TRUE)
     ans = lapply(1:L, FUN=function(i) {
       setPB(pb, value = i/L, title = title_progress, label = "exporting objects")

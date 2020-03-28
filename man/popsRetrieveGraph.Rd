@@ -13,7 +13,7 @@ popsRetrieveGraph(obj, pops, vis2D = "density", all_siblings = FALSE)
 
 \item{vis2D}{when original graph is not an histogram, whether to display it as "scatter" or "density". Default is "density".}
 
-\item{all_siblings}{wether to add all 'pop' siblings in the graph. Default is FALSE.}
+\item{all_siblings}{whether to add all 'pop' siblings in the graph. Default is FALSE.}
 }
 \description{
 Retrieves the graph a graphical population originate from

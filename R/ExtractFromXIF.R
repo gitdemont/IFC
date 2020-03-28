@@ -234,7 +234,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         if((length(obj_number_r) == 0) | (length(feat_number_r) == 0)) stop(fileName, "\nBinary features is of length 0")
         if(!(merged | onefile)) if(IFD$tags[["33018"]]$val != obj_number_r) stop(fileName, "\nMismatch in object number")
         if(display_progress) {
-          pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+          pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
           tryCatch({
           features=lapply(1:obj_number_r, FUN=function(i_obj) {
             setPB(pb, value = i_obj/obj_number_r, title = title_progress, label = "extracting features values (binary)")
@@ -257,7 +257,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         stop("\nCan't deal with non-binary features")
         # feat_number=length(features)
         if(display_progress) {
-          pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+          pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
           tryCatch({
           features=lapply(1:feat_number,FUN=function(i) {
             setPB(pb, value = i/feat_number, title = title_progress, label = "extracting features values (non-binary)")

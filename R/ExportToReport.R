@@ -183,7 +183,7 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
     }
     gl = length(G)
     if(display_progress) {
-      pb_gr = newPB(min = 0, max = 1, initial = 0, style = 3)
+      pb_gr = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
       on.exit(endPB(pb_gr), add = TRUE)
     }
     suppressWarnings({
@@ -222,7 +222,7 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
     })
     if(create_pdf) {
       if(display_progress) {
-        pb_pdf = newPB(title = title_progress, label = "writing to pdf (no update but file processed)", min = 0, max = 1, initial = 0, style = 3)
+        pb_pdf = newPB(session = dots$session, title = title_progress, label = "writing to pdf (no update but file processed)", min = 0, max = 1, initial = 0, style = 3)
         on.exit(endPB(pb_pdf), add = TRUE)
       }
       if(onepage) {

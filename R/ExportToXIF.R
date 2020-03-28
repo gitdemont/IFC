@@ -184,7 +184,7 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
     pos = 4
     
     if(display_progress) {
-      pb1 = newPB(min = 0, max = 1, initial = 0, style = 3)
+      pb1 = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
       on.exit(endPB(pb1), add = TRUE)
     }
     for(i_off in 1:off_number) {
@@ -272,7 +272,7 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
                 
                 title_progress = basename(f)
                 if(display_progress) {
-                  pb3 = newPB(min = 0, max = 1, initial = 0, style = 3)
+                  pb3 = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
                   tryCatch({
                     features = c(features, lapply(1:obj_number, FUN = function(i_obj) {
                       setPB(pb3, value = i_obj/obj_number, title = title_progress, label = "extracting features information")

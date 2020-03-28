@@ -9,7 +9,8 @@ getImagesValues(
   offsets,
   objects,
   display_progress = FALSE,
-  fast = TRUE
+  fast = TRUE,
+  ...
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ If missing, the default, ImagesValues from all objects will be extracted.}
 Meaning that 'objects' will be extracting expecting that raw object are stored in ascending order.\cr
 Only apply when offsets are not provided.\cr
 Note that a warning will be sent if an object is found at an unexpected order.}
+
+\item{...}{other arguments to be passed.}
 }
 \value{
 A data.frame is returned.

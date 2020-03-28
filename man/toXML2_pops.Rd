@@ -8,7 +8,8 @@ toXML2_pops(
   pops,
   verbose = FALSE,
   display_progress = TRUE,
-  title_progress = ""
+  title_progress = "",
+  ...
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ toXML2_pops(
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
 \item{title_progress}{character string, giving the title of the progress bar. Default is "".}
+
+\item{...}{other arguments to be passed.}
 }
 \value{
 a xml_node.

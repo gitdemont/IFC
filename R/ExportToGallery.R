@@ -217,7 +217,7 @@ ExportToGallery <- function(display, offsets, objects, objects_type = "img", lay
   }
   
   if(display_progress) {
-    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
     on.exit(endPB(pb), add = TRUE)
   }
   tryCatch({

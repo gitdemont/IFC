@@ -15,7 +15,8 @@ getIFD(
   verbose = FALSE,
   verbosity = 1,
   display_progress = FALSE,
-  bypass = FALSE
+  bypass = FALSE,
+  ...
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ getIFD(
 \item{display_progress}{whether to display a progress bar. Default is FALSE.}
 
 \item{bypass}{logical to avoid several checking. Default is FALSE.}
+
+\item{...}{other arguments to be passed.}
 }
 \value{
 A list of named lists, each containing:\cr

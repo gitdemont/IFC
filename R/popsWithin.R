@@ -9,10 +9,12 @@
 #' @param pnt_in_poly_epsilon epsilon to determine if object belongs to a polygon region or not. It only applies when algorithm is 1. Default is 1e-12.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param title_progress character string, giving the title of the progress bar. Default is "".
+#' @param ... other arguments to be passed.
 #' @source For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 #' @keywords internal
 popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_in_poly_epsilon = 1e-12,
-                       display_progress = TRUE, title_progress = "") {
+                       display_progress = TRUE, title_progress = "", ...) {
+  dots = list(...)
   assert(pops, cla = c("IFC_pops","Affiliated","Ordered"))
   assert(regions, cla = "IFC_regions")
   assert(features, cla = "IFC_features")
@@ -26,7 +28,7 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
   l = length(pops)
   obj_number = nrow(features)
   if(display_progress) {
-    pb = newPB(min = 0, max = 1, initial = 0, style = 3)
+    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
     on.exit(endPB(pb))
   }
   for(i in 1:l) {

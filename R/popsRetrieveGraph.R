@@ -4,7 +4,7 @@
 #' @param obj an IFC_data object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
 #' @param pops names of graphical populations present in 'obj'. Note that they should be siblings.
 #' @param vis2D when original graph is not an histogram, whether to display it as "scatter" or "density". Default is "density".
-#' @param all_siblings wether to add all 'pop' siblings in the graph. Default is FALSE.
+#' @param all_siblings whether to add all 'pop' siblings in the graph. Default is FALSE.
 #' @export
 popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE) {
   if(missing(obj)) stop("'obj' can't be missing")
@@ -12,7 +12,7 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
   if(missing(pops)) stop("'pops' can't be missing")
   pops = unique(pops); pops = as.character(pops); assert(pops, alw = names(obj$pops))
   if(!all(sapply(obj$pops[pops], FUN=function(p) p$type=="G"))) stop("'pops' should be of type graphical")
-  vis2D = as.character(vis2D); assert(vis2D, len=1, alw=c("scatter","density"))
+  # vis2D = as.character(vis2D); assert(vis2D, len=1, alw=c("scatter","density"))
   all_siblings = as.logical(all_siblings); assert(all_siblings, len = 1, alw =c(TRUE, FALSE))
   
   siblings = popsGetSiblings(obj, pops)
