@@ -216,17 +216,17 @@ ExportToGallery <- function(display, offsets, objects, objects_type = "img", lay
     }
   }
   
+  sel = split(objects, ceiling(seq_along(objects)/20))
+  L = length(sel)
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb), add = TRUE)
   }
   tryCatch({
     # extract objects
-    sel = split(objects, ceiling(seq_along(objects)/20))
-    L = length(sel)
     if(display_progress) {
       ans = lapply(1:L, FUN = function(i) {
-        setPB(pb, value = i/L, title = title_progress, label = "exporting objects")
+        setPB(pb, value = i, title = title_progress, label = "exporting objects")
         do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
                                                       display = display, 
                                                       param = do.call(what = "objectParam", args = c(list(display = display, 

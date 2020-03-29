@@ -5,12 +5,13 @@
 \title{Progress Bar Initializer}
 \usage{
 newPB(
-  session = getDefaultReactiveDomain(),
+  session,
   title,
   label,
   min = 0,
   max = 1,
   initial = 0,
+  steps = 21,
   width,
   style,
   char = "=",
@@ -26,6 +27,8 @@ newPB(
 
 \item{initial}{initial value for the progress bar.}
 
+\item{steps}{(finite) numeric value for the number of individual chunk of the progress bar. Default is 21.}
+
 \item{width}{only apply when 'session' is missing,the width of the progress bar. If missing, the default, will be NA for "txtProgressBar" and 300 for "winProgressBar".}
 
 \item{style}{does not apply for "winProgressBar", the ‘style’ of the bar. If missing, the default, will be 3 "txtProgressBar" and getShinyOption("progress.style", default = "notification") for shiny progress bar}
@@ -35,7 +38,7 @@ newPB(
 \item{file}{only apply for "txtProgressBar", an open connection object or "" which indicates the console: stderr() might be useful here. Default is "".}
 }
 \value{
-an object of class "txtProgressBar" "winProgressBar" or "Progress".
+an object of class "IFC_progress" containing a progress bar of class "txtProgressBar" "winProgressBar" or "Progress".
 }
 \description{
 Initializes a progress bar.

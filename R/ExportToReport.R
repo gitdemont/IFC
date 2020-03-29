@@ -183,11 +183,14 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
     }
     gl = length(G)
     if(display_progress) {
-      pb_gr = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+      pb_gr = newPB(session = dots$session, min = 0, max = gl, initial = 0, style = 3)
       on.exit(endPB(pb_gr), add = TRUE)
     }
     suppressWarnings({
       graphs = lapply(1:gl, FUN=function(i) {
+        if(display_progress) {
+          setPB(pb = pb_gr, value = i, title = title_progress, label = paste0("computing ",ifelse(create_pdf,"graphs and ",""),"stats"))
+        }
         if(length(bin) == 0) {
           g = plotGraph(obj, G[[i]], draw=FALSE, color_mode=color_mode, add_key=add_key,
                         precision=precision, trunc_labels=trunc_labels, trans=trans, viewport=viewport)
@@ -214,15 +217,12 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
         tab = tableGrob(format(stats, scientific=FALSE, digits=5), theme = ttheme_default(base_size=4, base_family = "serif"))
         tab$vp <- viewport(x=0.5, y=unit(1,"npc") - 0.5*sum(tab$heights))
         foo = arrangeGrob(foo, tab, layout_matrix = foo_lay, respect = TRUE)
-        if(display_progress) {
-          setPB(pb = pb_gr, value = i/gl, title = title_progress, label = paste0("computing ",ifelse(create_pdf,"graphs and ",""),"stats"))
-        }
         return(foo)
       })
     })
     if(create_pdf) {
       if(display_progress) {
-        pb_pdf = newPB(session = dots$session, title = title_progress, label = "writing to pdf (no update but file processed)", min = 0, max = 1, initial = 0, style = 3)
+        pb_pdf = newPB(session = dots$session, title = title_progress, label = "writing to pdf (no update but file is being processed)", min = 0, max = gl, initial = 0, style = 3)
         on.exit(endPB(pb_pdf), add = TRUE)
       }
       if(onepage) {
@@ -242,7 +242,7 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
         #     grid.arrange(grobs = graphs[lay$N[i]], newpage = FALSE, layout_matrix = pos, as.table = FALSE)
         #   }
         #   if(display_progress) {
-        #     setPB(pb_pdf, value = i/gl, title = title_progress, label = "writing to pdf")
+        #     setPB(pb_pdf, value = i, title = title_progress, label = "writing to pdf")
         #   }
         # }
         grid.arrange(grobs = graphs[lay$N], top = title_progress, newpage = TRUE, layout_matrix = lay_mat, as.table = FALSE)
@@ -252,7 +252,7 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
         for(i in 1:gl) {
           grid.arrange(graphs[[i]], top = title_progress, newpage = TRUE) #, respect = TRUE)
           if(display_progress) {
-            setPB(pb_pdf, value = i/gl, title = title_progress, label = "writing to pdf")
+            setPB(pb_pdf, value = i, title = title_progress, label = "writing to pdf")
           }
         }
       }

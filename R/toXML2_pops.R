@@ -20,11 +20,10 @@ toXML2_pops = function(pops, verbose = FALSE, display_progress = TRUE, title_pro
   names(tmp_style)=c("Simple Dot","Cross","Plus","Empty Circle","Empty Diamond","Empty Square","Empty Triangle","Solid Diamond","Solid Square","Solid Triangle")
   L = length(pops)
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     pops_nodes = xml_new_node(name = "Pops", .children = lapply(1:L, FUN=function(i_pop) {
-      k=i_pop/L*100
-      setPB(pb, value = k, title = title_progress, label = "converting pops (xml)")
+      setPB(pb, value = i_pop, title = title_progress, label = "converting pops (xml)")
       pop = pops[[i_pop]]
       if(pop$color=="Cyan4") pop$color <- "Teal"
       if(pop$lightModeColor=="Cyan4") pop$lightModeColor <- "Teal"

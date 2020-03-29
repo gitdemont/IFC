@@ -7,12 +7,9 @@
 endPB(pb)
 }
 \arguments{
-\item{pb}{an object of class "txtProgressBar" "winProgressBar" or "Progress".}
-}
-\value{
-an object of class "txtProgressBar" "winProgressBar" or "Progress".
+\item{pb}{an object of class "IFC_progress" containing a progress bar of class "txtProgressBar" "winProgressBar" or "Progress".}
 }
 \description{
-Closes a progress bar.
+Terminates a progress bar.
 }
 \keyword{internal}

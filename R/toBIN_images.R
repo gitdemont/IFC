@@ -30,11 +30,11 @@ toBIN_images = function(images, endianness = .Platform$endian,
   n_p = packBits(intToBits(length(satp)),"raw")
   
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     if(endianness == .Platform$endian)  {
       imgs = lapply(1:L, FUN=function(i_image) {
-        setPB(pb, value = i_image/L, title = title_progress, label = "converting images values (binary)")
+        setPB(pb, value = i_image, title = title_progress, label = "converting images values (binary)")
         c(packBits(intToBits(images[i_image,"id"]),"raw"), # id
           c(packBits(intToBits(images[i_image,"imgIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # imgIFD
           c(packBits(intToBits(images[i_image,"mskIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # mskIFD
@@ -62,7 +62,7 @@ toBIN_images = function(images, endianness = .Platform$endian,
       n_p = rev(n_p)
       SO_number = rev(SO_number)
       imgs = lapply(1:L, FUN=function(i_image) {
-        setPB(pb, value = i_image/L, title = title_progress, label = "converting images values (binary)")
+        setPB(pb, value = i_image, title = title_progress, label = "converting images values (binary)")
         c(rev(packBits(intToBits(images[i_image,"id"]),"raw")), # id
           rev(c(packBits(intToBits(images[i_image,"imgIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # imgIFD
           rev(c(packBits(intToBits(images[i_image,"mskIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # mskIFD

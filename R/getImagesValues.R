@@ -76,10 +76,10 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
   sel = split(objects, ceiling(seq_along(objects)/20))
   L = length(sel)
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) {
-      setPB(pb, value = i/L, title = title_progress, label = "extracting images values (binary)")
+      setPB(pb, value = i, title = title_progress, label = "extracting images values (binary)")
       t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8,
                       force_trunc = FALSE, verbose = FALSE, verbosity = 1, ...), FUN = function(IFD) {
                         c(IFD$infos$OBJECT_ID, # id

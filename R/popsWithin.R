@@ -25,13 +25,13 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
   assert(title_progress, len = 1, typ = "character")
   
   K = class(pops)
-  l = length(pops)
+  L = length(pops)
   obj_number = nrow(features)
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
   }
-  for(i in 1:l) {
+  for(i in 1:L) {
     fx.pos = NULL
     fy.pos = NULL
     pop=pops[[i]]
@@ -108,7 +108,7 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
              if(obj_number != length(pops[[i]]$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
            })
     if(display_progress) {
-      setPB(pb, value = i/l, title = title_progress, label = "extacting populations")
+      setPB(pb, value = i, title = title_progress, label = "extacting populations")
     }
   }
   class(pops) = c(K, "Processed")

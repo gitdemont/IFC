@@ -90,10 +90,10 @@ getIFD <- function(fileName, offsets = "first", trunc_bytes = 8, force_trunc = F
     if(L == obj_number*2) K = c("IFC_ifd_list", "IFC_full_ifd")
     VER = ifelse(verbose & (verbosity==2), TRUE, FALSE)
     if(display_progress) { 
-      pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+      pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
       on.exit(endPB(pb), add = TRUE)
       ans = lapply(1:L, FUN=function(i_off) {
-        setPB(pb, value = i_off/L, title = title_progress, label = "extracting IFDs")
+        setPB(pb, value = i_off, title = title_progress, label = "extracting IFDs")
         return(cpp_getTAGS(fname = fileName, offset = offsets[i_off], trunc_bytes = trunc_bytes, force_trunc = force_trunc, verbose = VER))
       }) 
     } else {

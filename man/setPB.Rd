@@ -2,21 +2,18 @@
 % Please edit documentation in R/progress_utils.R
 \name{setPB}
 \alias{setPB}
-\title{Progress Bar Modifyer}
+\title{Progress Bar Updater}
 \usage{
 setPB(pb, value = NULL, title = NULL, label = NULL)
 }
 \arguments{
-\item{pb}{an object of class "txtProgressBar" "winProgressBar" or "Progress".}
+\item{pb}{an object of class "IFC_progress" containing a progress bar of class "txtProgressBar" "winProgressBar" or "Progress".}
 
 \item{value}{new value for the progress bar.}
 
 \item{title, label}{character strings, giving the 'title'(='message' for shiny progress bar) and the 'label'(='detail' for shiny progress bar).}
 }
-\value{
-an object of class "txtProgressBar" "winProgressBar" or "Progress".
-}
 \description{
-Changes a progress bar.
+Updates a progress bar.
 }
 \keyword{internal}

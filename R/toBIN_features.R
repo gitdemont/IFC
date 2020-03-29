@@ -28,16 +28,16 @@ toBIN_features = function(features, endianness = .Platform$endian,
     obj_number = rev(obj_number)
   }
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     if(endianness == .Platform$endian) {
       feat = lapply(1:L, FUN=function(i_feat) {
-        setPB(pb, value = i_feat/L, title = title_progress, label = "converting features values (binary)")
+        setPB(pb, value = i_feat, title = title_progress, label = "converting features values (binary)")
         c(packBits(intToBits(i_feat-1),"raw"), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
       })
     } else {
       feat = lapply(1:L, FUN=function(i_feat) {
-        setPB(pb, value = i_feat/L, title = title_progress, label = "converting features values (binary)")
+        setPB(pb, value = i_feat, title = title_progress, label = "converting features values (binary)")
         c(rev(packBits(intToBits(i_feat-1),"raw")), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
       })
     }

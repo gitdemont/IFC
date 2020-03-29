@@ -135,10 +135,10 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       SO_number=cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness)) # number of SO
       if(SO_number != obj_number) stop("mismatch between expected object count and images numbers stored")
       if(display_progress) {
-        pb_im = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+        pb_im = newPB(session = dots$session, min = 0, max = SO_number, initial = 0, style = 3)
         tryCatch({
         images=lapply(1:SO_number, FUN=function(i_image) {
-          setPB(pb_im, value = i_image/SO_number, title = title_progress, label = "extracting images values (binary)")
+          setPB(pb_im, value = i_image, title = title_progress, label = "extracting images values (binary)")
           id = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
           imgIFD = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
           readBin(toread, "raw", size = 1, n = 4, endian = endianness) # not used, img offsets are uint32
@@ -263,10 +263,10 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     if(is_binary) {
       seek(toread, toskip+15)
       if(display_progress) {
-        pb_fe = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+        pb_fe = newPB(session = dots$session, min = 0, max = feat_number, initial = 0, style = 3)
         tryCatch({
         features=lapply(1:feat_number, FUN=function(i_feat) {
-          setPB(pb_fe, value = i_feat/feat_number, title = title_progress, label = "extracting features values (binary)")
+          setPB(pb_fe, value = i_feat, title = title_progress, label = "extracting features values (binary)")
           fid=cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
           fv=readBin(toread, "double", size = 8, n = obj_number, endian = endianness)
           return(c(fid,fv))
@@ -292,10 +292,10 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       features=xml_attr(xml_find_all(tmp, "//UDFValues"), attr = "fv")
       feat_number=length(features)
       if(display_progress) {
-        pb_fe = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+        pb_fe = newPB(session = dots$session, min = 0, max = feat_number, initial = 0, style = 3)
         tryCatch({
         features=lapply(1:feat_number,FUN=function(i_feat) {
-          setPB(pb_fe, value = i_feat/feat_number, title = title_progress, label = "extracting features values (xml)")
+          setPB(pb_fe, value = i_feat, title = title_progress, label = "extracting features values (xml)")
           val = suppressWarnings(as.numeric(strsplit(features[i_feat],"|", useBytes = TRUE, fixed=TRUE)[[1]]))
           val[is.na(val)] <- NaN
           val

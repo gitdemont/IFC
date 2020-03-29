@@ -101,10 +101,10 @@ ExtractImages_toBase64 <- function(fileName, display, offsets, objects, display_
   
   # extract objects
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) {
-      setPB(pb, value = i/L, title = title_progress, label = "exporting images to base64")
+      setPB(pb, value = i, title = title_progress, label = "exporting images to base64")
       do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = infos$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8, force_trunc = TRUE, verbose = verbose, verbosity = verbosity),
                                                     display = infos,
                                                     export = "base64",

@@ -183,8 +183,9 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
     # defines writing position
     pos = 4
     
+    str(L)
     if(display_progress) {
-      pb1 = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+      pb1 = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
       on.exit(endPB(pb1), add = TRUE)
     }
     for(i_off in 1:off_number) {
@@ -198,7 +199,7 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
         }
       }
       if(display_progress) {
-        setPB(pb1, title = title_progress, value = (obj_id+1)/L/2, label = "objects subsetting")
+        setPB(pb1, title = title_progress, value = (obj_id+1)/2, label = "objects subsetting")
       }
       # extracts IFD
       IFD = cpp_getTAGS(fname = fileName, offset = offsets[i_off], trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE)
@@ -272,10 +273,10 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
                 
                 title_progress = basename(f)
                 if(display_progress) {
-                  pb3 = newPB(session = dots$session, min = 0, max = 1, initial = 0, style = 3)
+                  pb3 = newPB(session = dots$session, min = 0, max = obj_number, initial = 0, style = 3)
                   tryCatch({
                     features = c(features, lapply(1:obj_number, FUN = function(i_obj) {
-                      setPB(pb3, value = i_obj/obj_number, title = title_progress, label = "extracting features information")
+                      setPB(pb3, value = i_obj, title = title_progress, label = "extracting features information")
                       if((i_obj + obj_shift) %in% objects_1) return(readBin(toread2, "raw", n = feat_number * 4, endian = r_endian))
                       return(as.raw(c()))
                     }))}, finally = endPB(pb3))
