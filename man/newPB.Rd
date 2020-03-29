@@ -43,4 +43,7 @@ an object of class "IFC_progress" containing a progress bar of class "txtProgres
 \description{
 Initializes a progress bar.
 }
+\details{
+shiny progress bar will be available only if shiny package is found.
+}
 \keyword{internal}

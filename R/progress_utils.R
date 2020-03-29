@@ -10,6 +10,7 @@
 #' @param style does not apply for "winProgressBar", the ‘style’ of the bar. If missing, the default, will be 3 "txtProgressBar" and getShinyOption("progress.style", default = "notification") for shiny progress bar
 #' @param char only apply for "txtProgressBar", the character (or character string) to form the progress bar.
 #' @param file only apply for "txtProgressBar", an open connection object or "" which indicates the console: stderr() might be useful here. Default is "".
+#' @details shiny progress bar will be available only if shiny package is found. 
 #' @return an object of class "IFC_progress" containing a progress bar of class "txtProgressBar" "winProgressBar" or "Progress".
 #' @keywords internal
 newPB <- function(session,
@@ -23,7 +24,28 @@ newPB <- function(session,
                   file = "") {
   fun = stop
   args = list("newPB: can't create progress bar")
-  if(length(session) == 0) {
+  if(requireNamespace("shiny", quietly = TRUE) && length(session) != 0) {
+    args = list(session = session,
+                min = 0,
+                max = steps- 1)
+    if(missing(style)) {
+      args = c(args, list(style = shiny::getShinyOption("progress.style", default = "notification")))
+    } else {
+      if(style[1] %in% c("old", "notification")) {
+        args = c(args, list(style = style))
+      } else {
+        args = c(args, list(style = shiny::getShinyOption("progress.style", default = "notification")))
+      }
+    }
+    fun = shiny::Progress$new
+    bar = do.call(what = fun, args = args)
+    if(is.finite(initial) && initial < max) {
+      bar$set(value = initial)
+    } else {
+      bar$set(value = min)
+    }
+    typ = 3
+  } else {
     if(.Platform$OS.type == "windows") {
       args = list(min = 0,
                   max = steps - 1,
@@ -45,7 +67,12 @@ newPB <- function(session,
       }
       fun = winProgressBar
       bar = do.call(what = fun, args = args)
-      setWinProgressBar(bar, value = min)
+      if(is.finite(initial) && initial < max) {
+        setWinProgressBar(bar, value = initial)
+      } else {
+        setWinProgressBar(bar, value = min)
+      }
+      typ = 2
     } else {
       args = list(min = 0,
                   max = steps - 1, 
@@ -68,27 +95,17 @@ newPB <- function(session,
       }
       fun = txtProgressBar
       bar = do.call(what = fun, args = args)
-      setTxtProgressBar(bar, value = min)
-    }
-  } else {
-    args = list(session = session,
-                min = 0,
-                max = steps- 1)
-    if(missing(style)) {
-      args = c(args, list(style = getShinyOption("progress.style", default = "notification")))
-    } else {
-      if(style[1] %in% c("old", "notification")) {
-        args = c(args, list(style = style))
+      if(is.finite(initial) && initial < max) {
+        setTxtProgressBar(bar, value = initial)
       } else {
-        args = c(args, list(style = getShinyOption("progress.style", default = "notification")))
+        setTxtProgressBar(bar, value = min)
       }
+      typ = 1
     }
-    fun = Progress$new
-    bar = do.call(what = fun, args = args)
-    bar$set(value = min)
-  }
+  } 
   ans = list(bar = bar,
-             seq = seq(min, max, length.out = steps))
+             seq = seq(min, max, length.out = steps),
+             typ = typ)
   class(ans) = "IFC_progress"
   return(ans)
 }
@@ -101,20 +118,19 @@ newPB <- function(session,
 #' @param title,label character strings, giving the 'title'(='message' for shiny progress bar) and the 'label'(='detail' for shiny progress bar).
 #' @keywords internal
 setPB <- function(pb, value = NULL, title = NULL, label = NULL) {
-  K = class(pb$bar)
-  if("txtProgressBar" %in% K) {
-    if(pb$bar$getVal() == which(value <= pb$seq)[1]) return(NULL)
-    return(setTxtProgressBar(pb = pb$bar, value = which(value <= pb$seq)[1], title = title, label = label))
-  }
-  if("winProgressBar" %in% K) {
-    if(getWinProgressBar(pb$bar) == which(value <= pb$seq)[1]) return(NULL)
-    return(setWinProgressBar(pb = pb$bar, value = which(value <= pb$seq)[1], title = title, label = label))
-  }
-  if("Progress" %in% K) {
-    if(pb$bar$getValue() == which(value <= pb$seq)[1]) return(NULL)
-    return(pb$bar$set(value = which(value <= pb$seq)[1], message = title, detail = label))
-  }
-  return(NULL)
+  switch(pb$typ,
+         { # typ 1
+           if(pb$bar$getVal() == sum(value > pb$seq)) return(NULL)
+           return(setTxtProgressBar(pb = pb$bar, value = sum(value > pb$seq), title = title, label = label))
+         },
+         { # typ 2
+           if(getWinProgressBar(pb$bar) == sum(value > pb$seq)) return(NULL)
+           return(setWinProgressBar(pb = pb$bar, value = sum(value > pb$seq), title = title, label = label))
+         },
+         { # typ 3
+           if(pb$bar$getValue() == sum(value > pb$seq)) return(NULL)
+           return(pb$bar$set(value = sum(value > pb$seq), message = title, detail = label))
+         })
 }
 
 #' @title Progress Bar Terminator
@@ -123,8 +139,7 @@ setPB <- function(pb, value = NULL, title = NULL, label = NULL) {
 #' @param pb an object of class "IFC_progress" containing a progress bar of class "txtProgressBar" "winProgressBar" or "Progress".
 #' @keywords internal
 endPB <- function(pb) {
-  K = class(pb$bar)
-  if("Progress" %in% class(pb$bar)) {
+  if(pb$typ == 3) {
     pb$bar$close()
   } else {
     close(con = pb$bar)
