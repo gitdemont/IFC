@@ -54,7 +54,8 @@ objectExtract(
 \item{display}{object of class IFC_display, information extracted by \code{\link{getDisplayInfo}}. This parameter can't be missing.}
 
 \item{param}{object of class IFC_param, containing extraction parameters defined by \code{\link{objectParam}}.\cr
-If this parameter is missing, \code{\link{objectExtract}} will use extra ... to pass arguments to \code{\link{objectParam}} to control object extraction.}
+If this parameter is missing, \code{\link{objectExtract}} will use extra ... to pass arguments to \code{\link{objectParam}} to control object extraction.\cr
+However, if provided, ... will be ignored.}
 
 \item{mode}{color mode export. Either "rgb", "gray" or "raw". Default is "raw".
 Note that "raw" is only possible when 'export' is "matrix".}

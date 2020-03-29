@@ -4,7 +4,8 @@
 #' @param ifd list of sub elements of IFD data information extracted by \code{\link{getIFD}}. This parameter can't be missing.
 #' @param display object of class IFC_display, information extracted by \code{\link{getDisplayInfo}}. This parameter can't be missing.
 #' @param param object of class IFC_param, containing extraction parameters defined by \code{\link{objectParam}}.\cr
-#' If this parameter is missing, \code{\link{objectExtract}} will use extra ... to pass arguments to \code{\link{objectParam}} to control object extraction.
+#' If this parameter is missing, \code{\link{objectExtract}} will use extra ... to pass arguments to \code{\link{objectParam}} to control object extraction.\cr
+#' However, if provided, ... will be ignored.
 #' @param mode color mode export. Either "rgb", "gray" or "raw". Default is "raw".
 #' Note that "raw" is only possible when 'export' is "matrix".
 #' @param export format mode export. Either "file", "matrix", "base64". Default is "matrix".
@@ -115,6 +116,7 @@ objectExtract <- function(ifd, display, param,
   if(missing(param)) {
     param = do.call(what = "objectParam", args = c(list(display = display, bypass = bypass), dots))
   } else {
+    assert(param, cla = "IFC_param")
     if(display$checksum != param$checksum) stop("'param' and 'display' do not match, please ensure that they originate from same file")
   }
   assert(export, len = 1, alw = c("file", "matrix", "base64")) 
