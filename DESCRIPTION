@@ -11,7 +11,7 @@ Description: Contains several tools to treat imaging flow cytometry data from 'I
 Copyright: file inst/COPYRIGHTS
 License: GPL-3
 Depends: R (>= 3.4.0)
-Imports: Rcpp (>= 0.10.0), RcppProgress, xml2, png, tiff, jpeg, utils, grid, gridExtra, lattice, latticeExtra, KernSmooth, DT, visNetwork, shiny
-Suggests: IFCdata
+Imports: Rcpp (>= 0.10.0), RcppProgress, xml2, png, tiff, jpeg, utils, grid, gridExtra, lattice, latticeExtra, KernSmooth, DT, visNetwork
+Suggests: IFCdata, shiny, reticulate
 LinkingTo: Rcpp, RcppProgress
 Additional_repositories: https://gitdemont.github.io/IFCdata
