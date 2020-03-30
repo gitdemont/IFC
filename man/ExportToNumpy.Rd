@@ -52,11 +52,11 @@ Placeholders, if found, will be substituted:\cr
 -\%o: with objects (at most 10, will be collapse with "_", if more than one).\cr
 -\%c: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
 A good trick is to use:\cr
--"\%d/\%s_Obj[\%o]_Ch[\%c].tiff", when 'export' is "file"\cr}
+-"\%d/\%s_Obj[\%o]_Ch[\%c].npy", when 'export' is "file"\cr}
 
 \item{overwrite}{whether to overwrite file or not. Default is FALSE.}
 
-\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', and 'bypass'(=TRUE).
+\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd'.
 If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.}
 }
 \value{

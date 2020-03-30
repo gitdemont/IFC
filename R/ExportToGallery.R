@@ -19,11 +19,12 @@
 #' -\%p: with first parent directory of ''display$fileName_image'\cr
 #' -\%e: with extension of 'display$fileName_image' (without leading .)\cr
 #' -\%s: with shortname from 'display$fileName_image' (i.e. basename without extension)\cr
-#' -\%o: with objects (will be collapse with "_", if more than one).\cr
+#' -\%o: with objects (at most 10, will be collapse with "_", if more than one).\cr
+#' -\%c: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
 #' A good trick is to use:\cr
-#' -"\%d/\%s_gallery_\%o.tiff", when 'export' is "file"\cr
-#' -"\%s_gallery_\%o.bmp", when 'export' is "base64".\cr
-#' Note that if missing and 'export' is not "file", 'export_to' will be set to "\%s_gallery_\%o.bmp".
+#' -"\%d/\%s_gallery_Obj[\%o]_Ch[\%c].tiff", when 'export' is "file"\cr
+#' -"\%s_gallery.bmp", when 'export' is "base64".\cr
+#' Note that if missing and 'export' is not "file", 'export_to' will be set to "\%s_gallery.bmp".
 #' @param base64_id whether to add id attribute to base64 exported object. Default is TRUE.\cr
 #' Only applied when 'export' is "base64".
 #' @param base64_att attributes to add to base64 exported object. Default is "".\cr
@@ -51,7 +52,7 @@
 #' @param extract_max maximum number of objects to extract. Default is 10. Use +Inf to extract all.
 #' @param sampling whether to sample objects or not. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'mode'(="rgb") and 'bypass'(=TRUE).
+#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'mode'(="rgb").
 #' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToGallery}} input arguments.
 #' TRICK: for exporting only ONE 'objects', set 'add_channels' = FALSE, 'add_ids' >= 1, 'force_width' = FALSE, 'dpi' = 96; this allows generating image with its original size incrusted with its id number.
@@ -106,33 +107,40 @@ ExportToGallery <- function(display, offsets, objects, objects_type = "img", lay
   channels = display$Images[display$Images$physicalChannel %in% which(display$in_use), ]
 
   # process extra parameters
-  param_extra = names(dots) %in% c("ifd","export","export_to","mode","size","force_width","verbose","bypass","overwrite")
-  if(length(dots[["verbose"]]) == 0) {
+  param_extra = names(dots) %in% c("ifd","export","export_to","mode","size","force_width","verbose","overwrite")
+  param_param = names(dots) %in% c("composite","selection","random_seed",
+                                   "removal","add_noise","full_range","force_range")
+  if(length(dots[["verbose"]]) == 0) { # param for objectExtract, getDisplayInfo, getIFD, getOffsets
     verbose = FALSE
   } else {
     verbose = dots[["verbose"]]
   }
-  if(length(dots[["verbosity"]]) == 0) {
+  if(length(dots[["verbosity"]]) == 0) { # param for getDisplayInfo, getIFD
     verbosity = 1
   } else {
     verbosity = dots[["verbosity"]]
   }
-  if(length(dots[["fast"]]) == 0) {
+  if(length(dots[["fast"]]) == 0) { # param for getOffsets
     fast = TRUE
   } else {
     fast = dots[["fast"]]
   }
+  
+  # should be checked before being passed to objectParam/objectExtract
   if(length(dots[["size"]]) == 0) {
     size = c(0,0)
   } else {
     size = dots[["size"]]
   }
+  # should be checked before being passed to objectParam/objectExtract
   if(length(dots[["force_width"]]) == 0) {
     force_width = TRUE
   } else {
     force_width = dots[["force_width"]]
   }
-  dots = dots[!param_extra]
+  dots = dots[!param_extra] # remove not allowed param
+  dots_param = dots[param_param] # keep param_param for objectParam
+  dots = dots[!param_param]
   
   # check objects to extract
   nobj = as.integer(display$objcount)
@@ -185,7 +193,20 @@ ExportToGallery <- function(display, offsets, objects, objects_type = "img", lay
     }
   }
   if(compute_offsets) {
-    offsets = suppressMessages(getOffsets(fileName = display$fileName_image, fast = fast, display_progress = display_progress))
+    offsets = suppressMessages(getOffsets(fileName = display$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
+  }
+  
+  # compute object param
+  is_param = names(dots) %in% "param"
+  if(any(is_param)) {
+    param = dots$param
+    param$size = size
+    dots = dots[!is_param]
+  } else {
+    param = do.call(what = "objectParam",
+                    args = c(list(display = display, 
+                                  size = size, 
+                                  force_width = force_width), dots))
   }
   
   # check export/export_to
@@ -193,7 +214,7 @@ ExportToGallery <- function(display, offsets, objects, objects_type = "img", lay
   if(export != "matrix") {
     if(missing(export_to)) {
       if(export == "file") stop("'export_to' can't be missing")
-      export_to = "%s_gallery_%o.bmp"
+      export_to = "%s_gallery.bmp"
     }
     assert(export_to, len = 1, typ = "character")
     type = getFileExt(export_to)
@@ -202,8 +223,14 @@ ExportToGallery <- function(display, offsets, objects, objects_type = "img", lay
     assert(type, len = 1, alw = c("bmp", "jpeg", "png", "tiff"))
     splitf_obj = splitf(display$fileName_image)
     splitp_obj = splitp(export_to)
-    if(any(splitp_obj$channel > 0)) message("'export_to' has %c argument but channel information can't be retrieved with ExportToGallery()")
-    export_to = formatn(splitp_obj, splitf_obj, object = paste0(sprintf(paste0("%0",N,".f"),objects), collapse="_"))
+    if(length(objects) > 10) {
+      obj_text = paste0(sprintf(paste0("%0",N,".f"), objects[1:10]), collapse="_")
+      obj_text = paste0(obj_text, "_...")
+    } else {
+      obj_text = paste0(sprintf(paste0("%0",N,".f"), objects), collapse="_")
+    }
+    export_to = formatn(splitp_obj, splitf_obj, object = obj_text,
+                        channel = paste0(paste0(sprintf(paste0("%0",2,".f"), param$chan_to_keep), collapse="_"),"_",paste0("(",gsub("/",",",param$composite),")", collapse="_")))
     if(export == "file") {
       dir_name = dirname(export_to)
       if(!dir.exists(dir_name)) if(!dir.create(dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dir_name))
@@ -216,44 +243,39 @@ ExportToGallery <- function(display, offsets, objects, objects_type = "img", lay
     }
   }
   
+  # extract objects
   sel = split(objects, ceiling(seq_along(objects)/20))
   L = length(sel)
-  if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
-    on.exit(endPB(pb), add = TRUE)
-  }
   tryCatch({
-    # extract objects
-    if(display_progress) {
-      ans = lapply(1:L, FUN = function(i) {
-        setPB(pb, value = i, title = title_progress, label = "exporting objects")
-        do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
-                                                      display = display, 
-                                                      param = do.call(what = "objectParam", args = c(list(display = display, 
-                                                                                                          size = size, 
-                                                                                                          force_width = force_width, 
-                                                                                                          bypass = TRUE), dots)),
-                                                      export = "matrix", 
-                                                      mode = "rgb",
-                                                      verbose = verbose, 
-                                                      bypass = TRUE),
-                                                 dots))
-      })
-    } else {
-      ans = lapply(1:L, FUN = function(i) {
-        do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
-                                                      display = display, 
-                                                      param = do.call(what = "objectParam", args = c(list(display = display,
-                                                                                                          size = size, 
-                                                                                                          force_width = force_width, 
-                                                                                                          bypass = TRUE), dots)),
-                                                      export = "matrix", 
-                                                      mode = "rgb",
-                                                      verbose = verbose, 
-                                                      bypass = TRUE),
-                                                 dots))
-      })
-    }
+    tryCatch({
+      if(display_progress) {
+        pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+        ans = lapply(1:L, FUN = function(i) {
+          setPB(pb, value = i, title = title_progress, label = "exporting objects")
+          do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
+                                                        display = display, 
+                                                        param = param,
+                                                        export = "matrix", 
+                                                        mode = "rgb",
+                                                        verbose = verbose),
+                                                   dots))
+        })
+      } else {
+        ans = lapply(1:L, FUN = function(i) {
+          do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
+                                                        display = display, 
+                                                        param = param,
+                                                        export = "matrix", 
+                                                        mode = "rgb",
+                                                        verbose = verbose),
+                                                   dots))
+        })
+      }
+    }, error = function(e) {
+      stop(e$message, call. = FALSE)
+    }, finally = {
+      if(display_progress) endPB(pb)
+    })
     channel_id = attr(ans[[1]][[1]], "channel_id")
     if (L > 1) {
       ans = do.call(what = "c", args = ans)

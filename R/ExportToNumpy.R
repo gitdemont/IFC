@@ -24,9 +24,9 @@
 #' -\%o: with objects (at most 10, will be collapse with "_", if more than one).\cr
 #' -\%c: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
 #' A good trick is to use:\cr
-#' -"\%d/\%s_Obj[\%o]_Ch[\%c].tiff", when 'export' is "file"\cr
+#' -"\%d/\%s_Obj[\%o]_Ch[\%c].npy", when 'export' is "file"\cr
 #' @param overwrite whether to overwrite file or not. Default is FALSE.
-#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', and 'bypass'(=TRUE).
+#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd'.
 #' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToNumpy}} input arguments.\cr
 #' \code{\link{ExportToNumpy}} requires reticulate package, python and numpy installed. to create npy file.\cr
@@ -77,33 +77,40 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
   channels = display$Images[display$Images$physicalChannel %in% which(display$in_use), ]
   
   # process extra parameters
-  param_extra = names(dots) %in% c("ifd","export","export_to","size","force_width","verbose","bypass","overwrite")
-  if(length(dots[["verbose"]]) == 0) {
+  param_extra = names(dots) %in% c("ifd","export","mode","size","force_width","verbose")
+  param_param = names(dots) %in% c("composite","selection","random_seed",
+                                   "removal","add_noise","full_range","force_range")
+  if(length(dots[["verbose"]]) == 0) { # param for objectExtract, getDisplayInfo, getIFD, getOffsets
     verbose = FALSE
   } else {
     verbose = dots[["verbose"]]
   }
-  if(length(dots[["verbosity"]]) == 0) {
+  if(length(dots[["verbosity"]]) == 0) { # param for getDisplayInfo, getIFD
     verbosity = 1
   } else {
     verbosity = dots[["verbosity"]]
   }
-  if(length(dots[["fast"]]) == 0) {
+  if(length(dots[["fast"]]) == 0) { # param for getOffsets
     fast = TRUE
   } else {
     fast = dots[["fast"]]
   }
+  
+  # should be checked before being passed to objectParam/objectExtract
   if(length(dots[["size"]]) == 0) {
     size = c(0,0)
   } else {
     size = dots[["size"]]
   }
+  # should be checked before being passed to objectParam/objectExtract
   if(length(dots[["force_width"]]) == 0) {
     force_width = TRUE
   } else {
     force_width = dots[["force_width"]]
   }
-  dots = dots[!param_extra]
+  dots = dots[!param_extra] # remove not allowed param
+  dots_param = dots[param_param] # keep param_param for objectParam
+  dots = dots[!param_param]
   
   # check objects to extract
   nobj = as.integer(display$objcount)
@@ -154,7 +161,20 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
     }
   }
   if(compute_offsets) {
-    offsets = suppressMessages(getOffsets(fileName = display$fileName_image, fast = fast, display_progress = display_progress))
+    offsets = suppressMessages(getOffsets(fileName = display$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
+  }
+  
+  # compute object param
+  is_param = names(dots) %in% "param"
+  if(any(is_param)) {
+    param = dots$param
+    param$size = size
+    dots = dots[!is_param]
+  } else {
+    param = do.call(what = "objectParam",
+                    args = c(list(display = display, 
+                                  size = size, 
+                                  force_width = force_width), dots))
   }
   
   # check export/export_to
@@ -162,7 +182,7 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
   if(export != "matrix") {
     if(missing(export_to)) {
       if(export == "file") stop("'export_to' can't be missing")
-      export_to = "%s_gallery_%o.npy"
+      export_to = "%s_numpy.npy"
     }
     assert(export_to, len = 1, typ = "character")
     type = getFileExt(export_to)
@@ -176,7 +196,7 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
       obj_text = paste0(sprintf(paste0("%0",N,".f"), objects), collapse="_")
     }
     export_to = formatn(splitp_obj, splitf_obj, object = obj_text,
-                        channel = paste0(paste0(sprintf(paste0("%0",2,".f"), selection), collapse="_"),"_",paste0("(",gsub("/",",",composite),")", collapse="_")))
+                        channel = paste0(paste0(sprintf(paste0("%0",2,".f"), param$chan_to_keep), collapse="_"),"_",paste0("(",gsub("/",",",param$composite),")", collapse="_")))
     if(export == "file") {
       dir_name = dirname(export_to)
       if(!dir.exists(dir_name)) if(!dir.create(dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dir_name))
@@ -199,28 +219,20 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
         setPB(pb, value = i, title = title_progress, label = "exporting objects to numpy")
         do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
                                                       display = display, 
-                                                      param = do.call(what = "objectParam", args = c(list(display = display, 
-                                                                                                          size = size, 
-                                                                                                          force_width = force_width, 
-                                                                                                          bypass = TRUE), dots)),
+                                                      param = param,
                                                       export = "matrix", 
                                                       mode = mode,
-                                                      verbose = verbose, 
-                                                      bypass = TRUE),
+                                                      verbose = verbose),
                                                  dots))
       })
     } else {
       ans = lapply(1:L, FUN = function(i) {
         do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
                                                       display = display, 
-                                                      param = do.call(what = "objectParam", args = c(list(display = display, 
-                                                                                                          size = size, 
-                                                                                                          force_width = force_width, 
-                                                                                                          bypass = TRUE), dots)),
+                                                      param = param,
                                                       export = "matrix", 
                                                       mode = mode,
-                                                      verbose = verbose, 
-                                                      bypass = TRUE),
+                                                      verbose = verbose),
                                                  dots))
       })
     }
@@ -243,7 +255,7 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
   } else {
     ids = as.integer(gsub("^.*_(.*)$", "\\1", sapply(ans, attr, which = "offset_id")))
   }
-  if(!all(objects == ids)) warning(paste0("Extracted object_ids:", id, " differs from expected one:", objects[i]), call. = FALSE, immediate. = TRUE)
+  if(!all(objects == ids)) warning("Extracted object_ids differ from expected ones. Concider running with 'fast' = FALSE", call. = FALSE, immediate. = TRUE)
   
   # create array [obj,height,width,channel]
   switch(dtype,

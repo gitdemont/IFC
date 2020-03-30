@@ -53,11 +53,12 @@ Placeholders, if found, will be substituted:\cr
 -\%p: with first parent directory of ''display$fileName_image'\cr
 -\%e: with extension of 'display$fileName_image' (without leading .)\cr
 -\%s: with shortname from 'display$fileName_image' (i.e. basename without extension)\cr
--\%o: with objects (will be collapse with "_", if more than one).\cr
+-\%o: with objects (at most 10, will be collapse with "_", if more than one).\cr
+-\%c: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
 A good trick is to use:\cr
--"\%d/\%s_gallery_\%o.tiff", when 'export' is "file"\cr
--"\%s_gallery_\%o.bmp", when 'export' is "base64".\cr
-Note that if missing and 'export' is not "file", 'export_to' will be set to "\%s_gallery_\%o.bmp".}
+-"\%d/\%s_gallery_Obj[\%o]_Ch[\%c].tiff", when 'export' is "file"\cr
+-"\%s_gallery.bmp", when 'export' is "base64".\cr
+Note that if missing and 'export' is not "file", 'export_to' will be set to "\%s_gallery.bmp".}
 
 \item{base64_id}{whether to add id attribute to base64 exported object. Default is TRUE.\cr
 Only applied when 'export' is "base64".}
@@ -99,7 +100,7 @@ This parameter can't be lesser than 6px nor higher than image width + scale text
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
-\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'mode'(="rgb") and 'bypass'(=TRUE).
+\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'mode'(="rgb").
 If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.}
 }
 \value{

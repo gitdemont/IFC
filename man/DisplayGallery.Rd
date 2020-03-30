@@ -58,7 +58,7 @@ Note that members not found will be automatically removed and a warning will be 
 
 \item{mode}{(\code{\link{objectExtract}} argument) color mode export. Either "rgb" or "gray". Default is "rgb".}
 
-\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and 'bypass'(=TRUE).
+\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64") and 'mode'.
 If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.}
 }
 \value{

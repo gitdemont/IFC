@@ -29,23 +29,27 @@ ExtractImages_toMatrix <- function(fileName, display, offsets, objects, display_
   # process extra parameters
   param_infos = names(dots) %in% c("from","verbose","verbosity","warn","force_default")
   param_extra = names(dots) %in% c("ifd","display","export","verbose")
-  if(length(dots[["verbose"]]) == 0) {
+  param_param = names(dots) %in% c("composite","selection","size","force_width","random_seed",
+                                   "removal","add_noise","full_range","force_range")
+  if(length(dots[["verbose"]]) == 0) { # param for objectExtract, getDisplayInfo, getIFD,, getOffsets
     verbose = FALSE
   } else {
     verbose = dots[["verbose"]]
   }
-  if(length(dots[["verbosity"]]) == 0) {
+  if(length(dots[["verbosity"]]) == 0) { # param for getDisplayInfo, getIFD
     verbosity = 1
   } else {
     verbosity = dots[["verbosity"]]
   }
-  if(length(dots[["fast"]]) == 0) {
+  if(length(dots[["fast"]]) == 0) { # param for getOffsets
     fast = TRUE
   } else {
     fast = dots[["fast"]]
   }
-  dots_infos = dots[param_infos]
-  dots = dots[!param_extra]
+  dots_infos = dots[param_infos] # keep param_infos fo getDisplayInfo
+  dots = dots[!param_extra] # remove not allowed param
+  dots_param = dots[param_param] # keep param_param for objectParam
+  dots = dots[!param_param]
   
   # check input display if any
   infos = do.call(what = "getDisplayInfo", args = c(list(fileName=fileName), dots_infos))
@@ -75,7 +79,7 @@ ExtractImages_toMatrix <- function(fileName, display, offsets, objects, display_
     }
   }
   if(compute_offsets) {
-    offsets = suppressMessages(getOffsets(fileName = infos$fileName_image, fast = fast, display_progress = display_progress))
+    offsets = suppressMessages(getOffsets(fileName = infos$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
   }
   
   # check objects to extract
@@ -97,6 +101,15 @@ ExtractImages_toMatrix <- function(fileName, display, offsets, objects, display_
   sel = split(objects, ceiling(seq_along(objects)/20))
   L=length(sel)
   
+  # compute object param
+  is_param = names(dots) %in% "param"
+  if(any(is_param)) {
+    param = dots$param
+    dots = dots[!is_param]
+  } else {
+    param = do.call(what = "objectParam", args = c(list(display = infos), dots))
+  }
+  
   # extract objects
   if(display_progress) {
     pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
@@ -105,6 +118,7 @@ ExtractImages_toMatrix <- function(fileName, display, offsets, objects, display_
       setPB(pb, value = i, title = title_progress, label = "exporting images to matrix")
       do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = infos$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8, force_trunc = TRUE, verbose = verbose, verbosity = verbosity),
                                                     display = infos,
+                                                    param = param,
                                                     export = "matrix",
                                                     verbose = verbose),
                                                dots))
@@ -113,6 +127,7 @@ ExtractImages_toMatrix <- function(fileName, display, offsets, objects, display_
     ans = lapply(1:L, FUN=function(i) { 
       do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = infos$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8, force_trunc = TRUE, verbose = verbose, verbosity = verbosity),
                                                     display = infos,
+                                                    param = param,
                                                     export = "matrix",
                                                     verbose = verbose),
                                                dots))
