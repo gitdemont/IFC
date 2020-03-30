@@ -99,11 +99,11 @@ getDisplayInfo <- function(fileName, from = c("acquisition","analysis")[2], verb
     }
     if(!found) stop("can't extract display information")
     fileName_image = normalizePath(fileName_image, winslash = "/")
-    IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity, ...)[[1]]
+    IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity, bypass = TRUE, ...)[[1]]
   }
   if(file_extension == "cif" | file_extension == "rif") {
     fileName_image = fileName
-    IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity, ...)[[1]]
+    IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity, bypass = TRUE, ...)[[1]]
   }
   Merged_cif = character()
   Merged_rif = character()

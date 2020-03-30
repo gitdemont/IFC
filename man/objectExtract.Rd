@@ -33,20 +33,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 }
 \usage{
-objectExtract(
-  ifd,
-  display,
-  param,
-  mode = c("rgb", "gray", "raw")[3],
-  export = c("file", "matrix", "base64")[2],
-  export_to,
-  base64_id = FALSE,
-  base64_att = "",
-  overwrite = FALSE,
-  verbose = FALSE,
-  bypass = FALSE,
-  ...
-)
+objectExtract(ifd, display, param, verbose = FALSE, bypass = FALSE, ...)
 }
 \arguments{
 \item{ifd}{list of sub elements of IFD data information extracted by \code{\link{getIFD}}. This parameter can't be missing.}
@@ -57,40 +44,11 @@ objectExtract(
 If this parameter is missing, \code{\link{objectExtract}} will use extra ... to pass arguments to \code{\link{objectParam}} to control object extraction.\cr
 However, if provided, ... will be ignored.}
 
-\item{mode}{color mode export. Either "rgb", "gray" or "raw". Default is "raw".
-Note that "raw" is only possible when 'export' is "matrix".}
-
-\item{export}{format mode export. Either "file", "matrix", "base64". Default is "matrix".}
-
-\item{export_to}{Used when export is "file" or "base64" to compute respectively exported file name or base64 id attribute.\cr
-Exported "file" extension and "base64" MIME type will be deduced from this pattern. Allowed export are ".bmp", ".jpg", ".jpeg", ".png", ".tif", ".tiff".
-Note that '.bmp' are faster but not compressed producing bigger data.\cr
-Placeholders, if found, will be substituted:\cr
--\%d: with full path directory of 'display$fileName_image'\cr
--\%p: with first parent directory of 'display$fileName_image'\cr
--\%e: with extension of 'display$fileName_image' (without leading .)\cr
--\%s: with shortname from 'display$fileName_image' (i.e. basename without extension)\cr
--\%o: with object_id\cr
--\%c: with channel_id\cr
-A good trick is to use:\cr
--"\%d/\%s/\%s_\%o_\%c.tiff", when 'export' is "file"\cr
--"\%o_\%c.bmp", when 'export' is "base64".\cr
-Note that if missing and 'export' is not "file", 'export_to' will be set to "\%o_\%c.bmp".}
-
-\item{base64_id}{whether to add id attribute to base64 exported object. Default is FALSE.\cr
-Only applied when export is "base64".}
-
-\item{base64_att}{attributes to add to base64 exported object. Default is "".\cr
-Only applied when export is "base64". For example, use "class=draggable".\cr
-Note that id (if base64_id is TRUE) and width and height are already used.}
-
-\item{overwrite}{only apply when 'export' is "file" whether to overwrite file or not. Default is FALSE.}
-
 \item{verbose}{whether to display information (use for debugging purpose). Default is FALSE.}
 
-\item{bypass}{logical to avoid several checking. Default is FALSE.}
+\item{bypass}{whether to bypass checks on 'ifd', 'display', 'param'. Default is FALSE.}
 
-\item{...}{other arguments to be passed \code{\link{objectParam}}.}
+\item{...}{other arguments to be passed to \code{\link{objectParam}}.}
 }
 \value{
 A list (for every extracted objects) of list (for every exported channels) depending on "export" parameter:\cr

@@ -27,7 +27,7 @@ This param is not mandatory, if missing, the default, all objects will be used.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
-\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'export'(="matrix").\cr
+\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="matrix") and bypass(=TRUE).\cr
 If 'display' and/or 'offsets' are not provided arguments can also be passed to \code{\link{getDisplayInfo}} and/or \code{\link{getOffsets}}.}
 }
 \value{

@@ -4,15 +4,7 @@
 \alias{objectAddText}
 \title{IFC_object Text Incrustation}
 \usage{
-objectAddText(
-  image,
-  text,
-  color,
-  xoff = 0,
-  yoff = 0,
-  corner = "TL",
-  bypass = FALSE
-)
+objectAddText(image, text, color, xoff = 0, yoff = 0, corner = "TL")
 }
 \arguments{
 \item{image}{a [0,1] image.}
@@ -25,18 +17,14 @@ objectAddText(
 
 \item{yoff}{positive integer. y offset in image to start writing text.}
 
-\item{corner}{a character string. where to position text in the image.}
-
-\item{bypass}{logical to avoid several checking. Default is FALSE.
-Allowed are "TL", "TR", "BL", "BR", for top-left, top-right, bottom-left, bottom-right, respectively.}
+\item{corner}{a character string. where to position text in the image. Allowed are "TL", "TR", "BL", "BR", for top-left, top-right, bottom-left, bottom-right, respectively.}
 }
 \value{
 an image with text.
 }
 \description{
-Adds Text to image
+Adds Text to image.
 }
 \details{
-One-lined text will be added so has to be fully contained within image
-and anchored at desired corner plus x and y offset from it.
+One-lined text will be added so has to be fully contained within image and anchored at desired corner plus x and y offset from it.
 }

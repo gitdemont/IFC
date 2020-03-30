@@ -8,7 +8,7 @@
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param verbosity quantity of information displayed when verbose is TRUE; 1: normal, 2: rich. Default is 1.
 #' @param display_progress whether to display a progress bar. Default is FALSE.
-#' @param bypass logical to avoid several checking. Default is FALSE.
+#' @param bypass whether to bypass checks on 'trunc_bytes', 'force_trunc', 'verbose', 'verbosity' and 'display_progress'. Default is FALSE.
 #' @param ... other arguments to be passed.
 #' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
 #' @details Function will return IFDs (image, mask or first) from the file using provided offsets argument.\cr
@@ -44,10 +44,10 @@ getIFD <- function(fileName, offsets = "first", trunc_bytes = 8, force_trunc = F
                    verbose = FALSE, verbosity = 1, display_progress = FALSE, bypass = FALSE, ...) {
   dots = list(...)
   # various check
+  assert(bypass, len = 1, alw = c(TRUE, FALSE))
   endianness = cpp_checkTIFF(fileName) # used to determine endianness and check that file exists and is of XIF content.
   title_progress = basename(fileName)
-  bypass = as.logical(bypass); assert(bypass, len = 1, alw = c(TRUE, FALSE))
-  if(!bypass) {
+  if(!bypass) {  # bypass checking
     trunc_bytes = as.integer(trunc_bytes); assert(trunc_bytes, len = 1, typ = "integer")
     force_trunc = as.logical(force_trunc); assert(force_trunc, len = 1, alw = c(TRUE, FALSE))
     verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))

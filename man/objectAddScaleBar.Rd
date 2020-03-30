@@ -11,8 +11,7 @@ objectAddScaleBar(
   color = "white",
   res = 96,
   xoff = 0,
-  yoff = 0,
-  bypass = FALSE
+  yoff = 0
 )
 }
 \arguments{
@@ -30,8 +29,6 @@ This parameter can't be lesser than 6px and higher than image width + scale text
 \item{xoff}{positive integer. x offset in image to draw scale, starting from bottom left corner.}
 
 \item{yoff}{positive integer. y offset in image to draw scale, starting from bottom left corner.}
-
-\item{bypass}{logical to avoid several checking. Default is FALSE.}
 }
 \value{
 scale is added to the bottom left corner of the image.

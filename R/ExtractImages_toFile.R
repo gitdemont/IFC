@@ -21,7 +21,7 @@
 #' -\%o: with object_id\cr
 #' -\%c: with channel_id\cr
 #' A good trick is to use "\%d/\%s/\%s_\%o_\%c.tiff".
-#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="file"), 'export_to' and 'mode'.\cr
+#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="file"), 'export_to', 'mode' and bypass(=TRUE).\cr
 #' If 'display' and/or 'offsets' are not provided arguments can also be passed to \code{\link{getDisplayInfo}} and/or \code{\link{getOffsets}}.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toFile}} input arguments.
 #' @return It invisibly returns a list of exported file path of corresponding to objects extracted.
@@ -29,7 +29,6 @@
 ExtractImages_toFile <- function(fileName, display, offsets, objects, display_progress = TRUE,
                                  mode = c("rgb","gray")[1], export_to, ...) {
   dots=list(...)
-  
   # check mandatory param
   if(missing(fileName)) stop("'fileName' can't be missing")
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
@@ -44,8 +43,9 @@ ExtractImages_toFile <- function(fileName, display, offsets, objects, display_pr
   
   # process extra parameters
   param_infos = names(dots) %in% c("from","verbose","verbosity","warn","force_default")
-  param_extra = names(dots) %in% c("ifd","display","export","export_to","mode","verbose")
-  param_param = names(dots) %in% c("composite","selection","size","force_width","random_seed",
+  param_extra = names(dots) %in% c("ifd","display","export","export_to","mode")
+  param_param = names(dots) %in% c("base64_id","base64_att","overwrite",
+                                   "composite","selection","random_seed","size","force_width",
                                    "removal","add_noise","full_range","force_range")
   if(length(dots[["verbose"]]) == 0) { # param for objectExtract, getDisplayInfo, getIFD, getOffsets
     verbose = FALSE
@@ -62,6 +62,9 @@ ExtractImages_toFile <- function(fileName, display, offsets, objects, display_pr
   } else {
     fast = dots[["fast"]]
   }
+  fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
+  verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
+  verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
   dots_infos = dots[param_infos] # keep param_infos fo getDisplayInfo
   dots = dots[!param_extra] # remove not allowed param
   dots_param = dots[param_param] # keep param_param for objectParam
@@ -123,7 +126,10 @@ ExtractImages_toFile <- function(fileName, display, offsets, objects, display_pr
     param = dots$param
     dots = dots[!is_param]
   } else {
-    param = do.call(what = "objectParam", args = c(list(display = infos), dots))
+    param = do.call(what = "objectParam", args = c(list(display = infos,
+                                                        export = "file",
+                                                        export_to = export_to,
+                                                        mode = mode), dots_param))
   }
   
   # extract objects
@@ -132,24 +138,32 @@ ExtractImages_toFile <- function(fileName, display, offsets, objects, display_pr
     on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) {
       setPB(pb, value = i, title = title_progress, label = "exporting images to file")
-      do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = infos$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8, force_trunc = TRUE, verbose = verbose, verbosity = verbosity),
+      do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
+                                                                 offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"),
+                                                                 trunc_bytes = 8, 
+                                                                 force_trunc = FALSE, 
+                                                                 verbose = verbose, 
+                                                                 verbosity = verbosity,
+                                                                 bypass = TRUE), 
                                                     display = infos,
                                                     param = param,
-                                                    export = "file",
-                                                    export_to = export_to,
-                                                    mode = mode,
-                                                    verbose = verbose),
+                                                    verbose = verbose,
+                                                    bypass = TRUE),
                                                dots))
     })
   } else{
     ans = lapply(1:L, FUN=function(i) {
-      do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = infos$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8, force_trunc = TRUE, verbose = verbose, verbosity = verbosity),
+      do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
+                                                                 offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"),
+                                                                 trunc_bytes = 8, 
+                                                                 force_trunc = FALSE, 
+                                                                 verbose = verbose, 
+                                                                 verbosity = verbosity,
+                                                                 bypass = TRUE), 
                                                     display = infos,
                                                     param = param,
-                                                    export = "file",
-                                                    export_to = export_to,
-                                                    mode = mode,
-                                                    verbose = verbose),
+                                                    verbose = verbose,
+                                                    bypass = TRUE),
                                                dots))
     })
   }

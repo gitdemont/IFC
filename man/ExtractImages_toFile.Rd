@@ -43,7 +43,7 @@ Placeholders, if found, will be substituted:\cr
 -\%c: with channel_id\cr
 A good trick is to use "\%d/\%s/\%s_\%o_\%c.tiff".}
 
-\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="file"), 'export_to' and 'mode'.\cr
+\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="file"), 'export_to', 'mode' and bypass(=TRUE).\cr
 If 'display' and/or 'offsets' are not provided arguments can also be passed to \code{\link{getDisplayInfo}} and/or \code{\link{getOffsets}}.}
 }
 \value{

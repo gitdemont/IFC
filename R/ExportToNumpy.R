@@ -12,7 +12,7 @@
 #' Note that this numpy should be available in this python to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".
 #' @param dtype desired array’s data-type. Default is "double". Allowed are "uint8", "int16", "uint16" or "double". If 'mode' is "raw", this parameter will be forced to "int16".
 #' @param mode (\code{\link{objectExtract}} argument) color mode export. Either "raw", "gray" . Default is "gray".
-#' @param export export format. Either "file", "matrix", "base64". Default is "matrix".\cr
+#' @param export export format. Either "file", "matrix". Default is "matrix".\cr
 #' Note that you will need 'reticulate' package installed to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".
 #' @param export_to used when 'export' is "file" to compute respectively filename.
 #' Exported type will be deduced from this pattern. Allowed export are '.npy'.\cr
@@ -26,7 +26,7 @@
 #' A good trick is to use:\cr
 #' -"\%d/\%s_Obj[\%o]_Ch[\%c].npy", when 'export' is "file"\cr
 #' @param overwrite whether to overwrite file or not. Default is FALSE.
-#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd'.
+#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and bypass(=TRUE).
 #' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToNumpy}} input arguments.\cr
 #' \code{\link{ExportToNumpy}} requires reticulate package, python and numpy installed. to create npy file.\cr
@@ -77,8 +77,9 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
   channels = display$Images[display$Images$physicalChannel %in% which(display$in_use), ]
   
   # process extra parameters
-  param_extra = names(dots) %in% c("ifd","export","mode","size","force_width","verbose")
-  param_param = names(dots) %in% c("composite","selection","random_seed",
+  param_extra = names(dots) %in% c("ifd","display","mode","export","size","force_width")
+  param_param = names(dots) %in% c("export_to","base64_id","base64_att","overwrite",
+                                   "composite","selection","random_seed",
                                    "removal","add_noise","full_range","force_range")
   if(length(dots[["verbose"]]) == 0) { # param for objectExtract, getDisplayInfo, getIFD, getOffsets
     verbose = FALSE
@@ -95,6 +96,9 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
   } else {
     fast = dots[["fast"]]
   }
+  fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
+  verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
+  verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
   
   # should be checked before being passed to objectParam/objectExtract
   if(length(dots[["size"]]) == 0) {
@@ -173,8 +177,10 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
   } else {
     param = do.call(what = "objectParam",
                     args = c(list(display = display, 
+                                  export = "matrix", 
+                                  mode = mode,
                                   size = size, 
-                                  force_width = force_width), dots))
+                                  force_width = force_width), dots_param))
   }
   
   # check export/export_to
@@ -195,8 +201,9 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
     } else {
       obj_text = paste0(sprintf(paste0("%0",N,".f"), objects), collapse="_")
     }
-    export_to = formatn(splitp_obj, splitf_obj, object = obj_text,
-                        channel = paste0(paste0(sprintf(paste0("%0",2,".f"), param$chan_to_keep), collapse="_"),"_",paste0("(",gsub("/",",",param$composite),")", collapse="_")))
+    export_to = formatn(splitp_obj, splitf_obj,
+                        object = obj_text,
+                        channel = paste0(paste0(sprintf(paste0("%0",2,".f"), as.integer(param$chan_to_keep)), collapse="_"),"_",paste0("(",gsub("/",",",param$composite),")", collapse="_")))
     if(export == "file") {
       dir_name = dirname(export_to)
       if(!dir.exists(dir_name)) if(!dir.create(dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dir_name))
@@ -217,22 +224,32 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
       pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
       ans = lapply(1:L, FUN = function(i) {
         setPB(pb, value = i, title = title_progress, label = "exporting objects to numpy")
-        do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
+        do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
+                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type),
+                                                                   trunc_bytes = 8, 
+                                                                   force_trunc = FALSE, 
+                                                                   verbose = verbose, 
+                                                                   verbosity = verbosity,
+                                                                   bypass = TRUE), 
                                                       display = display, 
                                                       param = param,
-                                                      export = "matrix", 
-                                                      mode = mode,
-                                                      verbose = verbose),
+                                                      verbose = verbose,
+                                                      bypass = TRUE),
                                                  dots))
       })
     } else {
       ans = lapply(1:L, FUN = function(i) {
-        do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
+        do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
+                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type),
+                                                                   trunc_bytes = 8, 
+                                                                   force_trunc = FALSE, 
+                                                                   verbose = verbose, 
+                                                                   verbosity = verbosity,
+                                                                   bypass = TRUE), 
                                                       display = display, 
                                                       param = param,
-                                                      export = "matrix", 
-                                                      mode = mode,
-                                                      verbose = verbose),
+                                                      verbose = verbose,
+                                                      bypass = TRUE),
                                                  dots))
       })
     }

@@ -155,7 +155,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
   if(fileName_align=="") {
     offsets = c(X="",Y="")
   } else {
-    IFD = getIFD(fileName = fileName_align, offsets = "first", trunc_bytes = 8, force_trunc = FALSE)[[1]]
+    IFD = getIFD(fileName = fileName_align, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, bypass = FALSE)[[1]]
     tmp_off = read_xml(getFullTag(fileName_align, IFD, "33064"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
     offsets = sapply(c("X","Y"), USE.NAMES = TRUE, FUN = function(off) {
       paste0(round(as.numeric(strsplit(xml_text(xml_find_first(tmp_off, xpath = paste0("//",off,mag)))," ",fixed=TRUE)[[1]]),2),collapse="|")
@@ -180,7 +180,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
   if(fileName_comp=="") {
     coeff = paste0(as.numeric(sapply(1:num_channels, FUN=function(x) 1:num_channels==x)), collapse="|")
   } else {
-    IFD = getIFD(fileName = fileName_comp, offsets = "first", trunc_bytes = 8, force_trunc = FALSE)[[1]]
+    IFD = getIFD(fileName = fileName_comp, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, bypass = FALSE)[[1]]
     coeff = getFullTag(fileName_comp, IFD, "33020")
     coeff = paste0(readBin(coeff, what="double", n=length(coeff)/8),collapse="|")
   }

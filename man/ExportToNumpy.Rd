@@ -39,7 +39,7 @@ Note that this numpy should be available in this python to be able to export to 
 
 \item{mode}{(\code{\link{objectExtract}} argument) color mode export. Either "raw", "gray" . Default is "gray".}
 
-\item{export}{export format. Either "file", "matrix", "base64". Default is "matrix".\cr
+\item{export}{export format. Either "file", "matrix". Default is "matrix".\cr
 Note that you will need 'reticulate' package installed to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".}
 
 \item{export_to}{used when 'export' is "file" to compute respectively filename.
@@ -56,7 +56,7 @@ A good trick is to use:\cr
 
 \item{overwrite}{whether to overwrite file or not. Default is FALSE.}
 
-\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd'.
+\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and bypass(=TRUE).
 If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.}
 }
 \value{

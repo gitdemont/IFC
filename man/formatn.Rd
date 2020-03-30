@@ -4,7 +4,7 @@
 \alias{formatn}
 \title{File Path Placeholders Formatting}
 \usage{
-formatn(splitp_obj, splitf_obj, channel = "", object = "", bypass = FALSE)
+formatn(splitp_obj, splitf_obj, channel = "", object = "")
 }
 \arguments{
 \item{splitp_obj}{object returned by \code{\link{splitp}}.}
@@ -14,8 +14,6 @@ formatn(splitp_obj, splitf_obj, channel = "", object = "", bypass = FALSE)
 \item{channel}{string to be used to substitute \%c}
 
 \item{object}{string to be used to substitute \%o}
-
-\item{bypass}{logical to avoid several checking. Default is FALSE.}
 }
 \description{
 Helper to format splitp_obj using splitf_obj, channel and object information.

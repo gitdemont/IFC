@@ -35,7 +35,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
   fileName = normalizePath(fileName, winslash = "/", mustWork = TRUE)
   title_progress = basename(fileName)
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
-  IFD_first = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE, verbosity = 1, ...)[[1]]
+  IFD_first = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = FALSE, ...)[[1]]
   bits = IFD_first$tags$`258`$map
   tmp = read_xml(getFullTag(fileName, IFD_first, "33027"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
   in_use = as.logical(as.numeric(strsplit(xml_text(xml_find_first(tmp, "//Imaging//ChannelInUseIndicators_0_11")), " ", useBytes = TRUE, fixed=TRUE)[[1]]))
@@ -81,7 +81,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
     ans = lapply(1:L, FUN=function(i) {
       setPB(pb, value = i, title = title_progress, label = "extracting images values (binary)")
       t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8,
-                      force_trunc = FALSE, verbose = FALSE, verbosity = 1, ...), FUN = function(IFD) {
+                      force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = TRUE, ...), FUN = function(IFD) {
                         c(IFD$infos$OBJECT_ID, # id
                           IFD$curr_IFD_offset, # imgIFD
                           IFD$next_IFD_offset, # mskIFD
@@ -102,7 +102,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
   } else {
     ans = lapply(1:L, FUN=function(i) {
       t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8,
-                      force_trunc = FALSE, verbose = FALSE, verbosity = 1, ...), FUN = function(IFD) {
+                      force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = TRUE, ...), FUN = function(IFD) {
                         c(IFD$infos$OBJECT_ID, # id
                           IFD$curr_IFD_offset, # imgIFD
                           IFD$next_IFD_offset, # mskIFD

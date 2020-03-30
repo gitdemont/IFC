@@ -137,20 +137,19 @@ splitf <- function(file = NULL) {
 #' @param splitf_obj object returned by \code{\link{splitf}}. It will be used to substitute \%d, \%p, \%s and \%e.
 #' @param channel string to be used to substitute \%c
 #' @param object string to be used to substitute \%o
-#' @param bypass logical to avoid several checking. Default is FALSE.
 #' @keywords internal
-formatn <- function(splitp_obj, splitf_obj, channel = "", object = "", bypass = FALSE) {
+formatn <- function(splitp_obj, splitf_obj, channel = "", object = "") {
   if(missing(splitf_obj)) {
     splitf_obj = list(dir = "", parent = "", file = "", ext = "")
     class(splitf_obj) <- c("splitf_obj", oldClass(splitf_obj))
   }
-  if(!bypass) {
-    if(missing(splitp_obj)) stop("'splitp_obj' can't be missing")
-    assert(splitp_obj, cla = "splitp_obj")
-    assert(splitf_obj, cla = c("splitf_obj"))
-    channel = as.character(channel); assert(channel, len = 1, typ = "character")
-    object = as.character(object); assert(object, len = 1, typ = "character")
-  }
+  # internal function all these checks are useless
+  # if(missing(splitp_obj)) stop("'splitp_obj' can't be missing")
+  #   assert(splitp_obj, cla = "splitp_obj")
+  #   assert(splitf_obj, cla = c("splitf_obj"))
+  #   channel = as.character(channel); assert(channel, len = 1, typ = "character")
+  #   object = as.character(object); assert(object, len = 1, typ = "character")
+  # }
   N = names(splitp_obj$decomp)
   splitp_obj$decomp[N == "dir"] <- splitf_obj["dir"]
   splitp_obj$decomp[N == "parent"] <- splitf_obj["parent"]

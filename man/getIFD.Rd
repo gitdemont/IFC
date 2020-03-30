@@ -34,7 +34,7 @@ getIFD(
 
 \item{display_progress}{whether to display a progress bar. Default is FALSE.}
 
-\item{bypass}{logical to avoid several checking. Default is FALSE.}
+\item{bypass}{whether to bypass checks on 'trunc_bytes', 'force_trunc', 'verbose', 'verbosity' and 'display_progress'. Default is FALSE.}
 
 \item{...}{other arguments to be passed.}
 }

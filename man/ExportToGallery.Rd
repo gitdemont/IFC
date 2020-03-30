@@ -100,7 +100,7 @@ This parameter can't be lesser than 6px nor higher than image width + scale text
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
-\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'mode'(="rgb").
+\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'mode'(="rgb") and bypass(=TRUE).\cr
 If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.}
 }
 \value{

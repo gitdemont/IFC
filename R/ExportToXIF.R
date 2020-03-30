@@ -87,7 +87,7 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
     export_to = normalizePath(export_to, winslash = "/", mustWork = FALSE)
     if(!overwrite) stop(paste0("file ", export_to, " already exists"))
     if(tolower(fileName) == tolower(export_to)) stop("you are trying to overwrite source file which is not allowed")
-    IFD_export = getIFD(fileName = export_to, offsets = "first", force_trunc = FALSE, trunc_bytes = 8, verbose = FALSE)[[1]] 
+    IFD_export = getIFD(fileName = export_to, offsets = "first", force_trunc = FALSE, trunc_bytes = 8, verbose = FALSE, bypass = FALSE)[[1]] 
     if(length(IFD_export$tags[["33090"]])==0) stop("you are trying to overwrite an original file which is not allowed")
     tmp_file = tempfile()
     overwritten = TRUE
@@ -95,7 +95,7 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
   file_w = ifelse(overwritten, tmp_file, export_to)
 
   # Extract important values
-  IFD = getIFD(fileName = fileName, offsets = "first", force_trunc = FALSE, trunc_bytes = 8, verbose = FALSE)[[1]] 
+  IFD = getIFD(fileName = fileName, offsets = "first", force_trunc = FALSE, trunc_bytes = 8, verbose = FALSE, bypass = FALSE)[[1]] 
   nobj = IFD$tags[["33018"]]$map
   is_binary = as.logical(IFD$tags[["33082"]]$map)
   if(length(is_binary) == 0) is_binary = FALSE
@@ -248,7 +248,7 @@ ExportToXIF <- function (fileName, export_to, objects, offsets, fast = TRUE,
               }
               toread2 = file(f, open = "rb")
               tryCatch({
-                IFD_f = getIFD(fileName = f, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE)[[1]]
+                IFD_f = getIFD(fileName = f, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE, bypass = TRUE)[[1]]
                 is_binary = as.logical(IFD_f$tags[["33082"]]$map)
                 if(length(is_binary) == 0) is_binary = FALSE
                 if(!is_binary) {

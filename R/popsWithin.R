@@ -15,6 +15,7 @@
 popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_in_poly_epsilon = 1e-12,
                        display_progress = TRUE, title_progress = "", ...) {
   dots = list(...)
+  # several checks
   assert(pops, cla = c("IFC_pops","Affiliated","Ordered"))
   assert(regions, cla = "IFC_regions")
   assert(features, cla = "IFC_features")

@@ -20,7 +20,7 @@
 #' @param sampling whether to sample objects or not. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param mode (\code{\link{objectExtract}} argument) color mode export. Either "rgb" or "gray". Default is "rgb".
-#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64") and 'mode'.
+#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr
 #' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{DisplayGallery}} input arguments.\cr
 #' Please note that PDF export link will be available if export_to wil not result in a "bmp".\cr
@@ -91,8 +91,9 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
   channels = display$Images[display$Images$physicalChannel %in% which(display$in_use), ]
   
   # process extra parameters
-  param_extra = names(dots) %in% c("ifd","export","mode","size","force_width","verbose")
-  param_param = names(dots) %in% c("composite","selection","random_seed",
+  param_extra = names(dots) %in% c("ifd","display","mode","export","size","force_width")
+  param_param = names(dots) %in% c("export_to","base64_id","base64_att","overwrite",
+                                   "composite","selection","random_seed",
                                    "removal","add_noise","full_range","force_range")
   if(length(dots[["verbose"]]) == 0) { # param for objectExtract, getDisplayInfo, getIFD, getOffsets
     verbose = FALSE
@@ -109,6 +110,9 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
   } else {
     fast = dots[["fast"]]
   }
+  fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
+  verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
+  verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
   
   # should be checked before being passed to objectParam/objectExtract
   if(length(dots[["size"]]) == 0) {
@@ -180,9 +184,11 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
     dots = dots[!is_param]
   } else {
     param = do.call(what = "objectParam",
-                    args = c(list(display = display, 
+                    args = c(list(display = display,
+                                  export = "base64",
+                                  mode = mode,
                                   size = size, 
-                                  force_width = force_width), dots))
+                                  force_width = force_width), dots_param))
   }
   
   # extract objects
@@ -193,22 +199,32 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
       pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
       ans = lapply(1:L, FUN=function(i) {
         setPB(pb, value = i, title = title_progress, label = "exporting objects")
-        do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
+        do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
+                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type),
+                                                                   trunc_bytes = 8, 
+                                                                   force_trunc = FALSE, 
+                                                                   verbose = verbose, 
+                                                                   verbosity = verbosity,
+                                                                   bypass = TRUE), 
                                                       display = display, 
                                                       param = param,
-                                                      export = "base64",
-                                                      mode = mode,
-                                                      verbose = verbose),
+                                                      verbose = verbose,
+                                                      bypass = TRUE),
                                                  dots))
       })
     } else {
       ans = lapply(1:L, FUN=function(i) {
-        do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = display$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type), trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity), 
+        do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
+                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type),
+                                                                   trunc_bytes = 8, 
+                                                                   force_trunc = FALSE, 
+                                                                   verbose = verbose, 
+                                                                   verbosity = verbosity,
+                                                                   bypass = TRUE), 
                                                       display = display, 
                                                       param = param,
-                                                      export = "base64",
-                                                      mode = mode,
-                                                      verbose = verbose),
+                                                      verbose = verbose,
+                                                      bypass = TRUE),
                                                  dots))
       })
     }
@@ -223,7 +239,7 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
   } else {
     ans = ans[[1]]
   }
-  
+
   # change layout
   if(missing(layout)) layout = channel_id
   layout = as.character(layout)
@@ -233,7 +249,7 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
     which(channel_id %in% x)
   }))
   if(length(layout) == 0) stop("'layout' is of length 0 which is not allowed")
-  
+
   # check object_ids
   if(objects_type == "img") {
     ids = sapply(ans, attr, which="object_id")
@@ -250,16 +266,16 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
                 do.call(what = "rbind", args = lapply(ans, FUN=function(i) i[layout])))
     txt_col = 1
   }
-  
+
   # disable pdf export if export_to is not tiff or png
   dt_dom = ifelse(length(dots[["export_to"]]) !=0 && !("bmp" %in% getFileExt(dots[["export_to"]])), "Btp", "tp")
   # TODO, find a way to remove warning
   oop = options("DT.warn.size" = FALSE); on.exit(options(oop), add = TRUE)
   # (object.size(ans) > 1.5e6 && getOption('DT.warn.size', TRUE)) is FALSE but I am still getting warning
-  
+
   # create datatable
   datatable(escape = FALSE, rownames = FALSE, extensions = "Buttons",
-            selection = list(mode = 'api'), style = "bootstrap", 
+            selection = list(mode = 'api'), style = "bootstrap",
             caption = cap,
             elementId = name,
             data = ans,
@@ -281,7 +297,7 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
                              footer = FALSE,
                              orientation = pdf_pageOrientation,
                              customize = JS("function (doc) {",
-                                            "if (doc) {", 
+                                            "if (doc) {",
                                             "doc.margin = [0,0,0,12];",
                                             "for (var i = 1; i < doc.content[1].table.body.length; i++) {",
                                             "for (var j = 1; j < doc.content[1].table.body[i].length; j++) {",

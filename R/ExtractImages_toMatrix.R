@@ -9,7 +9,7 @@
 #' @param objects integers, indices of objects to use.
 #' This param is not mandatory, if missing, the default, all objects will be used.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'export'(="matrix").\cr
+#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="matrix") and bypass(=TRUE).\cr
 #' If 'display' and/or 'offsets' are not provided arguments can also be passed to \code{\link{getDisplayInfo}} and/or \code{\link{getOffsets}}.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toMatrix}} input arguments.
 #' @return A list of matrices/arrays of images corresponding to objects extracted.
@@ -17,7 +17,6 @@
 ExtractImages_toMatrix <- function(fileName, display, offsets, objects, display_progress = TRUE, 
                                    ...) { 
   dots=list(...)
-  
   # check mandatory param
   if(missing(fileName)) stop("'fileName' can't be missing")
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
@@ -28,8 +27,9 @@ ExtractImages_toMatrix <- function(fileName, display, offsets, objects, display_
   
   # process extra parameters
   param_infos = names(dots) %in% c("from","verbose","verbosity","warn","force_default")
-  param_extra = names(dots) %in% c("ifd","display","export","verbose")
-  param_param = names(dots) %in% c("composite","selection","size","force_width","random_seed",
+  param_extra = names(dots) %in% c("ifd","display","export")
+  param_param = names(dots) %in% c("export_to","mode","base64_id","base64_att","overwrite",
+                                   "composite","selection","random_seed","size","force_width",
                                    "removal","add_noise","full_range","force_range")
   if(length(dots[["verbose"]]) == 0) { # param for objectExtract, getDisplayInfo, getIFD,, getOffsets
     verbose = FALSE
@@ -46,6 +46,9 @@ ExtractImages_toMatrix <- function(fileName, display, offsets, objects, display_
   } else {
     fast = dots[["fast"]]
   }
+  fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
+  verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
+  verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
   dots_infos = dots[param_infos] # keep param_infos fo getDisplayInfo
   dots = dots[!param_extra] # remove not allowed param
   dots_param = dots[param_param] # keep param_param for objectParam
@@ -107,7 +110,8 @@ ExtractImages_toMatrix <- function(fileName, display, offsets, objects, display_
     param = dots$param
     dots = dots[!is_param]
   } else {
-    param = do.call(what = "objectParam", args = c(list(display = infos), dots))
+    param = do.call(what = "objectParam", args = c(list(display = infos,
+                                                        export = "matrix"), dots_param))
   }
   
   # extract objects
@@ -116,20 +120,32 @@ ExtractImages_toMatrix <- function(fileName, display, offsets, objects, display_
     on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) { 
       setPB(pb, value = i, title = title_progress, label = "exporting images to matrix")
-      do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = infos$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8, force_trunc = TRUE, verbose = verbose, verbosity = verbosity),
+      do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
+                                                                 offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"),
+                                                                 trunc_bytes = 8, 
+                                                                 force_trunc = FALSE, 
+                                                                 verbose = verbose, 
+                                                                 verbosity = verbosity,
+                                                                 bypass = TRUE), 
                                                     display = infos,
                                                     param = param,
-                                                    export = "matrix",
-                                                    verbose = verbose),
+                                                    verbose = verbose,
+                                                    bypass = TRUE),
                                                dots))
     }) 
   } else {
     ans = lapply(1:L, FUN=function(i) { 
-      do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = infos$fileName_image, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8, force_trunc = TRUE, verbose = verbose, verbosity = verbosity),
+      do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
+                                                                 offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"),
+                                                                 trunc_bytes = 8, 
+                                                                 force_trunc = FALSE, 
+                                                                 verbose = verbose, 
+                                                                 verbosity = verbosity,
+                                                                 bypass = TRUE), 
                                                     display = infos,
                                                     param = param,
-                                                    export = "matrix",
-                                                    verbose = verbose),
+                                                    verbose = verbose,
+                                                    bypass = TRUE),
                                                dots))
     }) 
   }

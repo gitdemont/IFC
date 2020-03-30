@@ -6,6 +6,12 @@
 \usage{
 objectParam(
   display,
+  mode = c("rgb", "gray", "raw")[3],
+  export = c("file", "matrix", "base64")[2],
+  export_to,
+  base64_id = FALSE,
+  base64_att = "",
+  overwrite = FALSE,
   composite = "",
   selection = "all",
   size = c(0, 0),
@@ -15,12 +21,40 @@ objectParam(
   add_noise = TRUE,
   full_range = FALSE,
   force_range = FALSE,
-  bypass = FALSE,
   ...
 )
 }
 \arguments{
 \item{display}{object of class IFC_display, rich information extracted by \code{\link{getDisplayInfo}}. THis parameter can't be missing.}
+
+\item{mode}{color mode export. Either "rgb", "gray" or "raw". Default is "raw".
+Note that "raw" is only possible when 'export' is "matrix".}
+
+\item{export}{format mode export. Either "file", "matrix", "base64". Default is "matrix".}
+
+\item{export_to}{Used when export is "file" or "base64" to compute respectively exported file name or base64 id attribute.\cr
+Exported "file" extension and "base64" MIME type will be deduced from this pattern. Allowed export are ".bmp", ".jpg", ".jpeg", ".png", ".tif", ".tiff".
+Note that '.bmp' are faster but not compressed producing bigger data.\cr
+Placeholders, if found, will be substituted:\cr
+-\%d: with full path directory of 'display$fileName_image'\cr
+-\%p: with first parent directory of 'display$fileName_image'\cr
+-\%e: with extension of 'display$fileName_image' (without leading .)\cr
+-\%s: with shortname from 'display$fileName_image' (i.e. basename without extension)\cr
+-\%o: with object_id\cr
+-\%c: with channel_id\cr
+A good trick is to use:\cr
+-"\%d/\%s/\%s_\%o_\%c.tiff", when 'export' is "file"\cr
+-"\%o_\%c.bmp", when 'export' is "base64".\cr
+Note that if missing and 'export' is not "file", 'export_to' will be set to "\%o_\%c.bmp".}
+
+\item{base64_id}{whether to add id attribute to base64 exported object. Default is FALSE.\cr
+Only applied when export is "base64".}
+
+\item{base64_att}{attributes to add to base64 exported object. Default is "".\cr
+Only applied when export is "base64". For example, use "class=draggable".\cr
+Note that id (if base64_id is TRUE) and width and height are already used.}
+
+\item{overwrite}{only apply when 'export' is "file" whether to overwrite file or not. Default is FALSE.}
 
 \item{composite}{character vector of image composite. Default is "", for no image composite.\cr
 Should be like "1.05/2.4/4.55" for a composition of 5 perc. of channel 1, 40 perc. of channel 2 and 50 perc. of channel 55.\cr
@@ -58,8 +92,6 @@ This parameter will be repeated with rep_len() from \pkg{base} for every physica
 \item{force_range}{only apply when mode is not "raw", if force_range is TRUE, then image display range will be adjusted for each object resulting in normalization. Default is FALSE.\cr
 Note that this parameter takes the precedence over 'full_range'.\cr
 This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.}
-
-\item{bypass}{logical to avoid several checking. Default is FALSE.}
 
 \item{...}{other arguments to be passed.}
 }

@@ -9,26 +9,24 @@
 #' @param res positive integer. Resolution in ppi of 'image'. Default is '96'.
 #' @param xoff positive integer. x offset in image to draw scale, starting from bottom left corner.
 #' @param yoff positive integer. y offset in image to draw scale, starting from bottom left corner.
-#' @param bypass logical to avoid several checking. Default is FALSE.
 #' @return scale is added to the bottom left corner of the image.
-objectAddScaleBar <- function(image, size, style=c("dash","line")[1], color="white", res=96, xoff = 0, yoff = 0, bypass = FALSE) {
-  bypass = as.logical(bypass); assert(bypass, len = 1, alw = c(TRUE,FALSE))
-  if(!bypass) {
-    size = na.omit(as.integer(size)); size = size[size>0]
-    assert(size, len = 1, typ = "integer")
-    size = as.character(size)
-    style = na.omit(as.character(style))
-    assert(style, len = 1, alw = c("dash","line"))
-    color = na.omit(as.character(color))
-    assert(color, len = 1, typ = "character")
-    res = na.omit(as.integer(res)); res = res[res>=0]
-    assert(res, len = 1, typ = "integer")
-    xoff = na.omit(as.integer(xoff)); xoff = xoff[xoff>=0]
-    assert(xoff, len = 1, typ = "integer")
-    yoff = na.omit(as.integer(yoff)); yoff = yoff[yoff>=0]
-    assert(yoff, len = 1, typ = "integer") 
-  }
-
+objectAddScaleBar <- function(image, size, style=c("dash","line")[1], color="white", res=96, xoff = 0, yoff = 0) {
+  # several checks
+  size = na.omit(as.integer(size)); size = size[size>0]
+  assert(size, len = 1, typ = "integer")
+  size = as.character(size)
+  style = na.omit(as.character(style))
+  assert(style, len = 1, alw = c("dash","line"))
+  color = na.omit(as.character(color))
+  assert(color, len = 1, typ = "character")
+  res = na.omit(as.integer(res)); res = res[res>=0]
+  assert(res, len = 1, typ = "integer")
+  xoff = na.omit(as.integer(xoff)); xoff = xoff[xoff>=0]
+  assert(xoff, len = 1, typ = "integer")
+  yoff = na.omit(as.integer(yoff)); yoff = yoff[yoff>=0]
+  assert(yoff, len = 1, typ = "integer") 
+  
+  # add text
   lum = getLuminance(color)
   d = dim(image)
   bar_w = ceiling(as.numeric(size)*res/25.4)
