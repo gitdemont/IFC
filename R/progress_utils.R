@@ -11,7 +11,7 @@
 #' @param char only apply for "txtProgressBar", the character (or character string) to form the progress bar.
 #' @param file only apply for "txtProgressBar", an open connection object or "" which indicates the console: stderr() might be useful here. Default is "".
 #' @details shiny progress bar will be available only if shiny package is found. 
-#' @return an object of class "IFC_progress" containing a progress bar of class "txtProgressBar" "winProgressBar" or "Progress".
+#' @return pb an object of class `IFC_progress` containing a progress bar of class `txtProgressBar`, `winProgressBar` or `Progress`.
 #' @keywords internal
 newPB <- function(session,
                   title, label, 
@@ -56,8 +56,8 @@ newPB <- function(session,
         args = c(args, list(title = title))
       }
       if(missing(label)) {
-        args = c(args, list(label = ""))
-      } else {
+        args = c(args, list(label = " ")) # change "" to " " to be allow to pass label 
+      } else {                            # with setPB even if not created at first
         args = c(args, list(label = label))
       }
       if(missing(width)) {
@@ -105,6 +105,7 @@ newPB <- function(session,
   } 
   ans = list(bar = bar,
              seq = seq(min, max, length.out = steps),
+             steps = steps,
              typ = typ)
   class(ans) = "IFC_progress"
   return(ans)
@@ -113,30 +114,33 @@ newPB <- function(session,
 #' @title Progress Bar Updater
 #' @description
 #' Updates a progress bar.
-#' @param pb an object of class "IFC_progress" containing a progress bar of class "txtProgressBar" "winProgressBar" or "Progress".
+#' @param pb an object of class `IFC_progress` containing a progress bar of class `txtProgressBar`, `winProgressBar` or `Progress`.
 #' @param value new value for the progress bar.
 #' @param title,label character strings, giving the 'title'(='message' for shiny progress bar) and the 'label'(='detail' for shiny progress bar).
 #' @keywords internal
 setPB <- function(pb, value = NULL, title = NULL, label = NULL) {
+  val = sum(value > pb$seq)
   switch(pb$typ,
          { # typ 1
-           if(pb$bar$getVal() == sum(value > pb$seq)) return(NULL)
-           return(setTxtProgressBar(pb = pb$bar, value = sum(value > pb$seq), title = title, label = label))
+           if(pb$bar$getVal() == val) return(NULL)
+           return(setTxtProgressBar(pb = pb$bar, value = val, title = title, label = label))
          },
          { # typ 2
-           if(getWinProgressBar(pb$bar) == sum(value > pb$seq)) return(NULL)
-           return(setWinProgressBar(pb = pb$bar, value = sum(value > pb$seq), title = title, label = label))
+           if(getWinProgressBar(pb$bar) == val) return(NULL)
+           return(setWinProgressBar(pb = pb$bar, value = val, title = title, 
+                                    label = paste0(label, " ", round(100 * val/(pb$steps-1),0), "%")))
          },
          { # typ 3
-           if(pb$bar$getValue() == sum(value > pb$seq)) return(NULL)
-           return(pb$bar$set(value = sum(value > pb$seq), message = title, detail = label))
+           if(pb$bar$getValue() == val) return(NULL)
+           return(pb$bar$set(value = val, message = title,
+                             detail = paste0(label, " ", round(100 * val/(pb$steps-1),0), "%")))
          })
 }
 
 #' @title Progress Bar Terminator
 #' @description
 #' Terminates a progress bar.
-#' @param pb an object of class "IFC_progress" containing a progress bar of class "txtProgressBar" "winProgressBar" or "Progress".
+#' @param pb an object of class `IFC_progress` containing a progress bar of class `txtProgressBar`, `winProgressBar` or `Progress`.
 #' @keywords internal
 endPB <- function(pb) {
   if(pb$typ == 3) {
