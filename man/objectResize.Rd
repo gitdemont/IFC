@@ -2,16 +2,10 @@
 % Please edit documentation in R/objectResize.R
 \name{objectResize}
 \alias{objectResize}
-\title{IFC_object Resizing}
+\title{Object Resizing}
 \usage{
-objectResize(
-  mat,
-  size = NULL,
-  add_noise = TRUE,
-  random_seed = 1,
-  bg = 0,
-  sd = 0
-)
+objectResize(mat, size = NULL, add_noise = TRUE, random_seed = 1,
+  bg = 0, sd = 0)
 }
 \arguments{
 \item{mat}{a numeric matrix.}

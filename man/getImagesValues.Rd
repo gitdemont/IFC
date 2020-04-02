@@ -4,23 +4,17 @@
 \alias{getImagesValues}
 \title{RIF/CIF Image Values Extraction}
 \usage{
-getImagesValues(
-  fileName,
-  offsets,
-  objects,
-  display_progress = FALSE,
-  fast = TRUE,
-  ...
-)
+getImagesValues(fileName, offsets, objects, display_progress = FALSE,
+  fast = TRUE, ...)
 }
 \arguments{
 \item{fileName}{path to file.}
 
-\item{offsets}{Object of class IFC_offsets. If missing, the default, offsets will be extracted from fileName.\cr
+\item{offsets}{Object of class `IFC_offset`. If missing, the default, offsets will be extracted from 'fileName'.\cr
 This param is not mandatory but it may allow to save time when exporting repeated image value on same file.}
 
 \item{objects}{integers, indices of objects to extract.\cr
-If missing, the default, ImagesValues from all objects will be extracted.}
+If missing, the default, images values from all objects will be extracted.}
 
 \item{display_progress}{whether to display a progress bar. Default is FALSE.}
 
@@ -50,7 +44,7 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   cif_im_val <- getImagesValues(file_cif)
   identical(daf_im_val, cif_im_val)
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

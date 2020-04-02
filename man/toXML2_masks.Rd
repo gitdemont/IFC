@@ -7,7 +7,7 @@
 toXML2_masks(masks, verbose = FALSE)
 }
 \arguments{
-\item{masks}{an IFC_masks object.}
+\item{masks}{an `IFC_masks` object.}
 
 \item{verbose}{whether to display message about current action. Default is FALSE.}
 }
@@ -15,6 +15,6 @@ toXML2_masks(masks, verbose = FALSE)
 a xml_node.
 }
 \description{
-Helper function intended to convert masks (IFC_masks object) to XML nodes.
+Helper function intended to convert masks (`IFC_masks` object) to XML nodes.
 }
 \keyword{internal}

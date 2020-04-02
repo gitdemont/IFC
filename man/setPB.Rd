@@ -7,7 +7,7 @@
 setPB(pb, value = NULL, title = NULL, label = NULL)
 }
 \arguments{
-\item{pb}{an object of class "IFC_progress" containing a progress bar of class "txtProgressBar" "winProgressBar" or "Progress".}
+\item{pb}{an object of class `IFC_progress` containing a progress bar of class `txtProgressBar`, `winProgressBar` or `Progress`.}
 
 \item{value}{new value for the progress bar.}
 

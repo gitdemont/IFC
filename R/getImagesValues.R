@@ -2,10 +2,10 @@
 #' @description
 #' Extracts the image values from RIF or CIF as what can be found in DAF files
 #' @param fileName path to file.
-#' @param offsets Object of class IFC_offsets. If missing, the default, offsets will be extracted from fileName.\cr
+#' @param offsets Object of class `IFC_offset`. If missing, the default, offsets will be extracted from 'fileName'.\cr
 #' This param is not mandatory but it may allow to save time when exporting repeated image value on same file.
 #' @param objects integers, indices of objects to extract.\cr
-#' If missing, the default, ImagesValues from all objects will be extracted.
+#' If missing, the default, images values from all objects will be extracted.
 #' @param display_progress whether to display a progress bar. Default is FALSE.
 #' @param fast when no offsets are provided whether to fast extract objects offsets or not. Default is TRUE.\cr
 #' Meaning that 'objects' will be extracting expecting that raw object are stored in ascending order.\cr
@@ -25,7 +25,7 @@
 #'   cif_im_val <- getImagesValues(file_cif)
 #'   identical(daf_im_val, cif_im_val)
 #' } else {
-#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
@@ -60,7 +60,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
   
   compute_offsets = TRUE
   if(!missing(offsets)) {
-    if(!("IFC_offsets" %in% class(offsets))) {
+    if(!("IFC_offset" %in% class(offsets))) {
       warning("provided offsets do not match with expected ones, offsets will be recomputed", immediate. = TRUE, call. = FALSE)
     } else {
       if(attr(offsets, "checksum") != checksumXIF(fileName)) {
@@ -80,7 +80,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
     on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) {
       setPB(pb, value = i, title = title_progress, label = "extracting images values (binary)")
-      t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8,
+      t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"), trunc_bytes = 8,
                       force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = TRUE, ...), FUN = function(IFD) {
                         c(IFD$infos$OBJECT_ID, # id
                           IFD$curr_IFD_offset, # imgIFD
@@ -101,7 +101,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
     })
   } else {
     ans = lapply(1:L, FUN=function(i) {
-      t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = "img"), trunc_bytes = 8,
+      t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"), trunc_bytes = 8,
                       force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = TRUE, ...), FUN = function(IFD) {
                         c(IFD$infos$OBJECT_ID, # id
                           IFD$curr_IFD_offset, # imgIFD

@@ -1,14 +1,15 @@
-#' @title IFC_object Extraction
+#' @title Object Extraction
 #' @description
 #' Extracts / Decompress objects stored in RIF or CIF Files.
 #' @param ifd list of sub elements of IFD data information extracted by \code{\link{getIFD}}. This parameter can't be missing.
-#' @param display object of class IFC_display, information extracted by \code{\link{getDisplayInfo}}. This parameter can't be missing.
-#' @param param object of class IFC_param, containing extraction parameters defined by \code{\link{objectParam}}.\cr
+#' @param param object of class `IFC_param`, containing extraction parameters defined by \code{\link{objectParam}}.\cr
 #' If this parameter is missing, \code{\link{objectExtract}} will use extra ... to pass arguments to \code{\link{objectParam}} to control object extraction.\cr
 #' However, if provided, ... will be ignored.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
-#' @param bypass whether to bypass checks on 'ifd', 'display', 'param'. Default is FALSE.
-#' @param ... other arguments to be passed to \code{\link{objectParam}}.
+#' @param bypass whether to bypass checks on 'ifd' and 'param'. Default is FALSE.
+#' @param ... other arguments to be passed to \code{\link{objectParam}}.\cr
+#' If 'param' is not provided then ... will be used to compute param.\cr
+#' /!\ If not any of 'fileName', 'info' can be found in ... then attr(ifd, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/openmicroscopy/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
 #' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr\cr
 #' BSD implementations of Bio-Formats readers and writers\cr
@@ -42,30 +43,30 @@
 #'   ## use a cif file
 #'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
 #'   cif_offs <- getOffsets(fileName = file_cif, fast = TRUE)
-#'   ## extract display infomation
-#'   disp <- getDisplayInfo(fileName = file_cif, from = "analysis")
+#'   ## extract infomation
+#'   info <- getInfo(fileName = file_cif, from = "analysis")
 #'   ## retrieve number of objects stored
-#'   nobj <- as.integer(disp$objcount)
+#'   nobj <- as.integer(info$objcount)
 #'   ## randomly subset the offsets of at most 5 "img" objects
 #'   sel = sample(0:(nobj-1), min(5, nobj))
-#'   sub_offs <- subsetOffsets(cif_offs, objects = sel, objects_type = "img")
+#'   sub_offs <- subsetOffsets(cif_offs, objects = sel, image_type = "img")
 #'   ## read IFDs from these "img" objects
 #'   IFDs <- getIFD(fileName = file_cif, offsets = sub_offs)
 #'   ## extract raw data of these"img" objects to matrix
-#'   raw = objectExtract(ifd = IFDs, display = disp, mode = "raw", 
+#'   raw = objectExtract(ifd = IFDs, info = info, mode = "raw", 
 #'                       export = "matrix")
 #'   ## extract base64 "rgb" colorized version of these "img" objects to base64
-#'   b64 = objectExtract(ifd = IFDs, display = disp, mode = "rgb", 
+#'   b64 = objectExtract(ifd = IFDs, info = info, mode = "rgb", 
 #'                       export = "base64", base64_id = TRUE,
-#'                       export_to = "example_%o_%c.png")
+#'                       write_to = "example_%o_%c.png")
 #'   ## use DisplayGallery to show the first "img" objects and play with ... extra parameters
 #'   ## force_range, add_noise, selection, composite, see objectParam
-#'   DisplayGallery(display = disp, offsets = cif_offs, objects = sel,
-#'                  base64_id = TRUE, export_to = "example_%o_%c.png",
+#'   DisplayGallery(info = info, offsets = cif_offs, objects = sel,
+#'                  base64_id = TRUE, write_to = "example_%o_%c.png",
 #'                  force_range = c(FALSE,TRUE,FALSE,TRUE), add_noise = FALSE,
 #'                  selection = c(1,2,4,6), composite = "1.7/4.3")
 #' } else {
-#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
@@ -74,23 +75,28 @@
 #' -"base64", a data-uri string,\cr
 #' -"file", an invisible file path corresponding to the location of exported file(s). 
 #' @export
-objectExtract <- function(ifd, display, param, verbose = FALSE, bypass = FALSE, ...) {
+objectExtract <- function(ifd, 
+                          param, 
+                          verbose = FALSE, 
+                          bypass = FALSE, 
+                          ...) {
   dots=list(...)
   assert(verbose, len = 1, alw = c(TRUE, FALSE))
   assert(bypass, len = 1, alw = c(TRUE, FALSE))
-  if(!bypass) {  # bypass ifd/display/param checking
-    if(missing(ifd)) stop("'ifd' can't be missing") 
-    if(missing(display)) stop("'display' can't be missing") 
+  if(!bypass) {  # bypass ifd / param checking
+    if(missing(ifd)) stop("'ifd' can't be missing")
     assert(ifd, cla = "IFC_ifd_list")
-    if(length(ifd) == 0) stop("can't extract object when 'ifd is empty")
-    if("IFC_first_ifd" %in% class(ifd)) stop("can't extract object from 'ifd' of class \"IFC_first_ifd\"")
-    assert(display, cla = "IFC_display") 
-    if(attr(ifd, "checksum") != display$checksum) stop("'ifd' and 'display' do not match, please ensure that they originate from same file")
+    if(length(ifd) == 0) stop("can't extract object when 'ifd' is empty")
+    if("IFC_first_ifd" %in% class(ifd)) stop("can't extract object from 'ifd' of class `IFC_first_ifd`")
     if(missing(param)) {
-      param = do.call(what = "objectParam", args = c(list(display = display), dots))
+      if(!any(c("fileName", "info") %in% names(dots))) {
+        param = do.call(what = "objectParam", args = c(list(fileName = attr(ifd, "fileName_image")), dots))
+      } else {
+        param = do.call(what = "objectParam", args = dots)
+      }
     } else {
       assert(param, cla = "IFC_param")
-      if(display$checksum != param$checksum) stop("'param' and 'display' do not match, please ensure that they originate from same file")
+      if(attr(ifd, "checksum") != param$checksum) stop("'ifd' and 'param' do not match, please ensure that they originate from same file")
     }
   }
   
@@ -139,7 +145,7 @@ objectExtract <- function(ifd, display, param, verbose = FALSE, bypass = FALSE, 
                                      channel = c(sprintf("Ch%02.f",channels[chan_to_extract,"physicalChannel"]),composite)[i],
                                      object = n_ifd[i_ifd])
                if(file.exists(export_name)) {
-                 if(overwrite) {
+                 if(param$overwrite) {
                    objectWrite(x = img[[i]], type = param$type, export_name)
                  } else {
                    warning(paste0("file ", export_name, " already exists and will not be overwritten"), call. = FALSE, immediate. = TRUE)

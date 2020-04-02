@@ -4,23 +4,13 @@
 \alias{plotGraph}
 \title{Plot and Stats Computation for IFC Graph}
 \usage{
-plotGraph(
-  obj,
-  graph,
-  draw = FALSE,
-  stats_print = draw,
-  color_mode = c("white", "black")[1],
-  add_key = "panel",
-  precision = c("light", "full")[1],
-  trunc_labels = 38,
-  trans = asinh,
-  bin,
-  viewport = "ideas",
-  ...
-)
+plotGraph(obj, graph, draw = FALSE, stats_print = draw,
+  color_mode = c("white", "black")[1], add_key = "panel",
+  precision = c("light", "full")[1], trunc_labels = 38,
+  trans = asinh, bin, viewport = "ideas", ...)
 }
 \arguments{
-\item{obj}{an IFC_data object extracted with features extracted.}
+\item{obj}{an `IFC_data` object extracted with features extracted.}
 
 \item{graph}{a graph from 'obj' or a list that can be coerced by \code{\link{buildGraph}}.}
 
@@ -28,15 +18,15 @@ plotGraph(
 
 \item{stats_print}{whether to print stats or not. Default is given by 'draw' argument.}
 
-\item{color_mode}{whether to extract colors from obj in white or black mode. Default is 'white'.}
+\item{color_mode}{whether to extract colors from 'obj' in white or black mode. Default is "white".}
 
-\item{add_key}{whether to draw a 'global' key under title or in the first 'panel' or 'both'. Default is 'panel'.\cr
-Accepted values are either: FALSE, 'panel', 'global', 'both' or c('panel', 'global').\cr
+\item{add_key}{whether to draw a "global" key under title or in the first "panel" or "both". Default is "panel".\cr
+Accepted values are either: FALSE, "panel", "global", "both" or c("panel", "global").\cr
 Note that it only applies when display is seen as overlaying populations.}
 
-\item{precision}{when graphs is a 2D scatter with population overlay, this argument controls amount of information displayed:\cr
-- 'light', the default, will only display points of same coordinates that are amoung the other layers.\cr
-- 'full' will display all the layers.}
+\item{precision}{when graphs is a 2D scatter with population overlay, this argument controls amount of information displayed. Default is "light".\cr
+-"light", the default, will only display points of same coordinates that are amoung the other layers.\cr
+-"full" will display all the layers.}
 
 \item{trunc_labels}{maximum number of characters to display for labels. Default is 38.}
 

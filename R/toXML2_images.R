@@ -1,7 +1,7 @@
 #' @title IFC_images XML Conversion
 #' @description 
-#' Helper to convert images (IFC_images object) to XML nodes.
-#' @param images an IFC_images object.
+#' Helper to convert images (`IFC_images` object) to XML nodes.
+#' @param images an `IFC_images` object.
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @param title_progress character string, giving the title of the progress bar. Default is "".
 #' @return a xml_node.

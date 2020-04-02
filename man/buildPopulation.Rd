@@ -4,20 +4,8 @@
 \alias{buildPopulation}
 \title{IFC Population Coercion}
 \usage{
-buildPopulation(
-  name,
-  type,
-  base = "All",
-  color,
-  lightModeColor,
-  style,
-  region,
-  fx,
-  fy,
-  definition,
-  obj,
-  ...
-)
+buildPopulation(name, type, base = "All", color, lightModeColor, style,
+  region, fx, fy, definition, obj, ...)
 }
 \arguments{
 \item{name}{name of the population.}

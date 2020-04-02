@@ -23,7 +23,7 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   file_rif <- system.file("extdata", "example.rif", package = "IFCdata")
   rif <- readIFC(fileName = file_rif)
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

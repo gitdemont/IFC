@@ -4,15 +4,11 @@
 \alias{toXML2_images}
 \title{IFC_images XML Conversion}
 \usage{
-toXML2_images(
-  images,
-  verbose = FALSE,
-  display_progress = TRUE,
-  title_progress = ""
-)
+toXML2_images(images, verbose = FALSE, display_progress = TRUE,
+  title_progress = "")
 }
 \arguments{
-\item{images}{an IFC_images object.}
+\item{images}{an `IFC_images` object.}
 
 \item{verbose}{whether to display message about current action. Default is FALSE.}
 
@@ -22,6 +18,6 @@ toXML2_images(
 a xml_node.
 }
 \description{
-Helper to convert images (IFC_images object) to XML nodes.
+Helper to convert images (`IFC_images` object) to XML nodes.
 }
 \keyword{internal}

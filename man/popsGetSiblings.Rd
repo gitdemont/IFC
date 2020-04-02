@@ -7,10 +7,10 @@
 popsGetSiblings(obj, pops)
 }
 \arguments{
-\item{obj}{an IFC_data object extracted with features extracted.}
+\item{obj}{an `IFC_data` object extracted with features extracted.}
 
 \item{pops}{graphical populations names to get siblings of.}
 }
 \description{
-Gives names of graphical pops's siblings in a IFC_data object.
+Gives names of graphical pops's siblings in a `IFC_data` object.
 }

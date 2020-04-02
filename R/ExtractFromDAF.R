@@ -24,12 +24,12 @@
 #'   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
 #'   daf <- ExtractFromDAF(fileName = file_daf)
 #' } else {
-#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
 # #' }
-#' @return A named list of class "IFC_data", whose members are:\cr
+#' @return A named list of class `IFC_data`, whose members are:\cr
 #' -description, a list of descriptive information.\cr
 #' -fileName, path of fileName input.\cr
 #' -fileName_image, path of .cif image fileName is refering to.\cr
@@ -245,7 +245,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     # /!\ note that using offsets extracted from daf without fileName_image may lead to different results
     # TODO ask AMNIS how checksum is computed to use same alg and place description$ID$checksum instead
     attr(offsets, "checksum") = ifelse(file.exists(fileName_image), checksumXIF(fileName_image), sum(offsets[1:10]))
-    attr(offsets, "class") = "IFC_offsets"
+    attr(offsets, "class") = "IFC_offset"
     attr(offsets, "first") = NULL
   }
   

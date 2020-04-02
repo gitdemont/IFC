@@ -7,7 +7,7 @@
 toXML2_regions(regions, verbose = FALSE)
 }
 \arguments{
-\item{regions}{an IFC_regions object.}
+\item{regions}{an `IFC_regions` object.}
 
 \item{verbose}{whether to display message about current action. Default is FALSE.}
 }
@@ -15,6 +15,6 @@ toXML2_regions(regions, verbose = FALSE)
 a xml_node.
 }
 \description{
-Helper to convert regions (IFC_regions object) to XML nodes.
+Helper to convert regions (`IFC_regions` object) to XML nodes.
 }
 \keyword{internal}

@@ -1,4 +1,4 @@
-#' @title IFC_object Colorizer
+#' @title Object Colorizer
 #' @description
 #' Colorizes a [0,1] grayscale image.
 #' @param mat a [0,1] numeric matrix.

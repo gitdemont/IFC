@@ -4,16 +4,11 @@
 \alias{toXML2_pops}
 \title{IFC_pops XML Conversion}
 \usage{
-toXML2_pops(
-  pops,
-  verbose = FALSE,
-  display_progress = TRUE,
-  title_progress = "",
-  ...
-)
+toXML2_pops(pops, verbose = FALSE, display_progress = TRUE,
+  title_progress = "", ...)
 }
 \arguments{
-\item{pops}{an IFC_pops object.}
+\item{pops}{an `IFC_pops` object.}
 
 \item{verbose}{whether to display message about current action. Default is FALSE.}
 
@@ -27,6 +22,6 @@ toXML2_pops(
 a xml_node.
 }
 \description{
-Helper to convert populations (IFC_pops object) to XML nodes.
+Helper to convert populations (`IFC_pops` object) to XML nodes.
 }
 \keyword{internal}

@@ -2,20 +2,13 @@
 % Please edit documentation in R/objectDisplay.R
 \name{objectDisplay}
 \alias{objectDisplay}
-\title{IFC_object Display}
+\title{Object Display}
 \usage{
-objectDisplay(
-  image,
-  input_range = c(0, 4095),
-  full_range = FALSE,
-  force_range = FALSE,
-  gamma = 1,
-  color = "Green",
-  dpi = 300
-)
+objectDisplay(image, input_range = c(0, 4095), full_range = FALSE,
+  force_range = FALSE, gamma = 1, color = "Green", dpi = 300)
 }
 \arguments{
-\item{image}{An object extracted by \code{\link{objectExtract}} of class "IFC_img" or "IFC_msk".\cr
+\item{image}{An object extracted by \code{\link{objectExtract}} of class `IFC_img` or `IFC_msk`.\cr
 Note that a matrix with finite values can also be used.}
 
 \item{input_range}{a finite numeric vector of 2 values, sets the range of the input intensity values.\cr
@@ -36,8 +29,8 @@ Note that this parameter takes the precedence over 'input_range' and 'full_range
 This function is intended to display object extracted by \code{\link{objectExtract}}.
 }
 \details{
-If input 'image' is of class "IFC_img" or "IFC_msk", then if 'input_range', 'full_range', 'force_range', 'gamma' and / or 'color' parameters is/are missing,
+If input 'image' is of class `IFC_img` or `IFC_msk`, then if 'input_range', 'full_range', 'force_range', 'gamma' and / or 'color' parameters is/are missing,
 it/they will be extracted from 'image' attributes.\cr
-If input 'image' is not of one of class "IFC_img" or "IFC_msk", then force_range will be forced to TRUE.\cr
+If input 'image' is not of one of class `IFC_img` or `IFC_msk`, then force_range will be forced to TRUE.\cr
 An error will be thrown if input image contains non finite values.
 }

@@ -4,17 +4,11 @@
 \alias{toBIN_features}
 \title{IFC_features Raw Conversion}
 \usage{
-toBIN_features(
-  features,
-  endianness = .Platform$endian,
-  verbose = FALSE,
-  display_progress = TRUE,
-  title_progress = "",
-  ...
-)
+toBIN_features(features, endianness = .Platform$endian,
+  verbose = FALSE, display_progress = TRUE, title_progress = "", ...)
 }
 \arguments{
-\item{features}{an IFC_features object.}
+\item{features}{an `IFC_features` object.}
 
 \item{verbose}{whether to display message about current action. Default is FALSE.}
 
@@ -25,9 +19,9 @@ toBIN_features(
 \item{...}{other arguments to be passed.}
 }
 \value{
-an raw vector of features binaries.
+a raw vector of features binaries.
 }
 \description{
-Helper to convert features (IFC_features object) to raw vector.
+Helper to convert features (`IFC_features` object) to raw vector.
 }
 \keyword{internal}

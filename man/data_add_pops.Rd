@@ -7,19 +7,13 @@
 For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 }
 \usage{
-data_add_pops(
-  obj,
-  pops,
-  pnt_in_poly_algorithm = 1,
-  pnt_in_poly_epsilon = 1e-12,
-  display_progress = TRUE,
-  ...
-)
+data_add_pops(obj, pops, pnt_in_poly_algorithm = 1,
+  pnt_in_poly_epsilon = 1e-12, display_progress = TRUE, ...)
 }
 \arguments{
-\item{obj}{an IFC_data object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}
+\item{obj}{an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}
 
-\item{pops}{a list of population(s) to add to obj. Each element of this list will be coerced by \code{\link{buildPopulation}}.}
+\item{pops}{a list of population(s) to add to 'obj'. Each element of this list will be coerced by \code{\link{buildPopulation}}.}
 
 \item{pnt_in_poly_algorithm}{algorithm used to determine if object belongs to a polygon region or not. Default is 1.\cr
 Note that for the moment only 1(Trigonometry) is available.}
@@ -34,11 +28,11 @@ Note that for the moment only 1(Trigonometry) is available.}
 an IFC_data object with pops added.
 }
 \description{
-Adds populations to an already existing IFC_data object.
+Adds populations to an already existing `IFC_data` object.
 }
 \details{
-A warning will be thrown if a provided population is already existing in obj.\cr
-In such a case this population will not be added to obj.\cr
+A warning will be thrown if a provided population is already existing in 'obj'.\cr
+In such a case this population will not be added to 'obj'.\cr
 If any input population is not well defined and can't be created then an error will occur.
 }
 \examples{
@@ -58,7 +52,7 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
     dafnew <- data_add_pops(obj = daf, pops = list(pop_copy))
   }
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

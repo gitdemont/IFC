@@ -14,7 +14,7 @@
 getFullTag <- function(fileName, ifd, tag) {
   if(any(class(tag) == "character")) if(!(tag%in%names(ifd$tags))) stop("can't find 'tag' in 'ifd' tags names")
   if(any(class(tag) == "numeric")) if((tag<1) | (tag>length(ifd$tags))) stop("can't find 'tag' in 'ifd' tags")
-  if(!("IFC_ifd"%in%class(ifd))) stop("'ifd' object is not of class IFC_ifd")
+  if(!("IFC_ifd"%in%class(ifd))) stop("'ifd' object is not of class `IFC_ifd`")
   tag = ifd$tags[[tag]]
   if(tag$typ == 2) if(tag$len == nchar(tag$map)) return(tag$map)
   if(tag$off) {

@@ -1,7 +1,7 @@
 #' @title IFC_features XML Conversion
 #' @description 
-#' Helper to convert features (IFC_features object) to XML nodes.
-#' @param features an IFC_features object.
+#' Helper to convert features (`IFC_features` object) to XML nodes.
+#' @param features an `IFC_features` object.
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @param title_progress character string, giving the title of the progress bar. Default is "".
 #' @return a xml_node.

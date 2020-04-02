@@ -4,17 +4,11 @@
 \alias{toBIN_images}
 \title{IFC_images Raw Conversion}
 \usage{
-toBIN_images(
-  images,
-  endianness = .Platform$endian,
-  verbose = FALSE,
-  display_progress = TRUE,
-  title_progress = "",
-  ...
-)
+toBIN_images(images, endianness = .Platform$endian, verbose = FALSE,
+  display_progress = TRUE, title_progress = "", ...)
 }
 \arguments{
-\item{images}{an IFC_images object.}
+\item{images}{an `IFC_images` object.}
 
 \item{verbose}{whether to display message about current action. Default is FALSE.}
 
@@ -28,6 +22,6 @@ toBIN_images(
 an raw vector of images binaries.
 }
 \description{
-Helper to convert images (IFC_images object) to raw vector.
+Helper to convert images (`IFC_images` object) to raw vector.
 }
 \keyword{internal}

@@ -1,4 +1,4 @@
-#' @title IFC_object Intensity Normalization
+#' @title Object Intensity Normalization
 #' @description
 #' Normalizes a matrix to [0,1].
 #' @param mat a finite numeric matrix.

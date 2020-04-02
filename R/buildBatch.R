@@ -76,7 +76,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
         }
       }
     } else {
-      if(is.na(foo)) stop(paste0("options$",x," should be of class logical"))
+      if(is.na(foo)) stop(paste0("options$",x," should be of class `logical`"))
     }
     return(ifelse(foo,"Y","N"))
   })
@@ -140,15 +140,15 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
     warning(paste0(paste0(paste0(files[dup],"\n"),collapse=""),"have been removed because batch would overwrite data being processed"))
     files = files[!dup]
   }
-  display = lapply(files, getDisplayInfo, from = "acquisition")
+  info = lapply(files, getInfo, from = "acquisition")
   if(!allow_channels_dissimilarity) {
-    num_channels = unique(sapply(display, FUN=function(x) nrow(x$Images)))
+    num_channels = unique(sapply(info, FUN=function(x) nrow(x$Images)))
     if(length(num_channels) !=1 ) stop("'files' have been acquired on different amount of channels")
-    ids_channels = sapply(display, FUN=function(x) c(sum(x$in_use), x$Images$physicalChannel[x$in_use])) # maybe to remove to allow
+    ids_channels = sapply(info, FUN=function(x) c(sum(x$in_use), x$Images$physicalChannel[x$in_use])) # maybe to remove to allow
     if(typeof(ids_channels) == "list") stop("'files' have been acquired on different physical channels") # maybe to remove
     if(nlevels(as.factor(ids_channels[-1,]))!=ids_channels[1]) stop("'files' have been acquired on different physical channels") # maybe to remove
   }
-  mag = unique(unlist(sapply(display, FUN=function(x) x$magnification)))
+  mag = unique(unlist(sapply(info, FUN=function(x) x$magnification)))
   if(length(mag)!=1) stop("'files' have been acquired with different magnifications")
   mag = paste0("Offsets",ifelse(mag==40, "",paste0(mag,"x")),"_Gen2_0_11")
   # Extracts information to build Nodes
@@ -202,9 +202,9 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
                     attrs=list(name=ifelse(missing(analysis), "", normalizePath(analysis, winslash = "/")),
                                useInspireAnalysis=ifelse(use_acquisition,"True","False"))),
                list(name="files",
-                    .children=lapply(display, FUN=function(x) do.call(what=xml_new_node, args=list(name="file", attrs = list(name=x$fileName, objectCount=ifelse(getFileExt(x$fileName)!="rif","0",format(x$objcount,scientific=FALSE))))))),
+                    .children=lapply(info, FUN=function(x) do.call(what=xml_new_node, args=list(name="file", attrs = list(name=x$fileName, objectCount=ifelse(getFileExt(x$fileName)!="rif","0",format(x$objcount,scientific=FALSE))))))),
                list(name="statfiles",
-                    .children=lapply(unlist(lapply(display, FUN=function(x) {
+                    .children=lapply(unlist(lapply(info, FUN=function(x) {
                       if(getFileExt(x$fileName) == "daf") return(basename(x$fileName))
                       if(getFileExt(x$fileName) == "cif") return(gsub("cif$","daf",basename(x$fileName_image)))
                       # segment_rif only applies to rif

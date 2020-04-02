@@ -4,23 +4,11 @@
 \alias{ExtractImages_toBase64}
 \title{Shorcut for Batch Images Extraction to Base64}
 \usage{
-ExtractImages_toBase64(
-  fileName,
-  display,
-  offsets,
-  objects,
-  display_progress = TRUE,
-  mode = c("rgb", "gray")[1],
-  ...
-)
+ExtractImages_toBase64(offsets, objects, display_progress = TRUE,
+  mode = c("rgb", "gray")[1], ...)
 }
 \arguments{
-\item{fileName}{path of file to read data from. This parameter can't be missing.}
-
-\item{display}{object of class IFC_display, rich information extracted by \code{\link{getDisplayInfo}}. If missing, the default, 'display' will be extracted from fileName.\cr
-This param is not mandatory but it may allow to pass custom display info by manually modifying display$Images for example.}
-
-\item{offsets}{object of class IFC_offsets. If missing, the default, offsets will be extracted from fileName.\cr
+\item{offsets}{object of class `IFC_offset`. 
 This param is not mandatory but it may allow to save time for repeated image export on same file.}
 
 \item{objects}{integers, indices of objects to use.
@@ -31,7 +19,8 @@ This param is not mandatory, if missing, the default, all objects will be used.}
 \item{mode}{(\code{\link{objectExtract}} argument) color mode export. Either "rgb", "gray". Default is "rgb".}
 
 \item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr
-If 'display' and/or 'offsets' are not provided arguments can also be passed to \code{\link{getDisplayInfo}} and/or \code{\link{getOffsets}}.}
+If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+/!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 }
 \value{
 A list of base64 encoded images corresponding to objects extracted.

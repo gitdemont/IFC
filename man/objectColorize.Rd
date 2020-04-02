@@ -2,7 +2,7 @@
 % Please edit documentation in R/objectColorize.R
 \name{objectColorize}
 \alias{objectColorize}
-\title{IFC_object Colorizer}
+\title{Object Colorizer}
 \usage{
 objectColorize(mat, color)
 }

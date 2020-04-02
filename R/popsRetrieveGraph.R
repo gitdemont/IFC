@@ -1,14 +1,14 @@
 #' @title Graph Retrieval from Graphical IFC_pops
 #' @description
 #' Retrieves the graph a graphical population originate from
-#' @param obj an IFC_data object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
+#' @param obj an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
 #' @param pops names of graphical populations present in 'obj'. Note that they should be siblings.
 #' @param vis2D when original graph is not an histogram, whether to display it as "scatter" or "density". Default is "density".
 #' @param all_siblings whether to add all 'pop' siblings in the graph. Default is FALSE.
 #' @export
 popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE) {
   if(missing(obj)) stop("'obj' can't be missing")
-  if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class IFC_data")
+  if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class `IFC_data`")
   if(missing(pops)) stop("'pops' can't be missing")
   pops = unique(pops); pops = as.character(pops); assert(pops, alw = names(obj$pops))
   if(!all(sapply(obj$pops[pops], FUN=function(p) p$type=="G"))) stop("'pops' should be of type graphical")

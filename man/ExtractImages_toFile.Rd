@@ -4,24 +4,11 @@
 \alias{ExtractImages_toFile}
 \title{Shorcut for Batch Images Extraction to Files}
 \usage{
-ExtractImages_toFile(
-  fileName,
-  display,
-  offsets,
-  objects,
-  display_progress = TRUE,
-  mode = c("rgb", "gray")[1],
-  export_to,
-  ...
-)
+ExtractImages_toFile(offsets, objects, display_progress = TRUE,
+  mode = c("rgb", "gray")[1], write_to, ...)
 }
 \arguments{
-\item{fileName}{path of file to read data from. This parameter can't be missing.}
-
-\item{display}{object of class IFC_display, rich information extracted by \code{\link{getDisplayInfo}}. If missing, the default, 'display' will be extracted from fileName.\cr
-This param is not mandatory but it may allow to pass custom display info by manually modifying display$Images for example.}
-
-\item{offsets}{object of class IFC_offsets. If missing, the default, offsets will be extracted from fileName.\cr
+\item{offsets}{object of class `IFC_offset`. 
 This param is not mandatory but it may allow to save time for repeated image export on same file.}
 
 \item{objects}{integers, indices of objects to use.
@@ -31,20 +18,21 @@ This param is not mandatory, if missing, the default, all objects will be used.}
 
 \item{mode}{(\code{\link{objectExtract}} argument) color mode export. Either "rgb", "gray" . Default is "rgb".}
 
-\item{export_to}{(\code{\link{objectExtract}} argument) used to compute exported file name.\cr
+\item{write_to}{(\code{\link{objectExtract}} argument) used to compute exported file name.\cr
 Exported "file" extension will be deduced from this pattern. Allowed export are '.bmp', '.jpg', '.jpeg', '.png', '.tif', '.tiff'.
 Note that '.bmp' are faster but not compressed producing bigger data.\cr
 Placeholders, if found, will be substituted:\cr
--\%d: with full path directory of 'fileName'\cr
--\%p: with first parent directory of 'fileName'\cr
--\%e: with extension of 'fileName' (without leading .)\cr
--\%s: with shortname from 'fileName' (i.e. basename without extension)\cr
+-\%d: with full path directory \cr
+-\%p: with first parent directory\cr
+-\%e: with extension (without leading .)\cr
+-\%s: with shortname (i.e. basename without extension)\cr
 -\%o: with object_id\cr
 -\%c: with channel_id\cr
 A good trick is to use "\%d/\%s/\%s_\%o_\%c.tiff".}
 
-\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="file"), 'export_to', 'mode' and bypass(=TRUE).\cr
-If 'display' and/or 'offsets' are not provided arguments can also be passed to \code{\link{getDisplayInfo}} and/or \code{\link{getOffsets}}.}
+\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="file"), 'write_to', 'mode' and bypass(=TRUE).\cr
+If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+/!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 }
 \value{
 It invisibly returns a list of exported file path of corresponding to objects extracted.

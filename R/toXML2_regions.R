@@ -1,7 +1,7 @@
 #' @title IFC_regions XMLconversion
 #' @description 
-#' Helper to convert regions (IFC_regions object) to XML nodes.
-#' @param regions an IFC_regions object.
+#' Helper to convert regions (`IFC_regions` object) to XML nodes.
+#' @param regions an `IFC_regions` object.
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @return a xml_node.
 #' @keywords internal

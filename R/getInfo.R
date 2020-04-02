@@ -1,14 +1,14 @@
-#' @title IFC File Display Extraction
+#' @title IFC File Information Extraction
 #' @description
-#' Extracts display information from RIF, CIF and DAF files.
+#' Extracts information from RIF, CIF and DAF files.
 #' @param fileName path to file..
-#' @param from whether to extract Display information from 'acquisition' or 'analysis'. Default is 'analysis'.
+#' @param from whether to extract information from 'acquisition' or 'analysis'. Default is 'analysis'.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param verbosity quantity of information print to console when verbose is TRUE; 1: normal, 2: rich. Default is 1.
 #' @param warn whether to send warning message when trying to read 'analysis' information from a 'rif' file. Default is TRUE.
 #' @param force_default when display information can't be retrieved whether to use default values. Default is TRUE.
 #' @param cifdir the path of the directory to initially look to cif file. Default is dirname(fileName). Only apply when 'fullname' is set to TRUE.
-#' @param ntry number of times \code{\link{getDisplayInfo}} will be allowed to find corresponding cif file. Default is +Inf. Only apply when 'fullname' is set to TRUE.
+#' @param ntry number of times \code{\link{getInfo}} will be allowed to find corresponding cif file. Default is +Inf. Only apply when 'fullname' is set to TRUE.
 #' If cif can't be found, but 'ntry' is reached, then an error will be thrown.
 #' @param ... other arguments to be passed.
 #' @examples
@@ -16,16 +16,16 @@
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a daf file
 #'   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
-#'   disp <- getDisplayInfo(fileName = file_daf, from = "analysis")
-#'   ## show some display information
-#'   print(disp$Images)
+#'   info <- getInfo(fileName = file_daf, from = "analysis")
+#'   ## show some information
+#'   print(info$Images)
 #' } else {
 #'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
 # #' }
-#' @return a list of information (open .daf file in an text editor for more details) about input fileName of class `IFC_display` and `acquistion` or `analysis`, whose members are:\cr
+#' @return a list of information (open .daf file in an text editor for more details) about input fileName of class `IFC_info` and `acquistion` or `analysis`, whose members are:\cr
 #' -objcount, number of object in file.\cr
 #' -channelwidth, default channel width in pixel.\cr
 #' -in_use, channels used.\cr
@@ -45,8 +45,15 @@
 #' -fileName, path of fileName input.\cr
 #' -fileName_image, path of fileName_image.
 #' @export
-getDisplayInfo <- function(fileName, from = c("acquisition","analysis")[2], verbose = FALSE, verbosity = 1, warn = TRUE, force_default = TRUE,
-                           cifdir = dirname(fileName), ntry = +Inf, ...) {
+getInfo <- function(fileName,
+                    from = c("acquisition","analysis")[2],
+                    verbose = FALSE, 
+                    verbosity = 1, 
+                    warn = TRUE, 
+                    force_default = TRUE,
+                    cifdir = dirname(fileName), 
+                    ntry = +Inf,
+                    ...) {
   dots = list(...)
   if(missing(fileName)) stop("'fileName' can't be missing")
   if(!file.exists(fileName)) stop(paste0("can't find ",fileName))
@@ -97,7 +104,7 @@ getDisplayInfo <- function(fileName, from = c("acquisition","analysis")[2], verb
         fileName_image = file.choose()
       }
     }
-    if(!found) stop("can't extract display information")
+    if(!found) stop("can't extract information")
     fileName_image = normalizePath(fileName_image, winslash = "/")
     IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity, bypass = TRUE, ...)[[1]]
   }
@@ -137,7 +144,7 @@ getDisplayInfo <- function(fileName, from = c("acquisition","analysis")[2], verb
   infos$brightfield = list("channel"=as.logical(as.numeric(unlist(strsplit(acquisition$Illumination[["BfLedIndicators_0_11"]], " ", useBytes = TRUE, fixed=TRUE)))),
                            "power"= as.logical(as.numeric(acquisition$Illumination[["BFOnOff"]])),
                            "intensity" = as.numeric(acquisition$Illumination[["BFIntensity"]]))
-  # TODO ask AMNIS, if collectionmode is the good variable that determines default display information
+  # TODO ask AMNIS, if collectionmode is the good variable that determines default information
   infos$collectionmode = as.numeric(acquisition$Illumination[["CollectionMode"]])
   infos$magnification = as.numeric(acquisition$Imaging[["Magnification"]])
   infos$coremode = as.numeric(acquisition$Fluidics[["CoreMode"]])
@@ -198,7 +205,7 @@ getDisplayInfo <- function(fileName, from = c("acquisition","analysis")[2], verb
             "checksum" = checksumXIF(fileName_image),
             "fileName" = fileName,
             "fileName_image" = normalizePath(fileName_image, winslash = "/"))
-
+  
   infos$Images = infos$Images[order(infos$Images$physicalChannel),]
   names(infos$masks) = sapply(infos$masks, FUN=function(x) x$name)
   class(infos$masks) <- c(class(infos$masks), "IFC_masks")
@@ -220,6 +227,6 @@ getDisplayInfo <- function(fileName, from = c("acquisition","analysis")[2], verb
     col[col=="Lime"] <- "chartreuse"
     infos$Images[,"saturation"] <- col
   }
-  attr(infos, "class") <- c("IFC_display",from)
+  attr(infos, "class") <- c("IFC_info",from)
   return(infos)
 }

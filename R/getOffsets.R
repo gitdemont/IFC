@@ -19,12 +19,12 @@
 #'   system.time(offsets_slow <- getOffsets(fileName = file_cif, fast = FALSE))
 #'   identical(offsets_fast, offsets_slow)   
 #' } else {
-#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
 # #' }
-#' @return an integer vector of class IFC_offsets of IFD offsets found in XIF file.
+#' @return an integer vector of class `IFC_offset` of IFD offsets found in XIF file.
 #' If no offsets is found an error is thrown.
 #' @export
 getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose = FALSE) {
@@ -32,7 +32,7 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
   verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
   fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
-  obj_count = as.integer(getDisplayInfo(fileName, warn = FALSE, force_default = TRUE, display_progress = FALSE)$objcount)
+  obj_count = as.integer(getInfo(fileName, warn = FALSE, force_default = TRUE, display_progress = FALSE)$objcount)
   if(fast) {
     offsets = cpp_getoffsets_noid(fileName, obj_count = obj_count, display_progress = display_progress, verbose = verbose)
     checksum = sum(offsets[2:11], na.rm = T)
@@ -64,7 +64,7 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
     attr(offsets, "all") = offsets
     attr(offsets, "fileName_image") = fileName
     attr(offsets, "checksum") = checksum
-    attr(offsets, "class") = c("IFC_offsets")
+    attr(offsets, "class") = c("IFC_offset")
     attr(offsets, "first") = offsets_1 
     return(offsets)
   }

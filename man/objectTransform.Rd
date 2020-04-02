@@ -2,25 +2,12 @@
 % Please edit documentation in R/objectTransform.R
 \name{objectTransform}
 \alias{objectTransform}
-\title{IFC_object Transformation}
+\title{Object Transformation}
 \usage{
-objectTransform(
-  mat,
-  msk,
-  color,
-  input_range,
-  mode,
-  type,
-  cleanse = FALSE,
-  add_noise = TRUE,
-  random_seed = 1,
-  size = NULL,
-  bg_mean = 0,
-  bg_sd = 0,
-  full_range = FALSE,
-  force_range = FALSE,
-  gamma = 1
-)
+objectTransform(mat, msk, color, input_range, mode, type,
+  cleanse = FALSE, add_noise = TRUE, random_seed = 1, size = NULL,
+  bg_mean = 0, bg_sd = 0, full_range = FALSE, force_range = FALSE,
+  gamma = 1)
 }
 \arguments{
 \item{mat}{a finite numeric matrix.}

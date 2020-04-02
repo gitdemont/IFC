@@ -7,18 +7,11 @@
 For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 }
 \usage{
-ExtractFromDAF(
-  fileName,
-  extract_features = TRUE,
-  extract_images = TRUE,
-  extract_offsets = TRUE,
-  extract_stats = TRUE,
-  endianness = .Platform$endian,
-  pnt_in_poly_algorithm = 1,
-  pnt_in_poly_epsilon = 1e-12,
-  display_progress = TRUE,
-  ...
-)
+ExtractFromDAF(fileName, extract_features = TRUE,
+  extract_images = TRUE, extract_offsets = TRUE,
+  extract_stats = TRUE, endianness = .Platform$endian,
+  pnt_in_poly_algorithm = 1, pnt_in_poly_epsilon = 1e-12,
+  display_progress = TRUE, ...)
 }
 \arguments{
 \item{fileName}{path to file.}
@@ -43,7 +36,7 @@ Note that for the moment only 1(Trigonometry) is available.}
 \item{...}{Other arguments to be passed.}
 }
 \value{
-A named list of class "IFC_data", whose members are:\cr
+A named list of class `IFC_data`, whose members are:\cr
 -description, a list of descriptive information.\cr
 -fileName, path of fileName input.\cr
 -fileName_image, path of .cif image fileName is refering to.\cr
@@ -71,7 +64,7 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
   daf <- ExtractFromDAF(fileName = file_daf)
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

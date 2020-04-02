@@ -2,7 +2,7 @@
 #' @description
 #' Extracts IFDs (Image File Directory) in RIF or CIF files.
 #' @param fileName path to file.
-#' @param offsets either "all", "first" or an object of class "IFC_offsets". Default is "first".
+#' @param offsets either "all", "first" or an object of class `IFC_offset`. Default is "first".
 #' @param trunc_bytes number of characters to extract for string TAGS. Default is 8.
 #' @param force_trunc whether to force truncation for all TAGS types. Default is FALSE.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
@@ -26,7 +26,7 @@
 #'   ## show information contained in 1st IFD
 #'   print(sapply(IFD_first[[1]]$tags, FUN=function(x) x)) 
 #' } else {
-#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
@@ -84,7 +84,7 @@ getIFD <- function(fileName, offsets = "first", trunc_bytes = 8, force_trunc = F
   }
   
   K = c("IFC_ifd_list", "IFC_partial_ifd")
-  if(!("IFC_offsets" %in% class(offsets))) stop("'offsets' should be either 'all', 'first' or an object of class 'IFC_offsets'")
+  if(!("IFC_offset" %in% class(offsets))) stop("'offsets' should be either 'all', 'first' or an object of class `IFC_offset`")
   L = length(offsets)
   if(L > 0) {
     if(L == obj_number*2) K = c("IFC_ifd_list", "IFC_full_ifd")

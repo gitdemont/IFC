@@ -1,7 +1,7 @@
 #' @title IFC_images Raw Conversion
 #' @description 
-#' Helper to convert images (IFC_images object) to raw vector.
-#' @param images an IFC_images object.
+#' Helper to convert images (`IFC_images` object) to raw vector.
+#' @param images an `IFC_images` object.
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param title_progress character string, giving the title of the progress bar. Default is "".

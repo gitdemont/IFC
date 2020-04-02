@@ -7,22 +7,12 @@
 For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 }
 \usage{
-ExtractFromXIF(
-  fileName,
-  extract_features = TRUE,
-  extract_images = FALSE,
-  extract_offsets = FALSE,
-  extract_stats = TRUE,
-  pnt_in_poly_algorithm = 1,
-  pnt_in_poly_epsilon = 1e-12,
-  force_default = TRUE,
-  verbose = FALSE,
-  verbosity = 1,
-  display_progress = TRUE,
-  fast = TRUE,
-  recursive = FALSE,
-  ...
-)
+ExtractFromXIF(fileName, extract_features = TRUE,
+  extract_images = FALSE, extract_offsets = FALSE,
+  extract_stats = TRUE, pnt_in_poly_algorithm = 1,
+  pnt_in_poly_epsilon = 1e-12, force_default = TRUE, verbose = FALSE,
+  verbosity = 1, display_progress = TRUE, fast = TRUE,
+  recursive = FALSE, ...)
 }
 \arguments{
 \item{fileName}{path to file.}
@@ -60,7 +50,7 @@ if extract_images is TRUE, a warning will be sent if an object is found at an un
 \item{...}{Other arguments to be passed.}
 }
 \value{
-A named list of class "IFC_data", whose members are:\cr
+A named list of class `IFC_data`, whose members are:\cr
 -description, a list of descriptive information.\cr
 -fileName, path of fileName input.\cr
 -fileName_image, same as fileName.\cr
@@ -72,7 +62,7 @@ A named list of class "IFC_data", whose members are:\cr
 -images, a data.frame describing information about images.\cr
 -offsets, an integer vector of images and masks IFDs offsets.\cr
 -stats, a data.frame describing populations count and percentage to parent and total population.\cr
-If fileName is a merged of several files returned object will be of class c("IFC_data", "Merged").
+If fileName is a merged of several files returned object will be of class `IFC_data` and `Merged`.
 If recursive is set to "TRUE", ExtractFromXIF will be applied recursively on files defining the merged.
 and the returned object will be a list of the above-mentionned list for each of these files.
 }
@@ -93,7 +83,7 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
   cif <- ExtractFromXIF(fileName = file_cif)
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

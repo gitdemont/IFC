@@ -4,10 +4,10 @@
 \alias{splitp}
 \title{String Decomposition with Placeholders}
 \usage{
-splitp(export_to = "\%d/\%s_fromR.\%e")
+splitp(write_to = "\%d/\%s_fromR.\%e")
 }
 \arguments{
-\item{export_to}{string. Default is "\%d/\%s_fromR.\%e"}
+\item{write_to}{string. Default is "\%d/\%s_fromR.\%e"}
 }
 \description{
 Helper aiming to detect placeholder pattern

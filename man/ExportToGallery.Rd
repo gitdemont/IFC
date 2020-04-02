@@ -4,40 +4,21 @@
 \alias{ExportToGallery}
 \title{Gallery Export}
 \usage{
-ExportToGallery(
-  display,
-  offsets,
-  objects,
-  objects_type = "img",
-  layout,
-  export = c("file", "matrix", "base64")[2],
-  export_to,
-  base64_id = FALSE,
-  base64_att = "",
-  overwrite = FALSE,
-  main = "",
-  add_channels = TRUE,
-  add_ids = 1,
-  add_lines = 2,
-  bg_color = "grey20",
-  dpi = 300,
-  scale = list(),
-  extract_max = 10,
-  sampling = FALSE,
-  display_progress = TRUE,
-  ...
-)
+ExportToGallery(offsets, objects, image_type = "img", layout,
+  export = c("file", "matrix", "base64")[2], write_to,
+  base64_id = FALSE, base64_att = "", overwrite = FALSE, main = "",
+  add_channels = TRUE, add_ids = 1, add_lines = 2,
+  bg_color = "grey20", dpi = 300, scale = list(), extract_max = 10,
+  sampling = FALSE, display_progress = TRUE, ...)
 }
 \arguments{
-\item{display}{object of class IFC_display, rich information extracted by \code{\link{getDisplayInfo}}. This parameter can't be missing.}
-
-\item{offsets}{object of class IFC_offsets. If missing, the default, offsets will be extracted from display$fileName.\cr
+\item{offsets}{object of class `IFC_offset`. 
 This param is not mandatory but it may allow to save time for repeated image export on same file.}
 
 \item{objects}{integers, indices of objects to use.
 This param is not mandatory, if missing, the default, all objects will be used.}
 
-\item{objects_type}{objects_type of desired offsets. Either "img" or "msk". Default is "img".}
+\item{image_type}{image_type of desired offsets. Either "img" or "msk". Default is "img".}
 
 \item{layout}{a character vector of [acquired channels + 'composite' images] members to export. Default is missing to export everything.
 Note that members can be missing to be removed from final gallery export.
@@ -45,20 +26,20 @@ Note that members not found will be automatically removed and a warning will be 
 
 \item{export}{export format. Either "file", "matrix", "base64". Default is "matrix".}
 
-\item{export_to}{used when 'export' is "file" or "base64" to compute respectively filename or base64 id attribute.
+\item{write_to}{used when 'export' is "file" or "base64" to compute respectively filename or base64 id attribute.
 Exported type will be deduced from this pattern. Allowed export are '.bmp', '.jpg', '.jpeg', '.png', '.tif', '.tiff'.
 Note that '.bmp' are faster but not compressed producing bigger data.\cr
 Placeholders, if found, will be substituted:\cr
--\%d: with full path directory of 'display$fileName_image'\cr
--\%p: with first parent directory of ''display$fileName_image'\cr
--\%e: with extension of 'display$fileName_image' (without leading .)\cr
--\%s: with shortname from 'display$fileName_image' (i.e. basename without extension)\cr
+-\%d: with full path directory\cr
+-\%p: with first parent directory\cr
+-\%e: with extension (without leading .)\cr
+-\%s: with shortname (i.e. basename without extension)\cr
 -\%o: with objects (at most 10, will be collapse with "_", if more than one).\cr
 -\%c: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
 A good trick is to use:\cr
 -"\%d/\%s_gallery_Obj[\%o]_Ch[\%c].tiff", when 'export' is "file"\cr
 -"\%s_gallery.bmp", when 'export' is "base64".\cr
-Note that if missing and 'export' is not "file", 'export_to' will be set to "\%s_gallery.bmp".}
+Note that if missing and 'export' is not "file", 'write_to' will be set to "\%s_gallery.bmp".}
 
 \item{base64_id}{whether to add id attribute to base64 exported object. Default is TRUE.\cr
 Only applied when 'export' is "base64".}
@@ -101,7 +82,8 @@ This parameter can't be lesser than 6px nor higher than image width + scale text
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
 \item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'mode'(="rgb") and bypass(=TRUE).\cr
-If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.}
+If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+/!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 }
 \value{
 Depending on 'export':\cr
@@ -110,7 +92,7 @@ Depending on 'export':\cr
 -"file", an invisible vector of ids corresponding to the objects exported.
 }
 \description{
-Exports gallery of IFC objects
+Exports gallery of `IFC_img` / `IFC_msk`objects
 }
 \details{
 arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToGallery}} input arguments.

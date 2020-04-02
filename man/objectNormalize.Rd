@@ -2,15 +2,10 @@
 % Please edit documentation in R/objectNormalize.R
 \name{objectNormalize}
 \alias{objectNormalize}
-\title{IFC_object Intensity Normalization}
+\title{Object Intensity Normalization}
 \usage{
-objectNormalize(
-  mat,
-  input_range = c(0, 4095),
-  full_range = FALSE,
-  force_range = FALSE,
-  gamma = 1
-)
+objectNormalize(mat, input_range = c(0, 4095), full_range = FALSE,
+  force_range = FALSE, gamma = 1)
 }
 \arguments{
 \item{mat}{a finite numeric matrix.}

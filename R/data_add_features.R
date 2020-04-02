@@ -1,7 +1,7 @@
 #' @title Features Adder to IFC_data Object
 #' @description
-#' Adds features to an already existing IFC_data object.
-#' @param obj an IFC_data object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
+#' Adds features to an already existing `IFC_data` object.
+#' @param obj an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
 #' @param features a list of features to add to obj. Each element of this list will be coerced by \code{\link{buildFeature}}.
 #' @details A warning will be thrown if a provided feature is already existing in obj.\cr
 #' In such a case this feature will not be added to obj.\cr
@@ -26,7 +26,7 @@
 #'     dafnew <- data_add_features(obj = daf, features = list(c(feat_def_copy, list(val = feat_copy))))
 #'   }
 #' } else {
-#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }

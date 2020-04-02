@@ -2,7 +2,7 @@
 % Please edit documentation in R/objectAddText.R
 \name{objectAddText}
 \alias{objectAddText}
-\title{IFC_object Text Incrustation}
+\title{Image Text Incrustation}
 \usage{
 objectAddText(image, text, color, xoff = 0, yoff = 0, corner = "TL")
 }

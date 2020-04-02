@@ -7,7 +7,7 @@
 toXML2_graphs(graphs, verbose = FALSE)
 }
 \arguments{
-\item{graphs}{an IFC_graphs object.}
+\item{graphs}{an `IFC_graphs` object.}
 
 \item{verbose}{whether to display message about current action. Default is FALSE.}
 }
@@ -15,6 +15,6 @@ toXML2_graphs(graphs, verbose = FALSE)
 a xml_node.
 }
 \description{
-Helper to convert graphs (IFC_graphs object) to XML nodes.
+Helper to convert graphs (`IFC_graphs` object) to XML nodes.
 }
 \keyword{internal}

@@ -9,12 +9,12 @@ toXML2_features_def(features_def, verbose = verbose)
 \arguments{
 \item{verbose}{whether to display message about current action. Default is FALSE.}
 
-\item{features}{an IFC_features_def object.}
+\item{features}{an `IFC_features_def` object.}
 }
 \value{
 a XML::xmlNode.
 }
 \description{
-Helper to convert features definition (IFC_features_def object) to XML nodes.
+Helper to convert features definition (`IFC_features_def` object) to XML nodes.
 }
 \keyword{internal}

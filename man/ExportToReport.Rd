@@ -4,31 +4,20 @@
 \alias{ExportToReport}
 \title{Graphical and Statistic Report Generation}
 \usage{
-ExportToReport(
-  obj,
-  selection,
-  export_to,
-  overwrite = FALSE,
-  onepage = TRUE,
-  color_mode = c("white", "black")[1],
-  add_key = "panel",
-  precision = c("light", "full")[1],
-  trunc_labels = 38,
-  trans = asinh,
-  bin,
-  viewport = "ideas",
-  display_progress = TRUE,
-  ...
-)
+ExportToReport(obj, selection, write_to, overwrite = FALSE,
+  onepage = TRUE, color_mode = c("white", "black")[1],
+  add_key = "panel", precision = c("light", "full")[1],
+  trunc_labels = 38, trans = asinh, bin, viewport = "ideas",
+  display_progress = TRUE, ...)
 }
 \arguments{
-\item{obj}{an IFC_data object extracted with features extracted.}
+\item{obj}{an `IFC_data` object extracted with features extracted.}
 
 \item{selection}{when provided, indices of desired graphs.
 In such case onepage parameter is set to FALSE.
 Note that indices are read from left to right, from top to bottom.}
 
-\item{export_to}{Pattern used to export file(s).
+\item{write_to}{pattern used to export file(s).
 Placeholders, like c("\%d/\%s_fromR.pdf", "\%d/\%s_fromR.csv"), will be substituted:\cr
 -\%d: with full path directory of 'obj$fileName'\cr
 -\%p: with first parent directory of 'obj$fileName'\cr
@@ -48,8 +37,8 @@ Accepted values are either: FALSE, 'panel', 'global', 'both' or c('panel', 'glob
 Note that it only applies when display is seen as overlaying populations.}
 
 \item{precision}{when graphs is a 2D scatter with population overlay, this argument controls amount of information displayed. Default is "light".\cr
-- 'light', the default, will only display points of same coordinates that are amoung the other layers.\cr
-- 'full' will display all the layers.}
+-"light", the default, will only display points of same coordinates that are amoung the other layers.\cr
+-"full" will display all the layers.}
 
 \item{trunc_labels}{maximum number of characters to display for labels. Default is 38.}
 
@@ -70,10 +59,10 @@ Note that it only applies when display is seen as overlaying populations.}
 It invisibly returns full path of exported .pdf and/or .csv file(s).
 }
 \description{
-Generates report from IFC_data object.
+Generates report from `IFC_data` object.
 }
 \details{
-depending on 'export_to', function will create .pdf and/or .csv file(s) report with according to graphs found in 'obj'.\cr
+depending on 'write_to', function will create .pdf and/or .csv file(s) report with according to graphs found in 'obj'.\cr
 - csv file if created will contain "Min.","1st Qu.","Median","Mean","3rd Qu.","Max." for each graph found for x and y (if not histogram) for drawn populations and regions.\cr
 - pdf file if created will contain graphs and to a certain extent some stats "Min.", "Median", "Mean", "Max." (no more than 7 rows).\cr
 Note that only graphs will be exported (no images, features values, population stats, ...) in the same layout they were created and without sizing.
@@ -90,10 +79,10 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
     ## randomly export at most 5 graphs from daf
     sel = sample(1:L, min(5, L))
     ExportToReport(obj = daf, selection = sel,
-                   export_to = paste0(tmp, "\\\\test.pdf"), overwrite = TRUE)
+                   write_to = paste0(tmp, "\\\\test.pdf"), overwrite = TRUE)
   }
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

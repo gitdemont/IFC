@@ -7,7 +7,7 @@
 data_add_regions(obj, regions, ...)
 }
 \arguments{
-\item{obj}{an IFC_data object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}
+\item{obj}{an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}
 
 \item{regions}{a list of region(s) to add to obj. Each element of this list will be coerced by \code{\link{buildRegion}}.}
 
@@ -17,11 +17,11 @@ data_add_regions(obj, regions, ...)
 an IFC_data object with regions added.
 }
 \description{
-Adds regions to an already existing IFC_data object.
+Adds regions to an already existing `IFC_data` object.
 }
 \details{
-A warning will be thrown if a provided region is already existing in obj.\cr
-In such a case this region will not be added to obj.\cr
+A warning will be thrown if a provided region is already existing in 'obj'.\cr
+In such a case this region will not be added to 'obj'.\cr
 If any input population is not well defined and can't be created then an error will occur.
 }
 \examples{
@@ -40,7 +40,7 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
     dafnew <- data_add_regions(obj = daf, regions = list(reg_copy))
   }
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

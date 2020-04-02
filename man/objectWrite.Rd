@@ -2,7 +2,7 @@
 % Please edit documentation in R/objectWrite.R
 \name{objectWrite}
 \alias{objectWrite}
-\title{IFC_object File Export}
+\title{Object File Export}
 \usage{
 objectWrite(x, type, ...)
 }

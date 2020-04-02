@@ -1,14 +1,14 @@
 #' @title Pops Adder to IFC_data Object
 #' @description
-#' Adds populations to an already existing IFC_data object.
-#' @param obj an IFC_data object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
-#' @param pops a list of population(s) to add to obj. Each element of this list will be coerced by \code{\link{buildPopulation}}.
+#' Adds populations to an already existing `IFC_data` object.
+#' @param obj an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
+#' @param pops a list of population(s) to add to 'obj'. Each element of this list will be coerced by \code{\link{buildPopulation}}.
 #' @param pnt_in_poly_algorithm algorithm used to determine if object belongs to a polygon region or not. Default is 1.\cr
 #' Note that for the moment only 1(Trigonometry) is available.
 #' @param pnt_in_poly_epsilon epsilon to determine if object belongs to a polygon region or not. It only applies when algorithm is 1. Default is 1e-12.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @details A warning will be thrown if a provided population is already existing in obj.\cr
-#' In such a case this population will not be added to obj.\cr
+#' @details A warning will be thrown if a provided population is already existing in 'obj'.\cr
+#' In such a case this population will not be added to 'obj'.\cr
 #' If any input population is not well defined and can't be created then an error will occur.
 #' @param ... Other arguments to be passed.
 #' @source For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
@@ -30,7 +30,7 @@
 #'     dafnew <- data_add_pops(obj = daf, pops = list(pop_copy))
 #'   }
 #' } else {
-#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }

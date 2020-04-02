@@ -1,4 +1,4 @@
-#' @title IFC_object File Export
+#' @title Object File Export
 #' @description
 #' Exports images to various types.
 #' @param x a numeric matrix.

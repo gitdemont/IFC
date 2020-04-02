@@ -7,7 +7,7 @@
 popsRetrieveGraph(obj, pops, vis2D = "density", all_siblings = FALSE)
 }
 \arguments{
-\item{obj}{an IFC_data object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}
+\item{obj}{an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}
 
 \item{pops}{names of graphical populations present in 'obj'. Note that they should be siblings.}
 

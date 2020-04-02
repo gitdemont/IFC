@@ -35,12 +35,12 @@
 #'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
 #'   cif <- ExtractFromXIF(fileName = file_cif)
 #' } else {
-#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
 # #' }
-#' @return A named list of class "IFC_data", whose members are:\cr
+#' @return A named list of class `IFC_data`, whose members are:\cr
 #' -description, a list of descriptive information.\cr
 #' -fileName, path of fileName input.\cr
 #' -fileName_image, same as fileName.\cr
@@ -52,7 +52,7 @@
 #' -images, a data.frame describing information about images.\cr
 #' -offsets, an integer vector of images and masks IFDs offsets.\cr
 #' -stats, a data.frame describing populations count and percentage to parent and total population.\cr
-#' If fileName is a merged of several files returned object will be of class c("IFC_data", "Merged").
+#' If fileName is a merged of several files returned object will be of class `IFC_data` and `Merged`.
 #' If recursive is set to "TRUE", ExtractFromXIF will be applied recursively on files defining the merged.
 #' and the returned object will be a list of the above-mentionned list for each of these files.
 #' @export

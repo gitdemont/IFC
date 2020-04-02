@@ -1,24 +1,27 @@
-#' @title IFC_object Object Extraction Parameters Definition
+#' @title Object Extraction Parameters Definition
 #' @description
 #' Defines IFC_object object extraction parameters.
-#' @param display object of class IFC_display, rich information extracted by \code{\link{getDisplayInfo}}. THis parameter can't be missing.
+#' @param fileName path of file to read data from. This param is not mandatory.
+#' If missing, the default, info$fileName_image will be used
+#' @param info object of class `IFC_info`, rich information extracted by \code{\link{getInfo}}. This param is not mandatory.
+#' If missing, the default, 'info' will be extracted from 'fileName.'
 #' @param mode color mode export. Either "rgb", "gray" or "raw". Default is "raw".
 #' Note that "raw" is only possible when 'export' is "matrix".
 #' @param export format mode export. Either "file", "matrix", "base64". Default is "matrix".
-#' @param export_to Used when export is "file" or "base64" to compute respectively exported file name or base64 id attribute.\cr
+#' @param write_to used when export is "file" or "base64" to compute respectively exported file name or base64 id attribute.\cr
 #' Exported "file" extension and "base64" MIME type will be deduced from this pattern. Allowed export are ".bmp", ".jpg", ".jpeg", ".png", ".tif", ".tiff".
 #' Note that '.bmp' are faster but not compressed producing bigger data.\cr
 #' Placeholders, if found, will be substituted:\cr
-#' -\%d: with full path directory of 'display$fileName_image'\cr
-#' -\%p: with first parent directory of 'display$fileName_image'\cr
-#' -\%e: with extension of 'display$fileName_image' (without leading .)\cr
-#' -\%s: with shortname from 'display$fileName_image' (i.e. basename without extension)\cr
+#' -\%d: with full path directory\cr
+#' -\%p: with first parent directory\cr
+#' -\%e: with extension (without leading .)\cr
+#' -\%s: with shortname (i.e. basename without extension)\cr
 #' -\%o: with object_id\cr
 #' -\%c: with channel_id\cr
 #' A good trick is to use:\cr
 #' -"\%d/\%s/\%s_\%o_\%c.tiff", when 'export' is "file"\cr
 #' -"\%o_\%c.bmp", when 'export' is "base64".\cr
-#' Note that if missing and 'export' is not "file", 'export_to' will be set to "\%o_\%c.bmp".
+#' Note that if missing and 'export' is not "file", 'write_to' will be set to "\%o_\%c.bmp".
 #' @param base64_id whether to add id attribute to base64 exported object. Default is FALSE.\cr
 #' Only applied when export is "base64".
 #' @param base64_att attributes to add to base64 exported object. Default is "".\cr
@@ -35,7 +38,7 @@
 #' Use "none" to only extract composite.
 #' @param random_seed a single value, interpreted as an integer when 'add_noise' is set to TRUE. Default is NULL.
 #' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(0,0) for no change.
-#' @param force_width whether to use information in display to fill size. Default is TRUE.
+#' @param force_width whether to use information in 'info' to fill size. Default is TRUE.
 #' When set to TRUE, width of 'size' argument will be overwritten.
 #' @param removal removal method: Either "none", "clipped", "masked", "MC".\cr
 #' -"none", to keep image as is\cr
@@ -53,29 +56,60 @@
 #' @param force_range only apply when mode is not "raw", if force_range is TRUE, then image display range will be adjusted for each object resulting in normalization. Default is FALSE.\cr
 #' Note that this parameter takes the precedence over 'full_range'.\cr
 #' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.
-#' @param ... other arguments to be passed.
-#' @return A object of class IFC_param. 
+#' @param ... other arguments to be passed to \code{\link{getInfo}}.
+#' @details 'fileName' and 'info' can not be both missing.
+#' @return an object of class `IFC_param`. 
 #' @export
-objectParam <- function(display, 
+objectParam <- function(fileName,
+                        info, 
                         mode = c("rgb", "gray", "raw")[3],
                         export = c("file", "matrix", "base64")[2],
-                        export_to, base64_id = FALSE, base64_att = "",
+                        write_to,
+                        base64_id = FALSE,
+                        base64_att = "",
                         overwrite = FALSE, 
-                        composite = "", selection = "all",
-                        size = c(0,0), force_width = TRUE, 
-                        random_seed = NULL, removal = "none", add_noise = TRUE, 
-                        full_range = FALSE, force_range = FALSE,
+                        composite = "",
+                        selection = "all",
+                        size = c(0,0),
+                        force_width = TRUE, 
+                        random_seed = NULL,
+                        removal = "none",
+                        add_noise = TRUE, 
+                        full_range = FALSE,
+                        force_range = FALSE,
                         ...) {
   dots=list(...)
-  # dots=list(...)
-  if(missing(display)) stop("'display' can't be missing") 
-  assert(display, cla = "IFC_display")
+  param_info = names(dots) %in% c("from", "verbose", "verbosity","warn",
+                                     "force_default", "cifdir", "ntry")
+  dots_info = dots[param_info]
+  ##### check info/fileName
+  compute_info = FALSE
+  can_compute = TRUE
+  if(missing(info)) {
+    compute_info = TRUE
+    if(missing(fileName)) stop("you should provide at least 'fileName' or 'info'.")
+  } else {
+    if("IFC_info" %in% class(info)) {
+      if(!missing(fileName)) { # if missing compute_info = FALSE
+        if(info$checksum != checksumXIF(info$fileName_image)) { # if == compute_info = FALSE
+          compute_info = TRUE
+          warning("provided 'info' does not match with expected one, 'info' will be recomputed", immediate. = TRUE, call. = FALSE)
+        }
+      }
+    } else { # info is not of good class
+      compute_info = TRUE
+      if(missing(fileName)) stop("provided 'info' is not of class `IFC_info` and can not be recomputed since 'fileName' is missing.")
+      warning("provided 'info' is not of class `IFC_info`, 'info' will be recomputed", immediate. = TRUE, call. = FALSE)
+    }
+  }
+  if(can_compute) if(compute_info) info = do.call(what = "getInfo",
+                                                  args = c(list(fileName = fileName), dots_info)) 
   
   ##### check size
   size = na.omit(as.integer(size[1:2]))
   assert(size, len=2, typ="integer")
   force_width = as.logical(force_width); assert(force_width, len = 1, alw = c(TRUE,FALSE)) 
-  if(force_width) size = c(size[1], as.integer(display$channelwidth))
+  if(force_width) size = c(size[1], as.integer(info$channelwidth))
   
   ##### check input param
   removal = as.character(removal); assert(removal, alw = c("none", "clipped", "masked", "MC"))
@@ -90,21 +124,21 @@ objectParam <- function(display,
   }
   
   ##### retrieve channels
-  channels = display$Images[display$Images$physicalChannel %in% which(display$in_use), ]
-
-  ##### checks selection
+  channels = info$Images[info$Images$physicalChannel %in% which(info$in_use), ]
+  
+  ##### check selection
   if(any(c("all","none") %in% selection)) {
     if(length(selection)!=1) stop("when 'selection' is \"all\" or \"none\" no other terms are accepted")
     if("all" %in% selection) {
-      selection = channels$physicalChannel
+      sel_int = channels$physicalChannel
     } else {
-      selection = NULL
+      sel_int = NULL
     }
   } else {
-    selection = as.integer(selection); mess = assert(selection, alw = channels$physicalChannel)
+    sel_int = as.integer(selection); mess = assert(sel_int, alw = channels$physicalChannel)
   }
   
-  ##### ensures composite is well formatted
+  ##### ensure composite is well formatted
   composite = as.character(composite); assert(composite, typ = "character")
   if(!all(gsub("\\.|\\/|[[:digit:]]","",composite) %in% "")) stop("'composite' is not well formatted")
   
@@ -131,14 +165,14 @@ objectParam <- function(display,
   }
   
   ##### define chan to extract, to keep, ...
-  chan_to_extract = which(channels$physicalChannel %in% c(selection, composite_chan))
-  chan_to_keep = as.character(channels$physicalChannel[channels$physicalChannel %in% selection])
+  chan_to_extract = which(channels$physicalChannel %in% c(sel_int, composite_chan))
+  chan_to_keep = as.character(channels$physicalChannel[channels$physicalChannel %in% sel_int])
   if(sum(chan_to_extract) == 0) stop("can't export object with 'selection'/'composite' parameters provided")
   
   ##### fill removal, add_noise, full_range, force_range for every extracted channels
-  channels[,"removal"] <- "none"
-  channels[chan_to_extract,"removal"] <- rep_len(removal, length.out = length(chan_to_extract))
-  channels[,"removal"] = as.integer(factor(x = channels[,"removal"], levels = c("none", "clipped", "masked", "MC"))) - 1
+  channels[,"string_removal"] <- "none"
+  channels[chan_to_extract,"string_removal"] <- rep_len(removal, length.out = length(chan_to_extract))
+  channels[,"removal"] = as.integer(factor(x = channels[,"string_removal"], levels = c("none", "clipped", "masked", "MC"))) - 1
   channels[,"add_noise"] <- F
   channels[chan_to_extract,"add_noise"] <- rep_len(add_noise, length.out = length(chan_to_extract))
   channels[,"full_range"] <- F
@@ -146,83 +180,69 @@ objectParam <- function(display,
   channels[,"force_range"] <- F
   channels[chan_to_extract,"force_range"] <- rep_len(force_range, length.out = length(chan_to_extract))
   
-  ##### checks gamma
+  ##### check gamma
   gamma = channels[,c("gamma")]
-  # recomputes gamma to check if c("xmin", "xmax", "xmid", "ymid") were not modified
+  # recompute gamma to check if c("xmin", "xmax", "xmid", "ymid") were not modified
   gamma_c = apply(channels[,c("xmin", "xmax", "xmid", "ymid")], 1, cpp_computeGamma)
   # if modified gamma is reset to 1 to use linear visualization
   gamma[gamma != gamma_c] <- 1
   channels[,"gamma"] <- gamma
-  
-  # minimal ans for export == "matrix"
+  ##### build ans
   ans = list(mode = mode,
              export = export,
+             write_to = NULL,
+             type = "",
+             splitf_obj = NULL,
+             splitp_obj = NULL,
              base64_id = FALSE,
              base64_att = "",
              colors = sapply(channels[,"color"], simplify = FALSE, FUN=function(x) {tmp = c(rgb2hsv(col2rgb(x))); names(tmp) = x; tmp }), 
              channels = channels, 
              chan_to_extract = chan_to_extract,
              chan_to_keep = chan_to_keep,
-             removal = channels[channels$physicalChannel[channels$physicalChannel %in% selection], "removal"],
+             removal = channels[chan_to_extract, "string_removal"],
              add_noise = any(channels$add_noise),
              composite = composite,
+             selection = selection,
              composite_desc = composite_desc,
              extract_msk = max(channels[, "removal"]), 
              size = size,
              random_seed = random_seed,
-             checksum = display$checksum,
-             fileName_image = display$fileName_image)
+             objcount = info$objcount,
+             channelwidth = info$channelwidth,
+             brightfield = info$brightfield,
+             checksum = info$checksum,
+             fileName_image = info$fileName_image)
   
-  # compute extre param for export == "file" or ""base64"
-  if(export != "matrix") { # file or base64
+  ##### compute extre param for export == "file" or ""base64"
+  if(export != "matrix") { 
     if(mode == "raw") stop("can't export as \"raw\" when '", export, "' is choosen")
+    ans$splitf_obj <- splitf(info$fileName_image)
     if(export == "file") { # file
+      # not allowed to write file without user input
+      if(missing(write_to)) stop("'write_to' can't be missing when 'export' is \"file\"")
       assert(overwrite, len = 1, alw = c(TRUE, FALSE))
-      if(missing(export_to)) stop("'export_to' can't be missing when 'export' is \"file\"")
-      # determines type from export_to
-      type = getFileExt(export_to)
-      switch(type,
-             "jpg" = {type <- "jpeg"},
-             "tif" = {type <- "tiff"}
-      )
-      # check type
-      assert(type, len = 1, alw = c("bmp", "jpg", "png", "tif"))
-      splitf_obj = splitf(display$fileName_image)
-      splitp_obj = splitp(export_to)
-      # create folder for file export
-      dir_name = dirname(formatn(splitp_obj, splitf_obj))
-      ans = c(list(dir_name = dir_name,
-                   export_to = export_to,
-                   type = type,
-                   overwrite = overwrite,
-                   splitf_obj = splitf_obj,
-                   splitp_obj = splitp_obj), ans)
+      ans$overwrite = overwrite
     } else { # base64
       base64_id = as.logical(base64_id)
       assert(base64_id, len = 1, alw = c(TRUE,FALSE))
+      ans$base64_id = base64_id
       base64_att = na.omit(as.character(base64_att))
       assert(base64_att, len = 1, typ = "character")
-      ans$base64_id = base64_id
       ans$base64_att = base64_att
-      if(missing(export_to)) {
-        export_to = "%o_%c.bmp"
-        type = "bmp"
-      } else {
-        type = getFileExt(export_to)
-        switch(type,
-               "jpg" = {type <- "jpeg"},
-               "tif" = {type <- "tiff"}
-        )
-      }
-      # check type
-      assert(type, len = 1, alw = c("bmp", "jpg", "png", "tif"))
-      ans = c(list(export_to = export_to,
-                   type = type), ans)
-      if(base64_id) {
-        ans = c(list(splitf_obj = splitf(display$fileName_image),
-                     splitp_obj = splitp(export_to)), ans)
-      }
+      # write_to is not mandatory for "base64"
+      if(missing(write_to)) write_to = "%o_%c.bmp"
     }
+    ans$write_to <- write_to
+    ans$splitp_obj = splitp(ans$write_to)
+    ans$dir_name <- dirname(formatn(splitp_obj = splitp(ans$write_to), splitf_obj = ans$splitf_obj))
+    type = getFileExt(ans$write_to)
+    switch(type,
+           "jpg" = {type <- "jpeg"},
+           "tif" = {type <- "tiff"})
+    ##### check type
+    assert(type, len = 1, alw = c("bmp", "jpeg", "png", "tiff"))
+    ans$type <- type
   }
   class(ans) <- "IFC_param"
   return(ans)

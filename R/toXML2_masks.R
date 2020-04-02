@@ -1,7 +1,7 @@
 #' @title IFC_masks XML Conversion
 #' @description 
-#' Helper function intended to convert masks (IFC_masks object) to XML nodes.
-#' @param masks an IFC_masks object.
+#' Helper function intended to convert masks (`IFC_masks` object) to XML nodes.
+#' @param masks an `IFC_masks` object.
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @return a xml_node.
 #' @keywords internal

@@ -1,4 +1,4 @@
-#' @title IFC_object Text Incrustation
+#' @title Image Text Incrustation
 #' @description
 #' Adds Text to image.
 #' @param image a [0,1] image.

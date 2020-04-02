@@ -69,7 +69,7 @@ splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(",
 #' @title String Decomposition with Placeholders
 #' @description
 #' Helper aiming to detect placeholder pattern
-#' @param export_to string. Default is "\%d/\%s_fromR.\%e"
+#' @param write_to string. Default is "\%d/\%s_fromR.\%e"
 #' @details 
 #' -\%s: shortname (i.e. basename without extension)\cr
 #' -\%p: first parent directory\cr
@@ -78,9 +78,9 @@ splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(",
 #' -\%o: object id\cr
 #' -\%c: channel
 #' @keywords internal
-splitp = function(export_to = "%d/%s_fromR.%e") {
-  assert(export_to, len = 1, typ = "character")
-  foo = strsplit(export_to, split = "%", fixed = TRUE)[[1]]
+splitp = function(write_to = "%d/%s_fromR.%e") {
+  assert(write_to, len = 1, typ = "character")
+  foo = strsplit(write_to, split = "%", fixed = TRUE)[[1]]
   if(length(foo) > 1) {
     foo = gsub("^(s|p|d|e|o|c)(.*)$", "\\1%\\2", foo[-1])
     foo = unlist(strsplit(foo, split = "%", fixed = TRUE))

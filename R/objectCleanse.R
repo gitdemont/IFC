@@ -1,4 +1,4 @@
-#' @title IFC_object Cleanser
+#' @title Object Cleanser
 #' @description
 #' Removes abnormalities (clipped/debris) from image
 #' @param mat a numeric matrix (image).

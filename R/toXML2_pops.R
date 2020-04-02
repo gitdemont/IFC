@@ -1,7 +1,7 @@
 #' @title IFC_pops XML Conversion
 #' @description 
-#' Helper to convert populations (IFC_pops object) to XML nodes.
-#' @param pops an IFC_pops object.
+#' Helper to convert populations (`IFC_pops` object) to XML nodes.
+#' @param pops an `IFC_pops` object.
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param title_progress character string, giving the title of the progress bar. Default is "".

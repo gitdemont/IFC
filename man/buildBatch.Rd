@@ -4,20 +4,10 @@
 \alias{buildBatch}
 \title{Batch Builder}
 \usage{
-buildBatch(
-  files,
-  compensation,
-  analysis,
-  default_batch_dir,
-  config_file,
-  name = "Batch1",
-  use_acquisition = FALSE,
-  suffix = "",
-  allow_channels_dissimilarity = FALSE,
-  overwrite = TRUE,
-  segment_rif = "None",
-  options
-)
+buildBatch(files, compensation, analysis, default_batch_dir, config_file,
+  name = "Batch1", use_acquisition = FALSE, suffix = "",
+  allow_channels_dissimilarity = FALSE, overwrite = TRUE,
+  segment_rif = "None", options)
 }
 \arguments{
 \item{files}{path of files to batch.}

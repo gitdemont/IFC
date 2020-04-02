@@ -1,7 +1,7 @@
 #' @title IFC_graphs XML Conversion
 #' @description 
-#' Helper to convert graphs (IFC_graphs object) to XML nodes.
-#' @param graphs an IFC_graphs object.
+#' Helper to convert graphs (`IFC_graphs` object) to XML nodes.
+#' @param graphs an `IFC_graphs` object.
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @return a xml_node.
 #' @keywords internal

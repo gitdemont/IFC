@@ -1,17 +1,17 @@
 #' @title Plot and Stats Computation for IFC Graph
 #' @description
 #' Computes plot and stats from a IFC graph
-#' @param obj an IFC_data object extracted with features extracted.
+#' @param obj an `IFC_data` object extracted with features extracted.
 #' @param graph a graph from 'obj' or a list that can be coerced by \code{\link{buildGraph}}.
 #' @param draw whether to draw plot or not. Default is FALSE.
 #' @param stats_print whether to print stats or not. Default is given by 'draw' argument.
-#' @param color_mode whether to extract colors from obj in white or black mode. Default is 'white'.
-#' @param add_key whether to draw a 'global' key under title or in the first 'panel' or 'both'. Default is 'panel'.\cr
-#' Accepted values are either: FALSE, 'panel', 'global', 'both' or c('panel', 'global').\cr
+#' @param color_mode whether to extract colors from 'obj' in white or black mode. Default is "white".
+#' @param add_key whether to draw a "global" key under title or in the first "panel" or "both". Default is "panel".\cr
+#' Accepted values are either: FALSE, "panel", "global", "both" or c("panel", "global").\cr
 #' Note that it only applies when display is seen as overlaying populations.
-#' @param precision when graphs is a 2D scatter with population overlay, this argument controls amount of information displayed:\cr
-#' - 'light', the default, will only display points of same coordinates that are amoung the other layers.\cr
-#' - 'full' will display all the layers.
+#' @param precision when graphs is a 2D scatter with population overlay, this argument controls amount of information displayed. Default is "light".\cr
+#' -"light", the default, will only display points of same coordinates that are amoung the other layers.\cr
+#' -"full" will display all the layers.
 #' @param trunc_labels maximum number of characters to display for labels. Default is 38.
 #' @param trans transformation function for density graphs. Default is asinh.
 #' @param bin number of bin used for histogram / density. Default is missing.
@@ -38,7 +38,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   
   # check mandatory param
   if(missing(obj)) stop("'obj' can't be missing")
-  if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class IFC_data")
+  if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class `IFC_data`")
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
   assert(color_mode, len=1, alw=c("white","black"))
   color_mode=c(2,1)[c("white","black")==color_mode]

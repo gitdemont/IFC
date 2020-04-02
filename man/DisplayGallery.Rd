@@ -4,35 +4,20 @@
 \alias{DisplayGallery}
 \title{Gallery Display}
 \usage{
-DisplayGallery(
-  display,
-  offsets,
-  objects,
-  objects_type = "img",
-  layout,
-  name = "DisplayGallery",
-  caption = FALSE,
-  pageLength = 10L,
-  pdf_pageSize = "A2",
-  pdf_pageOrientation = "landscape",
-  pdf_image_dpi = 96,
-  extract_max = 10,
-  sampling = FALSE,
-  display_progress = TRUE,
-  mode = c("rgb", "gray")[1],
-  ...
-)
+DisplayGallery(offsets, objects, image_type = "img", layout,
+  name = "DisplayGallery", caption = FALSE, pageLength = 10L,
+  pdf_pageSize = "A2", pdf_pageOrientation = "landscape",
+  pdf_image_dpi = 96, extract_max = 10, sampling = FALSE,
+  display_progress = TRUE, mode = c("rgb", "gray")[1], ...)
 }
 \arguments{
-\item{display}{object of class IFC_display, rich information extracted by \code{\link{getDisplayInfo}}. This parameter can't be missing.}
-
-\item{offsets}{object of class IFC_offsets. If missing, the default, offsets will be extracted from display$fileName.\cr
+\item{offsets}{object of class `IFC_offset`. 
 This param is not mandatory but it may allow to save time for repeated image export on same file.}
 
 \item{objects}{integers, indices of objects to use.
 This param is not mandatory, if missing, the default, all objects will be used.}
 
-\item{objects_type}{objects_type of desired offsets. Either "img" or "msk". Default is "img".}
+\item{image_type}{image_type of desired offsets. Either "img" or "msk". Default is "img".}
 
 \item{layout}{a character vector of [acquired channels + 'composite' images] members to export. Default is missing to export everything.\cr
 Note that members can be missing to be removed from final display.\cr
@@ -59,7 +44,8 @@ Note that members not found will be automatically removed and a warning will be 
 \item{mode}{(\code{\link{objectExtract}} argument) color mode export. Either "rgb" or "gray". Default is "rgb".}
 
 \item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr
-If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.}
+If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+/!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 }
 \value{
 it invisibly returns a list whose members are:\cr
@@ -67,11 +53,11 @@ it invisibly returns a list whose members are:\cr
 -args, associated arguments to pass to DT::datatable().
 }
 \description{
-Displays gallery of IFC objects
+Displays gallery of `IFC_img` / `IFC_msk` objects
 }
 \details{
 arguments of \code{\link{objectExtract}} will be deduced from \code{\link{DisplayGallery}} input arguments.\cr
-Please note that PDF export link will be available if export_to wil not result in a "bmp".\cr
+Please note that PDF export link will be available if 'write_to' wil not result in a "bmp".\cr
 Please note that a warning may be sent if gallery to display contains large amount of data. This is due to use of datatable() from \pkg{DT}.\cr
 Warning message:\cr
 In instance$preRenderHook(instance) :\cr
@@ -82,12 +68,12 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   ## use a cif file
   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
   cif <- ExtractFromXIF(fileName = file_cif)
-  disp <- getDisplayInfo(fileName = file_cif, from = "analysis")
+  info <- getInfo(fileName = file_cif, from = "analysis")
   ## randomly show at most 10 "img" objects from file
-  DisplayGallery(display = disp, objects_type = "img", extract_max = 10,
-                 sampling = TRUE, export_to = "example.png")
+  DisplayGallery(info = info, image_type = "img", extract_max = 10,
+                 sampling = TRUE, write_to = "example.png")
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

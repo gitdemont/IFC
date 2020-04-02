@@ -1,11 +1,11 @@
 #' @title Graphical and Statistic Report Generation
 #' @description
-#' Generates report from IFC_data object.
-#' @param obj an IFC_data object extracted with features extracted.
+#' Generates report from `IFC_data` object.
+#' @param obj an `IFC_data` object extracted with features extracted.
 #' @param selection when provided, indices of desired graphs.
 #' In such case onepage parameter is set to FALSE.
 #' Note that indices are read from left to right, from top to bottom. 
-#' @param export_to Pattern used to export file(s).
+#' @param write_to pattern used to export file(s).
 #' Placeholders, like c("\%d/\%s_fromR.pdf", "\%d/\%s_fromR.csv"), will be substituted:\cr
 #' -\%d: with full path directory of 'obj$fileName'\cr
 #' -\%p: with first parent directory of 'obj$fileName'\cr
@@ -20,8 +20,8 @@
 #' Accepted values are either: FALSE, 'panel', 'global', 'both' or c('panel', 'global').\cr
 #' Note that it only applies when display is seen as overlaying populations.
 #' @param precision when graphs is a 2D scatter with population overlay, this argument controls amount of information displayed. Default is "light".\cr
-#' - 'light', the default, will only display points of same coordinates that are amoung the other layers.\cr
-#' - 'full' will display all the layers.
+#' -"light", the default, will only display points of same coordinates that are amoung the other layers.\cr
+#' -"full" will display all the layers.
 #' @param trunc_labels maximum number of characters to display for labels. Default is 38.
 #' @param trans transformation function for density graphs. Default is asinh.
 #' @param bin default number of bin used for histogram. Default is missing.
@@ -31,7 +31,7 @@
 #' "max" will use data and regions drawn to define limits.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... Other parameters to be passed.
-#' @details depending on 'export_to', function will create .pdf and/or .csv file(s) report with according to graphs found in 'obj'.\cr
+#' @details depending on 'write_to', function will create .pdf and/or .csv file(s) report with according to graphs found in 'obj'.\cr
 #' - csv file if created will contain "Min.","1st Qu.","Median","Mean","3rd Qu.","Max." for each graph found for x and y (if not histogram) for drawn populations and regions.\cr
 #' - pdf file if created will contain graphs and to a certain extent some stats "Min.", "Median", "Mean", "Max." (no more than 7 rows).\cr
 #' Note that only graphs will be exported (no images, features values, population stats, ...) in the same layout they were created and without sizing.
@@ -48,17 +48,17 @@
 #'     ## randomly export at most 5 graphs from daf
 #'     sel = sample(1:L, min(5, L))
 #'     ExportToReport(obj = daf, selection = sel,
-#'                    export_to = paste0(tmp, "\\test.pdf"), overwrite = TRUE)
+#'                    write_to = paste0(tmp, "\\test.pdf"), overwrite = TRUE)
 #'   }
 #' } else {
-#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
 # #' }
 #' @return It invisibly returns full path of exported .pdf and/or .csv file(s).
 #' @export
-ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TRUE,
+ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRUE,
                           color_mode=c("white","black")[1], add_key="panel", precision=c("light","full")[1],    # parameters to pass to plotGraph
                           trunc_labels=38, trans=asinh, bin, viewport="ideas",                                  # parameters to pass to plotGraph
                           display_progress=TRUE, ...) {
@@ -73,13 +73,13 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
   
   # check mandatory param
   if(missing(obj)) stop("'obj' can't be missing")
-  if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class IFC_data")
+  if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class `IFC_data`")
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
-  if(missing(export_to)) stop("'export_to' can't be missing")
-  assert(export_to, typ = "character")
-  file_extension = getFileExt(export_to)
+  if(missing(write_to)) stop("'write_to' can't be missing")
+  assert(write_to, typ = "character")
+  file_extension = getFileExt(write_to)
   assert(file_extension, alw = c("pdf", "csv"))
-  if(any(duplicated(file_extension))) stop("'export_to' has to be only one .pdf and / or only one .csv")
+  if(any(duplicated(file_extension))) stop("'write_to' has to be only one .pdf and / or only one .csv")
   title_progress = basename(obj$fileName)
   splitf_obj = splitf(obj$fileName)
   create_pdf = FALSE
@@ -88,19 +88,19 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
   export_to_csv = NULL
   if(any(file_extension%in%"pdf")) {
     create_pdf = TRUE
-    splitp_obj_pdf = splitp(export_to[file_extension=="pdf"])
-    if(any(splitp_obj_pdf$channel > 0)) message("'export_to' (pdf part) has %c argument but channel information can't be retrieved with ExportToReport()")
-    if(any(splitp_obj_pdf$object > 0)) message("'export_to' (pdf part) has %o argument but channel information can't be retrieved with ExportToReport()")
+    splitp_obj_pdf = splitp(write_to[file_extension=="pdf"])
+    if(any(splitp_obj_pdf$channel > 0)) message("'write_to' (pdf part) has %c argument but channel information can't be retrieved with ExportToReport()")
+    if(any(splitp_obj_pdf$object > 0)) message("'write_to' (pdf part) has %o argument but channel information can't be retrieved with ExportToReport()")
     export_to_pdf = formatn(splitp_obj_pdf, splitf_obj)
   }
   if(any(file_extension%in%"csv")) {
     create_csv = TRUE
-    splitp_obj_csv = splitp(export_to[file_extension=="csv"])
-    if(any(splitp_obj_csv$channel > 0)) message("'export_to', (csv part) has %c argument but channel information can't be retrieved with ExportToReport()")
-    if(any(splitp_obj_csv$object > 0)) message("'export_to' (csv part) has %o argument but channel information can't be retrieved with ExportToReport()")
+    splitp_obj_csv = splitp(write_to[file_extension=="csv"])
+    if(any(splitp_obj_csv$channel > 0)) message("'write_to', (csv part) has %c argument but channel information can't be retrieved with ExportToReport()")
+    if(any(splitp_obj_csv$object > 0)) message("'write_to' (csv part) has %o argument but channel information can't be retrieved with ExportToReport()")
     export_to_csv = formatn(splitp_obj_csv, splitf_obj)
   }
-  export_to = c(export_to_pdf, export_to_csv)
+  write_to = c(export_to_pdf, export_to_csv)
   
   assert(color_mode, len=1, alw=c("white","black"))
   assert(precision, len=1, alw=c("light","full"))
@@ -116,9 +116,9 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
   }
   display_progress = as.logical(display_progress); assert(display_progress, len=1, alw=c(TRUE,FALSE))
   overwritten = FALSE
-  tmp = file.exists(export_to)
+  tmp = file.exists(write_to)
   if(any(tmp)) {
-    if(!overwrite) stop(paste0("file ",paste0(export_to[tmp]," already exists"), collapse="\n"))
+    if(!overwrite) stop(paste0("file ",paste0(write_to[tmp]," already exists"), collapse="\n"))
     if(create_pdf) if(file.exists(export_to_pdf)) export_to_pdf = normalizePath(export_to_pdf, winslash = "/")
     if(create_csv) if(file.exists(export_to_csv)) export_to_csv = normalizePath(export_to_csv, winslash = "/")
     overwritten = TRUE
@@ -148,8 +148,8 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
       }, error = function(e) stop(paste0(export_to_csv,"\ncan't be created: check name / currently opened ?"), call. = FALSE))
     export_to_csv = normalizePath(export_to_csv, winslash = "/")
   }
-  export_to = c(export_to_pdf,export_to_csv)
-  message(paste0(ifelse(length(export_to)==2, "files", "file")," will be exported in :\n",paste0(normalizePath(dirname(export_to), winslash = "/"),collapse="\n")))
+  write_to = c(export_to_pdf,export_to_csv)
+  message(paste0(ifelse(length(write_to)==2, "files", "file")," will be exported in :\n",paste0(normalizePath(dirname(write_to), winslash = "/"),collapse="\n")))
   tryCatch({
     # shortcuts
     G = obj$graphs
@@ -258,9 +258,9 @@ ExportToReport = function(obj, selection, export_to, overwrite=FALSE, onepage=TR
       }
     }
   }, error = function(e) {
-    message(paste0(ifelse(length(export_to)==2, "files have", "file has"), " been incompletely ", ifelse(overwritten, "overwritten", "exported"), "\n"))
+    message(paste0(ifelse(length(write_to)==2, "files have", "file has"), " been incompletely ", ifelse(overwritten, "overwritten", "exported"), "\n"))
     stop(e$message, call. = FALSE)
   })
-  message(paste0("\n######################\n",ifelse(length(export_to)==2, "files have", "file has"), " been successfully ", ifelse(overwritten, "overwritten", "exported"),"\n"))
-  return(invisible(export_to))
+  message(paste0("\n######################\n",ifelse(length(write_to)==2, "files have", "file has"), " been successfully ", ifelse(overwritten, "overwritten", "exported"),"\n"))
+  return(invisible(write_to))
 }

@@ -7,22 +7,14 @@
 TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
 }
 \usage{
-getIFD(
-  fileName,
-  offsets = "first",
-  trunc_bytes = 8,
-  force_trunc = FALSE,
-  verbose = FALSE,
-  verbosity = 1,
-  display_progress = FALSE,
-  bypass = FALSE,
-  ...
-)
+getIFD(fileName, offsets = "first", trunc_bytes = 8,
+  force_trunc = FALSE, verbose = FALSE, verbosity = 1,
+  display_progress = FALSE, bypass = FALSE, ...)
 }
 \arguments{
 \item{fileName}{path to file.}
 
-\item{offsets}{either "all", "first" or an object of class "IFC_offsets". Default is "first".}
+\item{offsets}{either "all", "first" or an object of class `IFC_offset`. Default is "first".}
 
 \item{trunc_bytes}{number of characters to extract for string TAGS. Default is 8.}
 
@@ -67,7 +59,7 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   ## show information contained in 1st IFD
   print(sapply(IFD_first[[1]]$tags, FUN=function(x) x)) 
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

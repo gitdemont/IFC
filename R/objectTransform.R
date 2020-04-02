@@ -1,4 +1,4 @@
-#' @title IFC_object Transformation
+#' @title Object Transformation
 #' @description
 #' Function to normalize, colorize and add background to images.
 #' @param mat a finite numeric matrix.

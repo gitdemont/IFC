@@ -2,50 +2,41 @@
 % Please edit documentation in R/objectParam.R
 \name{objectParam}
 \alias{objectParam}
-\title{IFC_object Object Extraction Parameters Definition}
+\title{Object Extraction Parameters Definition}
 \usage{
-objectParam(
-  display,
-  mode = c("rgb", "gray", "raw")[3],
-  export = c("file", "matrix", "base64")[2],
-  export_to,
-  base64_id = FALSE,
-  base64_att = "",
-  overwrite = FALSE,
-  composite = "",
-  selection = "all",
-  size = c(0, 0),
-  force_width = TRUE,
-  random_seed = NULL,
-  removal = "none",
-  add_noise = TRUE,
-  full_range = FALSE,
-  force_range = FALSE,
-  ...
-)
+objectParam(fileName, info, mode = c("rgb", "gray", "raw")[3],
+  export = c("file", "matrix", "base64")[2], write_to,
+  base64_id = FALSE, base64_att = "", overwrite = FALSE,
+  composite = "", selection = "all", size = c(0, 0),
+  force_width = TRUE, random_seed = NULL, removal = "none",
+  add_noise = TRUE, full_range = FALSE, force_range = FALSE, ...)
 }
 \arguments{
-\item{display}{object of class IFC_display, rich information extracted by \code{\link{getDisplayInfo}}. THis parameter can't be missing.}
+\item{fileName}{path of file to read data from. This param is not mandatory.
+If missing, the default, info$fileName_image will be used}
+
+\item{info}{object of class `IFC_info`, rich information extracted by \code{\link{getInfo}}. This param is not mandatory.
+If missing, the default, 'info' will be extracted from 'fileName.'}
 
 \item{mode}{color mode export. Either "rgb", "gray" or "raw". Default is "raw".
 Note that "raw" is only possible when 'export' is "matrix".}
 
 \item{export}{format mode export. Either "file", "matrix", "base64". Default is "matrix".}
 
-\item{export_to}{Used when export is "file" or "base64" to compute respectively exported file name or base64 id attribute.\cr
+\item{write_to}{used when export is "file" or "base64" to compute respectively exported file name or base64 id attribute.\cr
 Exported "file" extension and "base64" MIME type will be deduced from this pattern. Allowed export are ".bmp", ".jpg", ".jpeg", ".png", ".tif", ".tiff".
 Note that '.bmp' are faster but not compressed producing bigger data.\cr
 Placeholders, if found, will be substituted:\cr
--\%d: with full path directory of 'display$fileName_image'\cr
--\%p: with first parent directory of 'display$fileName_image'\cr
--\%e: with extension of 'display$fileName_image' (without leading .)\cr
--\%s: with shortname from 'display$fileName_image' (i.e. basename without extension)\cr
+-\%d: with full path directory\cr
+-\%p: with first parent directory\cr
+-\%e: with extension (without leading .)\cr
+-\%s: with shortname (i.e. basename without extension)\cr
 -\%o: with object_id\cr
 -\%c: with channel_id\cr
 A good trick is to use:\cr
 -"\%d/\%s/\%s_\%o_\%c.tiff", when 'export' is "file"\cr
 -"\%o_\%c.bmp", when 'export' is "base64".\cr
-Note that if missing and 'export' is not "file", 'export_to' will be set to "\%o_\%c.bmp".}
+Note that if missing and 'export' is not "file", 'write_to' will be set to "\%o_\%c.bmp".}
 
 \item{base64_id}{whether to add id attribute to base64 exported object. Default is FALSE.\cr
 Only applied when export is "base64".}
@@ -68,7 +59,7 @@ Use "none" to only extract composite.}
 
 \item{size}{a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(0,0) for no change.}
 
-\item{force_width}{whether to use information in display to fill size. Default is TRUE.
+\item{force_width}{whether to use information in 'info' to fill size. Default is TRUE.
 When set to TRUE, width of 'size' argument will be overwritten.}
 
 \item{random_seed}{a single value, interpreted as an integer when 'add_noise' is set to TRUE. Default is NULL.}
@@ -93,11 +84,14 @@ This parameter will be repeated with rep_len() from \pkg{base} for every physica
 Note that this parameter takes the precedence over 'full_range'.\cr
 This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.}
 
-\item{...}{other arguments to be passed.}
+\item{...}{other arguments to be passed to \code{\link{getInfo}}.}
 }
 \value{
-A object of class IFC_param.
+an object of class `IFC_param`.
 }
 \description{
 Defines IFC_object object extraction parameters.
+}
+\details{
+'fileName' and 'info' can not be both missing.
 }

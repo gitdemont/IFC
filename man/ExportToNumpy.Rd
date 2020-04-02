@@ -4,31 +4,20 @@
 \alias{ExportToNumpy}
 \title{Numpy Export}
 \usage{
-ExportToNumpy(
-  display,
-  offsets,
-  objects,
-  objects_type = "img",
-  display_progress = TRUE,
-  python = Sys.getenv("RETICULATE_PYTHON"),
-  dtype = c("uint8", "int16", "uint16", "double")[3],
-  mode = c("raw", "gray")[1],
-  export = c("file", "matrix")[2],
-  export_to,
-  overwrite = FALSE,
-  ...
-)
+ExportToNumpy(offsets, objects, image_type = "img",
+  display_progress = TRUE, python = Sys.getenv("RETICULATE_PYTHON"),
+  dtype = c("uint8", "int16", "uint16", "double")[3], mode = c("raw",
+  "gray")[1], export = c("file", "matrix")[2], write_to,
+  overwrite = FALSE, ...)
 }
 \arguments{
-\item{display}{object of class IFC_display, rich information extracted by \code{\link{getDisplayInfo}}. This parameter can't be missing.}
-
-\item{offsets}{object of class IFC_offsets. If missing, the default, offsets will be extracted from display$fileName.\cr
+\item{offsets}{object of class `IFC_offset`. 
 This param is not mandatory but it may allow to save time for repeated image export on same file.}
 
 \item{objects}{integers, indices of objects to use.
 This param is not mandatory, if missing, the default, all objects will be used.}
 
-\item{objects_type}{objects_type of desired offsets. Either "img" or "msk". Default is "img".}
+\item{image_type}{image_type of desired offsets. Either "img" or "msk". Default is "img".}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
@@ -42,13 +31,13 @@ Note that this numpy should be available in this python to be able to export to 
 \item{export}{export format. Either "file", "matrix". Default is "matrix".\cr
 Note that you will need 'reticulate' package installed to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".}
 
-\item{export_to}{used when 'export' is "file" to compute respectively filename.
+\item{write_to}{used when 'export' is "file" to compute respectively filename.
 Exported type will be deduced from this pattern. Allowed export are '.npy'.\cr
 Placeholders, if found, will be substituted:\cr
--\%d: with full path directory of 'display$fileName_image'\cr
--\%p: with first parent directory of ''display$fileName_image'\cr
--\%e: with extension of 'display$fileName_image' (without leading .)\cr
--\%s: with shortname from 'display$fileName_image' (i.e. basename without extension)\cr
+-\%d: with full path directory\cr
+-\%p: with first parent directory\cr
+-\%e: with extension of (without leading .)\cr
+-\%s: with shortname (i.e. basename without extension)\cr
 -\%o: with objects (at most 10, will be collapse with "_", if more than one).\cr
 -\%c: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
 A good trick is to use:\cr
@@ -57,7 +46,8 @@ A good trick is to use:\cr
 \item{overwrite}{whether to overwrite file or not. Default is FALSE.}
 
 \item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and bypass(=TRUE).
-If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.}
+If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.
+/!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 }
 \value{
 Depending on 'export':\cr

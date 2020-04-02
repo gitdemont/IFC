@@ -4,22 +4,15 @@
 \alias{popsNetwork}
 \title{IFC_pops Network Display}
 \usage{
-popsNetwork(
-  obj,
-  hierarchical = TRUE,
-  color_mode = "white",
-  highlight = NULL,
-  seed = NULL,
-  direction = "LR",
-  weighted = TRUE
-)
+popsNetwork(obj, hierarchical = TRUE, color_mode = "white",
+  highlight = NULL, seed = NULL, direction = "LR", weighted = TRUE)
 }
 \arguments{
-\item{obj}{an IFC_data object extracted with features extracted.}
+\item{obj}{an `IFC_data` object extracted with features extracted.}
 
 \item{hierarchical}{whether to display network using a hierarchical layout or not. Default is TRUE.}
 
-\item{color_mode}{Whether to extract colors from obj in white or black mode. Default is 'white'.}
+\item{color_mode}{Whether to extract colors from 'obj' in "white" or "black" mode. Default is "white".}
 
 \item{highlight}{population to permanently highlight. If found in DAF object, this population will be displayed with its color. Default is NULL.}
 
@@ -40,7 +33,7 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   daf <- ExtractFromDAF(fileName = file_daf)
   popsNetwork(obj = daf)
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

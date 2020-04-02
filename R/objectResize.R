@@ -1,4 +1,4 @@
-#' @title IFC_object Resizing
+#' @title Object Resizing
 #' @description
 #' Resizes mat to new dimensions.
 #' @param mat a numeric matrix.

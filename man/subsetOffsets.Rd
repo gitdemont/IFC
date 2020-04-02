@@ -2,22 +2,22 @@
 % Please edit documentation in R/subsetOffsets.R
 \name{subsetOffsets}
 \alias{subsetOffsets}
-\title{IFC_offsets Subsetting}
+\title{IFC_offset Subsetting}
 \usage{
-subsetOffsets(offsets, objects, objects_type = c("img", "msk"))
+subsetOffsets(offsets, objects, image_type = c("img", "msk"))
 }
 \arguments{
-\item{offsets}{Object of objects_type IFC_offsets to subset.}
+\item{offsets}{object of class `IFC_offset` to subset.}
 
-\item{objects}{Integer vector, indices of objects to extract.}
+\item{objects}{integer vector, indices of objects to extract.}
 
-\item{objects_type}{objects_type of desired offsets. Default is c("img", "msk"). Allowed are "img" and/or "msk".}
+\item{image_type}{image_type of desired offsets. Default is c("img", "msk"). Allowed are "img" and/or "msk".}
 }
 \value{
-A class IFC_offsets integer vector or empty list if objects are outside of offsets.
+A class IFC_offset integer vector or empty list if objects are outside of offsets.
 }
 \description{
-Subsets IFC_offsets
+Subsets IFC_offset
 }
 \examples{
 if(requireNamespace("IFCdata", quietly = TRUE)) {
@@ -26,11 +26,11 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   ## extract offsets
   offsets <- getOffsets(fileName = file_cif)
   ## subset offsets of the 4 first "img" objects
-  sub_offs <- subsetOffsets(offsets = offsets, objects = 0:3, objects_type = "img")
+  sub_offs <- subsetOffsets(offsets = offsets, objects = 0:3, image_type = "img")
   ## show subsetted offsets' structure
   str(sub_offs)
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

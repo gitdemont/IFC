@@ -1,12 +1,11 @@
 #' @title Gallery Display
 #' @description
-#' Displays gallery of IFC objects
-#' @param display object of class IFC_display, rich information extracted by \code{\link{getDisplayInfo}}. This parameter can't be missing.
-#' @param offsets object of class IFC_offsets. If missing, the default, offsets will be extracted from display$fileName.\cr
+#' Displays gallery of `IFC_img` / `IFC_msk` objects
+#' @param offsets object of class `IFC_offset`. 
 #' This param is not mandatory but it may allow to save time for repeated image export on same file.
 #' @param objects integers, indices of objects to use.
 #' This param is not mandatory, if missing, the default, all objects will be used.
-#' @param objects_type objects_type of desired offsets. Either "img" or "msk". Default is "img".
+#' @param image_type image_type of desired offsets. Either "img" or "msk". Default is "img".
 #' @param layout a character vector of [acquired channels + 'composite' images] members to export. Default is missing to export everything.\cr
 #' Note that members can be missing to be removed from final display.\cr
 #' Note that members not found will be automatically removed and a warning will be thrown.
@@ -21,9 +20,10 @@
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param mode (\code{\link{objectExtract}} argument) color mode export. Either "rgb" or "gray". Default is "rgb".
 #' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr
-#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.
+#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+#' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{DisplayGallery}} input arguments.\cr
-#' Please note that PDF export link will be available if export_to wil not result in a "bmp".\cr
+#' Please note that PDF export link will be available if 'write_to' wil not result in a "bmp".\cr
 #' Please note that a warning may be sent if gallery to display contains large amount of data. This is due to use of datatable() from \pkg{DT}.\cr
 #' Warning message:\cr
 #' In instance$preRenderHook(instance) :\cr
@@ -34,12 +34,12 @@
 #'   ## use a cif file
 #'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
 #'   cif <- ExtractFromXIF(fileName = file_cif)
-#'   disp <- getDisplayInfo(fileName = file_cif, from = "analysis")
+#'   info <- getInfo(fileName = file_cif, from = "analysis")
 #'   ## randomly show at most 10 "img" objects from file
-#'   DisplayGallery(display = disp, objects_type = "img", extract_max = 10,
-#'                  sampling = TRUE, export_to = "example.png")
+#'   DisplayGallery(info = info, image_type = "img", extract_max = 10,
+#'                  sampling = TRUE, write_to = "example.png")
 #' } else {
-#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
@@ -48,11 +48,21 @@
 #' -data, data for DT::datatable(),\cr
 #' -args, associated arguments to pass to DT::datatable().
 #' @export
-DisplayGallery <- function(display, offsets, objects, objects_type = "img", layout, 
-                           name = "DisplayGallery", caption = FALSE, pageLength = 10L, 
-                           pdf_pageSize = "A2", pdf_pageOrientation = "landscape", pdf_image_dpi = 96,
-                           extract_max = 10, sampling = FALSE, display_progress = TRUE, 
-                           mode = c("rgb", "gray")[1], ...) {
+DisplayGallery <- function(offsets,
+                           objects,
+                           image_type = "img", 
+                           layout, 
+                           name = "DisplayGallery", 
+                           caption = FALSE, 
+                           pageLength = 10L, 
+                           pdf_pageSize = "A2", 
+                           pdf_pageOrientation = "landscape", 
+                           pdf_image_dpi = 96,
+                           extract_max = 10, 
+                           sampling = FALSE, 
+                           display_progress = TRUE, 
+                           mode = c("rgb", "gray")[1], 
+                           ...) {
   dots = list(...)
   # backup last state of device ask newpage and set to FALSE
   old_ask <- devAskNewPage(ask = FALSE)
@@ -62,11 +72,32 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
   on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
   suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
   
+  # check input
+  entries = as.list(match.call())
+  input = whoami(entries = entries)
+  need = c('fileName', 'info', 'param', 'offsets')
+  if(!any(sapply(input[need], FUN = function(i) length(i) != 0))) {
+    stop(paste0("can't determine what to extract with provided parameters.\n try to input at least one of: ",
+                paste0("'", need , "'", collapse = ", ")))
+  }
+  
+  # recover default function values of whoami object found
+  form = formals(fun = attr(input, "from"))
+  mism = na.omit(names(entries[-1])[attr(input, "was")[need %in% names(input)]])
+  sapply(mism, FUN = function(x) assign(x = x, value = form[[x]], inherits = TRUE))
+  
+  # reattribute needed param
+  offsets = input[["offsets"]]
+  param = input[["param"]]
+  if(length(offsets) == 0) {
+    fileName = input[["fileName"]]
+  } else {
+    fileName = attr(offsets, "fileName_image")
+  }
+  
   # check mandatory param
-  if(missing(display)) stop("'display' can't be missing")
-  if(!("IFC_display"%in%class(display))) stop("'display' is not of class IFC_display")
   name = as.character(name); assert(name, len = 1, typ = "character")
-  assert(objects_type, len = 1, alw = c("img", "msk"))
+  assert(image_type, len = 1, alw = c("img", "msk"))
   caption = as.logical(caption); assert(caption, len = 1, alw=c(TRUE,FALSE))
   assert(mode, len = 1, alw = c("rgb", "gray"))
   sampling = as.logical(sampling); assert(sampling, len = 1, alw = c(TRUE,FALSE))
@@ -86,26 +117,19 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
   assert(pdf_pageOrientation, len = 1, alw = c("landscape", "portrait"))
   pdf_image_dpi = na.omit(as.integer(pdf_image_dpi)); pdf_image_dpi = pdf_image_dpi[pdf_image_dpi>=0]
   assert(pdf_image_dpi, len = 1, typ = "integer")
-  fileName = display$fileName
-  title_progress = basename(fileName)
-  channels = display$Images[display$Images$physicalChannel %in% which(display$in_use), ]
-  
+
   # process extra parameters
-  param_extra = names(dots) %in% c("ifd","display","mode","export","size","force_width")
-  param_param = names(dots) %in% c("export_to","base64_id","base64_att","overwrite",
-                                   "composite","selection","random_seed",
-                                   "removal","add_noise","full_range","force_range")
-  if(length(dots[["verbose"]]) == 0) { # param for objectExtract, getDisplayInfo, getIFD, getOffsets
+  if(length(dots[["verbose"]]) == 0) { 
     verbose = FALSE
   } else {
     verbose = dots[["verbose"]]
   }
-  if(length(dots[["verbosity"]]) == 0) { # param for getDisplayInfo, getIFD
+  if(length(dots[["verbosity"]]) == 0) {
     verbosity = 1
   } else {
     verbosity = dots[["verbosity"]]
   }
-  if(length(dots[["fast"]]) == 0) { # param for getOffsets
+  if(length(dots[["fast"]]) == 0) { 
     fast = TRUE
   } else {
     fast = dots[["fast"]]
@@ -126,12 +150,44 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
   } else {
     force_width = dots[["force_width"]]
   }
+  param_extra = names(dots) %in% c("ifd","mode","export","size","force_width")
   dots = dots[!param_extra] # remove not allowed param
+  param_param = names(dots) %in% c("write_to","base64_id","base64_att","overwrite",
+                                   "composite","selection","random_seed",
+                                   "removal","add_noise","full_range","force_range")
   dots_param = dots[param_param] # keep param_param for objectParam
   dots = dots[!param_param]
+
+  # compute object param
+  # 1: prefer using 'param' if found,
+  # 2: otherwise use 'info' if found,
+  # 3: finally look at fileName
+  if(length(param) == 0) {  
+    if(length(input$info) == 0) { 
+      param = do.call(what = "objectParam",
+                      args = c(list(fileName = fileName,
+                                    export = "base64",
+                                    mode = mode,
+                                    size = size, 
+                                    force_width = force_width), dots_param))
+    } else {
+      param = do.call(what = "objectParam",
+                      args = c(list(info = input$info,
+                                    export = "base64",
+                                    mode = mode,
+                                    size = size, 
+                                    force_width = force_width), dots_param))
+    }
+  } else {
+    param = dots$param
+    param$size = size
+    dots = dots[!is_param]
+  }
+  fileName = param$fileName
+  title_progress = basename(fileName)
   
   # check objects to extract
-  nobj = as.numeric(display$objcount)
+  nobj = as.numeric(param$objcount)
   if(missing(objects)) {
     objects = as.integer(0:(nobj - 1))
   } else {
@@ -156,16 +212,16 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
   if(!force_width) {
     if(length(objects)!=1) if(size[2] == 0) stop("'size' width should be provided when 'force_width' is set to FALSE and 'objects' length not equal to one")
   } else {
-    size = c(size[1], as.integer(display$channelwidth))
+    size = c(size[1], as.integer(param$channelwidth))
   }
   
   # check input offsets if any
   compute_offsets = TRUE
   if(!missing(offsets)) {
-    if(!("IFC_offsets" %in% class(offsets))) {
+    if(!("IFC_offset" %in% class(offsets))) {
       warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
     } else {
-      if(attr(offsets, "checksum") != display$checksum) {
+      if(attr(offsets, "checksum") != param$checksum) {
         warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
       } else {
         compute_offsets = FALSE
@@ -173,22 +229,7 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
     }
   }
   if(compute_offsets) {
-    offsets = suppressMessages(getOffsets(fileName = display$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
-  }
-  
-  # compute object param
-  is_param = names(dots) %in% "param"
-  if(any(is_param)) {
-    param = dots$param
-    param$size = size
-    dots = dots[!is_param]
-  } else {
-    param = do.call(what = "objectParam",
-                    args = c(list(display = display,
-                                  export = "base64",
-                                  mode = mode,
-                                  size = size, 
-                                  force_width = force_width), dots_param))
+    offsets = suppressMessages(getOffsets(fileName = param$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
   }
   
   # extract objects
@@ -200,13 +241,12 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
       ans = lapply(1:L, FUN=function(i) {
         setPB(pb, value = i, title = title_progress, label = "exporting objects")
         do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
-                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type),
+                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = image_type),
                                                                    trunc_bytes = 8, 
                                                                    force_trunc = FALSE, 
                                                                    verbose = verbose, 
                                                                    verbosity = verbosity,
-                                                                   bypass = TRUE), 
-                                                      display = display, 
+                                                                   bypass = TRUE),
                                                       param = param,
                                                       verbose = verbose,
                                                       bypass = TRUE),
@@ -215,13 +255,12 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
     } else {
       ans = lapply(1:L, FUN=function(i) {
         do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
-                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type),
+                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = image_type),
                                                                    trunc_bytes = 8, 
                                                                    force_trunc = FALSE, 
                                                                    verbose = verbose, 
                                                                    verbosity = verbosity,
-                                                                   bypass = TRUE), 
-                                                      display = display, 
+                                                                   bypass = TRUE),
                                                       param = param,
                                                       verbose = verbose,
                                                       bypass = TRUE),
@@ -251,7 +290,7 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
   if(length(layout) == 0) stop("'layout' is of length 0 which is not allowed")
 
   # check object_ids
-  if(objects_type == "img") {
+  if(image_type == "img") {
     ids = sapply(ans, attr, which="object_id")
     if(!all(objects == ids)) {
       warning("Extracted object_ids differ from expected ones. Concider running with 'fast' = FALSE", call. = FALSE, immediate. = TRUE)
@@ -267,8 +306,8 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
     txt_col = 1
   }
 
-  # disable pdf export if export_to is not tiff or png
-  dt_dom = ifelse(length(dots[["export_to"]]) !=0 && !("bmp" %in% getFileExt(dots[["export_to"]])), "Btp", "tp")
+  # disable pdf export if write_to is not tiff or png
+  dt_dom = ifelse(length(dots[["write_to"]]) !=0 && !("bmp" %in% getFileExt(dots[["write_to"]])), "Btp", "tp")
   # TODO, find a way to remove warning
   oop = options("DT.warn.size" = FALSE); on.exit(options(oop), add = TRUE)
   # (object.size(ans) > 1.5e6 && getOption('DT.warn.size', TRUE)) is FALSE but I am still getting warning
@@ -312,7 +351,7 @@ DisplayGallery <- function(display, offsets, objects, objects_type = "img", layo
                                             "doc.content[1].table.body[i][j] = { image: foo, alignment: 'center', width: wid, height: hei };",
                                             "}",
                                             "}",
-                                            sprintf("doc.header = { text: '%s', alignment: 'center', fontSize: 15};", display$fileName),
+                                            sprintf("doc.header = { text: '%s', alignment: 'center', fontSize: 15};", param$fileName),
                                             "doc.footer = function(currentPage, pageCount) { return [ { text: currentPage.toString() + ' - ' + pageCount, alignment: 'center' } ] };",
                                             "}",
                                             "}"),

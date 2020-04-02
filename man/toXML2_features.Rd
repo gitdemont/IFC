@@ -4,15 +4,11 @@
 \alias{toXML2_features}
 \title{IFC_features XML Conversion}
 \usage{
-toXML2_features(
-  features,
-  verbose = FALSE,
-  display_progress = TRUE,
-  title_progress = ""
-)
+toXML2_features(features, verbose = FALSE, display_progress = TRUE,
+  title_progress = "")
 }
 \arguments{
-\item{features}{an IFC_features object.}
+\item{features}{an `IFC_features` object.}
 
 \item{verbose}{whether to display message about current action. Default is FALSE.}
 
@@ -22,6 +18,6 @@ toXML2_features(
 a xml_node.
 }
 \description{
-Helper to convert features (IFC_features object) to XML nodes.
+Helper to convert features (`IFC_features` object) to XML nodes.
 }
 \keyword{internal}

@@ -7,7 +7,7 @@
 popsGetIndices(obj, pop = "")
 }
 \arguments{
-\item{obj}{an IFC_data object extracted with features extracted.}
+\item{obj}{an `IFC_data` object extracted with features extracted.}
 
 \item{pop}{a population name from 'obj'. Default is "".
 If left as is or not found an error is thrown displaying all available population in 'obj'.}
@@ -25,7 +25,7 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   daf <- ExtractFromDAF(fileName = file_daf)
   obj <- popsGetIndices(obj = daf, pop = names(daf$pops)[length(daf$pops)])
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

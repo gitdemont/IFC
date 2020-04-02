@@ -1,9 +1,9 @@
 #' @title IFC_pops Network Display
 #' @description
 #' Builds and displays populations network.
-#' @param obj an IFC_data object extracted with features extracted.
+#' @param obj an `IFC_data` object extracted with features extracted.
 #' @param hierarchical whether to display network using a hierarchical layout or not. Default is TRUE.
-#' @param color_mode Whether to extract colors from obj in white or black mode. Default is 'white'.
+#' @param color_mode Whether to extract colors from 'obj' in "white" or "black" mode. Default is "white".
 #' @param highlight population to permanently highlight. If found in DAF object, this population will be displayed with its color. Default is NULL.
 #' @param seed If you provide a seed manually, the layout will be the same every time. Default is NULL.
 #' @param direction The direction of the hierarchical layout. Default is 'LR'.\cr
@@ -17,7 +17,7 @@
 #'   daf <- ExtractFromDAF(fileName = file_daf)
 #'   popsNetwork(obj = daf)
 #' } else {
-#'   message(sprintf('Please type `install.packages("IFCdata", repos = "%s", type = "source")` %s',
+#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
@@ -25,7 +25,7 @@
 #' @export
 popsNetwork = function(obj, hierarchical=TRUE, color_mode="white", highlight=NULL, seed=NULL, direction="LR", weighted=TRUE) {
   if(missing(obj)) stop("'obj' can't be missing")
-  if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class IFC_data")
+  if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class `IFC_data`")
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
   if(!is.null(seed)) {seed=na.omit(as.integer(seed)); assert(seed, len=1, typ="integer")}
   hierarchical = as.logical(hierarchical); assert(hierarchical, len=1, alw=c(TRUE,FALSE))

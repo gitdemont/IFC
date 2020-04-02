@@ -7,7 +7,8 @@
 derived from \pkg{lattice} from Deepayan Sarkar
 }
 \usage{
-hist_constr(x, breaks, include.lowest = TRUE, right = TRUE, plot = FALSE)
+hist_constr(x, breaks, include.lowest = TRUE, right = TRUE,
+  plot = FALSE)
 }
 \description{
 Helper to construct histogram

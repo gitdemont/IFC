@@ -2,7 +2,7 @@
 % Please edit documentation in R/objectExtract.R
 \name{objectExtract}
 \alias{objectExtract}
-\title{IFC_object Extraction}
+\title{Object Extraction}
 \source{
 For image decompression, Lee Kamentsky's code porting from \url{https://github.com/openmicroscopy/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
 cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr\cr
@@ -33,22 +33,22 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 }
 \usage{
-objectExtract(ifd, display, param, verbose = FALSE, bypass = FALSE, ...)
+objectExtract(ifd, param, verbose = FALSE, bypass = FALSE, ...)
 }
 \arguments{
 \item{ifd}{list of sub elements of IFD data information extracted by \code{\link{getIFD}}. This parameter can't be missing.}
 
-\item{display}{object of class IFC_display, information extracted by \code{\link{getDisplayInfo}}. This parameter can't be missing.}
-
-\item{param}{object of class IFC_param, containing extraction parameters defined by \code{\link{objectParam}}.\cr
+\item{param}{object of class `IFC_param`, containing extraction parameters defined by \code{\link{objectParam}}.\cr
 If this parameter is missing, \code{\link{objectExtract}} will use extra ... to pass arguments to \code{\link{objectParam}} to control object extraction.\cr
 However, if provided, ... will be ignored.}
 
 \item{verbose}{whether to display information (use for debugging purpose). Default is FALSE.}
 
-\item{bypass}{whether to bypass checks on 'ifd', 'display', 'param'. Default is FALSE.}
+\item{bypass}{whether to bypass checks on 'ifd' and 'param'. Default is FALSE.}
 
-\item{...}{other arguments to be passed to \code{\link{objectParam}}.}
+\item{...}{other arguments to be passed to \code{\link{objectParam}}.\cr
+If 'param' is not provided then ... will be used to compute param.\cr
+/!\ If not any of 'fileName', 'info' can be found in ... then attr(ifd, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 }
 \value{
 A list (for every extracted objects) of list (for every exported channels) depending on "export" parameter:\cr
@@ -67,30 +67,30 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   ## use a cif file
   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
   cif_offs <- getOffsets(fileName = file_cif, fast = TRUE)
-  ## extract display infomation
-  disp <- getDisplayInfo(fileName = file_cif, from = "analysis")
+  ## extract infomation
+  info <- getInfo(fileName = file_cif, from = "analysis")
   ## retrieve number of objects stored
-  nobj <- as.integer(disp$objcount)
+  nobj <- as.integer(info$objcount)
   ## randomly subset the offsets of at most 5 "img" objects
   sel = sample(0:(nobj-1), min(5, nobj))
-  sub_offs <- subsetOffsets(cif_offs, objects = sel, objects_type = "img")
+  sub_offs <- subsetOffsets(cif_offs, objects = sel, image_type = "img")
   ## read IFDs from these "img" objects
   IFDs <- getIFD(fileName = file_cif, offsets = sub_offs)
   ## extract raw data of these"img" objects to matrix
-  raw = objectExtract(ifd = IFDs, display = disp, mode = "raw", 
+  raw = objectExtract(ifd = IFDs, info = info, mode = "raw", 
                       export = "matrix")
   ## extract base64 "rgb" colorized version of these "img" objects to base64
-  b64 = objectExtract(ifd = IFDs, display = disp, mode = "rgb", 
+  b64 = objectExtract(ifd = IFDs, info = info, mode = "rgb", 
                       export = "base64", base64_id = TRUE,
-                      export_to = "example_\%o_\%c.png")
+                      write_to = "example_\%o_\%c.png")
   ## use DisplayGallery to show the first "img" objects and play with ... extra parameters
   ## force_range, add_noise, selection, composite, see objectParam
-  DisplayGallery(display = disp, offsets = cif_offs, objects = sel,
-                 base64_id = TRUE, export_to = "example_\%o_\%c.png",
+  DisplayGallery(info = info, offsets = cif_offs, objects = sel,
+                 base64_id = TRUE, write_to = "example_\%o_\%c.png",
                  force_range = c(FALSE,TRUE,FALSE,TRUE), add_noise = FALSE,
                  selection = c(1,2,4,6), composite = "1.7/4.3")
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

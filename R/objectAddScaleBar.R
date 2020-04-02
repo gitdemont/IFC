@@ -1,4 +1,4 @@
-#' @title IFC_object Scale Bar Incrustation
+#' @title Image Scale Bar Incrustation
 #' @description
 #' Adds scale bar to image
 #' @param image a [0,1] image.

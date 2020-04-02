@@ -7,7 +7,8 @@
 TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
 }
 \usage{
-getOffsets(fileName, fast = TRUE, display_progress = TRUE, verbose = FALSE)
+getOffsets(fileName, fast = TRUE, display_progress = TRUE,
+  verbose = FALSE)
 }
 \arguments{
 \item{fileName}{path to file.}
@@ -22,7 +23,7 @@ If set to FALSE, all object_ids will be scanned from 'fileName' to ensure extrac
 \item{verbose}{whether to display information (use for debugging purpose). Default is FALSE.}
 }
 \value{
-an integer vector of class IFC_offsets of IFD offsets found in XIF file.
+an integer vector of class `IFC_offset` of IFD offsets found in XIF file.
 If no offsets is found an error is thrown.
 }
 \description{
@@ -39,7 +40,7 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   system.time(offsets_slow <- getOffsets(fileName = file_cif, fast = FALSE))
   identical(offsets_fast, offsets_slow)   
 } else {
-  message(sprintf('Please type `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
+  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
                   'to install extra files required to run this example.'))
 }

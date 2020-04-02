@@ -4,32 +4,19 @@
 \alias{autoplot}
 \title{Automatic Parameters Detection for IFC Graphs}
 \usage{
-autoplot(
-  obj,
-  shown_pops = NULL,
-  subset = NULL,
-  x = NULL,
-  x_trans = NULL,
-  y = NULL,
-  y_trans = NULL,
-  type = NULL,
-  smoothingfactor = NULL,
-  normalize = NULL,
-  bin,
-  viewport = "ideas",
-  precision = c("light", "full")[1],
-  color_mode = c("white", "black")[1],
-  draw = TRUE,
-  ...
-)
+autoplot(obj, shown_pops = NULL, subset = NULL, x = NULL,
+  x_trans = NULL, y = NULL, y_trans = NULL, type = NULL,
+  smoothingfactor = NULL, normalize = NULL, bin, viewport = "ideas",
+  precision = c("light", "full")[1], color_mode = c("white",
+  "black")[1], draw = TRUE, ...)
 }
 \arguments{
-\item{obj}{an IFC_data object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}
+\item{obj}{an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}
 
 \item{shown_pops}{one or several populations present in 'obj'. Default is NULL.\cr
-If provided, autoplot will try to display these populations. See details when not provided.\cr
+If provided, \code{\link{autoplot}} will try to display these populations. See details when not provided.\cr
 \cr
-autoplot will try to determine x and y and their transformations based on 'shown_pops' parameter.
+\code{\link{autoplot}} will try to determine x and y and their transformations based on 'shown_pops' parameter.
 If all populations provided in 'shown_pops' are siblings, region(s) from which 'shown_pops' were defined 
 will be displayed.\cr
 In case 'shown_pops' are not siblings, they will be treated as populations and a graph will be generating with an overlay of these populations.
@@ -47,7 +34,7 @@ Then 'shown_pops' will be treated as overlay.
 However, 'shown_pops' argument can still be used to determine x, y axis and their transformation}
 
 \item{x}{feature for x-axis. Default is NULL.
-When empty, autoplot will try to determine if automatically from 'shown_pops' argument.
+When empty, \code{\link{autoplot}} will try to determine if automatically from 'shown_pops' argument.
 If provided, x feature has to be a name from 'obj' features.
 Note that providing x feature :
 - takes precedence on automatic x-axis detection.
@@ -59,7 +46,7 @@ It takes precedence when provided and If provided it has to be be either 'P' or 
 "P' will leave x-axis as is but a positive numeric will be passed has hyper argument of \code{\link{smoothLinLog}} to transform x-axis.}
 
 \item{y}{feature for y-axis. Default is NULL.
-When empty, autoplot will try to determine it automatically from 'shown_pops' argument.
+When empty, \code{\link{autoplot}} will try to determine it automatically from 'shown_pops' argument.
 If provided, y feature has to be a name from obj features.
 Note that providing y feature 
 - takes precedence on automatic y-axis detection.
@@ -69,33 +56,33 @@ Note that providing y feature
 If not provided, transformation will be determined thanks to 'shown_pops'.
 It takes precedence when provided and has to be be either 'P' or coercible to a positive numeric.
 "P' will leave y-axis as is but a positive numeric will be passed has hyper argument of \code{\link{smoothLinLog}} to transform y-axis.
-Note that it is irrelevant for histogram.}
+Note that it is irrelevant for "histogram".}
 
-\item{type}{type of plot. Default is NULL to allow autoplot to detemine 'type' automatically.
+\item{type}{type of plot. Default is NULL to allow \code{\link{autoplot}} to detemine 'type' automatically.
 If provided it has to be either "histogram", "scatter", "density".
-Note that when histogram is choosen, 'subset' parameter will not be used.
-Note that density will be possible only when 'subset' will be automatically determined or filled with only one population.
-Note that when autoplot has determined, thanks to 'shown_pops' that original plot is an histogram, 
-"Object Number" will be used a y-axis by default when 'type' will be forced to "scatter" or "density".}
+Note that when "histogram" is choosen, 'subset' parameter will not be used.
+Note that "density" will be possible only when 'subset' will be automatically determined or filled with only one population.
+Note that when \code{\link{autoplot}} has determined, thanks to 'shown_pops' that original plot is an "histogram", 
+"Object Number" will be used as y-axis by default when 'type' is forced to "scatter" or "density".}
 
-\item{smoothingfactor}{when type of graph is histogram, whether to smooth it or not. Default is NULL. Should be an integer [0:20]
+\item{smoothingfactor}{when type of graph is "histogram", whether to smooth it or not. Default is NULL. Should be an integer [0:20]
 Note that 0 means no smoothing and other values will produce smoothing}
 
-\item{normalize}{when type of graph is histogram, whether to normalize it or not. Default is NULL. Should be a logical.}
+\item{normalize}{when type of graph is "histogram", whether to normalize it or not. Default is NULL. Should be a logical.}
 
-\item{bin}{number of bins when graph's type is histogram / number of equally spaced grid points for density.
-Default is missing to allow autoplot to determine it by itself.}
+\item{bin}{number of bins when graph's type is "histogram" / number of equally spaced grid points for density.
+Default is missing to allow \code{\link{autoplot}} to determine it by itself.}
 
 \item{viewport}{Either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
 "ideas" will use same limits as the one defined in ideas.\cr
 "data" will use data to define limits.\cr
 "max" will use data and regions drawn to define limits.}
 
-\item{precision}{when graph is a 2D scatter with population overlay, this argument controls amount of information displayed.\cr
-'light' the default, will only display points of same coordinates that are on top of the other layers.\cr
-'full' will display all the points of all the layers.}
+\item{precision}{when graphs is a 2D scatter with population overlay, this argument controls amount of information displayed. Default is "light".\cr
+-"light", the default, will only display points of same coordinates that are amoung the other layers.\cr
+-"full" will display all the layers.}
 
-\item{color_mode}{Whether to extract colors from obj in white or black mode. Default is 'white'.}
+\item{color_mode}{Whether to extract colors from obj in white or black mode. Default is "white".}
 
 \item{draw}{whether to draw plot. Default is TRUE.}
 
@@ -106,7 +93,7 @@ Function intended to generate IFC graphs with minimal inputs from users.\cr
 It is essentially based on automatic detection of graphical parameters thanks to 'shown_pops' argument.
 }
 \details{
-when 'shown_pops' are not provided, autoplot can't determine anything.\cr
+when 'shown_pops' are not provided, \code{\link{autoplot}} can't determine anything.\cr
 So, if not provided default values will be used:\cr
 -'subset' = "All"\cr
 -'x' = "Object Number"\cr

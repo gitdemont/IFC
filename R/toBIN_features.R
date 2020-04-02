@@ -1,12 +1,12 @@
 #' @title IFC_features Raw Conversion
 #' @description 
-#' Helper to convert features (IFC_features object) to raw vector.
-#' @param features an IFC_features object.
+#' Helper to convert features (`IFC_features` object) to raw vector.
+#' @param features an `IFC_features` object.
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param title_progress character string, giving the title of the progress bar. Default is "".
 #' @param ... other arguments to be passed.
-#' @return an raw vector of features binaries.
+#' @return a raw vector of features binaries.
 #' @keywords internal
 toBIN_features = function(features, endianness = .Platform$endian, 
                           verbose = FALSE, display_progress = TRUE, title_progress = "", ...) {

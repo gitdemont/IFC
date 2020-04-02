@@ -7,14 +7,9 @@
 derived from \pkg{grDevices} R Core Team, Florian Hahne at FHCRC, originally
 }
 \usage{
-densCols(
-  x,
-  y = NULL,
-  nbin = 128,
-  bandwidth,
+densCols(x, y = NULL, nbin = 128, bandwidth,
   colramp = colorRampPalette(c("blue", "green", "red")),
-  transformation = function(x) (x^0.125)
-)
+  transformation = function(x) (x^0.125))
 }
 \description{
 Helper to map density to colors

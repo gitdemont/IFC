@@ -1,12 +1,11 @@
 #' @title Numpy Export
 #' @description
 #' Exports IFC objects to numpy array [objects,height,width,channels]
-#' @param display object of class IFC_display, rich information extracted by \code{\link{getDisplayInfo}}. This parameter can't be missing.
-#' @param offsets object of class IFC_offsets. If missing, the default, offsets will be extracted from display$fileName.\cr
+#' @param offsets object of class `IFC_offset`. 
 #' This param is not mandatory but it may allow to save time for repeated image export on same file.
 #' @param objects integers, indices of objects to use.
 #' This param is not mandatory, if missing, the default, all objects will be used.
-#' @param objects_type objects_type of desired offsets. Either "img" or "msk". Default is "img".
+#' @param image_type image_type of desired offsets. Either "img" or "msk". Default is "img".
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param python path to python. Default is Sys.getenv("RETICULATE_PYTHON").\cr
 #' Note that this numpy should be available in this python to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".
@@ -14,13 +13,13 @@
 #' @param mode (\code{\link{objectExtract}} argument) color mode export. Either "raw", "gray" . Default is "gray".
 #' @param export export format. Either "file", "matrix". Default is "matrix".\cr
 #' Note that you will need 'reticulate' package installed to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".
-#' @param export_to used when 'export' is "file" to compute respectively filename.
+#' @param write_to used when 'export' is "file" to compute respectively filename.
 #' Exported type will be deduced from this pattern. Allowed export are '.npy'.\cr
 #' Placeholders, if found, will be substituted:\cr
-#' -\%d: with full path directory of 'display$fileName_image'\cr
-#' -\%p: with first parent directory of ''display$fileName_image'\cr
-#' -\%e: with extension of 'display$fileName_image' (without leading .)\cr
-#' -\%s: with shortname from 'display$fileName_image' (i.e. basename without extension)\cr
+#' -\%d: with full path directory\cr
+#' -\%p: with first parent directory\cr
+#' -\%e: with extension of (without leading .)\cr
+#' -\%s: with shortname (i.e. basename without extension)\cr
 #' -\%o: with objects (at most 10, will be collapse with "_", if more than one).\cr
 #' -\%c: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
 #' A good trick is to use:\cr
@@ -28,6 +27,7 @@
 #' @param overwrite whether to overwrite file or not. Default is FALSE.
 #' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and bypass(=TRUE).
 #' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.
+#' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToNumpy}} input arguments.\cr
 #' \code{\link{ExportToNumpy}} requires reticulate package, python and numpy installed. to create npy file.\cr
 #' If one of these is missing, 'export' will be set to "matrix".
@@ -35,18 +35,44 @@
 #' -"matrix", a numpy array,\cr
 #' -"file", an invisible vector of ids corresponding to the objects exported. 
 #' @export
-ExportToNumpy <- function(display, offsets, objects, objects_type = "img", display_progress = TRUE,
+ExportToNumpy <- function(offsets,
+                          objects, 
+                          image_type = "img", 
+                          display_progress = TRUE,
                           python = Sys.getenv("RETICULATE_PYTHON"),
                           dtype = c("uint8", "int16", "uint16", "double")[3],
                           mode = c("raw", "gray")[1], 
                           export = c("file", "matrix")[2],
-                          export_to, overwrite = FALSE,
+                          write_to, 
+                          overwrite = FALSE, 
                           ...) {
   dots=list(...)
+  
+  # check input
+  entries = as.list(match.call())
+  input = whoami(entries = entries)
+  need = c('fileName', 'info', 'param', 'offsets')
+  if(!any(sapply(input[need], FUN = function(i) length(i) != 0))) {
+    stop(paste0("can't determine what to extract with provided parameters.\n try to input at least one of: ",
+                paste0("'", need , "'", collapse = ", ")))
+  }
+
+  # recover default function values of whoami object found
+  form = formals(fun = attr(input, "from"))
+  mism = na.omit(names(entries[-1])[attr(input, "was")[need %in% names(input)]])
+  sapply(mism, FUN = function(x) assign(x = x, value = form[[x]], inherits = TRUE))
+  
+  # reattribute needed param
+  offsets = input[["offsets"]]
+  param = input[["param"]]
+  if(length(offsets) == 0) {
+    fileName = input[["fileName"]]
+  } else {
+    fileName = attr(offsets, "fileName_image")
+  }
+  
   # check mandatory param
-  if(missing(display)) stop("'display' can't be missing")
-  assert(display, cla = "IFC_display")
-  assert(objects_type, len = 1, alw = c("img", "msk"))
+  assert(image_type, len = 1, alw = c("img", "msk"))
   assert(mode, len = 1, alw = c("raw", "gray"))
   if(mode == "raw") dtype = "int16"
   assert(dtype, len = 1, alw = c("uint8", "int16", "uint16", "double"))
@@ -71,27 +97,18 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
   overwrite = as.logical(overwrite); assert(overwrite, len = 1, alw = c(TRUE,FALSE))
   assert(python, len = 1, typ = "character")
   
-  fileName = display$fileName
-  title_progress = basename(fileName)
-  file_extension = getFileExt(fileName)
-  channels = display$Images[display$Images$physicalChannel %in% which(display$in_use), ]
-  
   # process extra parameters
-  param_extra = names(dots) %in% c("ifd","display","mode","export","size","force_width")
-  param_param = names(dots) %in% c("export_to","base64_id","base64_att","overwrite",
-                                   "composite","selection","random_seed",
-                                   "removal","add_noise","full_range","force_range")
-  if(length(dots[["verbose"]]) == 0) { # param for objectExtract, getDisplayInfo, getIFD, getOffsets
+  if(length(dots[["verbose"]]) == 0) { 
     verbose = FALSE
   } else {
     verbose = dots[["verbose"]]
   }
-  if(length(dots[["verbosity"]]) == 0) { # param for getDisplayInfo, getIFD
+  if(length(dots[["verbosity"]]) == 0) { 
     verbosity = 1
   } else {
     verbosity = dots[["verbosity"]]
   }
-  if(length(dots[["fast"]]) == 0) { # param for getOffsets
+  if(length(dots[["fast"]]) == 0) { 
     fast = TRUE
   } else {
     fast = dots[["fast"]]
@@ -112,12 +129,45 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
   } else {
     force_width = dots[["force_width"]]
   }
+  param_extra = names(dots) %in% c("ifd","mode","export","size","force_width")
   dots = dots[!param_extra] # remove not allowed param
+  param_param = names(dots) %in% c("write_to","base64_id","base64_att","overwrite",
+                                   "composite","selection","random_seed",
+                                   "removal","add_noise","full_range","force_range")
   dots_param = dots[param_param] # keep param_param for objectParam
   dots = dots[!param_param]
   
+  # compute object param
+  # 1: prefer using 'param' if found,
+  # 2: otherwise use 'info' if found,
+  # 3: finally look at fileName
+  if(length(param) == 0) {  
+    if(length(input$info) == 0) { 
+      param = do.call(what = "objectParam",
+                      args = c(list(fileName = fileName,
+                                    export = "matrix",
+                                    mode = mode,
+                                    size = size, 
+                                    force_width = force_width), dots_param))
+    } else {
+      param = do.call(what = "objectParam",
+                      args = c(list(info = input$info,
+                                    export = "matrix",
+                                    mode = mode,
+                                    size = size, 
+                                    force_width = force_width), dots_param))
+    }
+  } else {
+    param = dots$param
+    param$size = size
+    dots = dots[!is_param]
+  }
+  fileName = param$fileName
+  title_progress = basename(fileName)
+  file_extension = getFileExt(fileName)
+  
   # check objects to extract
-  nobj = as.integer(display$objcount)
+  nobj = as.integer(param$objcount)
   N = nchar(sprintf("%1.f",abs(nobj-1)))
   if(missing(objects)) {
     objects = as.integer(0:(nobj - 1))
@@ -127,7 +177,7 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
     if(length(tokeep) == 0) {
       if(export == "file") {
         warning(paste0("ExportToNumpy: No objects to export, check the objects you provided.\n",
-                       "Can't create 'export_to' =", export_to, " from file.\n", display$fileName_image),
+                       "Can't create 'write_to' =", write_to, " from file.\n", param$fileName_image),
                 immediate. = TRUE, call. = FALSE)
         return(invisible(NULL))
       } else {
@@ -148,16 +198,16 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
   if(!force_width) {
     if(length(objects)!=1) if(size[2] == 0) stop("'size' width should be provided when 'force_width' is set to FALSE and 'objects' length not equal to one")
   } else {
-    size = c(size[1], as.integer(display$channelwidth))
+    size = c(size[1], as.integer(param$channelwidth))
   }
   
   # check input offsets if any
   compute_offsets = TRUE
   if(!missing(offsets)) {
-    if(!("IFC_offsets" %in% class(offsets))) {
+    if(!("IFC_offset" %in% class(offsets))) {
       warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
     } else {
-      if(attr(offsets, "checksum") != display$checksum) {
+      if(attr(offsets, "checksum") != param$checksum) {
         warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
       } else {
         compute_offsets = FALSE
@@ -165,54 +215,46 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
     }
   }
   if(compute_offsets) {
-    offsets = suppressMessages(getOffsets(fileName = display$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
+    offsets = suppressMessages(getOffsets(fileName = param$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
   }
   
-  # compute object param
-  is_param = names(dots) %in% "param"
-  if(any(is_param)) {
-    param = dots$param
-    param$size = size
-    dots = dots[!is_param]
-  } else {
-    param = do.call(what = "objectParam",
-                    args = c(list(display = display, 
-                                  export = "matrix", 
-                                  mode = mode,
-                                  size = size, 
-                                  force_width = force_width), dots_param))
-  }
-  
-  # check export/export_to
+  # check export/write_to
   overwritten = FALSE
   if(export != "matrix") {
-    if(missing(export_to)) {
-      if(export == "file") stop("'export_to' can't be missing")
-      export_to = "%s_numpy.npy"
+    if(missing(write_to)) {
+      if(export == "file") stop("'write_to' can't be missing")
+      write_to = "%s_numpy.npy"
     }
-    assert(export_to, len = 1, typ = "character")
-    type = getFileExt(export_to)
+    assert(write_to, len = 1, typ = "character")
+    type = getFileExt(write_to)
     assert(type, len = 1, alw = "npy")
-    splitf_obj = splitf(display$fileName_image)
-    splitp_obj = splitp(export_to)
+    splitf_obj = splitf(param$fileName_image)
+    splitp_obj = splitp(write_to)
     if(length(objects) > 10) {
       obj_text = paste0(sprintf(paste0("%0",N,".f"), objects[1:10]), collapse="_")
       obj_text = paste0(obj_text, "_...")
     } else {
       obj_text = paste0(sprintf(paste0("%0",N,".f"), objects), collapse="_")
     }
-    export_to = formatn(splitp_obj, splitf_obj,
+    chan_text = paste0(sprintf(paste0("%0",2,".f"), as.integer(param$chan_to_keep)), collapse="_")
+    if(length(param$composite) != 0) {
+      comp_text = paste0("_(",gsub("/",",",param$composite),")", collapse="_")
+    } else {
+      comp_text = ""
+    }
+    write_to = formatn(splitp_obj, 
+                        splitf_obj, 
                         object = obj_text,
-                        channel = paste0(paste0(sprintf(paste0("%0",2,".f"), as.integer(param$chan_to_keep)), collapse="_"),"_",paste0("(",gsub("/",",",param$composite),")", collapse="_")))
+                        channel = paste0(chan_text,comp_text))
     if(export == "file") {
-      dir_name = dirname(export_to)
+      dir_name = dirname(write_to)
       if(!dir.exists(dir_name)) if(!dir.create(dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dir_name))
-      if(file.exists(export_to)) {
-        if(!overwrite) stop(paste0("file ", export_to, " already exists"))
-        export_to = normalizePath(export_to, winslash = "/")
+      if(file.exists(write_to)) {
+        if(!overwrite) stop(paste0("file ", write_to, " already exists"))
+        write_to = normalizePath(write_to, winslash = "/")
         overwritten = TRUE
       }
-      message(paste0("file will be exported in :\n", normalizePath(dirname(export_to), winslash = "/")))
+      message(paste0("file will be exported in :\n", normalizePath(dirname(write_to), winslash = "/")))
     }
   }
   
@@ -225,13 +267,12 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
       ans = lapply(1:L, FUN = function(i) {
         setPB(pb, value = i, title = title_progress, label = "exporting objects to numpy")
         do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
-                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type),
+                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = image_type),
                                                                    trunc_bytes = 8, 
                                                                    force_trunc = FALSE, 
                                                                    verbose = verbose, 
                                                                    verbosity = verbosity,
                                                                    bypass = TRUE), 
-                                                      display = display, 
                                                       param = param,
                                                       verbose = verbose,
                                                       bypass = TRUE),
@@ -240,13 +281,12 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
     } else {
       ans = lapply(1:L, FUN = function(i) {
         do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
-                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], objects_type = objects_type),
+                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = image_type),
                                                                    trunc_bytes = 8, 
                                                                    force_trunc = FALSE, 
                                                                    verbose = verbose, 
                                                                    verbosity = verbosity,
                                                                    bypass = TRUE), 
-                                                      display = display, 
                                                       param = param,
                                                       verbose = verbose,
                                                       bypass = TRUE),
@@ -267,7 +307,7 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
   channel_names = names(ans[[1]])
   
   # check object_ids
-  if(objects_type == "img") { 
+  if(image_type == "img") { 
     ids = sapply(ans, attr, which = "object_id")
   } else {
     ids = as.integer(gsub("^.*_(.*)$", "\\1", sapply(ans, attr, which = "offset_id")))
@@ -290,15 +330,15 @@ ExportToNumpy <- function(display, offsets, objects, objects_type = "img", displ
   attr(ret, "channel_names") <- channel_names
   tryCatch({
     if(export == "file") {
-      np$save(file = export_to, arr = np$array(ret, dtype=np[[dtype]], order='C'))
-      message(paste0("\n######################\n", normalizePath(export_to, winslash = "/", mustWork = FALSE), "\nhas been successfully ", ifelse(overwritten, "overwritten", "exported"), "\n"))
-      attr(ids, "filename") <- export_to
+      np$save(file = write_to, arr = np$array(ret, dtype=np[[dtype]], order='C'))
+      message(paste0("\n######################\n", normalizePath(write_to, winslash = "/", mustWork = FALSE), "\nhas been successfully ", ifelse(overwritten, "overwritten", "exported"), "\n"))
+      attr(ids, "filename") <- write_to
       attr(ids, "channel_id") <- channel_id
       attr(ids, "channel_names") <- channel_names
       return(invisible(ids))
     }
     return(ret)
   }, error = function(e) {
-    stop(ifelse(export == "file", paste0(normalizePath(export_to, winslash = "/", mustWork = FALSE), " has been incompletely ", ifelse(overwritten, "overwritten", "exported"), "\n", e$message), e$message), call. = FALSE)
+    stop(ifelse(export == "file", paste0(normalizePath(write_to, winslash = "/", mustWork = FALSE), " has been incompletely ", ifelse(overwritten, "overwritten", "exported"), "\n", e$message), e$message), call. = FALSE)
   })
 }
