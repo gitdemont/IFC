@@ -118,7 +118,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     channels_daf = xml_attr(xml_find_all(xml_tmp, "//image"), attr = "name")
     if(length(channels_daf)==0) stop(paste0("No channel found in ", fileName)) # should not happen, at least one channel should be there
     obj_number = as.numeric(na.omit(xml_attr(xml_find_first(xml_tmp, "//SOD"), attr = "objcount")))
-    checksum = as.numeric(na.omit(xml_attr(xml_find_first(xml_tmp, "//SOD"), attr = "checksum")))
+    # checksum = as.numeric(na.omit(xml_attr(xml_find_first(xml_tmp, "//SOD"), attr = "checksum")))
     if(length(obj_number)==0) stop(paste0("No object found in ", fileName)) # should not happen, at least one object should be there
     is_binary = as.logical(na.omit(xml_attr(xml_find_first(xml_tmp, "//Assay"), attr = "binaryfeatures")))
     if(length(is_binary)==0) {is_binary=FALSE}
@@ -370,8 +370,9 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     cname = rawToChar(beg[(name_beg+1):(name_end-1)])
     if(fullname) {
       found = FALSE
-      checksum = attr(ExtractFromDAF(fileName, extract_offsets = TRUE, extract_features = FALSE, extract_images = TRUE, extract_stats = FALSE)$offsets, "checksum")
-
+      # checksum = attr(ExtractFromDAF(fileName, extract_offsets = TRUE, extract_features = FALSE, extract_images = TRUE, extract_stats = FALSE)$offsets, "checksum")
+      checksum = checksumDAF(fileName = fileName)
+      
       cif_name = file.path(cifdir, basename(cname)) # look in cifdir 1st
       if(file.exists(cif_name)) {
         if(checksumXIF(cif_name) == checksum) found = TRUE

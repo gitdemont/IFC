@@ -153,96 +153,6 @@ std::string cpp_checkTIFF (std::string fname) {
   return "";
 }
 
-//' @title Checksum for RIF/CIF
-//' @name cpp_checksum
-//' @description
-//' Computes sum of the 10 first IFDs (Image Field Directory) offsets within a TIFF file except 1st one.
-//' @param fname string, path to file.
-//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
-//' @return an integer vector with offsets of IFDs found.
-//' @keywords internal
-////' @export
-// [[Rcpp::export]]
-IntegerVector cpp_checksum(std::string fname) {
-  bool swap = false;
-  std::string endianness = cpp_checkTIFF(fname);
-  if(endianness == "big") swap = true;
-  
-  std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-  if (fi.is_open()) {
-    try {
-      fi.seekg(0, std::ios::end);
-      size_t filesize = fi.tellg(); // offsets are uint32 so we can't go further
-      uint32_t offset = 4; // offsets are uint32 
-      size_t pos;
-      size_t out = 0;
-      char buf_entries [2];
-      char buf_offset [4];
-      uint16_t entries;
-      uint8_t count = 0;
-      fi.seekg(offset, std::ios::beg);
-      fi.read((char*)&buf_offset, sizeof(buf_offset));
-      memcpy(&offset, buf_offset, sizeof(offset));
-      if(!offset) {
-        Rcerr << "cpp_checksum: No IFD offsets found in\n" << fname << std::endl;
-        Rcpp::stop("cpp_checksum: No IFD offsets found");
-      }
-      if(swap) {
-        offset = bytes_swap(offset);
-        while(offset && (count++ != 10)) {
-          fi.seekg(offset, std::ios::beg);
-          fi.read((char*)buf_entries, sizeof(buf_entries));
-          memcpy(&entries, buf_entries, sizeof(entries));
-          entries = bytes_swap(entries);
-          pos = 2 + offset + 12 * entries;
-          if((pos > filesize) || (pos >= 0xffffffff)) { // can't read to more than 4,294,967,295
-            Rcerr << "cpp_checksum: Buffer overrun in\n" << fname << std::endl;
-            Rcpp::stop("cpp_checksum: Buffer overrun");
-          }
-          fi.seekg(pos, std::ios::beg);
-          fi.read((char*)buf_offset, sizeof(buf_offset));
-          memcpy(&offset, buf_offset, sizeof(offset));
-          offset = bytes_swap(offset);
-          out += offset;
-        }
-      } else {
-        if(!offset) {
-          Rcerr << "cpp_checksum: No IFD offsets found in\n" << fname << std::endl;
-          Rcpp::stop("cpp_checksum: No IFD offsets found");
-        }
-        while(offset && (count++ != 10)) {
-          fi.seekg(offset, std::ios::beg);
-          fi.read((char*)buf_entries, sizeof(buf_entries));
-          memcpy(&entries, buf_entries, sizeof(entries));
-          pos = 2 + offset + 12 * entries;
-          if((pos > filesize) || (pos >= 0xffffffff)) { // can't read to more than 4,294,967,295
-            Rcerr << "cpp_checksum: Buffer overrun in\n" << fname << std::endl;
-            Rcpp::stop("cpp_checksum: Buffer overrun");
-          }
-          fi.seekg(pos, std::ios::beg);
-          fi.read((char*)buf_offset, sizeof(buf_offset));
-          memcpy(&offset, buf_offset, sizeof(offset));
-          out += offset;
-        }
-      }
-      fi.close();
-      return IntegerVector::create(out);
-    }
-    catch(std::exception &ex) {	
-      fi.close();
-      forward_exception_to_r(ex);
-    }
-    catch(...) { 
-      Rcpp::stop("cpp_checksum: c++ exception (unknown reason)"); 
-    }
-  }
-  else {
-    Rcerr << "cpp_checksum: Unable to open " << fname << std::endl;
-    Rcpp::stop("cpp_checksum: Unable to open file");
-  }
-  return IntegerVector::create(0);
-}
-
 //' @title IFC_offsets Computation without Id Determination
 //' @name cpp_getoffsets_noid
 //' @description
@@ -975,8 +885,8 @@ List cpp_getoffsets_wid(std::string fname, R_len_t obj_count = 0, bool display_p
         out_off.push_back(as<uint32_t>(IFD["curr_IFD_offset"]));
         
         if(Progress::check_abort()) {
-          Rcerr << "cpp_getoffsets_ordered: Interrupted by user" << std::endl;
-          Rcpp::stop("cpp_getoffsets_ordered: Interrupted by user");
+          Rcerr << "cpp_getoffsets_wid: Interrupted by user" << std::endl;
+          Rcpp::stop("cpp_getoffsets_wid: Interrupted by user");
         }
       }
       List out = List::create(_["OBJECT_ID"] = out_obj,
@@ -1000,6 +910,73 @@ List cpp_getoffsets_wid(std::string fname, R_len_t obj_count = 0, bool display_p
   return List::create(List::create(_["OBJECT_ID"] = NA_INTEGER,
                                    _["TYPE"] = NA_INTEGER,
                                    _["OFFSET"] = NA_INTEGER));
+}
+
+//' @title Checksum for RIF/CIF
+//' @name cpp_checksum
+//' @description
+//' Computes sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.
+//' @param fname string, path to file.
+//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+//' @return an integer vector with offsets of IFDs found.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+size_t cpp_checksum(std::string fname) {
+  bool swap = false;
+  std::string endianness = cpp_checkTIFF(fname);
+  if(endianness == "big") swap = true;
+  
+  std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+  if (fi.is_open()) {
+    try {
+      fi.seekg(0, std::ios::end);
+      char buf_offset [4];
+      uint32_t offset = 4;
+      IntegerVector obj = IntegerVector::create(0,1,2,3,4);
+      IntegerVector found;
+      uint8_t count = 0;
+      size_t out = 0;
+      
+      fi.seekg(offset, std::ios::beg);
+      fi.read((char*)&buf_offset, sizeof(buf_offset));
+      memcpy(&offset, buf_offset, sizeof(offset));
+      if(swap) offset = bytes_swap(offset);
+      if(!offset) {
+        Rcerr << "cpp_checksum: No IFD offsets found in\n" << fname << std::endl;
+        Rcpp::stop("cpp_checksum: No IFD offsets found");
+      }
+      while(offset && (count < 5)){
+        List IFD = cpp_getTAGS(fname, offset, false, 8, true);
+        List infos = IFD["infos"];
+        offset = as<uint32_t>(IFD["next_IFD_offset"]);
+        if(iNotisNULL(infos["OBJECT_ID"])) {
+          int32_t id = as<int32_t>(infos["OBJECT_ID"]);
+          if(is_true(any(obj == id)) && !is_true(any(found == id))) {
+            found.push_back(id);
+            count += 1; 
+            out += as<uint32_t>(IFD["curr_IFD_offset"]);
+          } else {
+            Rcpp::warning("cpp_checksum: raw object are not stored in expected order");
+          }
+        }
+      }
+      fi.close();
+      return out;
+    }
+    catch(std::exception &ex) {	
+      fi.close();
+      forward_exception_to_r(ex);
+    }
+    catch(...) { 
+      Rcpp::stop("cpp_checksum: c++ exception (unknown reason)"); 
+    }
+  }
+  else {
+    Rcerr << "cpp_checksum: Unable to open " << fname << std::endl;
+    Rcpp::stop("cpp_checksum: Unable to open file");
+  }
+  return 0;
 }
 
 //' @title RLE Decompression

@@ -13,5 +13,6 @@ checksumDAF(fileName, endianness = .Platform$endian)
 }
 \description{
 This function returns CIF checksum computed from DAF.
+Sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.
 }
 \keyword{internal}

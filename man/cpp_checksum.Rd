@@ -13,6 +13,6 @@ TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TI
 an integer vector with offsets of IFDs found.
 }
 \description{
-Computes sum of the 10 first IFDs (Image Field Directory) offsets within a TIFF file except 1st one.
+Computes sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.
 }
 \keyword{internal}

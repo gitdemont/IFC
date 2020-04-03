@@ -35,14 +35,12 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
   obj_count = as.integer(getInfo(fileName, warn = FALSE, force_default = TRUE, display_progress = FALSE)$objcount)
   if(fast) {
     offsets = cpp_getoffsets_noid(fileName, obj_count = obj_count, display_progress = display_progress, verbose = verbose)
-    checksum = sum(offsets[2:11], na.rm = T)
     offsets_1 = offsets[1]
     offsets = offsets[-1]
     if(length(offsets) != obj_count * 2) stop("Number of offsets found is different from expected object count.")
     message("Offsets were extracted from XIF file with fast method.\nCorrect mapping between offsets and objects ids is not guaranteed.")
   } else {
     offsets = as.data.frame(do.call(what = "cbind", args = cpp_getoffsets_wid(fileName, obj_count = obj_count, display_progress = display_progress, verbose = verbose)), stringsAsFactors = FALSE)
-    checksum = sum(offsets[, "OFFSET"][2:11], na.rm = T)
     offsets_i = offsets[offsets$TYPE == 2, ]
     offsets_m = offsets[offsets$TYPE == 3, ]
     
@@ -63,7 +61,7 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
     names(offsets) = c(paste0(c("img_", "msk_"), rep(sprintf(paste0("%0",N,".f"), 0:(obj_count-1)), each = 2)))
     attr(offsets, "all") = offsets
     attr(offsets, "fileName_image") = fileName
-    attr(offsets, "checksum") = checksum
+    attr(offsets, "checksum") = checksumXIF(fileName)
     attr(offsets, "class") = c("IFC_offset")
     attr(offsets, "first") = offsets_1 
     return(offsets)

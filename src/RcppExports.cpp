@@ -86,17 +86,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_checksum
-IntegerVector cpp_checksum(std::string fname);
-RcppExport SEXP _IFC_cpp_checksum(SEXP fnameSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type fname(fnameSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_checksum(fname));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cpp_getoffsets_noid
 IntegerVector cpp_getoffsets_noid(std::string fname, R_len_t obj_count, bool display_progress, bool verbose);
 RcppExport SEXP _IFC_cpp_getoffsets_noid(SEXP fnameSEXP, SEXP obj_countSEXP, SEXP display_progressSEXP, SEXP verboseSEXP) {
@@ -137,6 +126,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_getoffsets_wid(fname, obj_count, display_progress, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_checksum
+size_t cpp_checksum(std::string fname);
+RcppExport SEXP _IFC_cpp_checksum(SEXP fnameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type fname(fnameSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_checksum(fname));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -461,10 +461,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_pnt_in_gate", (DL_FUNC) &_IFC_cpp_pnt_in_gate, 4},
     {"_IFC_cpp_scanFirst", (DL_FUNC) &_IFC_cpp_scanFirst, 5},
     {"_IFC_cpp_checkTIFF", (DL_FUNC) &_IFC_cpp_checkTIFF, 1},
-    {"_IFC_cpp_checksum", (DL_FUNC) &_IFC_cpp_checksum, 1},
     {"_IFC_cpp_getoffsets_noid", (DL_FUNC) &_IFC_cpp_getoffsets_noid, 4},
     {"_IFC_cpp_getTAGS", (DL_FUNC) &_IFC_cpp_getTAGS, 5},
     {"_IFC_cpp_getoffsets_wid", (DL_FUNC) &_IFC_cpp_getoffsets_wid, 4},
+    {"_IFC_cpp_checksum", (DL_FUNC) &_IFC_cpp_checksum, 1},
     {"_IFC_cpp_rle_Decomp", (DL_FUNC) &_IFC_cpp_rle_Decomp, 8},
     {"_IFC_cpp_gray_Decomp", (DL_FUNC) &_IFC_cpp_gray_Decomp, 7},
     {"_IFC_cpp_decomp", (DL_FUNC) &_IFC_cpp_decomp, 9},

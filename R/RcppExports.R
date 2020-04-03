@@ -153,16 +153,6 @@ NULL
 #' @keywords internal
 NULL
 
-#' @title Checksum for RIF/CIF
-#' @name cpp_checksum
-#' @description
-#' Computes sum of the 10 first IFDs (Image Field Directory) offsets within a TIFF file except 1st one.
-#' @param fname string, path to file.
-#' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
-#' @return an integer vector with offsets of IFDs found.
-#' @keywords internal
-NULL
-
 #' @title IFC_offsets Computation without Id Determination
 #' @name cpp_getoffsets_noid
 #' @description
@@ -201,6 +191,16 @@ NULL
 #' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
 #' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
 #' @return a list of integer vectors with OBJECT_ID, TYPE and OFFSET of IFDs found.
+#' @keywords internal
+NULL
+
+#' @title Checksum for RIF/CIF
+#' @name cpp_checksum
+#' @description
+#' Computes sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.
+#' @param fname string, path to file.
+#' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+#' @return an integer vector with offsets of IFDs found.
 #' @keywords internal
 NULL
 
@@ -457,10 +457,6 @@ cpp_checkTIFF <- function(fname) {
     .Call(`_IFC_cpp_checkTIFF`, fname)
 }
 
-cpp_checksum <- function(fname) {
-    .Call(`_IFC_cpp_checksum`, fname)
-}
-
 cpp_getoffsets_noid <- function(fname, obj_count = 0L, display_progress = FALSE, verbose = FALSE) {
     .Call(`_IFC_cpp_getoffsets_noid`, fname, obj_count, display_progress, verbose)
 }
@@ -471,6 +467,10 @@ cpp_getTAGS <- function(fname, offset, verbose = FALSE, trunc_bytes = 22L, force
 
 cpp_getoffsets_wid <- function(fname, obj_count = 0L, display_progress = FALSE, verbose = FALSE) {
     .Call(`_IFC_cpp_getoffsets_wid`, fname, obj_count, display_progress, verbose)
+}
+
+cpp_checksum <- function(fname) {
+    .Call(`_IFC_cpp_checksum`, fname)
 }
 
 cpp_rle_Decomp <- function(fname, offset, nbytes, imgWidth = 1L, imgHeight = 1L, nb_channels = 1L, removal = 0L, verbose = FALSE) {
