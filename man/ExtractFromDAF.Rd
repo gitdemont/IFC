@@ -7,11 +7,18 @@
 For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 }
 \usage{
-ExtractFromDAF(fileName, extract_features = TRUE,
-  extract_images = TRUE, extract_offsets = TRUE,
-  extract_stats = TRUE, endianness = .Platform$endian,
-  pnt_in_poly_algorithm = 1, pnt_in_poly_epsilon = 1e-12,
-  display_progress = TRUE, ...)
+ExtractFromDAF(
+  fileName,
+  extract_features = TRUE,
+  extract_images = TRUE,
+  extract_offsets = TRUE,
+  extract_stats = TRUE,
+  endianness = .Platform$endian,
+  pnt_in_poly_algorithm = 1,
+  pnt_in_poly_epsilon = 1e-12,
+  display_progress = TRUE,
+  ...
+)
 }
 \arguments{
 \item{fileName}{path to file.}
@@ -53,10 +60,11 @@ A named list of class `IFC_data`, whose members are:\cr
 Extracts data from DAF Files.
 }
 \details{
-If extract_features is TRUE, extract_stats will be automatically forced to TRUE. Allowing features, graphs, pops, regions and statistics values to be extracted.\cr
+When extract_features is TRUE it allows eatures, graphs, pops, regions to be extracted.\cr
+If extract_features is TRUE, extract_stats will be automatically forced to TRUE.\cr
 If extract_stats is TRUE, extract_features will be automatically forced to TRUE.\cr
 If extract_offsets is TRUE, extract_images will be automatically forced to TRUE.\cr
-If extract_images is TRUE, information about images will be also extracted.
+If extract_images is TRUE, information about images will be extracted.
 }
 \examples{
 if(requireNamespace("IFCdata", quietly = TRUE)) {

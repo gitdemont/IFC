@@ -19,18 +19,10 @@ ExtractImages_toMatrix <- function(offsets,
   dots=list(...)
 
   # check input
-  entries = as.list(match.call())
-  input = whoami(entries = entries)
-  need = c('fileName', 'info', 'param', 'offsets')
-  if(!any(sapply(input[need], FUN = function(i) length(i) != 0))) {
-    stop(paste0("can't determine what to extract with provided parameters.\n try to input at least one of: ",
-                paste0("'", need , "'", collapse = ", ")))
+  input = whoami(entries = as.list(match.call()))
+  if(!any(sapply(input, FUN = function(i) length(i) != 0))) {
+    stop("can't determine what to extract with provided parameters.\n try to input at least one of: 'fileName', 'info', 'param' or 'offsets'")
   }
-  
-  # recover default function values of whoami object found
-  form = formals(fun = attr(input, "from"))
-  mism = na.omit(names(entries[-1])[attr(input, "was")[need %in% names(input)]])
-  sapply(mism, FUN = function(x) assign(x = x, value = form[[x]], inherits = TRUE))
   
   # reattribute needed param
   offsets = input[["offsets"]]
@@ -87,7 +79,6 @@ ExtractImages_toMatrix <- function(offsets,
     }
   } else {
     param = dots$param
-    dots = dots[!is_param]
   }
   fileName = param$fileName
   title_progress = basename(fileName)

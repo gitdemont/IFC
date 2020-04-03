@@ -4,21 +4,25 @@
 \alias{whoami}
 \title{Input Identification}
 \usage{
-whoami(entries)
+whoami(
+  entries = as.list(match.call()),
+  search = list(info = "IFC_info", param = "IFC_param", offsets = "IFC_offset"),
+  reinit = TRUE
+)
 }
 \arguments{
-\item{entries}{arguments from the function \code{\link{whoami}} is called.}
+\item{entries}{arguments from the function \code{\link{whoami}} is called.
+/!\ \code{\link{whoami}} MUST be called explicitly this way: whoami(entries = as.list(match.call())).}
+
+\item{search}{a named list of classes to search for entries.}
+
+\item{reinit}{whether to reinitialize arguments to their default values in called environment. Default is TRUE.}
 }
 \value{
-a list whose members are:
--fileName: value of fileName if provided as a named argument,\cr
--info; value of `IFC_info` object identified,\cr
--param: value of `IFC_param` object identified,\cr
--offsets: value of `IFC_offset` object identified,\cr
--ifd: value of `IFC_ifd` object identified,\cr
--data: value of `IFC_data` object identified.\cr
+a list whose members are 'fileName': value of fileName if provided as a named argument 
+in entries and all classes defined in 'search'
 }
 \description{
-Helper that identifies input arguments thanks to their IFC classes even if they are not named.
+Helper that identifies input arguments thanks to their IFC classes even if they are not or mis named.
 }
 \keyword{internal}

@@ -4,10 +4,20 @@
 \alias{plotGraph}
 \title{Plot and Stats Computation for IFC Graph}
 \usage{
-plotGraph(obj, graph, draw = FALSE, stats_print = draw,
-  color_mode = c("white", "black")[1], add_key = "panel",
-  precision = c("light", "full")[1], trunc_labels = 38,
-  trans = asinh, bin, viewport = "ideas", ...)
+plotGraph(
+  obj,
+  graph,
+  draw = FALSE,
+  stats_print = draw,
+  color_mode = c("white", "black")[1],
+  add_key = "panel",
+  precision = c("light", "full")[1],
+  trunc_labels = 38,
+  trans = asinh,
+  bin,
+  viewport = "ideas",
+  ...
+)
 }
 \arguments{
 \item{obj}{an `IFC_data` object extracted with features extracted.}

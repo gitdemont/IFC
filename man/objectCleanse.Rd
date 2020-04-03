@@ -4,8 +4,7 @@
 \alias{objectCleanse}
 \title{Object Cleanser}
 \usage{
-objectCleanse(mat, msk, add_noise = TRUE, random_seed = 1, bg = 0,
-  sd = 0)
+objectCleanse(mat, msk, add_noise = TRUE, random_seed = 1, bg = 0, sd = 0)
 }
 \arguments{
 \item{mat}{a numeric matrix (image).}

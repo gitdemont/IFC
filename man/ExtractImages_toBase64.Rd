@@ -4,8 +4,13 @@
 \alias{ExtractImages_toBase64}
 \title{Shorcut for Batch Images Extraction to Base64}
 \usage{
-ExtractImages_toBase64(offsets, objects, display_progress = TRUE,
-  mode = c("rgb", "gray")[1], ...)
+ExtractImages_toBase64(
+  offsets,
+  objects,
+  display_progress = TRUE,
+  mode = c("rgb", "gray")[1],
+  ...
+)
 }
 \arguments{
 \item{offsets}{object of class `IFC_offset`. 

@@ -4,8 +4,7 @@
 \alias{assert}
 \title{Assert that Certain Conditions are Met}
 \usage{
-assert(x, len = NULL, cla = NULL, typ = NULL, alw = NULL,
-  fun = "stop")
+assert(x, len = NULL, cla = NULL, typ = NULL, alw = NULL, fun = "stop")
 }
 \arguments{
 \item{x}{variable to test}

@@ -4,8 +4,14 @@
 \alias{ExtractImages_toFile}
 \title{Shorcut for Batch Images Extraction to Files}
 \usage{
-ExtractImages_toFile(offsets, objects, display_progress = TRUE,
-  mode = c("rgb", "gray")[1], write_to, ...)
+ExtractImages_toFile(
+  offsets,
+  objects,
+  display_progress = TRUE,
+  mode = c("rgb", "gray")[1],
+  write_to,
+  ...
+)
 }
 \arguments{
 \item{offsets}{object of class `IFC_offset`. 

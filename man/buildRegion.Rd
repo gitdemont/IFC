@@ -4,8 +4,21 @@
 \alias{buildRegion}
 \title{IFC Region Coercion}
 \usage{
-buildRegion(type, label, cx, cy, color, lightcolor, ismarker = "false",
-  doesnotoverride = "false", xlogrange, ylogrange, x, y, ...)
+buildRegion(
+  type,
+  label,
+  cx,
+  cy,
+  color,
+  lightcolor,
+  ismarker = "false",
+  doesnotoverride = "false",
+  xlogrange,
+  ylogrange,
+  x,
+  y,
+  ...
+)
 }
 \arguments{
 \item{type}{Region's type. Either "line", "rect" or "poly".}

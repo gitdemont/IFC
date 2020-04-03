@@ -12,10 +12,11 @@
 #' @param pnt_in_poly_epsilon epsilon to determine if object belongs to a polygon region or not. It only applies when algorithm is 1. Default is 1e-12.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... Other arguments to be passed.
-#' @details If extract_features is TRUE, extract_stats will be automatically forced to TRUE. Allowing features, graphs, pops, regions and statistics values to be extracted.\cr
+#' @details When extract_features is TRUE it allows eatures, graphs, pops, regions to be extracted.\cr
+#' If extract_features is TRUE, extract_stats will be automatically forced to TRUE.\cr
 #' If extract_stats is TRUE, extract_features will be automatically forced to TRUE.\cr
 #' If extract_offsets is TRUE, extract_images will be automatically forced to TRUE.\cr
-#' If extract_images is TRUE, information about images will be also extracted.
+#' If extract_images is TRUE, information about images will be extracted.
 #' @source For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 #' @examples
 # #' \dontrun{
@@ -74,9 +75,9 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
   description=lapply(description, FUN=function(x) {as.data.frame(do.call(what="rbind", x), stringsAsFactors=FALSE)})
   description$Images = description$Images[order(description$Images$physicalChannel),]
   class(description$masks) <- c(class(description$masks), "IFC_masks")
-  obj_count = as.numeric(description$ID$objcount)
-  chan_number = nrow(description$Images) # when from daf only available channels are imported
-  chan_number = as.numeric(xml_attr(xml_find_first(tmp, "//ChannelPresets"), attr = "count"))
+  obj_count = as.integer(description$ID$objcount)
+  # chan_number = nrow(description$Images) # when from daf only available channels are imported
+  chan_number = as.integer(xml_attr(xml_find_first(tmp, "//ChannelPresets"), attr = "count"))
 
   fileName_image = paste(dirname(fileName),description$ID$file,sep="/")
   if(file.exists(fileName_image)) {
@@ -244,7 +245,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     # /!\ since retrieving 1st offset depends on fileName_image it is not used in this sum
     # /!\ note that using offsets extracted from daf without fileName_image may lead to different results
     # TODO ask AMNIS how checksum is computed to use same alg and place description$ID$checksum instead
-    attr(offsets, "checksum") = ifelse(file.exists(fileName_image), checksumXIF(fileName_image), sum(offsets[1:10]))
+    attr(offsets, "checksum") = ifelse(file.exists(fileName_image), checksumXIF(fileName_image), checksumDAF(fileName_image))
     attr(offsets, "class") = "IFC_offset"
     attr(offsets, "first") = NULL
   }

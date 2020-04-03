@@ -4,8 +4,15 @@
 \alias{objectAddScaleBar}
 \title{Image Scale Bar Incrustation}
 \usage{
-objectAddScaleBar(image, size, style = c("dash", "line")[1],
-  color = "white", res = 96, xoff = 0, yoff = 0)
+objectAddScaleBar(
+  image,
+  size,
+  style = c("dash", "line")[1],
+  color = "white",
+  res = 96,
+  xoff = 0,
+  yoff = 0
+)
 }
 \arguments{
 \item{image}{a [0,1] image.}

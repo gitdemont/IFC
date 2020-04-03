@@ -4,11 +4,19 @@
 \alias{ExportToNumpy}
 \title{Numpy Export}
 \usage{
-ExportToNumpy(offsets, objects, image_type = "img",
-  display_progress = TRUE, python = Sys.getenv("RETICULATE_PYTHON"),
-  dtype = c("uint8", "int16", "uint16", "double")[3], mode = c("raw",
-  "gray")[1], export = c("file", "matrix")[2], write_to,
-  overwrite = FALSE, ...)
+ExportToNumpy(
+  offsets,
+  objects,
+  image_type = "img",
+  display_progress = TRUE,
+  python = Sys.getenv("RETICULATE_PYTHON"),
+  dtype = c("uint8", "int16", "uint16", "double")[3],
+  mode = c("raw", "gray")[1],
+  export = c("file", "matrix")[2],
+  write_to,
+  overwrite = FALSE,
+  ...
+)
 }
 \arguments{
 \item{offsets}{object of class `IFC_offset`. 

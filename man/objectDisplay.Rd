@@ -4,8 +4,15 @@
 \alias{objectDisplay}
 \title{Object Display}
 \usage{
-objectDisplay(image, input_range = c(0, 4095), full_range = FALSE,
-  force_range = FALSE, gamma = 1, color = "Green", dpi = 300)
+objectDisplay(
+  image,
+  input_range = c(0, 4095),
+  full_range = FALSE,
+  force_range = FALSE,
+  gamma = 1,
+  color = "Green",
+  dpi = 300
+)
 }
 \arguments{
 \item{image}{An object extracted by \code{\link{objectExtract}} of class `IFC_img` or `IFC_msk`.\cr

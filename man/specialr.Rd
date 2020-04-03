@@ -4,8 +4,11 @@
 \alias{specialr}
 \title{Special Character Replacement}
 \usage{
-specialr(string = "", replacement = "_",
-  specials = "\\\\\\\\|\\\\/|\\\\:|\\\\*|\\\\?|\\\\\\"|\\\\<|\\\\>|\\\\|")
+specialr(
+  string = "",
+  replacement = "_",
+  specials = "\\\\\\\\|\\\\/|\\\\:|\\\\*|\\\\?|\\\\\\"|\\\\<|\\\\>|\\\\|"
+)
 }
 \arguments{
 \item{string}{string where specials will be replaced if found.}

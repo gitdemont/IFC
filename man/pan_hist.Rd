@@ -7,8 +7,22 @@
 derived from \pkg{lattice} from Deepayan Sarkar
 }
 \usage{
-pan_hist(x, type, br, normalize, fill, lwd, lty, col, alpha, ylim, bin,
-  border, include.lowest = TRUE, right = TRUE)
+pan_hist(
+  x,
+  type,
+  br,
+  normalize,
+  fill,
+  lwd,
+  lty,
+  col,
+  alpha,
+  ylim,
+  bin,
+  border,
+  include.lowest = TRUE,
+  right = TRUE
+)
 }
 \description{
 Helper to create histogram panel

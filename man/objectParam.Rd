@@ -4,12 +4,26 @@
 \alias{objectParam}
 \title{Object Extraction Parameters Definition}
 \usage{
-objectParam(fileName, info, mode = c("rgb", "gray", "raw")[3],
-  export = c("file", "matrix", "base64")[2], write_to,
-  base64_id = FALSE, base64_att = "", overwrite = FALSE,
-  composite = "", selection = "all", size = c(0, 0),
-  force_width = TRUE, random_seed = NULL, removal = "none",
-  add_noise = TRUE, full_range = FALSE, force_range = FALSE, ...)
+objectParam(
+  fileName,
+  info,
+  mode = c("rgb", "gray", "raw")[3],
+  export = c("file", "matrix", "base64")[2],
+  write_to,
+  base64_id = FALSE,
+  base64_att = "",
+  overwrite = FALSE,
+  composite = "",
+  selection = "all",
+  size = c(0, 0),
+  force_width = TRUE,
+  random_seed = NULL,
+  removal = "none",
+  add_noise = TRUE,
+  full_range = FALSE,
+  force_range = FALSE,
+  ...
+)
 }
 \arguments{
 \item{fileName}{path of file to read data from. This param is not mandatory.

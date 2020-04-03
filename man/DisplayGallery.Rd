@@ -4,11 +4,23 @@
 \alias{DisplayGallery}
 \title{Gallery Display}
 \usage{
-DisplayGallery(offsets, objects, image_type = "img", layout,
-  name = "DisplayGallery", caption = FALSE, pageLength = 10L,
-  pdf_pageSize = "A2", pdf_pageOrientation = "landscape",
-  pdf_image_dpi = 96, extract_max = 10, sampling = FALSE,
-  display_progress = TRUE, mode = c("rgb", "gray")[1], ...)
+DisplayGallery(
+  offsets,
+  objects,
+  image_type = "img",
+  layout,
+  name = "DisplayGallery",
+  caption = FALSE,
+  pageLength = 10L,
+  pdf_pageSize = "A2",
+  pdf_pageOrientation = "landscape",
+  pdf_image_dpi = 96,
+  extract_max = 10,
+  sampling = FALSE,
+  display_progress = TRUE,
+  mode = c("rgb", "gray")[1],
+  ...
+)
 }
 \arguments{
 \item{offsets}{object of class `IFC_offset`. 
