@@ -79,7 +79,7 @@ getInfo <- function(fileName,
     fileName_image = file.path(cifdir, basename(cname)) # looks in same directory as fileName
     
     found = FALSE
-    checksum = attr(ExtractFromDAF(fileName, extract_offsets = TRUE, extract_features = FALSE, extract_images = TRUE, extract_stats = FALSE, ...)$offsets, "checksum")
+    checksum = checksumDAF(fileName)
     
     fileName_image = file.path(cifdir, basename(cname)) # look in cifdir 1st
     if(file.exists(fileName_image)) {
