@@ -25,7 +25,7 @@ whoami = function(entries = as.list(match.call()),
   
   # empty 
   if(L == 0) {
-    new = list(fileName == list())
+    new = list("fileName" = list())
     attr(new, "was") <- 0
     attr(new, "from") <- from
     return(new)
