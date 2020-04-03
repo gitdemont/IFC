@@ -1,52 +1,55 @@
 #' @title Input Identification
 #' @description
-#' Helper that identifies input arguments thanks to their IFC classes even if they are not named.
+#' Helper that identifies input arguments thanks to their IFC classes even if they are not or mis named.
 #' @param entries arguments from the function \code{\link{whoami}} is called.
-#' @return a list whose members are:
-#' -fileName: value of fileName if provided as a named argument,\cr
-#' -info; value of `IFC_info` object identified,\cr
-#' -param: value of `IFC_param` object identified,\cr
-#' -offsets: value of `IFC_offset` object identified,\cr
-#' -ifd: value of `IFC_ifd` object identified,\cr
-#' -data: value of `IFC_data` object identified.\cr
+#' /!\ \code{\link{whoami}} MUST be called explicitly this way: whoami(entries = as.list(match.call())).
+#' @param search a named list of classes to search for entries.
+#' @param reinit whether to reinitialize arguments to their default values in called environment. Default is TRUE.
+#' @return a list whose members are 'fileName': value of fileName if provided as a named argument 
+#' in entries and all classes defined in 'search'
 #' @keywords internal
-whoami = function(entries) {
-  entries1 = entries[[1]]
-  if(typeof(entries1) == "closure") {
-    from = "closure"
+whoami = function(entries = as.list(match.call()),
+                  search = list(info = "IFC_info", 
+                                 param = "IFC_param",
+                                 offsets = "IFC_offset"),
+                  reinit = TRUE) {
+  eval_from = parent.frame(2)
+  entry1 = entries[[1]]
+  if(typeof(entry1) == "closure") {
+    from = entry1
   } else {
-    from = as.character(entries1)
+    from = as.character(entry1)
   }
   args = entries[-1]
   L = length(args)
   
+  # empty 
+  if(L == 0) {
+    new = list(fileName == list())
+    attr(new, "was") <- 0
+    attr(new, "from") <- from
+    return(new)
+  }
+  
   # retrieve arguments values
   val = lapply(1:L, FUN=function(i) {
     switch(typeof(args[[i]]),
-           "symbol" = return(get(as.character(args[[i]]))),
-           "language" = return(eval(args[[i]]))
+           "symbol" = return(get(as.character(args[[i]]), eval_from)),
+           "language" = return(eval(args[[i]], eval_from))
     )
     return(args[[i]])
   })
   
+  classes = c(list("fileName" = "fileName"), search)
   # identify arguments of classes we look for
-  # classes = list("fileName",
-  #                c("IFC_info", "IFC_display"), # to use former IFC_display 
-  #                "IFC_param", 
-  #                c("IFC_offset", "IFC_offsets"), # to use former IFC_offsets
-  #                "IFC_ifd", 
-  #                "IFC_data")
-  # found = sapply(1:L, FUN = function(i) {
-  #   sapply(classes, FUN = function(k) inherits(x = val[[i]], what = k, which = FALSE))
-  # })
-  classes = c("fileName", "IFC_info", "IFC_param", "IFC_offset", "IFC_ifd", "IFC_data")
   found = sapply(1:L, FUN = function(i) {
-    inherits(x = val[[i]], what = classes, which = TRUE)
+    sapply(classes, FUN = function(k) inherits(x = val[[i]], what = k, which = FALSE))
   })
   
   # count how many times a classes is present
-  # error if at least 2 arguments are with same class
   times = apply(found, 1, sum)
+  
+  # error if at least 2 arguments are with same class
   foo = times > 1
   if(any(foo)) {
     N = names(args)
@@ -59,10 +62,10 @@ whoami = function(entries) {
       nam = NN[idx]
       paste0("too many elements of class `", classes[dup[i]], "`: [", paste0(paste(idx, nam, sep = "="), collapse = ",") ,"]")
     })
-    stop(paste0(msg, collapse = "\n"))
+    stop(paste0("\nIn ", entry1, ":\n", msg, collapse = "\n"))
   }
   
-  # identify who is who and what it was
+  # if not error identify who is who and where it was
   iam = lapply(1:length(classes), FUN=function(i) {
     return(which(found[i, ] == 1))
   })
@@ -71,9 +74,9 @@ whoami = function(entries) {
   new = lapply(iam, FUN = function(i) {
     if(length(i) != 0) return(val[[i]])
   })
-  names(new) = c("fileName", "info", "param", "offsets", "ifd", "data")
+  names(new) = names(classes)
   
-  # add fileName if present
+  # add fileName if it is a named argument
   fil = names(args) %in% "fileName"
   if(any(fil)) {
     new$fileName = args$fileName
@@ -83,5 +86,13 @@ whoami = function(entries) {
   }
   attr(new, "was") <- was 
   attr(new, "from") <- from
+  
+  # reinit to arguments of searched classes found to their default value
+  if(reinit) {
+    call_from = parent.frame(1)
+    form = formals(fun = from)
+    mism = na.omit(names(args)[was])
+    sapply(mism, FUN = function(x) assign(x = x, value = form[[x]], inherits = FALSE, envir = call_from, immediate = TRUE))
+  }
   return(new)
 }
