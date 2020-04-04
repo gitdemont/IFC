@@ -1,7 +1,7 @@
 #' @title DAF File Checksum 
 #' @description 
-#' This function returns CIF checksum computed from DAF.
-#' Sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.
+#' This function returns CIF checksum computed from images values found in DAF
+#' Checksum is the sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.
 #' @param fileName path to file.
 #' @param endianness The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.
 #' @keywords internal

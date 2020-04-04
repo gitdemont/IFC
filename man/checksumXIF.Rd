@@ -4,12 +4,13 @@
 \alias{checksumXIF}
 \title{RIF/CIF File Checksum}
 \usage{
-checksumXIF(fileName)
+checksumXIF(fileName, ...)
 }
 \arguments{
 \item{fileName}{path to file.}
 }
 \description{
-This function returns XIF checksum..
+This function returns RIF/CIF checksum.
+Checksum is the sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.
 }
 \keyword{internal}
