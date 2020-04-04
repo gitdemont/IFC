@@ -245,7 +245,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     # /!\ since retrieving 1st offset depends on fileName_image it is not used in this sum
     # /!\ note that using offsets extracted from daf without fileName_image may lead to different results
     # TODO ask AMNIS how checksum is computed to use same alg and place description$ID$checksum instead
-    attr(offsets, "checksum") = ifelse(file.exists(fileName_image), checksumXIF(fileName_image), checksumDAF(fileName_image))
+    attr(offsets, "checksum") = ifelse(file.exists(fileName_image), checksumXIF(fileName_image), checksumDAF(fileName))
     attr(offsets, "class") = "IFC_offset"
     attr(offsets, "first") = NULL
   }
