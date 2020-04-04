@@ -4,7 +4,7 @@
 \alias{objectCleanse}
 \title{Object Cleanser}
 \usage{
-objectCleanse(mat, msk, add_noise = TRUE, random_seed = 1, bg = 0, sd = 0)
+objectCleanse(mat, msk, add_noise = TRUE, random_seed = NULL, bg = 0, sd = 0)
 }
 \arguments{
 \item{mat}{a numeric matrix (image).}
@@ -13,7 +13,7 @@ objectCleanse(mat, msk, add_noise = TRUE, random_seed = 1, bg = 0, sd = 0)
 
 \item{add_noise}{if TRUE adds normal noise to background using rnorm(), from \pkg{Rcpp}. Default is TRUE.}
 
-\item{random_seed}{a single value, interpreted as an integer when add_noise is set to TRUE. Default is 1.}
+\item{random_seed}{a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base} when 'add_noise' is set to TRUE. Default is NULL.}
 
 \item{bg}{mean value of the background added if add_noise is TRUE. Default is 0.}
 

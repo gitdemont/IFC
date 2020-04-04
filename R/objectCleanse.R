@@ -4,12 +4,12 @@
 #' @param mat a numeric matrix (image).
 #' @param msk a numeric matrix (mask identifying abnormalities).
 #' @param add_noise if TRUE adds normal noise to background using rnorm(), from \pkg{Rcpp}. Default is TRUE.
-#' @param random_seed a single value, interpreted as an integer when add_noise is set to TRUE. Default is 1.
+#' @param random_seed a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base} when 'add_noise' is set to TRUE. Default is NULL.
 #' @param bg mean value of the background added if add_noise is TRUE. Default is 0.
 #' @param sd standard deviation of the background added if add_noise is TRUE. Default is 0.
 #' @return According to msk, pixel values in mat are substituted by either bg [add_noise == FALSE] or rnorm(n = prod(dim(mat), mean=bg, sd=sd)) [add_noise == TRUE].
 #' @export
-objectCleanse = function(mat, msk, add_noise = TRUE, random_seed = 1, bg = 0, sd = 0) {
+objectCleanse = function(mat, msk, add_noise = TRUE, random_seed = NULL, bg = 0, sd = 0) {
   if(add_noise) {
     set.seed(random_seed)
     on.exit(set.seed(NULL))

@@ -9,7 +9,7 @@
 #' @param type image object type.
 #' @param cleanse logical, whether to cleanse the image or not. Default is FALSE.
 #' @param add_noise logical, if TRUE adds normal noise to background using rnorm(), from \pkg{Rcpp}. Default is TRUE.
-#' @param random_seed a single value, interpreted as an integer when add_noise is set to TRUE.
+#' @param random_seed a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base} when 'add_noise' is set to TRUE. Default is NULL.
 #' @param size a length 2 integer vector of final dimensions of the image. Default is NULL for no change.\cr
 #' if 'size' is of length one then only width is changed.
 #' @param bg_mean mean value of the background added. Default is 0.
@@ -21,7 +21,7 @@
 #' @return the matrix transformed according to input parameters
 #' @export
 objectTransform <- function(mat, msk, color, input_range, mode, type, cleanse = FALSE,
-                            add_noise = TRUE, random_seed = 1, size = NULL,
+                            add_noise = TRUE, random_seed = NULL, size = NULL,
                             bg_mean = 0, bg_sd = 0, full_range = FALSE, force_range = FALSE, gamma = 1) {
   foo = mat
   if(cleanse) foo = objectCleanse(mat = foo, msk = msk, add_noise = add_noise, random_seed = random_seed, bg = bg_mean, sd = bg_sd)

@@ -8,7 +8,7 @@ objectResize(
   mat,
   size = NULL,
   add_noise = TRUE,
-  random_seed = 1,
+  random_seed = NULL,
   bg = 0,
   sd = 0
 )
@@ -21,7 +21,7 @@ if 'size' is of length one then only Width is changed.}
 
 \item{add_noise}{if TRUE adds normal noise when size is larger than mat dimensions using rnorm(), from \pkg{Rcpp}. Default is TRUE.}
 
-\item{random_seed}{a single value, interpreted as an integer when add_noise is set to TRUE. Default is 1.}
+\item{random_seed}{a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base} when 'add_noise' is set to TRUE. Default is NULL.}
 
 \item{bg}{mean value of the background added if add_noise is TRUE. Default is 0.}
 

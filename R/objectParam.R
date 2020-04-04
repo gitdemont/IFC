@@ -35,7 +35,7 @@
 #' Note that this parameter will be ordered.\cr
 #' Default is "all" to extract all acquired channels.\cr
 #' Use "none" to only extract composite.
-#' @param random_seed a single value, interpreted as an integer when 'add_noise' is set to TRUE. Default is NULL.
+#' @param random_seed a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base} when 'add_noise' is set to TRUE. Default is NULL.
 #' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(0,0) for no change.
 #' @param force_width whether to use information in 'info' to fill size. Default is TRUE.
 #' When set to TRUE, width of 'size' argument will be overwritten.
@@ -97,7 +97,7 @@ objectParam <- function(...,
   force_range = as.logical(force_range); assert(force_range, alw = c(TRUE,FALSE))
   assert(export, len = 1, alw = c("file", "matrix", "base64")) 
   assert(mode, len = 1, alw = c("rgb", "gray", "raw")) 
-  if(!missing(random_seed)) {
+  if(!missing(random_seed) && length(random_seed) != 0) { # allow to input NULL
     random_seed = na.omit(as.integer(random_seed[is.finite(random_seed)]))
     assert(random_seed, len = 1, typ = "integer")
   }
@@ -189,6 +189,7 @@ objectParam <- function(...,
              random_seed = random_seed,
              objcount = info$objcount,
              channelwidth = info$channelwidth,
+             in_use = info$in_use,
              brightfield = info$brightfield,
              checksum = info$checksum,
              fileName_image = info$fileName_image)

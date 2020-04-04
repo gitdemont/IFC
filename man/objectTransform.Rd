@@ -13,7 +13,7 @@ objectTransform(
   type,
   cleanse = FALSE,
   add_noise = TRUE,
-  random_seed = 1,
+  random_seed = NULL,
   size = NULL,
   bg_mean = 0,
   bg_sd = 0,
@@ -39,7 +39,7 @@ objectTransform(
 
 \item{add_noise}{logical, if TRUE adds normal noise to background using rnorm(), from \pkg{Rcpp}. Default is TRUE.}
 
-\item{random_seed}{a single value, interpreted as an integer when add_noise is set to TRUE.}
+\item{random_seed}{a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base} when 'add_noise' is set to TRUE. Default is NULL.}
 
 \item{size}{a length 2 integer vector of final dimensions of the image. Default is NULL for no change.\cr
 if 'size' is of length one then only width is changed.}

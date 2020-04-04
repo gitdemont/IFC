@@ -74,7 +74,7 @@ Use "none" to only extract composite.}
 \item{force_width}{whether to use information in 'info' to fill size. Default is TRUE.
 When set to TRUE, width of 'size' argument will be overwritten.}
 
-\item{random_seed}{a single value, interpreted as an integer when 'add_noise' is set to TRUE. Default is NULL.}
+\item{random_seed}{a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base} when 'add_noise' is set to TRUE. Default is NULL.}
 
 \item{removal}{removal method: Either "none", "clipped", "masked", "MC".\cr
 -"none", to keep image as is\cr
