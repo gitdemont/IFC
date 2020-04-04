@@ -76,6 +76,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
   description$Images = description$Images[order(description$Images$physicalChannel),]
   class(description$masks) <- c(class(description$masks), "IFC_masks")
   obj_count = as.integer(description$ID$objcount)
+  description$ID$objcount = obj_count
   # chan_number = nrow(description$Images) # when from daf only available channels are imported
   chan_number = as.integer(xml_attr(xml_find_first(tmp, "//ChannelPresets"), attr = "count"))
 

@@ -188,6 +188,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   class(description$masks) <- c(class(description$masks), "IFC_masks")
   chan_number = sum(infos$in_use)
   obj_number = as.integer(description$ID$objcount)
+  description$ID$objcount = obj_number
   fileName_image = paste(dirname(fileName),description$ID$file,sep="/")
   if(file.exists(fileName_image)) {
     fileName_image = normalizePath(fileName_image, winslash = "/")
