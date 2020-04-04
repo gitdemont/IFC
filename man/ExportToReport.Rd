@@ -58,13 +58,13 @@ Note that it only applies when display is seen as overlaying populations.}
 \item{bin}{default number of bin used for histogram. Default is missing.}
 
 \item{viewport}{Either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
-"ideas" will use same limits as the one defined in ideas.\cr
-"data" will use data to define limits.\cr
-"max" will use data and regions drawn to define limits.}
+-"ideas" will use same limits as the one defined in ideas.\cr
+-"data" will use data to define limits.\cr
+-"max" will use data and regions drawn to define limits.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
-\item{...}{Other parameters to be passed.}
+\item{...}{other parameters to be passed.}
 }
 \value{
 It invisibly returns full path of exported .pdf and/or .csv file(s).

@@ -26,11 +26,11 @@
 #' @param trans transformation function for density graphs. Default is asinh.
 #' @param bin default number of bin used for histogram. Default is missing.
 #' @param viewport Either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
-#' "ideas" will use same limits as the one defined in ideas.\cr
-#' "data" will use data to define limits.\cr
-#' "max" will use data and regions drawn to define limits.
+#' -"ideas" will use same limits as the one defined in ideas.\cr
+#' -"data" will use data to define limits.\cr
+#' -"max" will use data and regions drawn to define limits.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param ... Other parameters to be passed.
+#' @param ... other parameters to be passed.
 #' @details depending on 'write_to', function will create .pdf and/or .csv file(s) report with according to graphs found in 'obj'.\cr
 #' - csv file if created will contain "Min.","1st Qu.","Median","Mean","3rd Qu.","Max." for each graph found for x and y (if not histogram) for drawn populations and regions.\cr
 #' - pdf file if created will contain graphs and to a certain extent some stats "Min.", "Median", "Mean", "Max." (no more than 7 rows).\cr

@@ -54,9 +54,9 @@
 #' @param bin number of bins when graph's type is "histogram" / number of equally spaced grid points for density.
 #' Default is missing to allow \code{\link{autoplot}} to determine it by itself.
 #' @param viewport Either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
-#' "ideas" will use same limits as the one defined in ideas.\cr
-#' "data" will use data to define limits.\cr
-#' "max" will use data and regions drawn to define limits.
+#' -"ideas" will use same limits as the one defined in ideas.\cr
+#' -"data" will use data to define limits.\cr
+#' -"max" will use data and regions drawn to define limits.
 #' @param precision when graphs is a 2D scatter with population overlay, this argument controls amount of information displayed. Default is "light".\cr
 #' -"light", the default, will only display points of same coordinates that are amoung the other layers.\cr
 #' -"full" will display all the layers.

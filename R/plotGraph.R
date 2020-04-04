@@ -16,9 +16,9 @@
 #' @param trans transformation function for density graphs. Default is asinh.
 #' @param bin number of bin used for histogram / density. Default is missing.
 #' @param viewport either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
-#' "ideas" will use same limits as the one defined in ideas.\cr
-#' "data" will use data to define limits.\cr
-#' "max" will use data and regions drawn to define limits.
+#' -"ideas" will use same limits as the one defined in ideas.\cr
+#' -"data" will use data to define limits.\cr
+#' -"max" will use data and regions drawn to define limits.
 #' @param ... other arguments to be passed.
 #' @return it invisibly returns a list whose members are:\cr
 #' -plot, "trellis" object that can be displayed using plot,\cr

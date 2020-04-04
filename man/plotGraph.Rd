@@ -45,9 +45,9 @@ Note that it only applies when display is seen as overlaying populations.}
 \item{bin}{number of bin used for histogram / density. Default is missing.}
 
 \item{viewport}{either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
-"ideas" will use same limits as the one defined in ideas.\cr
-"data" will use data to define limits.\cr
-"max" will use data and regions drawn to define limits.}
+-"ideas" will use same limits as the one defined in ideas.\cr
+-"data" will use data to define limits.\cr
+-"max" will use data and regions drawn to define limits.}
 
 \item{...}{other arguments to be passed.}
 }
