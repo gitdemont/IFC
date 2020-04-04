@@ -91,7 +91,7 @@ whoami = function(entries = as.list(match.call()),
   if(reinit) {
     call_from = parent.frame(1)
     form = formals(fun = from)
-    mism = na.omit(names(args)[was])
+    mism = setdiff(na.omit(names(args)[was]), "")
     sapply(mism, FUN = function(x) assign(x = x, value = form[[x]], inherits = FALSE, envir = call_from, immediate = TRUE))
   }
   return(new)
