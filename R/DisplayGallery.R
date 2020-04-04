@@ -1,10 +1,13 @@
 #' @title Gallery Display
 #' @description
 #' Displays gallery of `IFC_img` / `IFC_msk` objects
-#' @param offsets object of class `IFC_offset`. 
-#' This param is not mandatory but it may allow to save time for repeated image export on same file.
+#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr
+#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+#' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integers, indices of objects to use.
-#' This param is not mandatory, if missing, the default, all objects will be used.
+#' This argument is not mandatory, if missing, the default, all objects will be used.
+#' @param offsets object of class `IFC_offset`. 
+#' This argument is not mandatory but it may allow to save time for repeated image export on same file.
 #' @param image_type image_type of desired offsets. Either "img" or "msk". Default is "img".
 #' @param layout a character vector of [acquired channels + 'composite' images] members to export. Default is missing to export everything.\cr
 #' Note that members can be missing to be removed from final display.\cr
@@ -19,9 +22,6 @@
 #' @param sampling whether to sample objects or not. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param mode (\code{\link{objectExtract}} argument) color mode export. Either "rgb" or "gray". Default is "rgb".
-#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr
-#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
-#' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{DisplayGallery}} input arguments.\cr
 #' Please note that PDF export link will be available if 'write_to' wil not result in a "bmp".\cr
 #' Please note that a warning may be sent if gallery to display contains large amount of data. This is due to use of datatable() from \pkg{DT}.\cr
@@ -48,8 +48,9 @@
 #' -data, data for DT::datatable(),\cr
 #' -args, associated arguments to pass to DT::datatable().
 #' @export
-DisplayGallery <- function(offsets,
+DisplayGallery <- function(..., 
                            objects,
+                           offsets,
                            image_type = "img", 
                            layout, 
                            name = "DisplayGallery", 
@@ -61,8 +62,7 @@ DisplayGallery <- function(offsets,
                            extract_max = 10, 
                            sampling = FALSE, 
                            display_progress = TRUE, 
-                           mode = c("rgb", "gray")[1], 
-                           ...) {
+                           mode = c("rgb", "gray")[1]) {
   dots = list(...)
   # backup last state of device ask newpage and set to FALSE
   old_ask <- devAskNewPage(ask = FALSE)
@@ -142,7 +142,7 @@ DisplayGallery <- function(offsets,
   } else {
     force_width = dots[["force_width"]]
   }
-  param_extra = names(dots) %in% c("ifd","mode","export","size","force_width")
+  param_extra = names(dots) %in% c("ifd","mode","export","size","force_width","bypass")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("write_to","base64_id","base64_att","overwrite",
                                    "composite","selection","random_seed",

@@ -1,10 +1,13 @@
 #' @title Numpy Export
 #' @description
 #' Exports IFC objects to numpy array [objects,height,width,channels]
-#' @param offsets object of class `IFC_offset`. 
-#' This param is not mandatory but it may allow to save time for repeated image export on same file.
+#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and bypass(=TRUE).
+#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.
+#' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integers, indices of objects to use.
-#' This param is not mandatory, if missing, the default, all objects will be used.
+#' This argument is not mandatory, if missing, the default, all objects will be used.
+#' @param offsets object of class `IFC_offset`. 
+#' This argument is not mandatory but it may allow to save time for repeated image export on same file.
 #' @param image_type image_type of desired offsets. Either "img" or "msk". Default is "img".
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param python path to python. Default is Sys.getenv("RETICULATE_PYTHON").\cr
@@ -25,9 +28,6 @@
 #' A good trick is to use:\cr
 #' -"\%d/\%s_Obj[\%o]_Ch[\%c].npy", when 'export' is "file"\cr
 #' @param overwrite whether to overwrite file or not. Default is FALSE.
-#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and bypass(=TRUE).
-#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.
-#' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToNumpy}} input arguments.\cr
 #' \code{\link{ExportToNumpy}} requires reticulate package, python and numpy installed. to create npy file.\cr
 #' If one of these is missing, 'export' will be set to "matrix".
@@ -35,8 +35,9 @@
 #' -"matrix", a numpy array,\cr
 #' -"file", an invisible vector of ids corresponding to the objects exported. 
 #' @export
-ExportToNumpy <- function(offsets,
-                          objects, 
+ExportToNumpy <- function(...,
+                          objects,
+                          offsets, 
                           image_type = "img", 
                           display_progress = TRUE,
                           python = Sys.getenv("RETICULATE_PYTHON"),
@@ -44,8 +45,7 @@ ExportToNumpy <- function(offsets,
                           mode = c("raw", "gray")[1], 
                           export = c("file", "matrix")[2],
                           write_to, 
-                          overwrite = FALSE, 
-                          ...) {
+                          overwrite = FALSE) {
   dots=list(...)
   
   # check input
@@ -121,7 +121,7 @@ ExportToNumpy <- function(offsets,
   } else {
     force_width = dots[["force_width"]]
   }
-  param_extra = names(dots) %in% c("ifd","mode","export","size","force_width")
+  param_extra = names(dots) %in% c("ifd","mode","export","size","force_width","bypass")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("write_to","base64_id","base64_att","overwrite",
                                    "composite","selection","random_seed",

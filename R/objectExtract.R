@@ -83,19 +83,26 @@ objectExtract <- function(ifd,
   dots=list(...)
   assert(verbose, len = 1, alw = c(TRUE, FALSE))
   assert(bypass, len = 1, alw = c(TRUE, FALSE))
-  if(!bypass) {  # bypass ifd / param checking
-    if(missing(ifd)) stop("'ifd' can't be missing")
-    assert(ifd, cla = "IFC_ifd_list")
-    if(length(ifd) == 0) stop("can't extract object when 'ifd' is empty")
+  # bypass ifd / param checking
+  if(!bypass) {
+    #### check input
+    input = whoami(entries = as.list(match.call()), search = list(ifd = "IFC_ifd_list",
+                                                                  param = "IFC_param",
+                                                                  info = "IFC_info"))
+    ifd = input$ifd
+    param = input$param
+    info = input$info
+    fileName = input$fileName
+    if(length(ifd) == 0) stop("'ifd' can't be missing")
     if("IFC_first_ifd" %in% class(ifd)) stop("can't extract object from 'ifd' of class `IFC_first_ifd`")
-    if(missing(param)) {
-      if(!any(c("fileName", "info") %in% names(dots))) {
-        param = do.call(what = "objectParam", args = c(list(fileName = attr(ifd, "fileName_image")), dots))
+    if(length(param) == 0) {
+      if((length(fileName) == 0) && (length(info) == 0)) {
+        param = do.call(what = "objectParam", args = c(list(fileName = attr(ifd, "fileName_image"),
+                                                            verbose = verbose), dots))
       } else {
-        param = do.call(what = "objectParam", args = dots)
+        param = do.call(what = "objectParam", args = c(list(verbose = verbose), dots))
       }
     } else {
-      assert(param, cla = "IFC_param")
       if(attr(ifd, "checksum") != param$checksum) stop("'ifd' and 'param' do not match, please ensure that they originate from same file")
     }
   }

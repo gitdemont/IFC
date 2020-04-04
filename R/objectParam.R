@@ -1,10 +1,9 @@
 #' @title Object Extraction Parameters Definition
 #' @description
 #' Defines IFC_object object extraction parameters.
-#' @param fileName path of file to read data from. This param is not mandatory.
-#' If missing, the default, info$fileName_image will be used
-#' @param info object of class `IFC_info`, rich information extracted by \code{\link{getInfo}}. This param is not mandatory.
-#' If missing, the default, 'info' will be extracted from 'fileName.'
+#' @param ... arguments to be passed to \code{\link{getInfo}}, only if 'info' is not provided.
+#' @param info object of class `IFC_info`, rich information extracted by \code{\link{getInfo}}. 
+#' This argument is not mandatory. If missing, the default, 'info' will be extracted thanks to '...'.
 #' @param mode color mode export. Either "rgb", "gray" or "raw". Default is "raw".
 #' Note that "raw" is only possible when 'export' is "matrix".
 #' @param export format mode export. Either "file", "matrix", "base64". Default is "matrix".
@@ -56,11 +55,9 @@
 #' @param force_range only apply when mode is not "raw", if force_range is TRUE, then image display range will be adjusted for each object resulting in normalization. Default is FALSE.\cr
 #' Note that this parameter takes the precedence over 'full_range'.\cr
 #' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.
-#' @param ... other arguments to be passed to \code{\link{getInfo}}.
-#' @details 'fileName' and 'info' can not be both missing.
 #' @return an object of class `IFC_param`. 
 #' @export
-objectParam <- function(fileName,
+objectParam <- function(...,
                         info, 
                         mode = c("rgb", "gray", "raw")[3],
                         export = c("file", "matrix", "base64")[2],
@@ -76,34 +73,16 @@ objectParam <- function(fileName,
                         removal = "none",
                         add_noise = TRUE, 
                         full_range = FALSE,
-                        force_range = FALSE,
-                        ...) {
+                        force_range = FALSE) {
   dots=list(...)
-  param_info = names(dots) %in% c("from", "verbose", "verbosity","warn",
-                                     "force_default", "cifdir", "ntry")
-  dots_info = dots[param_info]
-  ##### check info/fileName
-  compute_info = FALSE
-  can_compute = TRUE
-  if(missing(info)) {
-    compute_info = TRUE
-    if(missing(fileName)) stop("you should provide at least 'fileName' or 'info'.")
-  } else {
-    if("IFC_info" %in% class(info)) {
-      if(!missing(fileName)) { # if missing compute_info = FALSE
-        if(info$checksum != checksumXIF(info$fileName_image)) { # if == compute_info = FALSE
-          compute_info = TRUE
-          warning("provided 'info' does not match with expected one, 'info' will be recomputed", immediate. = TRUE, call. = FALSE)
-        }
-      }
-    } else { # info is not of good class
-      compute_info = TRUE
-      if(missing(fileName)) stop("provided 'info' is not of class `IFC_info` and can not be recomputed since 'fileName' is missing.")
-      warning("provided 'info' is not of class `IFC_info`, 'info' will be recomputed", immediate. = TRUE, call. = FALSE)
-    }
+  
+  #### check input
+  input = whoami(entries = as.list(match.call()), search = list(info = "IFC_info"))
+  info = input$info
+  if(length(info) == 0) { # info was not found. use extra param to get info
+    param_info = names(dots) %in% formalArgs(getInfo)
+    info = do.call(what = "getInfo", args = dots[param_info])  
   }
-  if(can_compute) if(compute_info) info = do.call(what = "getInfo",
-                                                  args = c(list(fileName = fileName), dots_info)) 
   
   ##### check size
   size = na.omit(as.integer(size[1:2]))

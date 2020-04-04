@@ -1,23 +1,23 @@
 #' @title Shorcut for Batch Images Extraction to Base64
 #' @description
 #' Function to shortcut extraction, normalization and eventually colorization of images to matrix ! excludes mask.
-#' @param offsets object of class `IFC_offset`. 
-#' This param is not mandatory but it may allow to save time for repeated image export on same file.
-#' @param objects integers, indices of objects to use.
-#' This param is not mandatory, if missing, the default, all objects will be used.
-#' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param mode (\code{\link{objectExtract}} argument) color mode export. Either "rgb", "gray". Default is "rgb".
-#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr
+#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr
 #' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
 #' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
+#' @param objects integers, indices of objects to use.
+#' This argument is not mandatory, if missing, the default, all objects will be used.
+#' @param offsets object of class `IFC_offset`. 
+#' This argument is not mandatory but it may allow to save time for repeated image export on same file.
+#' @param display_progress whether to display a progress bar. Default is TRUE.
+#' @param mode (\code{\link{objectExtract}} argument) color mode export. Either "rgb", "gray". Default is "rgb".
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toBase64}} input arguments.
 #' @return A list of base64 encoded images corresponding to objects extracted.
 #' @export
-ExtractImages_toBase64 <- function(offsets,
+ExtractImages_toBase64 <- function(...,
                                    objects,
+                                   offsets,
                                    display_progress = TRUE,
-                                   mode = c("rgb","gray")[1],
-                                   ...) {
+                                   mode = c("rgb","gray")[1]) {
   dots=list(...)
 
   # check input
@@ -58,7 +58,7 @@ ExtractImages_toBase64 <- function(offsets,
   fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
   verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
   verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
-  param_extra = names(dots) %in% c("ifd","export","mode")
+  param_extra = names(dots) %in% c("ifd","export","mode","bypass")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("write_to","base64_id","base64_att","overwrite",
                                    "composite","selection","random_seed","size","force_width",

@@ -5,8 +5,9 @@
 \title{Gallery Display}
 \usage{
 DisplayGallery(
-  offsets,
+  ...,
   objects,
+  offsets,
   image_type = "img",
   layout,
   name = "DisplayGallery",
@@ -18,16 +19,19 @@ DisplayGallery(
   extract_max = 10,
   sampling = FALSE,
   display_progress = TRUE,
-  mode = c("rgb", "gray")[1],
-  ...
+  mode = c("rgb", "gray")[1]
 )
 }
 \arguments{
-\item{offsets}{object of class `IFC_offset`. 
-This param is not mandatory but it may allow to save time for repeated image export on same file.}
+\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr
+If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+/!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 
 \item{objects}{integers, indices of objects to use.
-This param is not mandatory, if missing, the default, all objects will be used.}
+This argument is not mandatory, if missing, the default, all objects will be used.}
+
+\item{offsets}{object of class `IFC_offset`. 
+This argument is not mandatory but it may allow to save time for repeated image export on same file.}
 
 \item{image_type}{image_type of desired offsets. Either "img" or "msk". Default is "img".}
 
@@ -54,10 +58,6 @@ Note that members not found will be automatically removed and a warning will be 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
 \item{mode}{(\code{\link{objectExtract}} argument) color mode export. Either "rgb" or "gray". Default is "rgb".}
-
-\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr
-If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
-/!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 }
 \value{
 it invisibly returns a list whose members are:\cr

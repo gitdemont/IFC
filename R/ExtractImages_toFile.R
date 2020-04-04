@@ -1,10 +1,13 @@
 #' @title Shorcut for Batch Images Extraction to Files
 #' @description
 #' Function to shortcut extraction, normalization and eventually colorization of images to matrix ! excludes mask.
-#' @param offsets object of class `IFC_offset`. 
-#' This param is not mandatory but it may allow to save time for repeated image export on same file.
+#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="file"), 'write_to', 'mode' and bypass(=TRUE).\cr
+#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+#' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integers, indices of objects to use.
-#' This param is not mandatory, if missing, the default, all objects will be used.
+#' This argument is not mandatory, if missing, the default, all objects will be used.
+#' @param offsets object of class `IFC_offset`. 
+#' This argument is not mandatory but it may allow to save time for repeated image export on same file.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param mode (\code{\link{objectExtract}} argument) color mode export. Either "rgb", "gray" . Default is "rgb".
 #' @param write_to (\code{\link{objectExtract}} argument) used to compute exported file name.\cr
@@ -18,18 +21,15 @@
 #' -\%o: with object_id\cr
 #' -\%c: with channel_id\cr
 #' A good trick is to use "\%d/\%s/\%s_\%o_\%c.tiff".
-#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="file"), 'write_to', 'mode' and bypass(=TRUE).\cr
-#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
-#' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toFile}} input arguments.
 #' @return It invisibly returns a list of exported file path of corresponding to objects extracted.
 #' @export
-ExtractImages_toFile <- function(offsets,
+ExtractImages_toFile <- function(...,
                                  objects,
+                                 offsets,
                                  display_progress = TRUE,
                                  mode = c("rgb","gray")[1], 
-                                 write_to,
-                                 ...) {
+                                 write_to) {
   dots=list(...)
 
   # check input
@@ -73,7 +73,7 @@ ExtractImages_toFile <- function(offsets,
   fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
   verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
   verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
-  param_extra = names(dots) %in% c("ifd","export","write_to","mode")
+  param_extra = names(dots) %in% c("ifd","export","write_to","mode","bypass")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("base64_id","base64_att","overwrite",
                                    "composite","selection","random_seed","size","force_width",

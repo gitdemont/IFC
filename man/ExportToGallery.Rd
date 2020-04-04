@@ -5,8 +5,9 @@
 \title{Gallery Export}
 \usage{
 ExportToGallery(
-  offsets,
+  ...,
   objects,
+  offsets,
   image_type = "img",
   layout,
   export = c("file", "matrix", "base64")[2],
@@ -23,16 +24,19 @@ ExportToGallery(
   scale = list(),
   extract_max = 10,
   sampling = FALSE,
-  display_progress = TRUE,
-  ...
+  display_progress = TRUE
 )
 }
 \arguments{
-\item{offsets}{object of class `IFC_offset`. 
-This param is not mandatory but it may allow to save time for repeated image export on same file.}
+\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'mode'(="rgb") and bypass(=TRUE).\cr
+If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+/!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 
 \item{objects}{integers, indices of objects to use.
-This param is not mandatory, if missing, the default, all objects will be used.}
+This argument is not mandatory, if missing, the default, all objects will be used.}
+
+\item{offsets}{object of class `IFC_offset`. 
+This argument is not mandatory but it may allow to save time for repeated image export on same file.}
 
 \item{image_type}{image_type of desired offsets. Either "img" or "msk". Default is "img".}
 
@@ -96,10 +100,6 @@ This parameter can't be lesser than 6px nor higher than image width + scale text
 \item{sampling}{whether to sample objects or not. Default is FALSE.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
-
-\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'mode'(="rgb") and bypass(=TRUE).\cr
-If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
-/!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 }
 \value{
 Depending on 'export':\cr

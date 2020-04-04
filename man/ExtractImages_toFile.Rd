@@ -5,20 +5,24 @@
 \title{Shorcut for Batch Images Extraction to Files}
 \usage{
 ExtractImages_toFile(
-  offsets,
+  ...,
   objects,
+  offsets,
   display_progress = TRUE,
   mode = c("rgb", "gray")[1],
-  write_to,
-  ...
+  write_to
 )
 }
 \arguments{
-\item{offsets}{object of class `IFC_offset`. 
-This param is not mandatory but it may allow to save time for repeated image export on same file.}
+\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="file"), 'write_to', 'mode' and bypass(=TRUE).\cr
+If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+/!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 
 \item{objects}{integers, indices of objects to use.
-This param is not mandatory, if missing, the default, all objects will be used.}
+This argument is not mandatory, if missing, the default, all objects will be used.}
+
+\item{offsets}{object of class `IFC_offset`. 
+This argument is not mandatory but it may allow to save time for repeated image export on same file.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
@@ -35,10 +39,6 @@ Placeholders, if found, will be substituted:\cr
 -\%o: with object_id\cr
 -\%c: with channel_id\cr
 A good trick is to use "\%d/\%s/\%s_\%o_\%c.tiff".}
-
-\item{...}{other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="file"), 'write_to', 'mode' and bypass(=TRUE).\cr
-If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
-/!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 }
 \value{
 It invisibly returns a list of exported file path of corresponding to objects extracted.

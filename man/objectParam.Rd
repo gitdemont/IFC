@@ -5,7 +5,7 @@
 \title{Object Extraction Parameters Definition}
 \usage{
 objectParam(
-  fileName,
+  ...,
   info,
   mode = c("rgb", "gray", "raw")[3],
   export = c("file", "matrix", "base64")[2],
@@ -21,16 +21,14 @@ objectParam(
   removal = "none",
   add_noise = TRUE,
   full_range = FALSE,
-  force_range = FALSE,
-  ...
+  force_range = FALSE
 )
 }
 \arguments{
-\item{fileName}{path of file to read data from. This param is not mandatory.
-If missing, the default, info$fileName_image will be used}
+\item{...}{arguments to be passed to \code{\link{getInfo}}, only if 'info' is not provided.}
 
-\item{info}{object of class `IFC_info`, rich information extracted by \code{\link{getInfo}}. This param is not mandatory.
-If missing, the default, 'info' will be extracted from 'fileName.'}
+\item{info}{object of class `IFC_info`, rich information extracted by \code{\link{getInfo}}. 
+This argument is not mandatory. If missing, the default, 'info' will be extracted thanks to '...'.}
 
 \item{mode}{color mode export. Either "rgb", "gray" or "raw". Default is "raw".
 Note that "raw" is only possible when 'export' is "matrix".}
@@ -97,15 +95,10 @@ This parameter will be repeated with rep_len() from \pkg{base} for every physica
 \item{force_range}{only apply when mode is not "raw", if force_range is TRUE, then image display range will be adjusted for each object resulting in normalization. Default is FALSE.\cr
 Note that this parameter takes the precedence over 'full_range'.\cr
 This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.}
-
-\item{...}{other arguments to be passed to \code{\link{getInfo}}.}
 }
 \value{
 an object of class `IFC_param`.
 }
 \description{
 Defines IFC_object object extraction parameters.
-}
-\details{
-'fileName' and 'info' can not be both missing.
 }

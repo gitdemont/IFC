@@ -1,21 +1,21 @@
 #' @title Shorcut for Batch Masks Extraction to Matrices/Arrays
 #' @description
 #' Function to shortcut extraction, normalization and eventually colorization of masks to matrix ! excludes image.
-#' @param offsets object of class `IFC_offset`. 
-#' This param is not mandatory but it may allow to save time for repeated image export on same file.
-#' @param objects integers, indices of objects to use.
-#' This param is not mandatory, if missing, the default, all objects will be used.
-#' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param ... other arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="matrix") and bypass(=TRUE).\cr
+#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="matrix") and bypass(=TRUE).\cr
 #' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
 #' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
+#' @param objects integers, indices of objects to use.
+#' This argument is not mandatory, if missing, the default, all objects will be used.
+#' @param offsets object of class `IFC_offset`. 
+#' This argument is not mandatory but it may allow to save time for repeated image export on same file.
+#' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractMasks_toMatrix}} input arguments.
 #' @return A list of matrices/arrays of masks corresponding to objects extracted.
 #' @export
-ExtractMasks_toMatrix <- function(offsets,
-                                  objects, 
-                                  display_progress = TRUE,
-                                  ...) {
+ExtractMasks_toMatrix <- function(...,
+                                  objects,
+                                  offsets,
+                                  display_progress = TRUE) {
   dots=list(...)
   
   # check input
@@ -55,7 +55,7 @@ ExtractMasks_toMatrix <- function(offsets,
   fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
   verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
   verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
-  param_extra = names(dots) %in% c("ifd","export")
+  param_extra = names(dots) %in% c("ifd","export","bypass")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("write_to","mode","base64_id","base64_att","overwrite",
                                    "composite","selection","random_seed","size","force_width",
