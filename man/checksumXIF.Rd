@@ -8,6 +8,8 @@ checksumXIF(fileName, ...)
 }
 \arguments{
 \item{fileName}{path to file.}
+
+\item{...}{other arguments to be passed.}
 }
 \description{
 This function returns RIF/CIF checksum.
