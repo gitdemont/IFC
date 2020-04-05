@@ -9,6 +9,7 @@
 #' @param direction The direction of the hierarchical layout. Default is 'LR'.\cr
 #' The available options are: 'UD', 'DU', 'LR', 'RL'. To simplify: up-down, down-up, left-right, right-left.
 #' @param weighted whether to scale population's node size according to count. Default is TRUE.
+#' @param ... other argument to be passed.
 #' @examples
 # #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
@@ -23,7 +24,8 @@
 #' }
 # #' }
 #' @export
-popsNetwork = function(obj, hierarchical=TRUE, color_mode="white", highlight=NULL, seed=NULL, direction="LR", weighted=TRUE) {
+popsNetwork = function(obj, hierarchical=TRUE, color_mode="white", highlight=NULL, seed=NULL, direction="LR", weighted=TRUE, ...) {
+  dots = list(...)
   if(missing(obj)) stop("'obj' can't be missing")
   if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class `IFC_data`")
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
@@ -35,6 +37,14 @@ popsNetwork = function(obj, hierarchical=TRUE, color_mode="white", highlight=NUL
   color_mode=which(c("black","white")%in%color_mode)
   # determine levels for hierarchical layout
   lev = popsGetLevels(obj$pops)
+  size = table(lev)
+  size = c(length(size), max(size))
+  width = NULL
+  height = NULL
+  if(hierarchical && length(dots$session) != 0) {
+    width = size[1] * 75
+    height = size[2] * 75
+  }
   # create nodes
   nodes = as.data.frame(t(sapply(obj$pops, FUN=function(p) {
     typ = c("Base","Boolean","Graphical","Tagged")[c("B","C","G","T")%in%p$type]
@@ -68,7 +78,7 @@ popsNetwork = function(obj, hierarchical=TRUE, color_mode="white", highlight=NUL
     }
     return(data.frame(to=rep(p$name, length(from)), from=from, arrows="to", stringsAsFactors = FALSE))
   })
-  visNetwork(nodes, do.call(rbind, edges[-1]), main = list(text="Populations network")) %>%
+  visNetwork(nodes, do.call(rbind, edges[-1]), main = list(text="Populations network"), width = width, height = height) %>%
     visPhysics(enabled = TRUE, stabilization = FALSE) %>%
     visOptions(highlightNearest = list(enabled=TRUE, hover=TRUE, labelOnly=FALSE, degree=list(from=1,to=1), algorithm="hierarchical"), selectedBy="type") %>%
     visLayout(randomSeed = seed) %>%

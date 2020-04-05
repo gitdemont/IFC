@@ -11,7 +11,8 @@ popsNetwork(
   highlight = NULL,
   seed = NULL,
   direction = "LR",
-  weighted = TRUE
+  weighted = TRUE,
+  ...
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ popsNetwork(
 The available options are: 'UD', 'DU', 'LR', 'RL'. To simplify: up-down, down-up, left-right, right-left.}
 
 \item{weighted}{whether to scale population's node size according to count. Default is TRUE.}
+
+\item{...}{other argument to be passed.}
 }
 \description{
 Builds and displays populations network.
