@@ -10,6 +10,6 @@ checksumIFC <- function(fileName, ...) {
   dots=list(...)
   file_extension = getFileExt(fileName)
   assert(file_extension, len = 1, alw = c("daf", "rif", "cif"))
-  if(file_extension == "daf") return(ExtractFromDAF(fileName = fileName, ...))
-  return(ExtractFromXIF(fileName = fileName, ...))
+  if(file_extension == "daf") return(checksumDAF(fileName = fileName, ...))
+  return(checksumXIF(fileName = fileName, ...))
 }
