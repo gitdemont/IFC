@@ -81,7 +81,9 @@ objectParam <- function(...,
   input = whoami(entries = as.list(match.call()), search = list(info = "IFC_info"))
   info = input$info
   if(length(info) == 0) { # info was not found. use extra param to get info
-    param_info = names(dots) %in% formalArgs(getInfo)
+    param_info = names(dots) %in% c("fileName","from","verbose",
+                                    "verbosity","warn","force_default",
+                                    "cifdir","ntry")
     info = do.call(what = "getInfo", args = dots[param_info])  
   }
   
