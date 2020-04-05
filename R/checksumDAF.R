@@ -27,6 +27,7 @@ checksumDAF <- function(fileName, endianness = .Platform$endian) {
   if(length(is_binary)==0) {is_binary=FALSE}
   
   ##### initialize values
+  warn = TRUE
   obj = c(0,1,2,3,4)
   i_image = 0
   images = c()
@@ -54,10 +55,17 @@ checksumDAF <- function(fileName, endianness = .Platform$endian) {
       imgIFD = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
       readBin(toread, "raw", size = 1, n = 84 + 8 * 4 * chan_number, endian = endianness) # not used for checksumDAF
       if(id %in% obj) {
+        if(warn) if(id != obj[i_image]) { # ensure it is stored in ascending order
+          warning("raw object are not stored in expected order")
+          warn = FALSE
+        }
         obj = setdiff(obj, id)
         images = sum(images, imgIFD)
-      } else {
-        warning("raw object are not stored in expected order")
+      } else { # ensure it is stored in ascending order
+        if(warn) { 
+          warning("raw object are not stored in expected order")
+          warn = FALSE
+        }
       }
     }
   } else {
@@ -66,18 +74,17 @@ checksumDAF <- function(fileName, endianness = .Platform$endian) {
     SO_number = length(nodes)
     if(SO_number != obj_count) stop("mismatch between expected object count and images numbers stored")
     
-    warn = TRUE
     ##### loop over xml SO nodes for id and img/msk offsets
     while((length(obj) != 0) && (i_image != SO_number)) {
       i_image = i_image + 1
       val = as.integer(xml_attrs(nodes[[i_image]])[1:2])
       if(val[1] %in% obj) {
-        obj = setdiff(obj, val[1])
-        images = sum(images, val[2])
-        if(val[1] != obj[i_image]) if(warn) { # ensure it is stored in ascending order
+        if(warn) if(val[1] != obj[i_image]) { # ensure it is stored in ascending order
           warning("raw object are not stored in expected order")
           warn = FALSE
         }
+        obj = setdiff(obj, val[1])
+        images = sum(images, val[2])
       } else { # ensure it is stored in ascending order
         if(warn) { 
           warning("raw object are not stored in expected order")

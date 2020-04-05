@@ -960,7 +960,7 @@ size_t cpp_checksum(std::string fname) {
           if(is_true(any(obj == id)) && !is_true(any(found == id))) {
             found.push_back(id);
             out += as<uint32_t>(IFD["curr_IFD_offset"]);
-            if(id != obj[count]) { // ensure it is stored in ascending order
+            if(warn) if(id != obj[count]) { // ensure it is stored in ascending order
               Rcpp::warning("cpp_checksum: raw object are not stored in expected order");
               warn = false;
             }
