@@ -4,8 +4,9 @@
 #' Checksum is the sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.
 #' @param fileName path to file.
 #' @param endianness The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.
+#' @param ... other arguments to be passed.
 #' @keywords internal
-checksumDAF <- function(fileName, endianness = .Platform$endian) {
+checksumDAF <- function(fileName, endianness = .Platform$endian, ...) {
   # TODO ask AMNIS how checksum is computed
   if(missing(fileName)) stop("'fileName' can't be missing")
   file_extension = getFileExt(fileName)
@@ -49,13 +50,13 @@ checksumDAF <- function(fileName, endianness = .Platform$endian) {
     if(SO_number != obj_number) stop("mismatch between expected object count and images numbers stored")
     
     ##### start extracting id + img/msk offsets
-    while((length(obj) != 0) && (i_image != SO_number)) {
+    while((length(obj) != 0) && (i_image < SO_number)) {
       i_image = i_image + 1
       id = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
       imgIFD = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
       readBin(toread, "raw", size = 1, n = 84 + 8 * 4 * chan_number, endian = endianness) # not used for checksumDAF
       if(id %in% obj) {
-        if(warn) if(id != obj[i_image]) { # ensure it is stored in ascending order
+        if(warn) if(id != obj[1]) { # ensure it is stored in ascending order
           warning("raw object are not stored in expected order")
           warn = FALSE
         }
@@ -75,11 +76,11 @@ checksumDAF <- function(fileName, endianness = .Platform$endian) {
     if(SO_number != obj_count) stop("mismatch between expected object count and images numbers stored")
     
     ##### loop over xml SO nodes for id and img/msk offsets
-    while((length(obj) != 0) && (i_image != SO_number)) {
+    while((length(obj) != 0) && (i_image < SO_number)) {
       i_image = i_image + 1
       val = as.integer(xml_attrs(nodes[[i_image]])[1:2])
       if(val[1] %in% obj) {
-        if(warn) if(val[1] != obj[i_image]) { # ensure it is stored in ascending order
+        if(warn) if(val[1] != obj[1]) { # ensure it is stored in ascending order
           warning("raw object are not stored in expected order")
           warn = FALSE
         }
