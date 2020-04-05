@@ -28,7 +28,8 @@ objectParam(
 \item{...}{arguments to be passed to \code{\link{getInfo}}, only if 'info' is not provided.}
 
 \item{info}{object of class `IFC_info`, rich information extracted by \code{\link{getInfo}}. 
-This argument is not mandatory. If missing, the default, 'info' will be extracted thanks to '...'.}
+This argument is not mandatory but it may allow to save time for repeated image export on same file.
+If missing, the default, 'info' will be extracted thanks to '...'.}
 
 \item{mode}{color mode export. Either "rgb", "gray" or "raw". Default is "raw".
 Note that "raw" is only possible when 'export' is "matrix".}

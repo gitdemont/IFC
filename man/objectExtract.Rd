@@ -39,6 +39,7 @@ objectExtract(ifd, param, verbose = FALSE, bypass = FALSE, ...)
 \item{ifd}{list of sub elements of IFD data information extracted by \code{\link{getIFD}}. This parameter can't be missing.}
 
 \item{param}{object of class `IFC_param`, containing extraction parameters defined by \code{\link{objectParam}}.\cr
+This argument is not mandatory but it may allow to save time for repeated image export on same file.
 If this parameter is missing, \code{\link{objectExtract}} will use extra ... to pass arguments to \code{\link{objectParam}} to control object extraction.\cr
 However, if provided, ... will be ignored.}
 
