@@ -104,8 +104,9 @@ whoami = function(entries = as.list(match.call()),
       no_name = names(args) %in% ""
       # search for a character string in non named argument that were not identified in search
       if(any(no_name)) {
-        fil = unlist(lapply(1:L, FUN = function(i) {
-          if(!(i  %in% was)) if(typeof(val[[i]]) == "character") return(i)
+        fil = unlist(lapply((1:L)[no_name], FUN = function(i) {
+          if(i %in% was) return(NULL)
+          if(typeof(val[[i]]) == "character") return(i)
           return(NULL)
         }))
         if(length(fil) != 0) {
