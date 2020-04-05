@@ -878,7 +878,7 @@ List cpp_getoffsets_wid(std::string fname, R_len_t obj_count = 0, bool display_p
           obj[0] = as<int32_t>(infos["OBJECT_ID"]); // min 0?, max ?
         }
         if(iNotisNULL(infos["TYPE"])) {
-          typ[0] = as<int32_t>(infos["TYPE"]); // [0,3]
+          typ[0] = as<int32_t>(infos["TYPE"]); // [1,3]
         }
         out_obj.push_back(obj[0]);
         out_typ.push_back(typ[0]);
@@ -934,7 +934,7 @@ size_t cpp_checksum(std::string fname) {
       char buf_offset [4];
       uint32_t offset = 4;
       IntegerVector obj = IntegerVector::create(0,1,2,3,4);
-      IntegerVector found;
+      IntegerVector found = IntegerVector::create(6); // ensure to tes at least one value in found == id
       uint8_t count = 0;
       size_t out = 0;
       
@@ -946,18 +946,30 @@ size_t cpp_checksum(std::string fname) {
         Rcerr << "cpp_checksum: No IFD offsets found in\n" << fname << std::endl;
         Rcpp::stop("cpp_checksum: No IFD offsets found");
       }
+      bool warn = true;
       while(offset && (count < 5)){
         List IFD = cpp_getTAGS(fname, offset, false, 8, true);
         List infos = IFD["infos"];
         offset = as<uint32_t>(IFD["next_IFD_offset"]);
-        if(iNotisNULL(infos["OBJECT_ID"])) {
+        int32_t typ = 0;
+        // infos["TYPE"] should never be NULL
+        if(iNotisNULL(infos["TYPE"])) typ = as<int32_t>(infos["TYPE"]); // [1,3]
+        // infos["OBJECT_ID"] should be NULL when typ is 1 or 3 but never when typ is 2
+        if(iNotisNULL(infos["OBJECT_ID"]) && (typ==2)) { // ensure it is image
           int32_t id = as<int32_t>(infos["OBJECT_ID"]);
           if(is_true(any(obj == id)) && !is_true(any(found == id))) {
             found.push_back(id);
-            count += 1; 
             out += as<uint32_t>(IFD["curr_IFD_offset"]);
-          } else {
-            Rcpp::warning("cpp_checksum: raw object are not stored in expected order");
+            if(id != obj[count]) { // ensure it is stored in ascending order
+              Rcpp::warning("cpp_checksum: raw object are not stored in expected order");
+              warn = false;
+            }
+            count += 1; 
+          } else { // ensure it is stored in ascending order
+            if(warn) {
+              Rcpp::warning("cpp_checksum: raw object are not stored in expected order");
+              warn = false;
+            }
           }
         }
       }

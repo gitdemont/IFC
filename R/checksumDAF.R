@@ -66,6 +66,7 @@ checksumDAF <- function(fileName, endianness = .Platform$endian) {
     SO_number = length(nodes)
     if(SO_number != obj_count) stop("mismatch between expected object count and images numbers stored")
     
+    warn = TRUE
     ##### loop over xml SO nodes for id and img/msk offsets
     while((length(obj) != 0) && (i_image != SO_number)) {
       i_image = i_image + 1
@@ -73,8 +74,15 @@ checksumDAF <- function(fileName, endianness = .Platform$endian) {
       if(val[1] %in% obj) {
         obj = setdiff(obj, val[1])
         images = sum(images, val[2])
-      } else {
-        warning("raw object are not stored in expected order")
+        if(val[1] != obj[i_image]) if(warn) { # ensure it is stored in ascending order
+          warning("raw object are not stored in expected order")
+          warn = FALSE
+        }
+      } else { # ensure it is stored in ascending order
+        if(warn) { 
+          warning("raw object are not stored in expected order")
+          warn = FALSE
+        }
       }
     }
   }

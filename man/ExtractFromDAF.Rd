@@ -44,17 +44,18 @@ Note that for the moment only 1(Trigonometry) is available.}
 }
 \value{
 A named list of class `IFC_data`, whose members are:\cr
--description, a list of descriptive information.\cr
--fileName, path of fileName input.\cr
--fileName_image, path of .cif image fileName is refering to.\cr
--features, a data.frame of features.\cr
--features_def, a describing how features are defined.\cr
--graphs, a list of graphical elements found.\cr
--pops, a list describing populations found.\cr
--regions, a list describing how regions are defined.\cr
--images, a data.frame describing information about images.\cr
--offsets, an integer vector of images and masks IFDs offsets.\cr
--stats, a data.frame describing populations count and percentage to parent and total population.
+-description, a list of descriptive information,\cr
+-fileName, path of fileName input,\cr
+-fileName_image, path of .cif image fileName is refering to,\cr
+-features, a data.frame of features,\cr
+-features_def, a describing how features are defined,\cr
+-graphs, a list of graphical elements found,\cr
+-pops, a list describing populations found,\cr
+-regions, a list describing how regions are defined,\cr
+-images, a data.frame describing information about images,\cr
+-offsets, an integer vector of images and masks IFDs offsets,\cr
+-stats, a data.frame describing populations count and percentage to parent and total population,\cr
+-checksum, checksum of .cif image fileName is refering to computed from images values found in current daf.
 }
 \description{
 Extracts data from DAF Files.

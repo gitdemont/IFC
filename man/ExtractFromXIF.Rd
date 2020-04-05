@@ -61,17 +61,18 @@ if extract_images is TRUE, a warning will be sent if an object is found at an un
 }
 \value{
 A named list of class `IFC_data`, whose members are:\cr
--description, a list of descriptive information.\cr
--fileName, path of fileName input.\cr
--fileName_image, same as fileName.\cr
--features, a data.frame of features.\cr
--features_def, a describing how features are defined.\cr
--graphs, a list of graphical elements found.\cr
--pops, a list describing populations found.\cr
--regions, a list describing how regions are defined.\cr
--images, a data.frame describing information about images.\cr
--offsets, an integer vector of images and masks IFDs offsets.\cr
--stats, a data.frame describing populations count and percentage to parent and total population.\cr
+-description, a list of descriptive information,\cr
+-fileName, path of fileName input,\cr
+-fileName_image, same as fileName,\cr
+-features, a data.frame of features,\cr
+-features_def, a describing how features are defined,\cr
+-graphs, a list of graphical elements found,\cr
+-pops, a list describing populations found,\cr
+-regions, a list describing how regions are defined,\cr
+-images, a data.frame describing information about images,\cr
+-offsets, an integer vector of images and masks IFDs offsets,\cr
+-stats, a data.frame describing populations count and percentage to parent and total population,\cr
+-checksum, current file checksum.\cr
 If fileName is a merged of several files returned object will be of class `IFC_data` and `Merged`.
 If recursive is set to "TRUE", ExtractFromXIF will be applied recursively on files defining the merged.
 and the returned object will be a list of the above-mentionned list for each of these files.

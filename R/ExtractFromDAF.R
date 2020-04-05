@@ -31,17 +31,18 @@
 #' }
 # #' }
 #' @return A named list of class `IFC_data`, whose members are:\cr
-#' -description, a list of descriptive information.\cr
-#' -fileName, path of fileName input.\cr
-#' -fileName_image, path of .cif image fileName is refering to.\cr
-#' -features, a data.frame of features.\cr
-#' -features_def, a describing how features are defined.\cr
-#' -graphs, a list of graphical elements found.\cr
-#' -pops, a list describing populations found.\cr
-#' -regions, a list describing how regions are defined.\cr
-#' -images, a data.frame describing information about images.\cr
-#' -offsets, an integer vector of images and masks IFDs offsets.\cr
-#' -stats, a data.frame describing populations count and percentage to parent and total population.
+#' -description, a list of descriptive information,\cr
+#' -fileName, path of fileName input,\cr
+#' -fileName_image, path of .cif image fileName is refering to,\cr
+#' -features, a data.frame of features,\cr
+#' -features_def, a describing how features are defined,\cr
+#' -graphs, a list of graphical elements found,\cr
+#' -pops, a list describing populations found,\cr
+#' -regions, a list describing how regions are defined,\cr
+#' -images, a data.frame describing information about images,\cr
+#' -offsets, an integer vector of images and masks IFDs offsets,\cr
+#' -stats, a data.frame describing populations count and percentage to parent and total population,\cr
+#' -checksum, checksum of .cif image fileName is refering to computed from images values found in current daf.
 #' @export
 ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = TRUE, extract_offsets = TRUE, extract_stats = TRUE,
                            endianness = .Platform$endian, pnt_in_poly_algorithm = 1, pnt_in_poly_epsilon = 1e-12, display_progress = TRUE, ...) {
@@ -77,11 +78,12 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
   class(description$masks) <- c(class(description$masks), "IFC_masks")
   obj_count = as.integer(description$ID$objcount)
   description$ID$objcount = obj_count
+  checksum = checksumDAF(fileName)
   # chan_number = nrow(description$Images) # when from daf only available channels are imported
   chan_number = as.integer(xml_attr(xml_find_first(tmp, "//ChannelPresets"), attr = "count"))
 
   fileName_image = paste(dirname(fileName),description$ID$file,sep="/")
-  if(file.exists(fileName_image)) {
+  if(file.exists(fileName_image) && (checksum == checksumXIF(fileName_image))) {
     fileName_image = normalizePath(fileName_image, winslash = "/")
   } else {
     fileName_image = description$ID$file
@@ -246,7 +248,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     # /!\ since retrieving 1st offset depends on fileName_image it is not used in this sum
     # /!\ note that using offsets extracted from daf without fileName_image may lead to different results
     # TODO ask AMNIS how checksum is computed to use same alg and place description$ID$checksum instead
-    attr(offsets, "checksum") = ifelse(file.exists(fileName_image), checksumXIF(fileName_image), checksumDAF(fileName))
+    attr(offsets, "checksum") = checksumDAF(fileName)
     attr(offsets, "class") = "IFC_offset"
     attr(offsets, "first") = NULL
   }
@@ -428,7 +430,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       }
     }
   }
-  ans = list("description"=description, "fileName"=fileName, "fileName_image"=fileName_image, "features"=features, "features_def"=features_def, "graphs"=plots, "pops"=pops, "regions"=regions, "images"=images, "offsets"=offsets, "stats"=stats)
+  ans = list("description"=description, "fileName"=fileName, "fileName_image"=fileName_image, "features"=features, "features_def"=features_def, "graphs"=plots, "pops"=pops, "regions"=regions, "images"=images, "offsets"=offsets, "stats"=stats, "checksum" = checksum)
   attr(ans, "class") <- c("IFC_data") #,"analysis")
   return(ans)
 }
