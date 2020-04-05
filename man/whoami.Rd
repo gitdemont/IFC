@@ -14,7 +14,7 @@ whoami(
 \item{entries}{arguments from the function \code{\link{whoami}} is called.
 /!\ \code{\link{whoami}} MUST be called explicitly this way: whoami(entries = as.list(match.call())).}
 
-\item{search}{a named list of classes to search for entries.}
+\item{search}{a non duplicated named list of classes to search for entries.}
 
 \item{reinit}{whether to reinitialize arguments to their default values in called environment. Default is TRUE.}
 }
@@ -24,5 +24,13 @@ in entries and all classes defined in 'search'
 }
 \description{
 Helper that identifies input arguments thanks to their IFC classes even if they are not or mis named.
+}
+\details{
+if two argument of the same 'search' class are found an error will be thrown.
+'fileName' will be searched every time.\cr
+-at first, as an argument (named or not) of the class designated in 'search' to be the "fileName",\cr
+-otherwise, as an argument (named or not) of class `fileName`,\cr
+-otherwise, as a named argument of name "fileName" that was not found using 'search',\cr
+-and finally, if still not found as the first not named argument not found in 'search' of type string.
 }
 \keyword{internal}

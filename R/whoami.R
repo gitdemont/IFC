@@ -3,15 +3,21 @@
 #' Helper that identifies input arguments thanks to their IFC classes even if they are not or mis named.
 #' @param entries arguments from the function \code{\link{whoami}} is called.
 #' /!\ \code{\link{whoami}} MUST be called explicitly this way: whoami(entries = as.list(match.call())).
-#' @param search a named list of classes to search for entries.
+#' @param search a non duplicated named list of classes to search for entries.
 #' @param reinit whether to reinitialize arguments to their default values in called environment. Default is TRUE.
+#' @details if two argument of the same 'search' class are found an error will be thrown.
+#' 'fileName' will be searched every time.\cr
+#' -at first, as an argument (named or not) of the class designated in 'search' to be the "fileName",\cr
+#' -otherwise, as an argument (named or not) of class `fileName`,\cr
+#' -otherwise, as a named argument of name "fileName" that was not found using 'search',\cr
+#' -and finally, if still not found as the first not named argument not found in 'search' of type string.
 #' @return a list whose members are 'fileName': value of fileName if provided as a named argument 
 #' in entries and all classes defined in 'search'
 #' @keywords internal
 whoami = function(entries = as.list(match.call()),
                   search = list(info = "IFC_info", 
-                                 param = "IFC_param",
-                                 offsets = "IFC_offset"),
+                                param = "IFC_param",
+                                offsets = "IFC_offset"),
                   reinit = TRUE) {
   eval_from = parent.frame(2)
   entry1 = entries[[1]]
@@ -23,10 +29,20 @@ whoami = function(entries = as.list(match.call()),
   args = entries[-1]
   L = length(args)
   
+  # check for fileName class
+  has_filename = names(search) %in% "fileName"
+  if(any(has_filename)) { # reorder classes to place fileName 1st
+    classes = c(search[has_filename], search[!has_filename])
+  } else { # add "fileName" in classes
+    classes = c(list("fileName" = "fileName"), search)
+  }
+  if(anyDuplicated(names(classes))) stop("'search' should be a named list of non duplicated elements")
+  
+  
   # empty 
   if(L == 0) {
-    new = list("fileName" = list())
-    attr(new, "was") <- 0
+    new = sapply(classes, simplify = F, FUN = function(x) return(NULL))
+    attr(new, "was") <- rep(0, times = length(classes))
     attr(new, "from") <- from
     return(new)
   }
@@ -40,10 +56,12 @@ whoami = function(entries = as.list(match.call()),
     return(args[[i]])
   })
   
-  classes = c(list("fileName" = "fileName"), search)
   # identify arguments of classes we look for
   found = sapply(1:L, FUN = function(i) {
-    sapply(classes, FUN = function(k) inherits(x = val[[i]], what = k, which = FALSE))
+    sapply(classes, FUN = function(k) {
+      if(length(k) == 0) return(FALSE)
+      return(inherits(x = val[[i]], what = k, which = FALSE))
+    })
   })
   
   # count how many times a classes is present
@@ -76,13 +94,30 @@ whoami = function(entries = as.list(match.call()),
   })
   names(new) = names(classes)
   
-  # add fileName if it is a named argument
-  fil = names(args) %in% "fileName"
-  if(any(fil)) {
-    new$fileName = args$fileName
-    was = c(which(fil), was)
-  } else {
-    was = c(0, was)
+  if(length(new$fileName) == 0) { # fileName was not found in classes
+    # search fileName in named arguments that were not identified in search
+    fil = (names(args) %in% "fileName")[-was]
+    if(any(fil)) {
+      new$fileName = args$fileName
+      was = c(which(fil)[1], was)
+    } else {
+      no_name = names(args) %in% ""
+      # search for a character string in non named argument that were not identified in search
+      if(any(no_name)) {
+        fil = unlist(lapply(1:L, FUN = function(i) {
+          if(!(i  %in% was)) if(typeof(val[[i]]) == "character") return(i)
+          return(NULL)
+        }))
+        if(length(fil) != 0) {
+          new$fileName = args[[fil[1]]]
+          was = c(fil[1], was)
+        }  else {
+          was = c(0, was)
+        }
+      } else {
+        was = c(0, was)
+      }
+    }
   }
   attr(new, "was") <- was 
   attr(new, "from") <- from
