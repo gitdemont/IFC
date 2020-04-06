@@ -49,10 +49,10 @@ data_add_regions <- function(obj, regions, ...) {
   for(i in 1:length(regions)) {
     if(regions[[i]]$color=="Teal") regions[[i]]$color <- "Cyan4"
     if(regions[[i]]$color=="Green") regions[[i]]$color <- "Green4"
-    if(regions[[i]]$color=="Lime") regions[[i]]$color <- "chartreuse"
+    if(regions[[i]]$color=="Lime") regions[[i]]$color <- "Chartreuse"
     if(regions[[i]]$lightcolor=="Teal") regions[[i]]$lightcolor <- "Cyan4"
     if(regions[[i]]$lightcolor=="Green") regions[[i]]$lightcolor <- "Green4"
-    if(regions[[i]]$lightcolor=="Lime") regions[[i]]$lightcolor <- "chartreuse"
+    if(regions[[i]]$lightcolor=="Lime") regions[[i]]$lightcolor <- "Chartreuse"
   }
   
   # removes already defined regions

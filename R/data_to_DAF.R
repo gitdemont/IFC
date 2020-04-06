@@ -124,7 +124,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
   # changes to DAF compatible colors
   if(any(channels$color=="Cyan4")) channels$color[channels$color=="Cyan4"] <- "Teal"
   if(any(channels$color=="Green4")) channels$color[channels$color=="Green4"] <- "Green"
-  if(any(channels$color=="chartreuse")) channels$color[channels$color=="chartreuse"] <- "Lime"
+  if(any(channels$color=="Chartreuse")) channels$color[channels$color=="Chartreuse"] <- "Lime"
   # removes gamma
   channels = channels[, !grepl("gamma", names(channels))]
   channels[, "physicalChannel"] = channels[, "physicalChannel"] - 1

@@ -29,8 +29,8 @@ toXML2_pops = function(pops, verbose = FALSE, display_progress = TRUE, title_pro
       if(pop$lightModeColor=="Cyan4") pop$lightModeColor <- "Teal"
       if(pop$color=="Green4") pop$color <- "Green"
       if(pop$lightModeColor=="Green4") pop$lightModeColor <- "Green"
-      if(pop$color=="chartreuse") pop$color <- "Lime"
-      if(pop$lightModeColor=="chartreuse") pop$lightModeColor <- "Lime"
+      if(pop$color=="Chartreuse") pop$color <- "Lime"
+      if(pop$lightModeColor=="Chartreuse") pop$lightModeColor <- "Lime"
       pop$style <- names(which(pop$style == tmp_style))[1]
       switch(pop$type,
              "B" = {
@@ -60,8 +60,8 @@ toXML2_pops = function(pops, verbose = FALSE, display_progress = TRUE, title_pro
       if(pop$lightModeColor=="Cyan4") pop$lightModeColor <- "Teal"
       if(pop$color=="Green4") pop$color <- "Green"
       if(pop$lightModeColor=="Green4") pop$lightModeColor <- "Green"
-      if(pop$color=="chartreuse") pop$color <- "Lime"
-      if(pop$lightModeColor=="chartreuse") pop$lightModeColor <- "Lime"
+      if(pop$color=="Chartreuse") pop$color <- "Lime"
+      if(pop$lightModeColor=="Chartreuse") pop$lightModeColor <- "Lime"
       pop$style <- names(which(pop$style == tmp_style))[1]
       switch(pop$type,
              "B" = {

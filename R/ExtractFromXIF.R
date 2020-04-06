@@ -204,13 +204,13 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   col = description$Images[,"color"]
   col[col=="Teal"] <- "Cyan4"
   col[col=="Green"] <- "Green4"
-  col[col=="Lime"] <- "chartreuse"
+  col[col=="Lime"] <- "Chartreuse"
   description$Images[,"color"] <- col
   if("saturation"%in%names(description$Images)) {
     col = description$Images[,"saturation"]
     col[col=="Teal"] <- "Cyan4"
     col[col=="Green"] <- "Green4"
-    col[col=="Lime"] <- "chartreuse"
+    col[col=="Lime"] <- "Chartreuse"
     description$Images[,"saturation"] <- col
   }
   
@@ -338,10 +338,10 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         for(i in 1:length(regions)) {
           if(regions[[i]]$color=="Teal") {regions[[i]]$color="Cyan4"}
           if(regions[[i]]$color=="Green") {regions[[i]]$color="Green4"}
-          if(regions[[i]]$color=="Lime") {regions[[i]]$color="chartreuse"}
+          if(regions[[i]]$color=="Lime") {regions[[i]]$color="Chartreuse"}
           if(regions[[i]]$lightcolor=="Teal") {regions[[i]]$lightcolor="Cyan4"}
           if(regions[[i]]$lightcolor=="Green") {regions[[i]]$lightcolor="Green4"}
-          if(regions[[i]]$lightcolor=="Lime") {regions[[i]]$lightcolor="chartreuse"}
+          if(regions[[i]]$lightcolor=="Lime") {regions[[i]]$lightcolor="Chartreuse"}
         }
       }
       class(regions) <- "IFC_regions"

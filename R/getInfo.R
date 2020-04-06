@@ -218,13 +218,13 @@ getInfo <- function(fileName,
   col = infos$Images[,"color"]
   col[col=="Teal"] <- "Cyan4"
   col[col=="Green"] <- "Green4"
-  col[col=="Lime"] <- "chartreuse"
+  col[col=="Lime"] <- "Chartreuse"
   infos$Images[,"color"] <- col
   if("saturation"%in%names(infos$Images)) {
     col = infos$Images[,"saturation"]
     col[col=="Teal"] <- "Cyan4"
     col[col=="Green"] <- "Green4"
-    col[col=="Lime"] <- "chartreuse"
+    col[col=="Lime"] <- "Chartreuse"
     infos$Images[,"saturation"] <- col
   }
   attr(infos, "class") <- c("IFC_info",from)
