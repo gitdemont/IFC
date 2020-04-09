@@ -98,6 +98,9 @@ getInfo <- function(fileName,
         break;
       } 
       message(paste0("daf file does not refer to: ", fileName_image))
+      old_wd = getwd()
+      on.exit(setwd(old_wd), add= TRUE)
+      setwd(dirname(fileName))
       if(.Platform$OS.type == "windows") {
         fileName_image = choose.files(caption = paste0("Looking for: ", basename(cname)), multi = FALSE, filters = cbind("Compensated Image File (*.cif)", "*.cif"))
       } else {

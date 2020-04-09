@@ -390,6 +390,9 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
           break;
         } 
         message(paste0("daf file does not refer to: ", cif_name))
+        old_wd = getwd()
+        on.exit(setwd(old_wd), add= TRUE)
+        setwd(dirname(fileName))
         if(.Platform$OS.type == "windows") {
           cif_name = choose.files(caption = paste0("Looking for: ", basename(cname)), multi = FALSE, filters = cbind("Compensated Image File (*.cif)", "*.cif"))
         } else {
