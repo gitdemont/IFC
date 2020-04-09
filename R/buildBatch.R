@@ -4,8 +4,8 @@
 #' @param files path of files to batch.
 #' @param compensation path to compensation file.
 #' @param analysis path to analysis file.
-#' @param default_batch_dir directory to export batch.\cr
-#' It can be found in IDEAS(R) software, under Options -> Application Defaults -> Directories -> Default Batch Report Files Directory.
+#' @param default_batch_dir directory where batches are stored.\cr
+#' It can be found in IDEAS(R) software, under Options -> Application Defaults -> Directories -> Default Batch Report Files Directory.\cr
 #' If missing, the default, it will be deduced from IDEAS(R) config file, However, if it can't be deduced then tempdir(check = TRUE) from \pkg{base} will be used.\cr
 #' This argument takes precedence over 'config_file' and filling 'default_batch_dir' prevents the use of 'config_file' argument.
 #' @param config_file path to IDEAS(R) config file.\cr
@@ -140,6 +140,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
     warning(paste0(paste0(paste0(files[dup],"\n"),collapse=""),"have been removed because batch would overwrite data being processed"))
     files = files[!dup]
   }
+  if(length(files) == 0) stop("no file to batch using 'files' argument")
   info = lapply(files, getInfo, from = "acquisition")
   if(!allow_channels_dissimilarity) {
     num_channels = unique(sapply(info, FUN=function(x) nrow(x$Images)))
@@ -205,8 +206,8 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
                     .children=lapply(info, FUN=function(x) do.call(what=xml_new_node, args=list(name="file", attrs = list(name=x$fileName, objectCount=ifelse(getFileExt(x$fileName)!="rif","0",format(x$objcount,scientific=FALSE))))))),
                list(name="statfiles",
                     .children=lapply(unlist(lapply(info, FUN=function(x) {
-                      if(getFileExt(x$fileName) == "daf") return(basename(x$fileName))
-                      if(getFileExt(x$fileName) == "cif") return(gsub("cif$","daf",basename(x$fileName_image)))
+                      if(getFileExt(x$fileName) == "daf") return(paste0(suffix,basename(x$fileName)))
+                      if(getFileExt(x$fileName) == "cif") return(paste0(suffix,gsub("cif$","daf",basename(x$fileName_image))))
                       # segment_rif only applies to rif
                       foo = 1
                       if(segment_rif!="None") foo = ceiling(x$objcount/chunk)
@@ -215,7 +216,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
                       } else {
                         foo = paste(paste0("_S", 1:foo),segment_rif,sep="_")
                       }
-                      return(paste0(gsub("^(.*)\\.rif$","\\1",basename(x$fileName_image)),foo,".daf"))
+                      return(paste0(gsub("^(.*)\\.rif$","\\1",basename(x$fileName_image)),foo,suffix,".daf"))
                     })), FUN=function(n) xml_new_node(name="statfile", attrs = list(name=n)))))
   if(!missing(analysis)) {
     target = ifelse(a_Ext=="daf", "</Assay>", "</AssayTemplate>")
