@@ -101,7 +101,7 @@ Once data are parsed and treated new elements can be used to subset raw / compen
 
 - Other low level functions are very useful see ?IFC, for how to use them.
 
-**getDisplayInfo()** for retrieving image display information,
+**getInfo()** for retrieving rich information about file,
 
 **objectExtract()** for extracting individual image or mask within .rif or .cif file,
 
