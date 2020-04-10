@@ -102,7 +102,7 @@ ExtractImages_toMatrix <- function(...,
   
   # check input offsets if any
   compute_offsets = TRUE
-  if(!missing(offsets)) {
+  if(length(offsets) != 0) {
     if(!("IFC_offset" %in% class(offsets))) {
       warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
     } else {
