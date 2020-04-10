@@ -35,12 +35,12 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
   fileName = normalizePath(fileName, winslash = "/", mustWork = TRUE)
   title_progress = basename(fileName)
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
-  IFD_first = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = FALSE, ...)[[1]]
-  bits = IFD_first$tags$`258`$map
-  tmp = read_xml(getFullTag(fileName, IFD_first, "33027"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  IFD = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = FALSE, ...)
+  bits = IFD[[1]]$tags$`258`$map
+  tmp = read_xml(getFullTag(IFD = IFD, which = 1, tag = "33027"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
   in_use = as.logical(as.numeric(strsplit(xml_text(xml_find_first(tmp, "//Imaging//ChannelInUseIndicators_0_11")), " ", useBytes = TRUE, fixed=TRUE)[[1]]))
   rm(tmp)
-  nobj = IFD_first$tags$`33018`$map
+  nobj = IFD[[1]]$tags$`33018`$map
   chan_number = sum(in_use)
   
   if(missing(objects)) {
@@ -81,43 +81,43 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
     ans = lapply(1:L, FUN=function(i) {
       setPB(pb, value = i, title = title_progress, label = "extracting images values (binary)")
       t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"), trunc_bytes = 8,
-                      force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = TRUE, ...), FUN = function(IFD) {
-                        c(IFD$infos$OBJECT_ID, # id
-                          IFD$curr_IFD_offset, # imgIFD
-                          IFD$next_IFD_offset, # mskIFD
+                      force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = TRUE, ...), FUN = function(ifd) {
+                        c(ifd$infos$OBJECT_ID, # id
+                          ifd$curr_IFD_offset, # imgIFD
+                          ifd$next_IFD_offset, # mskIFD
                           bits,                # spIFD
-                          IFD$tags$`256`$map,  # w
-                          IFD$tags$`257`$map,  # l
-                          IFD$tags$`33012`$map,# fs
-                          IFD$tags$`33016`$map,# cl
-                          IFD$tags$`33017`$map,# ct
-                          IFD$tags$`33071`$map,# objCenterX
-                          IFD$tags$`33072`$map,# objCenterY
-                          IFD$tags$`33053`$map[1:chan_number],# bgstd
-                          IFD$tags$`33052`$map[1:chan_number],# bgmean
-                          IFD$tags$`33054`$map[1:chan_number],# satcount
-                          IFD$tags$`33055`$map[1:chan_number])# satpercent
+                          ifd$tags$`256`$map,  # w
+                          ifd$tags$`257`$map,  # l
+                          ifd$tags$`33012`$map,# fs
+                          ifd$tags$`33016`$map,# cl
+                          ifd$tags$`33017`$map,# ct
+                          ifd$tags$`33071`$map,# objCenterX
+                          ifd$tags$`33072`$map,# objCenterY
+                          ifd$tags$`33053`$map[1:chan_number],# bgstd
+                          ifd$tags$`33052`$map[1:chan_number],# bgmean
+                          ifd$tags$`33054`$map[1:chan_number],# satcount
+                          ifd$tags$`33055`$map[1:chan_number])# satpercent
                       }))
     })
   } else {
     ans = lapply(1:L, FUN=function(i) {
       t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"), trunc_bytes = 8,
-                      force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = TRUE, ...), FUN = function(IFD) {
-                        c(IFD$infos$OBJECT_ID, # id
-                          IFD$curr_IFD_offset, # imgIFD
-                          IFD$next_IFD_offset, # mskIFD
+                      force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = TRUE, ...), FUN = function(ifd) {
+                        c(ifd$infos$OBJECT_ID, # id
+                          ifd$curr_IFD_offset, # imgIFD
+                          ifd$next_IFD_offset, # mskIFD
                           bits,                # spIFD
-                          IFD$tags$`256`$map,  # w
-                          IFD$tags$`257`$map,  # l
-                          IFD$tags$`33012`$map,# fs
-                          IFD$tags$`33016`$map,# cl
-                          IFD$tags$`33017`$map,# ct
-                          IFD$tags$`33071`$map,# objCenterX
-                          IFD$tags$`33072`$map,# objCenterY
-                          IFD$tags$`33053`$map[1:chan_number],# bgstd
-                          IFD$tags$`33052`$map[1:chan_number],# bgmean
-                          IFD$tags$`33054`$map[1:chan_number],# satcount
-                          IFD$tags$`33055`$map[1:chan_number])# satpercent
+                          ifd$tags$`256`$map,  # w
+                          ifd$tags$`257`$map,  # l
+                          ifd$tags$`33012`$map,# fs
+                          ifd$tags$`33016`$map,# cl
+                          ifd$tags$`33017`$map,# ct
+                          ifd$tags$`33071`$map,# objCenterX
+                          ifd$tags$`33072`$map,# objCenterY
+                          ifd$tags$`33053`$map[1:chan_number],# bgstd
+                          ifd$tags$`33052`$map[1:chan_number],# bgmean
+                          ifd$tags$`33054`$map[1:chan_number],# satcount
+                          ifd$tags$`33055`$map[1:chan_number])# satpercent
                       }))
     })
   }

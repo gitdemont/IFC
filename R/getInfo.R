@@ -109,36 +109,62 @@ getInfo <- function(fileName,
     }
     if(!found) stop("can't extract information")
     fileName_image = normalizePath(fileName_image, winslash = "/")
-    IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity, bypass = TRUE, ...)[[1]]
+    IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity, bypass = TRUE, ...)
   }
   if(file_extension == "cif" | file_extension == "rif") {
     fileName_image = fileName
-    IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity, bypass = TRUE, ...)[[1]]
+    IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity, bypass = TRUE, ...)
   }
   Merged_cif = character()
   Merged_rif = character()
-  if(!is.null(IFD$tags[["33029"]])) {
-    if(IFD$tags[["33029"]]$byt != 0) Merged_cif = strsplit(as.character(getFullTag(fileName_image, IFD, tag="33029")), "|", fixed = TRUE)[[1]]
+  if(!is.null(IFD[[1]]$tags[["33029"]])) {
+    if(IFD[[1]]$tags[["33029"]]$byt != 0) Merged_cif = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33029")), "|", fixed = TRUE)[[1]]
   }
-  if(!is.null(IFD$tags[["33030"]])) {
-    if(IFD$tags[["33030"]]$byt != 0) Merged_rif = strsplit(as.character(getFullTag(fileName_image, IFD, tag="33030")), "|", fixed = TRUE)[[1]]
+  if(!is.null(IFD[[1]]$tags[["33030"]])) {
+    if(IFD[[1]]$tags[["33030"]]$byt != 0) Merged_rif = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33030")), "|", fixed = TRUE)[[1]]
   }
   if(file_extension == "daf" & from == "acquisition") file_extension = "cif"
-  tmp_acq = read_xml(getFullTag(fileName_image, IFD, "33027"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  tmp_acq = read_xml(getFullTag(IFD = IFD, which = 1, "33027"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
   
   acquisition = list("Illumination"=lapply(as_list(xml_find_first(tmp_acq, "//Illumination")), unlist),
                      "Fluidics"=lapply(as_list(xml_find_first(tmp_acq, "//Fluidics")), unlist),
                      "Imaging"=lapply(as_list(xml_find_first(tmp_acq, "//Imaging")), unlist),
                      "Display"=lapply(as_list(xml_find_first(tmp_acq, "//Display")), unlist))
   
-  infos = list("objcount" = IFD$tags[["33018"]]$map) # should not exceed 4 bytes
+  infos = list("objcount" = IFD[[1]]$tags[["33018"]]$map, # should not exceed 4 bytes
+               "date"=getFullTag(IFD = IFD, which = 1, "33004"),
+               "SW_raw"=getFullTag(IFD = IFD, which = 1, "33069"),
+               "SW_process"=getFullTag(IFD = IFD, which = 1, "33066")) 
   # determines channelwidth, very important for objectExtract() when force_width = TRUE
   # prefer using channelwidth extracted from ifd dedicated tag (=tag 33009) rather than the one from parsing ASSISTdb (=tag 33064)
   # TODO ask AMNIS the rules for extracting channelwidth
-  channelwidth1 = IFD$tags[["33009"]]$map # should not exceed 4 bytes
-  channelwidth2 = as.numeric(xml_text(xml_find_first(read_xml(getFullTag(fileName_image, IFD, tag ="33064"),
-                                                              options = c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN")),
-                                                     xpath = "//ChannelWidth")))
+  channelwidth1 = IFD[[1]]$tags[["33009"]]$map # should not exceed 4 bytes
+  tmp_ins = read_xml(getFullTag(IFD = IFD, which = 1, tag ="33064"), options = c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  channelwidth2 = as.numeric(xml_text(xml_find_first(tmp_ins, xpath = "//ChannelWidth")))
+  # information in acquisition db
+  lasers_nodes = grep("Filter", grep("ExLaser", names(acquisition[["Illumination"]]), value = TRUE), value = TRUE, invert = TRUE)
+  lasers_on = acquisition$Illumination[grep("PowerOn", lasers_nodes, value = TRUE)]
+  lasers_on = as.logical(as.integer(unlist(lasers_on[as.integer(gsub("\\D+", "", names(lasers_on)))])))
+  lasers_power = acquisition$Illumination[grep("IntensityWatts", lasers_nodes, value = TRUE)]
+  lasers_power = as.integer(unlist(lasers_power[as.integer(gsub("\\D+", "", names(lasers_power)))]))
+  # information in instrumen db
+  ins_lasers = lapply(as_list(xml_find_first(tmp_ins, "Illumination")), unlist)
+  lasers_nodes = grep("ExLaser", names(ins_lasers), value = TRUE)
+  lasers_present = ins_lasers[grep("Filter|LAF", grep("Present", lasers_nodes, value = TRUE), value = TRUE, invert = TRUE)]
+  lasers_present = as.logical(as.integer(unlist(lasers_present[as.integer(gsub("\\D+", "", names(lasers_present)))])))
+  lasers_wavelength = ins_lasers[grep("Wavelength", lasers_nodes, value = TRUE)]
+  lasers_wavelength = as.integer(unlist(lasers_wavelength[as.integer(gsub("\\D+", "", names(lasers_wavelength)))]))
+  lasers_minpow = ins_lasers[grep("MinPower", lasers_nodes, value = TRUE)]
+  lasers_minpow = as.numeric(unlist(lasers_minpow[as.integer(gsub("\\D+", "", names(lasers_minpow)))]))
+  lasers_maxpow = ins_lasers[grep("MaxPower", lasers_nodes, value = TRUE)]
+  lasers_maxpow = as.numeric(unlist(lasers_maxpow[as.integer(gsub("\\D+", "", names(lasers_maxpow)))]))
+  illumination = data.frame("installed" = lasers_present,
+                            "wavelength" = lasers_wavelength, 
+                            "powered" = lasers_on, 
+                            "power" = lasers_power, 
+                            "min" = lasers_minpow, 
+                            "max" = lasers_maxpow, stringsAsFactors = FALSE)
+
   infos$channelwidth = channelwidth1
   if(length(channelwidth1)==0) infos$channelwidth = channelwidth2
   if(length(channelwidth1)!=0) if(is.na(channelwidth1)) infos$channelwidth = channelwidth2
@@ -147,16 +173,17 @@ getInfo <- function(fileName,
   infos$brightfield = list("channel"=as.logical(as.numeric(unlist(strsplit(acquisition$Illumination[["BfLedIndicators_0_11"]], " ", useBytes = TRUE, fixed=TRUE)))),
                            "power"= as.logical(as.numeric(acquisition$Illumination[["BFOnOff"]])),
                            "intensity" = as.numeric(acquisition$Illumination[["BFIntensity"]]))
+  infos$illumination = illumination
   # TODO ask AMNIS, if collectionmode is the good variable that determines default information
   infos$collectionmode = as.numeric(acquisition$Illumination[["CollectionMode"]])
   infos$magnification = as.numeric(acquisition$Imaging[["Magnification"]])
   infos$coremode = as.numeric(acquisition$Fluidics[["CoreMode"]])
   if(from == "analysis" & file_extension != "rif") {
-    infos$CrossTalkMatrix = IFD$tags[["33020"]]$map
+    infos$CrossTalkMatrix = IFD[[1]]$tags[["33020"]]$map
     if(length(infos$CrossTalkMatrix)!=0) infos$CrossTalkMatrix = matrix(infos$CrossTalkMatrix, nrow = sqrt(length(infos$CrossTalkMatrix)), byrow = TRUE)
   } else {
     if(length(acquisition$Imaging$InspireCrossTalkMatrix) == 0) {
-      infos$CrossTalkMatrix = IFD$tags[["33020"]]$map
+      infos$CrossTalkMatrix = IFD[[1]]$tags[["33020"]]$map
       if(length(infos$CrossTalkMatrix)!=0) infos$CrossTalkMatrix = matrix(infos$CrossTalkMatrix, nrow = sqrt(length(infos$CrossTalkMatrix)), byrow = TRUE)
     } else {
       infos$CrossTalkMatrix = matrix(as.numeric(strsplit(x = acquisition$Imaging$InspireCrossTalkMatrix, split=" ", fixed = TRUE)[[1]]), nrow = length(infos$in_use), byrow = TRUE)

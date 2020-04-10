@@ -95,20 +95,20 @@ ExportToXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   file_w = ifelse(overwritten, tmp_file, write_to)
 
   # Extract important values
-  IFD = getIFD(fileName = fileName, offsets = "first", force_trunc = FALSE, trunc_bytes = 8, verbose = FALSE, bypass = FALSE)[[1]] 
-  nobj = IFD$tags[["33018"]]$map
-  is_binary = as.logical(IFD$tags[["33082"]]$map)
+  IFDs = getIFD(fileName = fileName, offsets = "first", force_trunc = FALSE, trunc_bytes = 8, verbose = FALSE, bypass = FALSE)
+  nobj = IFDs[[1]]$tags[["33018"]]$map
+  is_binary = as.logical(IFDs[[1]]$tags[["33082"]]$map)
   if(length(is_binary) == 0) is_binary = FALSE
   V = NULL
   Files = fileName
-  if(!is.null(IFD$tags[["33029"]])) 
-    if(IFD$tags[["33029"]]$byt != 0)
-      V = strsplit(as.character(getFullTag(fileName, IFD, tag="33029")), "|", fixed = TRUE)[[1]]
+  if(!is.null(IFDs[[1]]$tags[["33029"]])) 
+    if(IFDs[[1]]$tags[["33029"]]$byt != 0)
+      V = strsplit(as.character(getFullTag(IFD = IFDs, which = 1, tag="33029")), "|", fixed = TRUE)[[1]]
   
   # Merged RIF Files
-  if(!is.null(IFD$tags[["33030"]])) 
-    if(IFD$tags[["33030"]]$byt != 0)
-      V = strsplit(as.character(getFullTag(fileName, IFD, tag="33030")), "|", fixed = TRUE)[[1]]
+  if(!is.null(IFDs[[1]]$tags[["33030"]])) 
+    if(IFDs[[1]]$tags[["33030"]]$byt != 0)
+      V = strsplit(as.character(getFullTag(IFD = IFDs, which = 1, tag="33030")), "|", fixed = TRUE)[[1]]
   
   if(length(V) > 1) Files = normalizePath(paste(dirname(fileName), basename(V), sep = "/"), winslash = "/", mustWork = FALSE)
   
@@ -152,7 +152,7 @@ ExportToXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   L = length(objects)
   objects_1 = objects + 1
   offsets = subsetOffsets(offsets = offsets, objects = objects, image_type = c("img", "msk"))
-  offsets = c(IFD$curr_IFD_offset, offsets)
+  offsets = c(IFDs[[1]]$curr_IFD_offset, offsets)
   
   off_number = length(offsets)
   # unwanted tags

@@ -73,7 +73,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   force_default = as.logical(force_default); assert(force_default, len = 1, alw = c(TRUE, FALSE))
   recursive = as.logical(recursive); assert(recursive, len = 1, alw = c(TRUE, FALSE))
   endianness = cpp_checkTIFF(fileName)
-  IFD = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, verbose = verbose, verbosity = verbosity, force_trunc = FALSE, bypass = FALSE, ...)[[1]]
+  IFD = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, verbose = verbose, verbosity = verbosity, force_trunc = FALSE, bypass = FALSE, ...)
   fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
   title_progress = basename(fileName)
   
@@ -91,8 +91,8 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   
   # TODO ask AMNIS how merged are defined / can be checked
   # Merged CIF Files
-  if(!is.null(IFD$tags[["33029"]])) {
-    if(IFD$tags[["33029"]]$byt != 0) V = strsplit(as.character(getFullTag(fileName, IFD, tag="33029")), "|", fixed = TRUE)[[1]]
+  if(!is.null(IFD[[1]]$tags[["33029"]])) {
+    if(IFD[[1]]$tags[["33029"]]$byt != 0) V = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33029")), "|", fixed = TRUE)[[1]]
     LV = length(V)
     if(LV > 1) merged = TRUE
     if(merged & recursive) {
@@ -113,8 +113,8 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
     }
   }
   # Merged RIF Files
-  if(!is.null(IFD$tags[["33030"]])) {
-    if(IFD$tags[["33030"]]$byt != 0) V = strsplit(as.character(getFullTag(fileName, IFD, tag="33030")), "|", fixed = TRUE)[[1]]
+  if(!is.null(IFD[[1]]$tags[["33030"]])) {
+    if(IFD[[1]]$tags[["33030"]]$byt != 0) V = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33030")), "|", fixed = TRUE)[[1]]
     LV = length(V)
     if(LV > 1) merged = TRUE
     if(merged & recursive) {
@@ -134,7 +134,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
       onefile = TRUE
     }
   }
-  tmp = read_xml(getFullTag(fileName, IFD, "33027"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  tmp = read_xml(getFullTag(IFD = IFD, which = 1, "33027"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
   acquisition = list("Illumination"=lapply(as_list(xml_find_first(tmp, "//Illumination")), unlist),
                      "Imaging"=lapply(as_list(xml_find_first(tmp, "//Imaging")), unlist),
                      "Display"=lapply(as_list(xml_find_first(tmp, "//Display")), unlist))
@@ -145,7 +145,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
                                 "intensity"=as.numeric(acquisition$Illumination[["BFIntensity"]])))
   infos$volume = as.numeric(IFD[[1]]$tags[["33073"]]$map)
   
-  is.binary = IFD$tags[["33082"]]$map != 0
+  is.binary = IFD[[1]]$tags[["33082"]]$map != 0
   if(length(is.binary)==0) {is.binary=FALSE}
   infos$collectionmode = as.numeric(acquisition$Illumination[["CollectionMode"]])
   
@@ -181,7 +181,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   } 
   ##### extracts description
   description=list("Assay"=xml_attrs(xml_find_all(tmp, "//Assay")),
-                   "ID"=list(c("file"=fileName, "objcount"=IFD$tags[["33018"]]$map)),
+                   "ID"=list(c("file"=fileName, "objcount"=IFD[[1]]$tags[["33018"]]$map)),
                    "Images"=xml_attrs(xml_find_all(tmp, "//image")),
                    "masks"=xml_attrs(xml_find_all(tmp, "//mask")))
   description=lapply(description, FUN=function(x) {as.data.frame(do.call(what="rbind", x), stringsAsFactors=FALSE)})
@@ -233,12 +233,12 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
       features = list()
       if(is.binary) {
         seek(toread, ifelse(merged | onefile, 
-                            ifelse(length(IFD$tags[["33083"]]$val)==0, stop("can't find pointer '33083' to extract features"), IFD$tags[["33083"]]$val), 
-                            ifelse(length(IFD$tags[["33080"]]$val)==0, stop("can't find pointer '33080' to extract features"), IFD$tags[["33080"]]$val)))
+                            ifelse(length(IFD[[1]]$tags[["33083"]]$val)==0, stop("can't find pointer '33083' to extract features"), IFD[[1]]$tags[["33083"]]$val), 
+                            ifelse(length(IFD[[1]]$tags[["33080"]]$val)==0, stop("can't find pointer '33080' to extract features"), IFD[[1]]$tags[["33080"]]$val)))
         obj_number_r = readBin(toread, what = "double", size = 4, n = 1, endian = endianness)
         feat_number_r = readBin(toread, what = "double", size = 4, n = 1, endian = endianness)
         if((length(obj_number_r) == 0) | (length(feat_number_r) == 0)) stop(fileName, "\nBinary features is of length 0")
-        if(!(merged | onefile)) if(IFD$tags[["33018"]]$val != obj_number_r) stop(fileName, "\nMismatch in object number")
+        if(!(merged | onefile)) if(IFD[[1]]$tags[["33018"]]$val != obj_number_r) stop(fileName, "\nMismatch in object number")
         if(display_progress) {
           pb = newPB(session = dots$session, min = 0, max = obj_number_r, initial = 0, style = 3)
           tryCatch({
