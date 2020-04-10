@@ -38,23 +38,27 @@ If cif can't be found, but 'ntry' is reached, then an error will be thrown.}
 }
 \value{
 a list of information (open .daf file in an text editor for more details) about input fileName of class `IFC_info` and `acquistion` or `analysis`, whose members are:\cr
--objcount, number of object in file.\cr
--channelwidth, default channel width in pixel.\cr
--in_use, channels used.\cr
--brightfield, whether brightfield is applied on channels.\cr
--collectionmode, the collection mode.\cr
--magnification, magnification used.\cr
--coremode, the core mode.\cr
--CrossTalkMatrix. compensation matrix applied.\cr
--ChannelPresets, channel preset.\cr
--ImageDisplaySettings, image display settings.\cr
--Images, information about colors, range and channels.\cr
--masks, masks defined.\cr
--ViewingModes, modes of visualization.\cr
--checksum, checksum computed.\cr
--Merged_rif, character vector of path of files used to create rif, if input file was a merged.\cr
--Merged_cif, character vector of path of files used to create cif, if input file was a merged.\cr
--fileName, path of fileName input.\cr
+-objcount, number of object in file,\cr
+-date, date of file creation,\cr
+-SW_raw, version of software for raw data,\cr
+-SW_processed, version of software for processed data,\cr
+-channelwidth, default channel width in pixel,\cr
+-in_use, channels used,\cr
+-brightfield, whether brightfield is applied on channels and its intensity,\cr
+-illumination, laser illumination parameters,\cr
+-collectionmode, the collection mode,\cr
+-magnification, magnification used,\cr
+-coremode, the core mode,\cr
+-CrossTalkMatrix. compensation matrix applied,\cr
+-ChannelPresets, channel preset,\cr
+-ImageDisplaySettings, image display settings,\cr
+-Images, information about colors, range and channels,\cr
+-masks, masks defined,\cr
+-ViewingModes, modes of visualization,\cr
+-checksum, checksum computed,\cr
+-Merged_rif, character vector of path of files used to create rif, if input file was a merged,\cr
+-Merged_cif, character vector of path of files used to create cif, if input file was a merged,\cr
+-fileName, path of fileName input,\cr
 -fileName_image, path of fileName_image.
 }
 \description{
