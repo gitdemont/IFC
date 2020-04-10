@@ -96,9 +96,10 @@ whoami = function(entries = as.list(match.call()),
   
   if(length(new$fileName) == 0) { # fileName was not found in classes
     # search fileName in named arguments that were not identified in search
-    fil = (names(args) %in% "fileName")[-was]
+    fil = (names(args) %in% "fileName")
+    if(any(was > 0)) fil = fil[-was[was > 0]]
     if(any(fil)) {
-      new$fileName = args$fileName
+      new$fileName = val[[which(fil)[1]]]
       was = c(which(fil)[1], was)
     } else {
       no_name = names(args) %in% ""
@@ -110,7 +111,7 @@ whoami = function(entries = as.list(match.call()),
           return(NULL)
         }))
         if(length(fil) != 0) {
-          new$fileName = args[[fil[1]]]
+          new$fileName = val[[fil[1]]]
           was = c(fil[1], was)
         }  else {
           was = c(0, was)
