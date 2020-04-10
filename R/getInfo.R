@@ -144,20 +144,20 @@ getInfo <- function(fileName,
   # information in acquisition db
   lasers_nodes = grep("Filter", grep("ExLaser", names(acquisition[["Illumination"]]), value = TRUE), value = TRUE, invert = TRUE)
   lasers_on = acquisition$Illumination[grep("PowerOn", lasers_nodes, value = TRUE)]
-  lasers_on = as.logical(as.integer(unlist(lasers_on[as.integer(gsub("\\D+", "", names(lasers_on)))])))
+  lasers_on = as.logical(as.integer(unlist(lasers_on[order(as.integer(gsub("\\D+", "", names(lasers_on))))])))
   lasers_power = acquisition$Illumination[grep("IntensityWatts", lasers_nodes, value = TRUE)]
-  lasers_power = as.integer(unlist(lasers_power[as.integer(gsub("\\D+", "", names(lasers_power)))]))
+  lasers_power = sprintf("%.2f", as.numeric(unlist(lasers_power[order(as.integer(gsub("\\D+", "", names(lasers_power))))])))
   # information in instrumen db
   ins_lasers = lapply(as_list(xml_find_first(tmp_ins, "Illumination")), unlist)
   lasers_nodes = grep("ExLaser", names(ins_lasers), value = TRUE)
   lasers_present = ins_lasers[grep("Filter|LAF", grep("Present", lasers_nodes, value = TRUE), value = TRUE, invert = TRUE)]
-  lasers_present = as.logical(as.integer(unlist(lasers_present[as.integer(gsub("\\D+", "", names(lasers_present)))])))
+  lasers_present = as.logical(as.integer(unlist(lasers_present[order(as.integer(gsub("\\D+", "", names(lasers_present))))])))
   lasers_wavelength = ins_lasers[grep("Wavelength", lasers_nodes, value = TRUE)]
-  lasers_wavelength = as.integer(unlist(lasers_wavelength[as.integer(gsub("\\D+", "", names(lasers_wavelength)))]))
+  lasers_wavelength = as.integer(unlist(lasers_wavelength[order(as.integer(gsub("\\D+", "", names(lasers_wavelength))))]))
   lasers_minpow = ins_lasers[grep("MinPower", lasers_nodes, value = TRUE)]
-  lasers_minpow = as.numeric(unlist(lasers_minpow[as.integer(gsub("\\D+", "", names(lasers_minpow)))]))
+  lasers_minpow = as.numeric(unlist(lasers_minpow[order(as.integer(gsub("\\D+", "", names(lasers_minpow))))]))
   lasers_maxpow = ins_lasers[grep("MaxPower", lasers_nodes, value = TRUE)]
-  lasers_maxpow = as.numeric(unlist(lasers_maxpow[as.integer(gsub("\\D+", "", names(lasers_maxpow)))]))
+  lasers_maxpow = as.numeric(unlist(lasers_maxpow[order(as.integer(gsub("\\D+", "", names(lasers_maxpow))))]))
   illumination = data.frame("installed" = lasers_present,
                             "wavelength" = lasers_wavelength, 
                             "powered" = lasers_on, 
