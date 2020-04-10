@@ -26,8 +26,8 @@ buildBatch(
 
 \item{analysis}{path to analysis file.}
 
-\item{default_batch_dir}{directory to export batch.\cr
-It can be found in IDEAS(R) software, under Options -> Application Defaults -> Directories -> Default Batch Report Files Directory.
+\item{default_batch_dir}{directory where batches are stored.\cr
+It can be found in IDEAS(R) software, under Options -> Application Defaults -> Directories -> Default Batch Report Files Directory.\cr
 If missing, the default, it will be deduced from IDEAS(R) config file, However, if it can't be deduced then tempdir(check = TRUE) from \pkg{base} will be used.\cr
 This argument takes precedence over 'config_file' and filling 'default_batch_dir' prevents the use of 'config_file' argument.}
 
