@@ -6,7 +6,7 @@
 \usage{
 objectResize(
   mat,
-  size = NULL,
+  size = c(0, 0),
   add_noise = TRUE,
   random_seed = NULL,
   bg = 0,
@@ -16,8 +16,7 @@ objectResize(
 \arguments{
 \item{mat}{a numeric matrix.}
 
-\item{size}{a vector of final dimensions (Height, Width) of the desired returned mat. Default is NULL for no change.
-if 'size' is of length one then only Width is changed.}
+\item{size}{a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(0,0) for no change.}
 
 \item{add_noise}{if TRUE adds normal noise when size is larger than mat dimensions using rnorm(), from \pkg{Rcpp}. Default is TRUE.}
 

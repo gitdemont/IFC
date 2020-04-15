@@ -15,6 +15,6 @@ objectCleanse = function(mat, msk, add_noise = TRUE, random_seed = NULL, bg = 0,
     on.exit(set.seed(NULL))
   }
   foo = cpp_cleanse(mat, msk, add_noise = add_noise, bg = bg, sd = sd)
-  attr(foo, "msk_cleanse") <- msk
+  # attr(foo, "msk_cleanse") <- msk
   return(foo)
 }

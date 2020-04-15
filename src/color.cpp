@@ -78,5 +78,6 @@ NumericVector cpp_M_HSV2RGB (const NumericMatrix mat, const double h = 0.0, cons
   std::copy(G.begin(), G.end(), out.begin() + D);
   std::copy(B.begin(), B.end(), out.begin() + 2 * D);
   out.attr("dim") = Rcpp::Dimension(mat_r, mat_c, 3);
+  if(mat.hasAttribute("mask")) out.attr("mask") = mat.attr("mask");
   return out;
 }

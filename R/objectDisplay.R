@@ -6,7 +6,7 @@
 #' @param input_range a finite numeric vector of 2 values, sets the range of the input intensity values.\cr
 #' Values exceeding this range are clipped. Default is 'c(0, 4095)'.
 #' @param full_range if 'full_range' is TRUE, then 'input_range' will be set to 'c(0, 4095)' and 'gamma' forced to 1. Default is FALSE.
-#' @param force_range if 'force_range' is TRUE, then 'input_range' will be adjusted to image range and 'gamma' forced to 1. Default is FALSE.\cr
+#' @param force_range if 'force_range' is TRUE, then 'input_range' will be adjusted to object range in [-4095, +inf] and 'gamma' forced to 1. Default is FALSE.\cr
 #' Note that this parameter takes the precedence over 'input_range' and 'full_range'.
 #' @param gamma gamma correction. Default is 1, for no correction.
 #' @param color a color. Default is "Green".
@@ -28,7 +28,7 @@ objectDisplay = function(image, input_range = c(0, 4095), full_range = FALSE, fo
            if(missing(gamma)) gamma = attr(image, "gamma")
            if(missing(color)) color = attr(image, "color")
            checkColor(color)
-           foo = objectColorize(objectNormalize(attr(image, "RAW"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = gamma), color)
+           foo = objectColorize(objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = gamma), color)
          },
          "IFC_msk" = {
            if(missing(input_range)) input_range = attr(image, "input_range")
@@ -38,7 +38,7 @@ objectDisplay = function(image, input_range = c(0, 4095), full_range = FALSE, fo
            if(missing(color)) color = attr(image, "color")
            if(missing(color)) color = attr(image, "color")
            checkColor(color)
-           foo = objectColorize(objectNormalize(attr(image, "RAW"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = 1), color)
+           foo = objectColorize(objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = 1), color)
          },
          "matrix" = {
            checkColor(color)

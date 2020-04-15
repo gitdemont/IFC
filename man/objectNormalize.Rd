@@ -20,7 +20,7 @@ Values exceeding this range are clipped. Default is c(0, 4095).}
 
 \item{full_range}{if 'full_range' is TRUE, then 'input_range' will be set to c(0, 4095) and 'gamma' forced to 1. Default is FALSE.}
 
-\item{force_range}{if 'force_range' is TRUE, then 'input_range' will be adjusted to mat range and 'gamma' forced to 1. Default is FALSE.\cr
+\item{force_range}{if 'force_range' is TRUE, then 'input_range' will be adjusted to object range in [-4095, +inf] and 'gamma' forced to 1. Default is FALSE.\cr
 Note that this parameter takes the precedence over 'input_range' and 'full_range'.}
 
 \item{gamma}{gamma correction. Default is 1, for no correction.}

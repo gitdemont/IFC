@@ -6,14 +6,14 @@
 \arguments{
 \item{mat}{a NumericMatrix.}
 
-\item{msk}{a LogicalMatrix.}
+\item{msk}{a IntegerMatrix.}
 
 \item{add_noise}{logical, if true adds normal noise.
 Rcpp::Rf_rnorm(bg, sd) function is used. Default is true.}
 
-\item{bg}{double, mean value of the background added if add_noise is true. Default is 0.}
+\item{bg}{double, mean value of the background added if add_noise is true. Default is 0.0}
 
-\item{sd}{double, standard deviation of the background added if add_noise is true. Default is 0.}
+\item{sd}{double, standard deviation of the background added if add_noise is true. Default is 0.0}
 }
 \value{
 a NumericMatrix with replaced according to msk.

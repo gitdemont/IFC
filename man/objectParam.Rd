@@ -77,8 +77,9 @@ When set to TRUE, width of 'size' argument will be overwritten.}
 
 \item{random_seed}{a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base} when 'add_noise' is set to TRUE. Default is NULL.}
 
-\item{removal}{removal method: Either "none", "clipped", "masked", "MC".\cr
+\item{removal}{removal method: Either "none", "raw", "clipped", "masked", "MC".\cr
 -"none", to keep image as is\cr
+-"raw", to keep image as is, it provides a convinient way to retrieve "raw" value for the mask.\cr
 -"clipped", to remove clipped object from image.\cr
 -"masked", to only keep masked object from image.\cr
 -"MC", to only keep MC masked object from image.
@@ -93,7 +94,7 @@ This parameter will be repeated with rep_len() from \pkg{base} for every physica
 It is like "raw" mode but allowing normalization to [0,1].
 This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.\cr}
 
-\item{force_range}{only apply when mode is not "raw", if force_range is TRUE, then image display range will be adjusted for each object resulting in normalization. Default is FALSE.\cr
+\item{force_range}{only apply when mode is not "raw", if force_range is TRUE, then range will be adjusted to object range in [-4095, +inf] resulting in normalization. Default is FALSE.\cr
 Note that this parameter takes the precedence over 'full_range'.\cr
 This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.}
 }

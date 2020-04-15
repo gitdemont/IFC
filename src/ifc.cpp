@@ -39,7 +39,11 @@ template <typename T> T bytes_swap(T val) {
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-size_t cpp_scanFirst(const std::string fname, const std::string target, const size_t start = 0, const size_t end = 0, const uint8_t buf_size = 64) {
+size_t cpp_scanFirst(const std::string fname, 
+                     const std::string target, 
+                     const size_t start = 0, 
+                     const size_t end = 0, 
+                     const uint8_t buf_size = 64) {
   uint16_t L = target.length();
   if(L < 1) {
     Rcerr <<  "cpp_scanFirst: target should be at least 1 character";
@@ -109,7 +113,7 @@ size_t cpp_scanFirst(const std::string fname, const std::string target, const si
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-std::string cpp_checkTIFF (std::string fname) {
+std::string cpp_checkTIFF (const std::string fname) {
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   std::string out = "";
   if (fi.is_open()) {
@@ -167,7 +171,10 @@ std::string cpp_checkTIFF (std::string fname) {
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-IntegerVector cpp_getoffsets_noid(std::string fname, R_len_t obj_count = 0, bool display_progress = false, bool verbose = false) {
+IntegerVector cpp_getoffsets_noid(const std::string fname, 
+                                  const R_len_t obj_count = 0, 
+                                  const bool display_progress = false,
+                                  const bool verbose = false) {
   bool swap = false;
   std::string endianness = cpp_checkTIFF(fname);
   if(endianness == "big") swap = true;
@@ -180,7 +187,8 @@ IntegerVector cpp_getoffsets_noid(std::string fname, R_len_t obj_count = 0, bool
       uint32_t offset = 4; // offsets are uint32 
       size_t pos;
       IntegerVector out;
-      if(obj_count <= 0) display_progress = false;
+      bool show_pb = display_progress;
+      if(obj_count <= 0) show_pb = false;
       char buf_entries [2];
       char buf_offset [4];
       uint16_t entries; // entries are uint16
@@ -190,7 +198,7 @@ IntegerVector cpp_getoffsets_noid(std::string fname, R_len_t obj_count = 0, bool
       fi.read((char*)&buf_offset, sizeof(buf_offset));
       memcpy(&offset, buf_offset, sizeof(offset));
 
-      Progress p(obj_count * 2 + 1, display_progress);
+      Progress p(obj_count * 2 + 1, show_pb);
       if(swap) {
         offset = bytes_swap(offset);
         if(!offset) {
@@ -274,7 +282,11 @@ IntegerVector cpp_getoffsets_noid(std::string fname, R_len_t obj_count = 0, bool
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-List cpp_getTAGS (std::string fname, uint32_t offset, bool verbose = false, uint8_t trunc_bytes = 22, bool force_trunc = false) {
+List cpp_getTAGS (const std::string fname, 
+                  const uint32_t offset, 
+                  const bool verbose = false, 
+                  const uint8_t trunc_bytes = 22, 
+                  const bool force_trunc = false) {
   bool swap = false;
   std::string endianness = cpp_checkTIFF(fname); // it may be better to remove this check each time
   if(endianness == "big") swap = true; 
@@ -838,7 +850,10 @@ List cpp_getTAGS (std::string fname, uint32_t offset, bool verbose = false, uint
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-List cpp_getoffsets_wid(std::string fname, R_len_t obj_count = 0, bool display_progress = false, bool verbose = false) {
+List cpp_getoffsets_wid(const std::string fname, 
+                        const R_len_t obj_count = 0, 
+                        const bool display_progress = false, 
+                        const bool verbose = false) {
   bool swap = false;
   std::string endianness = cpp_checkTIFF(fname);
   if(endianness == "big") swap = true;
@@ -847,12 +862,13 @@ List cpp_getoffsets_wid(std::string fname, R_len_t obj_count = 0, bool display_p
   if (fi.is_open()) {
     try{
       fi.seekg(0, std::ios::end);
-      if(obj_count == 0) display_progress = false;
+      bool show_pb = display_progress;
+      if(obj_count == 0) show_pb = false;
       char buf_offset [4];
       uint32_t offset = 4;
       
       if(verbose) Rcout << "Extracting offsets from " << fname << std::endl;
-      Progress p(obj_count * 2 + 1, display_progress);
+      Progress p(obj_count * 2 + 1, show_pb);
       fi.seekg(offset, std::ios::beg);
       fi.read((char*)&buf_offset, sizeof(buf_offset));
       memcpy(&offset, buf_offset, sizeof(offset));
@@ -863,25 +879,33 @@ List cpp_getoffsets_wid(std::string fname, R_len_t obj_count = 0, bool display_p
       }
       
       IntegerVector out_obj, out_typ, out_off;
-      IntegerVector obj = IntegerVector::create(NA_INTEGER);
-      IntegerVector typ = IntegerVector::create(NA_INTEGER);
+      // IntegerVector obj = IntegerVector::create(NA_INTEGER);
+      // IntegerVector typ = IntegerVector::create(NA_INTEGER);
+      // uint32_t obj, typ;
 
-      uint32_t trunc_bytes = 8;
-      bool force_trunc = true;
+      // uint32_t trunc_bytes = 8;
+      // bool force_trunc = true;
       while(offset){
         p.increment();
-        List IFD = cpp_getTAGS(fname, offset, verbose, trunc_bytes, force_trunc);
+        List IFD = cpp_getTAGS(fname, offset, verbose, 8, true);
         offset = as<uint32_t>(IFD["next_IFD_offset"]);
         List infos = IFD["infos"];
         
         if(iNotisNULL(infos["OBJECT_ID"])) {
-          obj[0] = as<int32_t>(infos["OBJECT_ID"]); // min 0?, max ?
+          out_obj.push_back(as<int32_t>(infos["OBJECT_ID"]));
+          // obj[0] = clone(as<int32_t>(infos["OBJECT_ID"])); // min 0?, max ?
+        } else {
+          out_obj.push_back(NA_INTEGER);
         }
         if(iNotisNULL(infos["TYPE"])) {
-          typ[0] = as<int32_t>(infos["TYPE"]); // [1,3]
+          out_typ.push_back(as<int32_t>(infos["TYPE"]));
+          // typ[0] = clone(as<int32_t>(infos["TYPE"])); // [1,3]
+        } else {
+          out_typ.push_back(NA_INTEGER);
         }
-        out_obj.push_back(obj[0]);
-        out_typ.push_back(typ[0]);
+        
+        // out_obj.push_back(obj[0]);
+        // out_typ.push_back(typ[0]);
         out_off.push_back(as<uint32_t>(IFD["curr_IFD_offset"]));
         
         if(Progress::check_abort()) {
@@ -922,7 +946,7 @@ List cpp_getoffsets_wid(std::string fname, R_len_t obj_count = 0, bool display_p
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-size_t cpp_checksum(std::string fname) {
+size_t cpp_checksum(const std::string fname) {
   bool swap = false;
   std::string endianness = cpp_checkTIFF(fname);
   if(endianness == "big") swap = true;
@@ -1041,7 +1065,7 @@ size_t cpp_checksum(std::string fname) {
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-List cpp_rle_Decomp (std::string fname, 
+List cpp_rle_Decomp (const std::string fname, 
                      const uint32_t offset,
                      const uint32_t nbytes,
                      const R_len_t imgWidth = 1,
@@ -1228,7 +1252,7 @@ List cpp_rle_Decomp (std::string fname,
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-List cpp_gray_Decomp (std::string fname, 
+List cpp_gray_Decomp (const std::string fname, 
                       const uint32_t offset, 
                       const uint32_t nbytes, // force number of bytes to be less than 65,535
                       const R_len_t imgWidth = 1, 
@@ -1354,7 +1378,7 @@ List cpp_gray_Decomp (std::string fname,
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-List cpp_decomp (std::string fname, 
+List cpp_decomp (const std::string fname, 
                  const uint32_t offset, 
                  const uint32_t nbytes, 
                  const R_len_t imgWidth = 1, 
@@ -1380,7 +1404,7 @@ List cpp_decomp (std::string fname,
 //' @param input_range a finite NumericVector, sets the range of the input intensity values. Default is c(0,4095).
 //' values outside this range are clipped.
 //' @param full_range if full_range is TRUE, then input_range will be set to 'c(0,4095)' and gamma forced to 1. Default is false.
-//' @param force_range if force_range is TRUE, then input_range will be adjusted to mat range and gamma forced to 1. Default is false.\cr
+//' @param force_range if force_range is TRUE, then input_range will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
 //' Note that this parameter takes the precedence over 'input_range' and 'full_range'.
 //' @param gamma correction. Default is 1, for no correction.
 //' @keywords internal
@@ -1391,7 +1415,7 @@ NumericMatrix cpp_normalize (const NumericMatrix mat,
                              const bool full_range = false,
                              const bool force_range = false, 
                              const double gamma = 1.0) {
-  NumericMatrix xx = no_init_matrix(mat.nrow(), mat.ncol());
+  NumericMatrix out = no_init_matrix(mat.nrow(), mat.ncol());
   NumericVector ran(2);
   double gam = gamma;
   if(force_range) {
@@ -1406,34 +1430,35 @@ NumericMatrix cpp_normalize (const NumericMatrix mat,
       ran = cpp_check_range(cpp_check_range(input_range)); // twice to ensure that input_range is at least of length 2
     }
   }
-
+  
   double diff = ran[1] - ran[0];
   if(gamma == 1) {
     for(R_len_t i = 0; i < mat.size(); i++) {
       if(mat[i] <= ran[0]) {
-        xx[i] = 0.0;
+        out[i] = 0.0;
         continue;
       }
       if(mat[i] >= ran[1]) {
-        xx[i] = 1.0;
+        out[i] = 1.0;
         continue;
       }
-      xx[i] = (mat[i] - ran[0])/diff;
+      out[i] = (mat[i] - ran[0])/diff;
     }
   } else {
     for(R_len_t i = 0; i < mat.size(); i++) {
       if(mat[i] <= ran[0]) {
-        xx[i] = 0.0;
+        out[i] = 0.0;
         continue;
       }
       if(mat[i] >= ran[1]) {
-        xx[i] = 1.0;
+        out[i] = 1.0;
         continue;
       }
-      xx[i] = pow((mat[i] - ran[0])/diff, gam);
+      out[i] = pow((mat[i] - ran[0])/diff, gam);
     }
   }
-  return xx;
+  if(mat.hasAttribute("mask")) out.attr("mask") = mat.attr("mask");
+  return out;
 }
 
 //' @title Matrix Cleanser
@@ -1442,20 +1467,20 @@ NumericMatrix cpp_normalize (const NumericMatrix mat,
 //' Replaces values in matrix mat according to mask msk.
 //' Depending of add_noise parameter values will be replaced with noise or not.
 //' @param mat a NumericMatrix.
-//' @param msk a LogicalMatrix.
+//' @param msk a IntegerMatrix.
 //' @param add_noise logical, if true adds normal noise.
 //' Rcpp::Rf_rnorm(bg, sd) function is used. Default is true.
-//' @param bg double, mean value of the background added if add_noise is true. Default is 0.
-//' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
+//' @param bg double, mean value of the background added if add_noise is true. Default is 0.0
+//' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0
 //' @return a NumericMatrix with replaced according to msk.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
 NumericMatrix cpp_cleanse (const NumericMatrix mat, 
-                           const LogicalMatrix msk, 
+                           const IntegerMatrix msk,
                            const bool add_noise = true, 
                            const double bg = 0.0, const double sd = 0.0) {
-  if(!(msk.ncol() == mat.ncol()) && (msk.nrow() == mat.nrow())) Rcpp::stop("cpp_cleanse: mat and msk should have same dimensions");
+  if(!(msk.ncol() == mat.ncol()) && (msk.nrow() == mat.nrow())) Rcpp::stop("cpp_cleanse: 'mat' and 'msk' should have same dimensions");
   NumericMatrix out = no_init_matrix(mat.nrow(), mat.ncol());
   R_len_t i = 0;
   if(add_noise) {
@@ -1463,6 +1488,7 @@ NumericMatrix cpp_cleanse (const NumericMatrix mat,
   } else {
     for(; i < out.size(); i++) out[i] = msk[i] ? bg:mat[i];
   }
+  out.attr("mask") = msk;
   return out;
 }
 
@@ -1481,7 +1507,7 @@ NumericMatrix cpp_mask (const NumericMatrix A,
                         const NumericMatrix B,
                         const NumericMatrix mask) {
   R_len_t ar = A.nrow(), ac = A.ncol();
-  if((B.ncol() != ac) || (mask.ncol() != ac) || (B.nrow() != ar) || (mask.nrow() != ar) ) Rcpp::stop("cpp_mask: A, B and mask should have same dimensions");
+  if((B.ncol() != ac) || (mask.ncol() != ac) || (B.nrow() != ar) || (mask.nrow() != ar) ) Rcpp::stop("cpp_mask: 'A', 'B' and 'mask' should have same dimensions");
   Rcpp::NumericMatrix out(ar, ac);
   for(R_len_t i = 0; i < A.size(); i++) out[i] = mask[i] ? B[i] : A[i];
   return out;
@@ -1510,8 +1536,8 @@ NumericMatrix cpp_mark (const NumericMatrix A,
                         const bool invert = false) {
   R_len_t bc = B.ncol();
   R_len_t br = B.nrow();
-  if((A.ncol() < (bc + xoff)) || (A.nrow() < (br + yoff))) Rcpp::stop("cpp_mark: A should be at least of same dimensions as B + offsets");
-  if((mask.ncol() < bc) || (mask.nrow() < br)) Rcpp::stop("cpp_mark: mask should be at least of same dimensions as B");
+  if((A.ncol() < (bc + xoff)) || (A.nrow() < (br + yoff))) Rcpp::stop("cpp_mark: A should be at least of same dimensions as 'B' + 'offsets'");
+  if((mask.ncol() < bc) || (mask.nrow() < br)) Rcpp::stop("cpp_mark: 'mask' should be at least of same dimensions as 'B'");
   Rcpp::NumericMatrix out = Rcpp::clone(A);
   if(invert) {
     for(R_len_t y = 0; y < br; y++) for(R_len_t x = 0; x < bc; x++) if(mask(y,x)) out(y+yoff,x+xoff) = std::fabs(1-B(y,x));
@@ -1528,31 +1554,31 @@ NumericMatrix cpp_mark (const NumericMatrix A,
 //' @param mat NumericMatrix.
 //' @param color NumericVector, whose members are h,s,v color.
 //' This vector has to be named with 1st name being the name of this color.
-//' @param msk LogicalMatrix.
+//' @param msk IntegerMatrix.
 //' @param size a length 2 IntegerVector, of final dimensions (height,width) of the image. Default is 0,0 for no change.
 //' @param mode string, color mode export. Either "rgb", "gray" or "raw". Default is "raw".
 //' @param type uint16_t image object type.
 //' Rcpp::Rf_rnorm(bg, sd) function is used. Default is true.
-//' @param cleanse bool, wheteher to cleanse image or not. Cleanse will only apply when set to true and 'msk' is not R_NilValue
 //' @param input_range a finite NumericVector, only apply when mode is not "raw", sets the range of the input intensity values. Default is c(0,4095).
 //' values exceeding this range are clipped.
 //' @param add_noise bool, if true adds normal noise.
 //' @param bg double, mean value of the background added if add_noise is true. Default is 0.
 //' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
-//' @param full_range bool, only apply when mode is not "raw", if full_range is TRUE, then input_range will be set to 'c(0,4095)' and gamma forced to 1. Default is false.
-//' @param force_range bool, only apply when mode is not "raw", if force_range is TRUE, then input_range will be adjusted to mat range and gamma forced to 1. Default is false.\cr
+//' @param full_range bool, only apply when mode is not "raw", if full_range is TRUE, then 'input_range' will be set to 'c(0,4095)' and gamma forced to 1. Default is false.
+//' @param force_range bool, only apply when mode is not "raw", if force_range is TRUE, then 'input_range' will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
 //' Note that this parameter takes the precedence over 'input_range' and 'full_range'.
 //' @param gamma correction. Default is 1, for no correction.
+//' @details When add_noise is false, backgound will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
+//' when a mask is detected, add_noise, full_range and force_range are set to false, background mean and sd to 0, and input_range to [0,3].\cr
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
 NumericVector cpp_transform(const NumericMatrix mat,
                             const NumericVector color,
-                            const LogicalMatrix msk,
+                            const IntegerMatrix msk,
                             const IntegerVector size = IntegerVector::create(0,0),
                             const std::string mode = "raw",
                             const uint16_t type = 2,
-                            const bool cleanse = false,
                             const NumericVector input_range = NumericVector::create(0.0,4095.0),
                             const bool add_noise = true,
                             const double bg = 0.0,
@@ -1561,48 +1587,95 @@ NumericVector cpp_transform(const NumericMatrix mat,
                             const bool force_range = false,
                             const double gamma = 1.0) {
   NumericMatrix foo;
-  if(cleanse) {
-    foo = cpp_cleanse(mat, msk, add_noise, bg, sd);
-  } else {
-    foo = Rcpp::clone(mat);
-  }
-  foo = cpp_resize(foo, size[0], size[1], add_noise, bg, sd);
+  Rcpp::CharacterVector removal = wrap(msk.attr("removal"));
   Rcpp::CharacterVector col_name = wrap(color.attr("names"));
-  if(mode != "raw") {
-    foo = cpp_normalize(foo, input_range, full_range, force_range, gamma);
-  }
-  if(mode == "rgb") {
-    NumericVector bar = cpp_M_HSV2RGB(foo, color[0], color[1]);
-    bar.attr("dim") = Rcpp::Dimension(foo.nrow(), foo.ncol(), 3);
-    bar.attr("input_range") = input_range;
-    bar.attr("full_range") = full_range;
-    bar.attr("force_range") = force_range;
-    bar.attr("gamma") = gamma;
-    bar.attr("color") = col_name[0];
-    bar.attr("mode") = mode;
-    bar.attr("RAW") = mat;
-    bar.attr("BG_MEAN") = (bg >= 0.0) ? bg:0.0; // negative values (i.e. -1) are used for removal of non masked objects
-    bar.attr("BG_STD") = sd;
-    if(type == 2) {
-      bar.attr("class") = "IFC_img";
+  
+  if(type == 3) { // a mask is detected parameters are forced
+    NumericVector msk_range = NumericVector::create(0.0, 3.0);
+    if((removal[0] == "none") || (removal[0] == "raw")) {
+      foo = Rcpp::clone(mat);
+      foo.attr("mask") = msk;
     } else {
-      bar.attr("class") = "IFC_msk";
+      foo = cpp_cleanse(mat, msk, false, 0.0, 0.0);
+    } 
+    foo = cpp_resize(foo, size[0], size[1], false, 0.0, 0.0);
+    if(mode != "raw") {
+      foo = cpp_normalize(foo, msk_range, false, false, 1.0);
     }
-    return bar;
-  }
-  foo.attr("input_range") = input_range;
-  foo.attr("full_range") = full_range;
-  foo.attr("force_range") = force_range;
-  foo.attr("gamma") = gamma;
-  foo.attr("color") = "Gray";
-  foo.attr("mode") = mode;
-  foo.attr("RAW") = mat;
-  foo.attr("BG_MEAN") = (bg >= 0.0) ? bg:0.0; // negative values (i.e. -1) are used for removal of non masked objects
-  foo.attr("BG_STD") = sd;
-  if(type == 2) {
-    foo.attr("class") = "IFC_img";
-  } else {
+    if(mode == "rgb") {
+      NumericVector bar = cpp_M_HSV2RGB(foo, color[0], color[1]);
+      bar.attr("dim") = Rcpp::Dimension(foo.nrow(), foo.ncol(), 3);
+      bar.attr("input_range") = msk_range;
+      bar.attr("full_range") = false;
+      bar.attr("force_range") = false;
+      bar.attr("gamma") = 1.0;
+      bar.attr("color") = col_name[0];
+      bar.attr("mode") = mode;
+      bar.attr("removal") = removal;
+      bar.attr("raw") = mat;
+      bar.attr("BG_MEAN") = 0.0;
+      bar.attr("BG_STD") = 0.0;
+      bar.attr("class") = "IFC_msk";
+      return bar;
+    }
+    foo.attr("input_range") = msk_range;
+    foo.attr("full_range") = false;
+    foo.attr("force_range") = false;
+    foo.attr("gamma") = 1.0;
+    foo.attr("color") = "Gray";
+    foo.attr("mode") = mode;
+    foo.attr("removal") = removal;
+    foo.attr("raw") = mat;
+    foo.attr("BG_MEAN") = 0.0;
+    foo.attr("BG_STD") = 0.0;
     foo.attr("class") = "IFC_msk";
+  } else {
+    double bg_2;
+    double sd_2;
+    if((!add_noise) && ((removal[0] == "masked") || (removal[0] == "MC"))) {
+      bg_2 = -4096.0;
+      sd_2 = 0.0;
+    } else {
+      bg_2 = bg;
+      sd_2 = sd;
+    }
+    if((removal[0] == "none") || (removal[0] == "raw")) {
+      foo = Rcpp::clone(mat);
+      foo.attr("mask") = msk;
+    } else {
+      foo = cpp_cleanse(mat, msk, add_noise, bg_2, sd_2);
+    } 
+    foo = cpp_resize(foo, size[0], size[1], add_noise, bg_2, sd_2);
+    if(mode != "raw") {
+      foo = cpp_normalize(foo, input_range, full_range, force_range, gamma);
+    }
+    if(mode == "rgb") {
+      NumericVector bar = cpp_M_HSV2RGB(foo, color[0], color[1]);
+      bar.attr("dim") = Rcpp::Dimension(foo.nrow(), foo.ncol(), 3);
+      bar.attr("input_range") = input_range;
+      bar.attr("full_range") = full_range;
+      bar.attr("force_range") = force_range;
+      bar.attr("gamma") = gamma;
+      bar.attr("color") = col_name[0];
+      bar.attr("mode") = mode;
+      bar.attr("removal") = removal;
+      bar.attr("raw") = mat;
+      bar.attr("BG_MEAN") = bg; 
+      bar.attr("BG_STD") = sd;
+      bar.attr("class") = "IFC_img";
+      return bar;
+    }
+    foo.attr("input_range") = input_range;
+    foo.attr("full_range") = full_range;
+    foo.attr("force_range") = force_range;
+    foo.attr("gamma") = gamma;
+    foo.attr("color") = "Gray";
+    foo.attr("mode") = mode;
+    foo.attr("removal") = removal;
+    foo.attr("raw") = mat;
+    foo.attr("BG_MEAN") = bg;
+    foo.attr("BG_STD") = sd;
+    foo.attr("class") = "IFC_img";
   }
   return foo;
 }
@@ -1615,29 +1688,45 @@ NumericVector cpp_transform(const NumericMatrix mat,
 //' @param ifd List, ifd information of class IFC_ifd
 //' @param colors List of colors to use.
 //' @param channels DataFrame, channels information
+//' @param physicalChannel CharacterVector of indices for each channels
+//' @param xmin NumericVector of minimal values for each channels
+//' @param xmax NumericVector of maximal values for each channels
+//' @param removal IntegerVector of removal method to be used for each channels
+//' @param add_noise LogicalVector of whether to add_noise for each channels
+//' @param full_range LogicalVector of whether to use full_range for each channels
+//' @param force_range LogicalVector of whether to use force_range for each channels
+//' @param gamma NumericVector of the gamma for each channels
 //' @param chan_to_extract IntegerVector, channels to extract
 //' @param extract_msk uint8_t, type of masked to extract.\cr
 //' - 0: no mask\cr
-//' - 1: at least one clipped\cr
-//' - 2: at least one masked\cr
-//' - 3: at least one MC
+//' - 1: at least one raw mask\cr
+//' - 2: at least one clipped\cr
+//' - 3: at least one masked\cr
+//' - 4: at least one MC
 //' @param mode string, color mode export. Either "rgb", "gray" or "raw". Default is "raw".
 //' @param size a length 2 IntegerVector of final dimensions (height,width) of the image. Default is 0,0 for no change.\cr
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-List cpp_extract (std::string fname,
-                  List ifd,
+List cpp_extract (const std::string fname,
+                  const List ifd,
                   const List colors,
-                  const DataFrame channels,
+                  const CharacterVector physicalChannel,
+                  const NumericVector xmin,
+                  const NumericVector xmax,
+                  const IntegerVector removal,
+                  const LogicalVector add_noise,
+                  const LogicalVector full_range,
+                  const LogicalVector force_range,
+                  const NumericVector gamma,
                   const IntegerVector chan_to_extract,
                   const uint8_t extract_msk = 0,
                   const std::string mode = "raw",
                   const IntegerVector size = IntegerVector::create(0,0),
-                  bool verbose = false) {
+                  const bool verbose = false) {
   
-  R_len_t nb_channels = channels.nrows();
+  R_len_t nb_channels = physicalChannel.size();
   List infos = ifd["infos"];
   R_len_t iml = infos["IMAGE_LENGTH"];
   R_len_t imw = infos["IMAGE_WIDTH"];
@@ -1645,19 +1734,10 @@ List cpp_extract (std::string fname,
   uint32_t off = infos["STRIP_OFFSETS"];
   uint32_t byt = infos["STRIP_BYTE_COUNTS"];
   uint32_t com = infos["COMPRESSION"];
-  
-  CharacterVector _physicalChannel = channels["physicalChannel"];
-  NumericVector _xmin = channels["xmin"];
-  NumericVector _xmax = channels["xmax"];
-  IntegerVector _removal = channels["removal"];
-  LogicalVector _add_noise = channels["add_noise"];
-  NumericVector _bg;
-  NumericVector _sd;
-  LogicalVector _full_range = channels["full_range"];
-  LogicalVector _force_range = channels["force_range"];
-  NumericVector _gamma = channels["gamma"];
-  
+  NumericVector bg_2;
+  NumericVector sd_2;
   List out(chan_to_extract.size());
+  
   switch(typ) {
   case 1: { // 1st offset is detected, nothing to extract
     for(R_len_t i = 0; i < chan_to_extract.size(); i++) {
@@ -1667,18 +1747,13 @@ List cpp_extract (std::string fname,
     break;
   }
   case 2: { // an image is detected use background mean and sd
-    _bg = infos["BG_MEAN"];
-    _sd = infos["BG_STD"];
+    bg_2 = clone(as<NumericVector>(infos["BG_MEAN"]));
+    sd_2 = clone(as<NumericVector>(infos["BG_STD"]));
     break;
   }
   case 3: { // a mask is detected some parameters are forced
-    _xmin = rep(0, nb_channels);
-    for(R_len_t i = 0; i < nb_channels; i++) _xmax[i] = _removal[i] ? 1:3;
-    _bg = rep(0, nb_channels);
-    _sd = rep(0, nb_channels);
-    _gamma = rep(1, nb_channels);
-    _add_noise = rep(false, nb_channels);
-    _force_range = rep(false, nb_channels);
+    bg_2 = rep(0.0, nb_channels);
+    sd_2 = rep(0.0, nb_channels);
     break;
   }
   default: { // not allowed type
@@ -1686,16 +1761,18 @@ List cpp_extract (std::string fname,
     Rcpp::stop("cpp_extract: trying to extract a unknow object");
   }
   }
-
+  
   // extract image
   List img = cpp_decomp(fname, off, byt, 
                         imw, iml, nb_channels,
                         0, com, verbose);
-  LogicalMatrix msk_rm(iml, imw / nb_channels);
+  IntegerMatrix msk_init(iml, imw / nb_channels);
+  msk_init.fill(1);
+  IntegerMatrix msk = clone(msk_init);
+  IntegerMatrix MC = clone(msk_init);
+  
   if(extract_msk > 0) {
     List masks;
-    LogicalMatrix MC(iml, imw / nb_channels);
-    MC.fill(true);
     if(typ == 2) {
       List msk_ifd = cpp_getTAGS(fname, ifd["next_IFD_offset"], verbose, 8, true)["infos"];
       masks = cpp_decomp(fname, msk_ifd["STRIP_OFFSETS"], msk_ifd["STRIP_BYTE_COUNTS"], 
@@ -1705,76 +1782,86 @@ List cpp_extract (std::string fname,
     } else {
       masks = clone(img);
     }
-    if(extract_msk == 3) {
+    if(extract_msk == 4) {
       for(R_len_t i = 0; i < masks.length(); i++) {
-        NumericMatrix CUR_M = clone(Rcpp::as<Rcpp::NumericMatrix>(masks[i]));
+        IntegerMatrix CUR_M = clone(Rcpp::as<Rcpp::IntegerMatrix>(masks[i]));
         for(R_len_t i_row = 0; i_row < iml; i_row ++) {
-          MC(i_row, _) = (CUR_M(i_row, _) != 1) & MC(i_row, _);
+          MC(i_row, _) = (CUR_M(i_row, _) != 1) & (MC(i_row, _) == 1);
         }
       }
     }
-    masks.attr("names") = _physicalChannel;
+    masks.attr("names") = physicalChannel;
     
     // transform extracted image according to user's settings with mask removal
     for(R_len_t i = 0; i < chan_to_extract.size(); i++) {
+      msk = clone(msk_init); // mandatory to be sure that it is new matrix each time
       uint8_t chan_idx = chan_to_extract[i];
-      std::string cur_chan = as<std::string>(_physicalChannel[chan_idx]);
-      double msk_bm = _bg[chan_idx];
-      switch(_removal[chan_idx]) {
+      std::string cur_chan = as<std::string>(physicalChannel[chan_idx]);
+      switch(removal[chan_idx]) {
+      case 0: {
+        msk.attr("removal") = "none";
+        break;
+      }
       case 1: {
-        NumericMatrix CUR_M = clone(Rcpp::as<Rcpp::NumericMatrix>(masks[cur_chan]));
-        for(R_len_t i_row = 0; i_row < iml; i_row ++) {
-          msk_rm(i_row, _) = CUR_M(i_row, _) > 1;
-        }
+        msk = clone(as<Rcpp::IntegerMatrix>(masks[cur_chan]));
+        msk.attr("removal") = "raw";
         break;
       }
       case 2: {
-        NumericMatrix CUR_M = clone(Rcpp::as<Rcpp::NumericMatrix>(masks[cur_chan]));
+        IntegerMatrix CUR_M = clone(Rcpp::as<Rcpp::IntegerMatrix>(masks[cur_chan]));
         for(R_len_t i_row = 0; i_row < iml; i_row ++) {
-          msk_rm(i_row, _) = CUR_M(i_row, _) != 1;
+          msk(i_row, _) = CUR_M(i_row, _) > 1;
         }
-        if((typ == 2) && (!_add_noise[chan_idx])) msk_bm = -1;
+        msk.attr("removal") = "clipped";
         break;
       }
       case 3: {
-        msk_rm = MC;
-        if((typ == 2) && (!_add_noise[chan_idx])) msk_bm = -1;
+        IntegerMatrix CUR_M = clone(Rcpp::as<Rcpp::IntegerMatrix>(masks[cur_chan]));
+        for(R_len_t i_row = 0; i_row < iml; i_row ++) {
+          msk(i_row, _) = CUR_M(i_row, _) != 1;
+        }
+        msk.attr("removal") = "masked";
+        break;
+      }
+      case 4: {
+        msk = MC;
+        msk.attr("removal") = "MC";
         break;
       }
       }
+      
       out[i] = cpp_transform(img[chan_idx],
                              colors[chan_idx],
-                                   msk_rm,
+                                   msk,
                                    size,
                                    mode,
                                    typ,
-                                   _removal[chan_idx],
-                                           NumericVector::create(_xmin[chan_idx],_xmax[chan_idx]),
-                                           _add_noise[chan_idx],
-                                                     msk_bm,
-                                                     _sd[chan_idx],
-                                                        _full_range[chan_idx],
-                                                                   _force_range[chan_idx],
-                                                                               _gamma[chan_idx]);
+                                   NumericVector::create(xmin[chan_idx],xmax[chan_idx]),
+                                   add_noise[chan_idx],
+                                            bg_2[chan_idx],
+                                                sd_2[chan_idx],
+                                                    full_range[chan_idx],
+                                                              force_range[chan_idx],
+                                                                         gamma[chan_idx]);
     }
   } else {
+    msk.attr("removal") = "none";
     for(R_len_t i = 0; i < chan_to_extract.size(); i++) {  
       // transform extracted image according to user's settings without mask removal
       uint8_t chan_idx = chan_to_extract[i];
       out[i] = cpp_transform(img[chan_idx],
                              colors[chan_idx],
-                                   msk_rm,
+                                   msk,
                                    size,
                                    mode,
                                    typ,
-                                   false,
-                                   NumericVector::create(_xmin[chan_idx],_xmax[chan_idx]),
-                                   _add_noise[chan_idx],
-                                             _bg[chan_idx],
-                                                _sd[chan_idx],
-                                                   _full_range[chan_idx],
-                                                              _force_range[chan_idx],
-                                                                          _gamma[chan_idx]);
+                                   NumericVector::create(xmin[chan_idx],xmax[chan_idx]),
+                                   add_noise[chan_idx],
+                                            bg_2[chan_idx],
+                                                sd_2[chan_idx],
+                                                    full_range[chan_idx],
+                                                              force_range[chan_idx],
+                                                                         gamma[chan_idx]);
     }
   }
   return out;

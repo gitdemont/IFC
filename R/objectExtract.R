@@ -38,7 +38,8 @@
 #' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #' POSSIBILITY OF SUCH DAMAGE.
-#' @details when a mask is detected, add_noise and force_range are set to FALSE.
+#' @details when a mask is detected, add_noise, full_range and force_range are set to FALSE,
+#' background mean and sd to 0, and input_range to [0,3].
 #' @examples
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a cif file
@@ -112,12 +113,10 @@ objectExtract <- function(ifd,
   if(param$export == "file") if(!dir.exists(param$dir_name)) if(!dir.create(param$dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", param$dir_name))
   
   # shortcut
-  chan_to_extract = param$chan_to_extract 
+  chan_to_extract = param$chan_to_extract
   chan_to_keep = param$chan_to_keep 
   channels = param$channels
   composite = param$composite
-  export = param$export
-  mode = param$mode
   
   # retrieve length + names of IFDs
   l_ifd = length(ifd)
@@ -131,9 +130,22 @@ objectExtract <- function(ifd,
 
   # extract
   foo = lapply(1:l_ifd, FUN=function(i_ifd) {
-    img = cpp_extract(fname = param$fileName_image, ifd = ifd[[i_ifd]], 
-                      colors = param$colors, channels = param$channels, chan_to_extract = param$chan_to_extract - 1, # index start 0 in C, 1 in R, 
-                      extract_msk = param$extract_msk, mode = mode, size = param$size, verbose = verbose)
+    img = cpp_extract(fname = param$fileName_image, 
+                      ifd = ifd[[i_ifd]], 
+                      colors = param$colors,  
+                      physicalChannel = param$channels$physicalChannel,
+                      xmin = param$channels$xmin,
+                      xmax = param$channels$xmax,
+                      removal = param$channels$removal,
+                      add_noise = param$channels$add_noise,
+                      full_range = param$channels$full_range,
+                      force_range = param$channels$force_range,
+                      gamma = param$channels$gamma,
+                      chan_to_extract = param$chan_to_extract - 1, # index start 0 in C, 1 in R, 
+                      extract_msk = param$extract_msk, 
+                      mode = param$mode, 
+                      size = param$size, 
+                      verbose = verbose)
     names(img) = channels[chan_to_extract,"physicalChannel"]
     
     ##### only keep selected channels + channels needed for composite and create composite

@@ -40,8 +40,9 @@
 #' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(0,0) for no change.
 #' @param force_width whether to use information in 'info' to fill size. Default is TRUE.
 #' When set to TRUE, width of 'size' argument will be overwritten.
-#' @param removal removal method: Either "none", "clipped", "masked", "MC".\cr
+#' @param removal removal method: Either "none", "raw", "clipped", "masked", "MC".\cr
 #' -"none", to keep image as is\cr
+#' -"raw", to keep image as is, it provides a convinient way to retrieve "raw" value for the mask.\cr
 #' -"clipped", to remove clipped object from image.\cr
 #' -"masked", to only keep masked object from image.\cr
 #' -"MC", to only keep MC masked object from image.
@@ -53,7 +54,7 @@
 #' @param full_range only apply when mode is not "raw", if full_range is TRUE, then [0,4095] range will be kept. Default is FALSE.\cr
 #' It is like "raw" mode but allowing normalization to [0,1].
 #' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.\cr
-#' @param force_range only apply when mode is not "raw", if force_range is TRUE, then image display range will be adjusted for each object resulting in normalization. Default is FALSE.\cr
+#' @param force_range only apply when mode is not "raw", if force_range is TRUE, then range will be adjusted to object range in [-4095, +inf] resulting in normalization. Default is FALSE.\cr
 #' Note that this parameter takes the precedence over 'full_range'.\cr
 #' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.
 #' @return an object of class `IFC_param`. 
@@ -94,7 +95,7 @@ objectParam <- function(...,
   if(force_width) size = c(size[1], as.integer(info$channelwidth))
   
   ##### check input param
-  removal = as.character(removal); assert(removal, alw = c("none", "clipped", "masked", "MC"))
+  removal = as.character(removal); assert(removal, alw = c("none", "raw", "clipped", "masked", "MC"))
   add_noise = as.logical(add_noise); assert(add_noise, alw = c(TRUE,FALSE))
   full_range = as.logical(full_range); assert(full_range, alw = c(TRUE,FALSE))
   force_range = as.logical(force_range); assert(force_range, alw = c(TRUE,FALSE))
@@ -154,7 +155,7 @@ objectParam <- function(...,
   ##### fill removal, add_noise, full_range, force_range for every extracted channels
   channels[,"string_removal"] <- "none"
   channels[chan_to_extract,"string_removal"] <- rep_len(removal, length.out = length(chan_to_extract))
-  channels[,"removal"] = as.integer(factor(x = channels[,"string_removal"], levels = c("none", "clipped", "masked", "MC"))) - 1
+  channels[,"removal"] = as.integer(factor(x = channels[,"string_removal"], levels = c("none", "raw", "clipped", "masked", "MC"))) - 1
   channels[,"add_noise"] <- F
   channels[chan_to_extract,"add_noise"] <- rep_len(add_noise, length.out = length(chan_to_extract))
   channels[,"full_range"] <- F

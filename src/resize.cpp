@@ -169,5 +169,6 @@ NumericMatrix cpp_resize (const NumericMatrix mat,
   } else {
     out = cpp_expand_no_noise(crop, new_height, new_width, bg);
   }
+  if(mat.hasAttribute("mask")) out.attr("mask") = mat.attr("mask");
   return out;
 }

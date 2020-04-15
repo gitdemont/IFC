@@ -357,7 +357,7 @@ NULL
 #' @param input_range a finite NumericVector, sets the range of the input intensity values. Default is c(0,4095).
 #' values outside this range are clipped.
 #' @param full_range if full_range is TRUE, then input_range will be set to 'c(0,4095)' and gamma forced to 1. Default is false.
-#' @param force_range if force_range is TRUE, then input_range will be adjusted to mat range and gamma forced to 1. Default is false.\cr
+#' @param force_range if force_range is TRUE, then input_range will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
 #' Note that this parameter takes the precedence over 'input_range' and 'full_range'.
 #' @param gamma correction. Default is 1, for no correction.
 #' @keywords internal
@@ -369,11 +369,11 @@ NULL
 #' Replaces values in matrix mat according to mask msk.
 #' Depending of add_noise parameter values will be replaced with noise or not.
 #' @param mat a NumericMatrix.
-#' @param msk a LogicalMatrix.
+#' @param msk a IntegerMatrix.
 #' @param add_noise logical, if true adds normal noise.
 #' Rcpp::Rf_rnorm(bg, sd) function is used. Default is true.
-#' @param bg double, mean value of the background added if add_noise is true. Default is 0.
-#' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
+#' @param bg double, mean value of the background added if add_noise is true. Default is 0.0
+#' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0
 #' @return a NumericMatrix with replaced according to msk.
 #' @keywords internal
 NULL
@@ -411,21 +411,22 @@ NULL
 #' @param mat NumericMatrix.
 #' @param color NumericVector, whose members are h,s,v color.
 #' This vector has to be named with 1st name being the name of this color.
-#' @param msk LogicalMatrix.
+#' @param msk IntegerMatrix.
 #' @param size a length 2 IntegerVector, of final dimensions (height,width) of the image. Default is 0,0 for no change.
 #' @param mode string, color mode export. Either "rgb", "gray" or "raw". Default is "raw".
 #' @param type uint16_t image object type.
 #' Rcpp::Rf_rnorm(bg, sd) function is used. Default is true.
-#' @param cleanse bool, wheteher to cleanse image or not. Cleanse will only apply when set to true and 'msk' is not R_NilValue
 #' @param input_range a finite NumericVector, only apply when mode is not "raw", sets the range of the input intensity values. Default is c(0,4095).
 #' values exceeding this range are clipped.
 #' @param add_noise bool, if true adds normal noise.
 #' @param bg double, mean value of the background added if add_noise is true. Default is 0.
 #' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
-#' @param full_range bool, only apply when mode is not "raw", if full_range is TRUE, then input_range will be set to 'c(0,4095)' and gamma forced to 1. Default is false.
-#' @param force_range bool, only apply when mode is not "raw", if force_range is TRUE, then input_range will be adjusted to mat range and gamma forced to 1. Default is false.\cr
+#' @param full_range bool, only apply when mode is not "raw", if full_range is TRUE, then 'input_range' will be set to 'c(0,4095)' and gamma forced to 1. Default is false.
+#' @param force_range bool, only apply when mode is not "raw", if force_range is TRUE, then 'input_range' will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
 #' Note that this parameter takes the precedence over 'input_range' and 'full_range'.
 #' @param gamma correction. Default is 1, for no correction.
+#' @details When add_noise is false, backgound will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
+#' when a mask is detected, add_noise, full_range and force_range are set to false, background mean and sd to 0, and input_range to [0,3].\cr
 #' @keywords internal
 NULL
 
@@ -437,12 +438,21 @@ NULL
 #' @param ifd List, ifd information of class IFC_ifd
 #' @param colors List of colors to use.
 #' @param channels DataFrame, channels information
+#' @param physicalChannel CharacterVector of indices for each channels
+#' @param xmin NumericVector of minimal values for each channels
+#' @param xmax NumericVector of maximal values for each channels
+#' @param removal IntegerVector of removal method to be used for each channels
+#' @param add_noise LogicalVector of whether to add_noise for each channels
+#' @param full_range LogicalVector of whether to use full_range for each channels
+#' @param force_range LogicalVector of whether to use force_range for each channels
+#' @param gamma NumericVector of the gamma for each channels
 #' @param chan_to_extract IntegerVector, channels to extract
 #' @param extract_msk uint8_t, type of masked to extract.\cr
 #' - 0: no mask\cr
-#' - 1: at least one clipped\cr
-#' - 2: at least one masked\cr
-#' - 3: at least one MC
+#' - 1: at least one raw mask\cr
+#' - 2: at least one clipped\cr
+#' - 3: at least one masked\cr
+#' - 4: at least one MC
 #' @param mode string, color mode export. Either "rgb", "gray" or "raw". Default is "raw".
 #' @param size a length 2 IntegerVector of final dimensions (height,width) of the image. Default is 0,0 for no change.\cr
 #' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
@@ -501,12 +511,12 @@ cpp_mark <- function(A, B, mask, xoff = 0L, yoff = 0L, invert = FALSE) {
     .Call(`_IFC_cpp_mark`, A, B, mask, xoff, yoff, invert)
 }
 
-cpp_transform <- function(mat, color, msk, size = as.integer( c(0,0)), mode = "raw", type = 2L, cleanse = FALSE, input_range = as.numeric( c(0.0,4095.0)), add_noise = TRUE, bg = 0.0, sd = 0.0, full_range = FALSE, force_range = FALSE, gamma = 1.0) {
-    .Call(`_IFC_cpp_transform`, mat, color, msk, size, mode, type, cleanse, input_range, add_noise, bg, sd, full_range, force_range, gamma)
+cpp_transform <- function(mat, color, msk, size = as.integer( c(0,0)), mode = "raw", type = 2L, input_range = as.numeric( c(0.0,4095.0)), add_noise = TRUE, bg = 0.0, sd = 0.0, full_range = FALSE, force_range = FALSE, gamma = 1.0) {
+    .Call(`_IFC_cpp_transform`, mat, color, msk, size, mode, type, input_range, add_noise, bg, sd, full_range, force_range, gamma)
 }
 
-cpp_extract <- function(fname, ifd, colors, channels, chan_to_extract, extract_msk = 0L, mode = "raw", size = as.integer( c(0,0)), verbose = FALSE) {
-    .Call(`_IFC_cpp_extract`, fname, ifd, colors, channels, chan_to_extract, extract_msk, mode, size, verbose)
+cpp_extract <- function(fname, ifd, colors, physicalChannel, xmin, xmax, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk = 0L, mode = "raw", size = as.integer( c(0,0)), verbose = FALSE) {
+    .Call(`_IFC_cpp_extract`, fname, ifd, colors, physicalChannel, xmin, xmax, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk, mode, size, verbose)
 }
 
 #' @title Matrix List And Logic

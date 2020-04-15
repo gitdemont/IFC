@@ -76,77 +76,77 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_checkTIFF
-std::string cpp_checkTIFF(std::string fname);
+std::string cpp_checkTIFF(const std::string fname);
 RcppExport SEXP _IFC_cpp_checkTIFF(SEXP fnameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_checkTIFF(fname));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_getoffsets_noid
-IntegerVector cpp_getoffsets_noid(std::string fname, R_len_t obj_count, bool display_progress, bool verbose);
+IntegerVector cpp_getoffsets_noid(const std::string fname, const R_len_t obj_count, const bool display_progress, const bool verbose);
 RcppExport SEXP _IFC_cpp_getoffsets_noid(SEXP fnameSEXP, SEXP obj_countSEXP, SEXP display_progressSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type fname(fnameSEXP);
-    Rcpp::traits::input_parameter< R_len_t >::type obj_count(obj_countSEXP);
-    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const R_len_t >::type obj_count(obj_countSEXP);
+    Rcpp::traits::input_parameter< const bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_getoffsets_noid(fname, obj_count, display_progress, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_getTAGS
-List cpp_getTAGS(std::string fname, uint32_t offset, bool verbose, uint8_t trunc_bytes, bool force_trunc);
+List cpp_getTAGS(const std::string fname, const uint32_t offset, const bool verbose, const uint8_t trunc_bytes, const bool force_trunc);
 RcppExport SEXP _IFC_cpp_getTAGS(SEXP fnameSEXP, SEXP offsetSEXP, SEXP verboseSEXP, SEXP trunc_bytesSEXP, SEXP force_truncSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type fname(fnameSEXP);
-    Rcpp::traits::input_parameter< uint32_t >::type offset(offsetSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    Rcpp::traits::input_parameter< uint8_t >::type trunc_bytes(trunc_bytesSEXP);
-    Rcpp::traits::input_parameter< bool >::type force_trunc(force_truncSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< const uint8_t >::type trunc_bytes(trunc_bytesSEXP);
+    Rcpp::traits::input_parameter< const bool >::type force_trunc(force_truncSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_getTAGS(fname, offset, verbose, trunc_bytes, force_trunc));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_getoffsets_wid
-List cpp_getoffsets_wid(std::string fname, R_len_t obj_count, bool display_progress, bool verbose);
+List cpp_getoffsets_wid(const std::string fname, const R_len_t obj_count, const bool display_progress, const bool verbose);
 RcppExport SEXP _IFC_cpp_getoffsets_wid(SEXP fnameSEXP, SEXP obj_countSEXP, SEXP display_progressSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type fname(fnameSEXP);
-    Rcpp::traits::input_parameter< R_len_t >::type obj_count(obj_countSEXP);
-    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const R_len_t >::type obj_count(obj_countSEXP);
+    Rcpp::traits::input_parameter< const bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_getoffsets_wid(fname, obj_count, display_progress, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_checksum
-size_t cpp_checksum(std::string fname);
+size_t cpp_checksum(const std::string fname);
 RcppExport SEXP _IFC_cpp_checksum(SEXP fnameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_checksum(fname));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_rle_Decomp
-List cpp_rle_Decomp(std::string fname, const uint32_t offset, const uint32_t nbytes, const R_len_t imgWidth, const R_len_t imgHeight, const R_len_t nb_channels, const uint8_t removal, const bool verbose);
+List cpp_rle_Decomp(const std::string fname, const uint32_t offset, const uint32_t nbytes, const R_len_t imgWidth, const R_len_t imgHeight, const R_len_t nb_channels, const uint8_t removal, const bool verbose);
 RcppExport SEXP _IFC_cpp_rle_Decomp(SEXP fnameSEXP, SEXP offsetSEXP, SEXP nbytesSEXP, SEXP imgWidthSEXP, SEXP imgHeightSEXP, SEXP nb_channelsSEXP, SEXP removalSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type nbytes(nbytesSEXP);
     Rcpp::traits::input_parameter< const R_len_t >::type imgWidth(imgWidthSEXP);
@@ -159,12 +159,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_gray_Decomp
-List cpp_gray_Decomp(std::string fname, const uint32_t offset, const uint32_t nbytes, const R_len_t imgWidth, const R_len_t imgHeight, const R_len_t nb_channels, const bool verbose);
+List cpp_gray_Decomp(const std::string fname, const uint32_t offset, const uint32_t nbytes, const R_len_t imgWidth, const R_len_t imgHeight, const R_len_t nb_channels, const bool verbose);
 RcppExport SEXP _IFC_cpp_gray_Decomp(SEXP fnameSEXP, SEXP offsetSEXP, SEXP nbytesSEXP, SEXP imgWidthSEXP, SEXP imgHeightSEXP, SEXP nb_channelsSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type nbytes(nbytesSEXP);
     Rcpp::traits::input_parameter< const R_len_t >::type imgWidth(imgWidthSEXP);
@@ -176,12 +176,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_decomp
-List cpp_decomp(std::string fname, const uint32_t offset, const uint32_t nbytes, const R_len_t imgWidth, const R_len_t imgHeight, const R_len_t nb_channels, const uint8_t removal, const uint32_t compression, const bool verbose);
+List cpp_decomp(const std::string fname, const uint32_t offset, const uint32_t nbytes, const R_len_t imgWidth, const R_len_t imgHeight, const R_len_t nb_channels, const uint8_t removal, const uint32_t compression, const bool verbose);
 RcppExport SEXP _IFC_cpp_decomp(SEXP fnameSEXP, SEXP offsetSEXP, SEXP nbytesSEXP, SEXP imgWidthSEXP, SEXP imgHeightSEXP, SEXP nb_channelsSEXP, SEXP removalSEXP, SEXP compressionSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type nbytes(nbytesSEXP);
     Rcpp::traits::input_parameter< const R_len_t >::type imgWidth(imgWidthSEXP);
@@ -210,13 +210,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_cleanse
-NumericMatrix cpp_cleanse(const NumericMatrix mat, const LogicalMatrix msk, const bool add_noise, const double bg, const double sd);
+NumericMatrix cpp_cleanse(const NumericMatrix mat, const IntegerMatrix msk, const bool add_noise, const double bg, const double sd);
 RcppExport SEXP _IFC_cpp_cleanse(SEXP matSEXP, SEXP mskSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const NumericMatrix >::type mat(matSEXP);
-    Rcpp::traits::input_parameter< const LogicalMatrix >::type msk(mskSEXP);
+    Rcpp::traits::input_parameter< const IntegerMatrix >::type msk(mskSEXP);
     Rcpp::traits::input_parameter< const bool >::type add_noise(add_noiseSEXP);
     Rcpp::traits::input_parameter< const double >::type bg(bgSEXP);
     Rcpp::traits::input_parameter< const double >::type sd(sdSEXP);
@@ -254,18 +254,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_transform
-NumericVector cpp_transform(const NumericMatrix mat, const NumericVector color, const LogicalMatrix msk, const IntegerVector size, const std::string mode, const uint16_t type, const bool cleanse, const NumericVector input_range, const bool add_noise, const double bg, const double sd, const bool full_range, const bool force_range, const double gamma);
-RcppExport SEXP _IFC_cpp_transform(SEXP matSEXP, SEXP colorSEXP, SEXP mskSEXP, SEXP sizeSEXP, SEXP modeSEXP, SEXP typeSEXP, SEXP cleanseSEXP, SEXP input_rangeSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP, SEXP full_rangeSEXP, SEXP force_rangeSEXP, SEXP gammaSEXP) {
+NumericVector cpp_transform(const NumericMatrix mat, const NumericVector color, const IntegerMatrix msk, const IntegerVector size, const std::string mode, const uint16_t type, const NumericVector input_range, const bool add_noise, const double bg, const double sd, const bool full_range, const bool force_range, const double gamma);
+RcppExport SEXP _IFC_cpp_transform(SEXP matSEXP, SEXP colorSEXP, SEXP mskSEXP, SEXP sizeSEXP, SEXP modeSEXP, SEXP typeSEXP, SEXP input_rangeSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP, SEXP full_rangeSEXP, SEXP force_rangeSEXP, SEXP gammaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const NumericMatrix >::type mat(matSEXP);
     Rcpp::traits::input_parameter< const NumericVector >::type color(colorSEXP);
-    Rcpp::traits::input_parameter< const LogicalMatrix >::type msk(mskSEXP);
+    Rcpp::traits::input_parameter< const IntegerMatrix >::type msk(mskSEXP);
     Rcpp::traits::input_parameter< const IntegerVector >::type size(sizeSEXP);
     Rcpp::traits::input_parameter< const std::string >::type mode(modeSEXP);
     Rcpp::traits::input_parameter< const uint16_t >::type type(typeSEXP);
-    Rcpp::traits::input_parameter< const bool >::type cleanse(cleanseSEXP);
     Rcpp::traits::input_parameter< const NumericVector >::type input_range(input_rangeSEXP);
     Rcpp::traits::input_parameter< const bool >::type add_noise(add_noiseSEXP);
     Rcpp::traits::input_parameter< const double >::type bg(bgSEXP);
@@ -273,26 +272,33 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const bool >::type full_range(full_rangeSEXP);
     Rcpp::traits::input_parameter< const bool >::type force_range(force_rangeSEXP);
     Rcpp::traits::input_parameter< const double >::type gamma(gammaSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_transform(mat, color, msk, size, mode, type, cleanse, input_range, add_noise, bg, sd, full_range, force_range, gamma));
+    rcpp_result_gen = Rcpp::wrap(cpp_transform(mat, color, msk, size, mode, type, input_range, add_noise, bg, sd, full_range, force_range, gamma));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_extract
-List cpp_extract(std::string fname, List ifd, const List colors, const DataFrame channels, const IntegerVector chan_to_extract, const uint8_t extract_msk, const std::string mode, const IntegerVector size, bool verbose);
-RcppExport SEXP _IFC_cpp_extract(SEXP fnameSEXP, SEXP ifdSEXP, SEXP colorsSEXP, SEXP channelsSEXP, SEXP chan_to_extractSEXP, SEXP extract_mskSEXP, SEXP modeSEXP, SEXP sizeSEXP, SEXP verboseSEXP) {
+List cpp_extract(const std::string fname, const List ifd, const List colors, const CharacterVector physicalChannel, const NumericVector xmin, const NumericVector xmax, const IntegerVector removal, const LogicalVector add_noise, const LogicalVector full_range, const LogicalVector force_range, const NumericVector gamma, const IntegerVector chan_to_extract, const uint8_t extract_msk, const std::string mode, const IntegerVector size, const bool verbose);
+RcppExport SEXP _IFC_cpp_extract(SEXP fnameSEXP, SEXP ifdSEXP, SEXP colorsSEXP, SEXP physicalChannelSEXP, SEXP xminSEXP, SEXP xmaxSEXP, SEXP removalSEXP, SEXP add_noiseSEXP, SEXP full_rangeSEXP, SEXP force_rangeSEXP, SEXP gammaSEXP, SEXP chan_to_extractSEXP, SEXP extract_mskSEXP, SEXP modeSEXP, SEXP sizeSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::string >::type fname(fnameSEXP);
-    Rcpp::traits::input_parameter< List >::type ifd(ifdSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const List >::type ifd(ifdSEXP);
     Rcpp::traits::input_parameter< const List >::type colors(colorsSEXP);
-    Rcpp::traits::input_parameter< const DataFrame >::type channels(channelsSEXP);
+    Rcpp::traits::input_parameter< const CharacterVector >::type physicalChannel(physicalChannelSEXP);
+    Rcpp::traits::input_parameter< const NumericVector >::type xmin(xminSEXP);
+    Rcpp::traits::input_parameter< const NumericVector >::type xmax(xmaxSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector >::type removal(removalSEXP);
+    Rcpp::traits::input_parameter< const LogicalVector >::type add_noise(add_noiseSEXP);
+    Rcpp::traits::input_parameter< const LogicalVector >::type full_range(full_rangeSEXP);
+    Rcpp::traits::input_parameter< const LogicalVector >::type force_range(force_rangeSEXP);
+    Rcpp::traits::input_parameter< const NumericVector >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< const IntegerVector >::type chan_to_extract(chan_to_extractSEXP);
     Rcpp::traits::input_parameter< const uint8_t >::type extract_msk(extract_mskSEXP);
     Rcpp::traits::input_parameter< const std::string >::type mode(modeSEXP);
     Rcpp::traits::input_parameter< const IntegerVector >::type size(sizeSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_extract(fname, ifd, colors, channels, chan_to_extract, extract_msk, mode, size, verbose));
+    Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_extract(fname, ifd, colors, physicalChannel, xmin, xmax, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk, mode, size, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -472,8 +478,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_cleanse", (DL_FUNC) &_IFC_cpp_cleanse, 5},
     {"_IFC_cpp_mask", (DL_FUNC) &_IFC_cpp_mask, 3},
     {"_IFC_cpp_mark", (DL_FUNC) &_IFC_cpp_mark, 6},
-    {"_IFC_cpp_transform", (DL_FUNC) &_IFC_cpp_transform, 14},
-    {"_IFC_cpp_extract", (DL_FUNC) &_IFC_cpp_extract, 9},
+    {"_IFC_cpp_transform", (DL_FUNC) &_IFC_cpp_transform, 13},
+    {"_IFC_cpp_extract", (DL_FUNC) &_IFC_cpp_extract, 16},
     {"_IFC_cpp_AND_M", (DL_FUNC) &_IFC_cpp_AND_M, 1},
     {"_IFC_cpp_OR_M", (DL_FUNC) &_IFC_cpp_OR_M, 1},
     {"_IFC_cpp_NEG_M", (DL_FUNC) &_IFC_cpp_NEG_M, 1},

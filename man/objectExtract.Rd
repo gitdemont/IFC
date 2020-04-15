@@ -61,7 +61,8 @@ A list (for every extracted objects) of list (for every exported channels) depen
 Extracts / Decompress objects stored in RIF or CIF Files.
 }
 \details{
-when a mask is detected, add_noise and force_range are set to FALSE.
+when a mask is detected, add_noise, full_range and force_range are set to FALSE,
+background mean and sd to 0, and input_range to [0,3].
 }
 \examples{
 if(requireNamespace("IFCdata", quietly = TRUE)) {

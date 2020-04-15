@@ -11,7 +11,7 @@ values outside this range are clipped.}
 
 \item{full_range}{if full_range is TRUE, then input_range will be set to 'c(0,4095)' and gamma forced to 1. Default is false.}
 
-\item{force_range}{if force_range is TRUE, then input_range will be adjusted to mat range and gamma forced to 1. Default is false.\cr
+\item{force_range}{if force_range is TRUE, then input_range will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
 Note that this parameter takes the precedence over 'input_range' and 'full_range'.}
 
 \item{gamma}{correction. Default is 1, for no correction.}

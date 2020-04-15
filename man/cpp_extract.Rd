@@ -12,13 +12,30 @@
 
 \item{channels}{DataFrame, channels information}
 
+\item{physicalChannel}{CharacterVector of indices for each channels}
+
+\item{xmin}{NumericVector of minimal values for each channels}
+
+\item{xmax}{NumericVector of maximal values for each channels}
+
+\item{removal}{IntegerVector of removal method to be used for each channels}
+
+\item{add_noise}{LogicalVector of whether to add_noise for each channels}
+
+\item{full_range}{LogicalVector of whether to use full_range for each channels}
+
+\item{force_range}{LogicalVector of whether to use force_range for each channels}
+
+\item{gamma}{NumericVector of the gamma for each channels}
+
 \item{chan_to_extract}{IntegerVector, channels to extract}
 
 \item{extract_msk}{uint8_t, type of masked to extract.\cr
 - 0: no mask\cr
-- 1: at least one clipped\cr
-- 2: at least one masked\cr
-- 3: at least one MC}
+- 1: at least one raw mask\cr
+- 2: at least one clipped\cr
+- 3: at least one masked\cr
+- 4: at least one MC}
 
 \item{mode}{string, color mode export. Either "rgb", "gray" or "raw". Default is "raw".}
 
