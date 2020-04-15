@@ -237,7 +237,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
                             ifelse(length(IFD[[1]]$tags[["33080"]]$val)==0, stop("can't find pointer '33080' to extract features"), IFD[[1]]$tags[["33080"]]$val)))
         obj_number_r = readBin(toread, what = "double", size = 4, n = 1, endian = endianness)
         feat_number_r = readBin(toread, what = "double", size = 4, n = 1, endian = endianness)
-        if((length(obj_number_r) == 0) | (length(feat_number_r) == 0)) stop(fileName, "\nBinary features is of length 0")
+        if((length(obj_number_r) == 0) || (length(feat_number_r) == 0)) stop(fileName, "\nBinary features is of length 0")
         if(!(merged | onefile)) if(IFD[[1]]$tags[["33018"]]$val != obj_number_r) stop(fileName, "\nMismatch in object number")
         if(display_progress) {
           pb = newPB(session = dots$session, min = 0, max = obj_number_r, initial = 0, style = 3)
@@ -294,6 +294,19 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         features_names = c(features_names, "Object Number")
         features$`Object Number` = 0:(nrow(features)-1)
         features_def = c(features_def, "Object Number" = list(name = "Object Number", type = "single", userfeaturetype = "No Parameters", def = "Object Number"))
+      } else { # try to define unique object id number based on "Object Number","Camera Timer","Camera Line Number" if present
+        if(all(c("Object Number","Camera Timer","Camera Line Number") %in% features_names)) {
+          ids = rle(apply(sapply(c("Object Number","Camera Timer","Camera Line Number"),
+                                 FUN=function(col) {
+                                   foo = rle(features[,col])
+                                   bar = lapply(1:length(foo$lengths), FUN = function(i) rep(i-1, times = foo$lengths[i]))
+                                   unlist(bar)
+                                 }), 1, sum))
+          unique_id = unlist(sapply(1:length(ids$lengths), FUN=function(i) rep(i-1, times = ids$lengths[i])))
+          features[, "Raw Number"] = features[, "Object Number"]
+          features_def = c(features_def, "Raw Number" = list(name = "Raw Number", type = "single", userfeaturetype = "No Parameters", def = "Raw Number"))
+          features[, "Object Number"] = unique_id
+        }
       }
       rownames(features) = 0:(nrow(features)-1)
       class(features) <- c(class(features),"IFC_features")
