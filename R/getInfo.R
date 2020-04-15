@@ -28,8 +28,9 @@
 #' @return a list of information (open .daf file in an text editor for more details) about input fileName of class `IFC_info` and `acquistion` or `analysis`, whose members are:\cr
 #' -objcount, number of object in file,\cr
 #' -date, date of file creation,\cr
-#' -SW_raw, version of software for raw data,\cr
-#' -SW_processed, version of software for processed data,\cr
+#' -instrument, instrument identification,\cr
+#' -sw_raw, version of software for raw data,\cr
+#' -sw_processed, version of software for processed data,\cr
 #' -channelwidth, default channel width in pixel,\cr
 #' -in_use, channels used,\cr
 #' -brightfield, whether brightfield is applied on channels and its intensity,\cr
@@ -137,8 +138,9 @@ getInfo <- function(fileName,
   
   infos = list("objcount" = IFD[[1]]$tags[["33018"]]$map, # should not exceed 4 bytes
                "date"=getFullTag(IFD = IFD, which = 1, "33004"),
-               "SW_raw"=getFullTag(IFD = IFD, which = 1, "33069"),
-               "SW_process"=getFullTag(IFD = IFD, which = 1, "33066")) 
+               "instrument"=getFullTag(IFD = IFD, which = 1, "33006"),
+               "sw_raw"=getFullTag(IFD = IFD, which = 1, "33069"),
+               "sw_process"=getFullTag(IFD = IFD, which = 1, "33066")) 
   # determines channelwidth, very important for objectExtract() when force_width = TRUE
   # prefer using channelwidth extracted from ifd dedicated tag (=tag 33009) rather than the one from parsing ASSISTdb (=tag 33064)
   # TODO ask AMNIS the rules for extracting channelwidth

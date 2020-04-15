@@ -40,8 +40,9 @@ If cif can't be found, but 'ntry' is reached, then an error will be thrown.}
 a list of information (open .daf file in an text editor for more details) about input fileName of class `IFC_info` and `acquistion` or `analysis`, whose members are:\cr
 -objcount, number of object in file,\cr
 -date, date of file creation,\cr
--SW_raw, version of software for raw data,\cr
--SW_processed, version of software for processed data,\cr
+-instrument, instrument identification,\cr
+-sw_raw, version of software for raw data,\cr
+-sw_processed, version of software for processed data,\cr
 -channelwidth, default channel width in pixel,\cr
 -in_use, channels used,\cr
 -brightfield, whether brightfield is applied on channels and its intensity,\cr
