@@ -71,7 +71,7 @@ DisplayGallery <- function(...,
   locale_back = Sys.getlocale("LC_ALL")
   on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
   suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
-  
+
   # check input
   input = whoami(entries = as.list(match.call()))
   if(!any(sapply(input, FUN = function(i) length(i) != 0))) {
@@ -86,7 +86,7 @@ DisplayGallery <- function(...,
   } else {
     fileName = attr(offsets, "fileName_image")
   }
-  
+
   # check mandatory param
   name = as.character(name); assert(name, len = 1, typ = "character")
   assert(image_type, len = 1, alw = c("img", "msk"))
@@ -142,7 +142,7 @@ DisplayGallery <- function(...,
   } else {
     force_width = dots[["force_width"]]
   }
-  param_extra = names(dots) %in% c("ifd","mode","export","size","force_width","bypass")
+  param_extra = names(dots) %in% c("ifd","param","mode","export","size","force_width","bypass")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("write_to","base64_id","base64_att","overwrite",
                                    "composite","selection","random_seed",
@@ -171,7 +171,7 @@ DisplayGallery <- function(...,
                                     force_width = force_width), dots_param))
     }
   } else {
-    param = dots$param
+    param = input$param
     param$size = size
   }
   fileName = param$fileName
@@ -279,36 +279,38 @@ DisplayGallery <- function(...,
     which(channel_id %in% x)
   }))
   if(length(layout) == 0) stop("'layout' is of length 0 which is not allowed")
-
+  
   # check object_ids
   if(image_type == "img") {
     ids = sapply(ans, attr, which="object_id")
     if(!all(objects == ids)) {
       warning("Extracted object_ids differ from expected ones. Concider running with 'fast' = FALSE", call. = FALSE, immediate. = TRUE)
-      ans = cbind(true_ids = names(ans), ids, do.call(what = "rbind", args = lapply(ans, FUN=function(i) i[layout])))
+      dat = cbind(true_ids = names(ans), ids = ids, 
+                  do.call(what = "rbind", args = lapply(ans, FUN=function(i) i[layout])))
       txt_col = 2
     } else {
-      ans = cbind(ids, do.call(what = "rbind", args = lapply(ans, FUN=function(i) i[layout])))
+      dat = cbind(ids = ids, 
+                  do.call(what = "rbind", args = lapply(ans, FUN=function(i) i[layout])))
       txt_col = 1
     }
   } else {
-    ans = cbind(ids = as.integer(gsub("^.*_(.*)$", "\\1", sapply(ans, attr, which="offset_id"))),
+    dat = cbind(ids = as.integer(gsub("^.*_(.*)$", "\\1", sapply(ans, attr, which="offset_id"))), 
                 do.call(what = "rbind", args = lapply(ans, FUN=function(i) i[layout])))
     txt_col = 1
   }
 
   # disable pdf export if write_to is not tiff or png
-  dt_dom = ifelse(length(dots[["write_to"]]) !=0 && !("bmp" %in% getFileExt(dots[["write_to"]])), "Btp", "tp")
+  dt_dom = ifelse("bmp" %in% getFileExt(param$write_to), "tpr", "Btpr")
+  
   # TODO, find a way to remove warning
   oop = options("DT.warn.size" = FALSE); on.exit(options(oop), add = TRUE)
   # (object.size(ans) > 1.5e6 && getOption('DT.warn.size', TRUE)) is FALSE but I am still getting warning
-
   # create datatable
   datatable(escape = FALSE, rownames = FALSE, extensions = "Buttons",
             selection = list(mode = 'api'), style = "bootstrap",
             caption = cap,
             elementId = name,
-            data = ans,
+            data = dat,
             autoHideNavigation = TRUE,
             # callback = JS(sprintf("$('#%s').css({'width':'%spx'}); # TODO try make display more beautiful when names are too long
             # return table;", name, 60*txt_col + ncol(ans)*size[length(size)])),

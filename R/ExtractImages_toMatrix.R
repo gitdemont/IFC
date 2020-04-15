@@ -55,7 +55,7 @@ ExtractImages_toMatrix <- function(...,
   fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
   verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
   verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
-  param_extra = names(dots) %in% c("ifd","export","bypass")
+  param_extra = names(dots) %in% c("ifd","param","export","bypass")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("write_to","mode","base64_id","base64_att","overwrite",
                                    "composite","selection","random_seed","size","force_width",
@@ -78,7 +78,7 @@ ExtractImages_toMatrix <- function(...,
                                     export = "matrix"), dots_param))
     }
   } else {
-    param = dots$param
+    param = input$param
   }
   fileName = param$fileName
   title_progress = basename(fileName)

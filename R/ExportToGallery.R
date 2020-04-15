@@ -160,7 +160,7 @@ ExportToGallery <- function(...,
   } else {
     force_width = dots[["force_width"]]
   }
-  param_extra = names(dots) %in% c("ifd","export","write_to","mode","size","force_width","overwrite","bypass")
+  param_extra = names(dots) %in% c("ifd","param","export","write_to","mode","size","force_width","overwrite","bypass")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("base64_id","base64_att",
                                    "composite","selection","random_seed",
@@ -189,7 +189,7 @@ ExportToGallery <- function(...,
                                     force_width = force_width), dots_param))
     }
   } else {
-    param = dots$param
+    param = input$param
     param$size = size
   }
   fileName = param$fileName
@@ -235,7 +235,7 @@ ExportToGallery <- function(...,
   
   # check input offsets if any
   compute_offsets = TRUE
-  if(length(offsets) != 0) {
+  if(!missing(offsets)) {
     if(!("IFC_offset" %in% class(offsets))) {
       warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
     } else {
