@@ -44,7 +44,6 @@ getFullTag <- function(IFD, which = 1, tag = "256") {
   }
   tag = ifd$tags[[tag]]
   if(tag$off) {
-    #TODO add checksum
     toread = file(description = attr(IFD, "fileName_image"), open = "rb")
     on.exit(close(toread))
     seek(toread, where = tag$val, origin = "start")
