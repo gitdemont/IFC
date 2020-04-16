@@ -233,8 +233,8 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
       features = list()
       if(is.binary) {
         seek(toread, ifelse(merged | onefile, 
-                            ifelse(length(IFD[[1]]$tags[["33083"]]$map)==0, stop("can't find pointer '33083' to extract features"), IFD[[1]]$tags[["33083"]]$map), 
-                            ifelse(length(IFD[[1]]$tags[["33080"]]$map)==0, stop("can't find pointer '33080' to extract features"), IFD[[1]]$tags[["33080"]]$map)))
+                            ifelse(length(IFD[[1]]$tags[["33083"]]$map)==0, stop("can't find pointer '33083' to extract features"), IFD[[1]]$tags[["33083"]]$val), 
+                            ifelse(length(IFD[[1]]$tags[["33080"]]$map)==0, stop("can't find pointer '33080' to extract features"), IFD[[1]]$tags[["33080"]]$val)))
         obj_number_r = readBin(toread, what = "double", size = 4, n = 1, endian = endianness)
         feat_number_r = readBin(toread, what = "double", size = 4, n = 1, endian = endianness)
         if((length(obj_number_r) == 0) || (length(feat_number_r) == 0)) stop(fileName, "\nBinary features is of length 0")
