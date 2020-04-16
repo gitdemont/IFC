@@ -11,13 +11,13 @@
 #' -add_content: the additional ifd content if 'val' converted to raw does not fit in 4 bytes.
 #' @keywords internal
 buildIFD = function(val, typ, tag, endianness = .Platform$endian) {
-  if(length(val) == 0) return(NULL)
   sizes = c(1,1,2,4,4,1,1,2,4,4,4,8)
   multi = c(1,1,1,1,2,1,1,1,1,2,1,1)
   switch(typeof(val),
          "character" = { 
            typ <- 2
-           val = strsplit(x = val, split = "")[[1]]
+           val = strsplit(x = val, split = character())
+           if(length(val) == 1) val = val[[1]]
          })
   val_raw = lapply(val, FUN = function(x) {
     switch(typ,

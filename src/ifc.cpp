@@ -308,6 +308,7 @@ List cpp_getTAGS (const std::string fname,
       uint16_t IFD_type;
       uint32_t IFD_count;
       uint32_t IFD_value;
+      RObject val;
       uint32_t IFD_bytes;
       uint32_t i;
       uint32_t L;
@@ -341,7 +342,7 @@ List cpp_getTAGS (const std::string fname,
       // RObject TILE_BYTE_COUNTS = IR_NilValue;  // 325
       RObject BG_MEAN = R_NilValue;               // 33052
       RObject BG_STD = R_NilValue;                // 33053
-
+      
       List INFOS(entries);
       CharacterVector NAMES(entries);
       if(verbose) Rcout << "Entries: " << entries << std::endl;
@@ -368,7 +369,6 @@ List cpp_getTAGS (const std::string fname,
           IFD_value = bytes_swap(IFD_value);
           pos = fi.tellg();
           
-          if((IFD_count == 0) && (IFD_value != 0)) IFD_count = 1; // fix for compatibility
           IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
           L = multi[IFD_type] * IFD_count;
           is_char = (IFD_type == 1) || (IFD_type == 2) || (IFD_type == 6) || (IFD_type == 7);
@@ -379,15 +379,21 @@ List cpp_getTAGS (const std::string fname,
           }
           
           if(IFD_bytes > 4) {
-            IFD_off = true;
             if((IFD_value + IFD_bytes) > filesize) {
               Rcerr << "cpp_getTAGS: in IFD: " << k << " @" << IFD_value + IFD_bytes << " is outside of " << fname << std::endl;
               Rcpp::stop("cpp_getTAGS: IFD value points to outside of file");
             }
             fi.seekg(IFD_value, std::ios::beg);
+            IFD_off = true;
+            val = IFD_value;
           } else {
             fi.seekg(pos - 4, std::ios::beg);
             IFD_off = false;
+            if(IFD_count == 0) {
+              val = R_NilValue;
+            } else {
+              val = IFD_value;
+            }
           }
           if(verbose) Rcout << "Tag:" << IFD_tag << " Typ:" << IFD_type << " Count:" << IFD_count << " Value:" << IFD_value << " Bytes:" << IFD_bytes << " Off:" << IFD_off << std::endl;
           NAMES[k] = to_string(IFD_tag);
@@ -398,13 +404,13 @@ List cpp_getTAGS (const std::string fname,
               fi.read(buf_offset.data(), L * sizes[IFD_type]);
               std::string IFD_map(buf_offset.begin(), buf_offset.end());
               INFOS[k] = List::create(_["tag"] = IFD_tag,
-                                      _["typ"] = IFD_type, 
-                                      _["siz"] = IFD_count, 
-                                      _["val"] = IFD_value, 
-                                      _["byt"] = IFD_bytes, 
-                                      _["len"] = IFD_count * multi[IFD_type], 
-                                      _["off"] = IFD_off,
-                                      _["map"] = IFD_map);
+                                      _["typ"] = IFD_type,
+                                      _["siz"] = IFD_count,
+                                      _["val"] = val,
+                                      _["byt"] = IFD_bytes,
+                                      _["len"] = IFD_count * multi[IFD_type],
+                                                                  _["off"] = IFD_off,
+                                                                  _["map"] = (IFD_count == 0) ? CharacterVector(0):IFD_map);
             } else {
               RawVector IFD_map(L);
               switch(IFD_type) {
@@ -436,11 +442,11 @@ List cpp_getTAGS (const std::string fname,
               INFOS[k] = List::create(_["tag"] = IFD_tag,
                                       _["typ"] = IFD_type, 
                                       _["siz"] = IFD_count, 
-                                      _["val"] = IFD_value, 
+                                      _["val"] = val, 
                                       _["byt"] = IFD_bytes, 
                                       _["len"] = IFD_count * multi[IFD_type], 
-                                      _["off"] = IFD_off,
-                                      _["map"] = IFD_map);
+                                                                  _["off"] = IFD_off,
+                                                                  _["map"] = IFD_map);
             }
           } else {
             NumericVector IFD_map(L);
@@ -554,11 +560,11 @@ List cpp_getTAGS (const std::string fname,
             INFOS[k] = List::create(_["tag"] = IFD_tag,
                                     _["typ"] = IFD_type, 
                                     _["siz"] = IFD_count, 
-                                    _["val"] = IFD_value, 
+                                    _["val"] = val, 
                                     _["byt"] = IFD_bytes, 
                                     _["len"] = IFD_count * multi[IFD_type], 
-                                    _["off"] = IFD_off,
-                                    _["map"] = IFD_map);
+                                                                _["off"] = IFD_off,
+                                                                _["map"] = IFD_map);
           }
         }
       } else {
@@ -580,7 +586,6 @@ List cpp_getTAGS (const std::string fname,
           memcpy(&IFD_value, buf_dir_entry + 8, sizeof(IFD_value));
           pos = fi.tellg();
           
-          if((IFD_count == 0) && (IFD_value != 0)) IFD_count = 1; // fix for compatibility
           IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
           L = multi[IFD_type] * IFD_count;
           is_char = (IFD_type == 1) || (IFD_type == 2) || (IFD_type == 6) || (IFD_type == 7);
@@ -591,15 +596,21 @@ List cpp_getTAGS (const std::string fname,
           }
           
           if(IFD_bytes > 4) {
-            IFD_off = true;
             if((IFD_value + IFD_bytes) > filesize) {
               Rcerr << "cpp_getTAGS: in IFD: " << k << " @" << IFD_value + IFD_bytes << " is outside of " << fname << std::endl;
               Rcpp::stop("cpp_getTAGS: IFD value points to outside of file");
             }
             fi.seekg(IFD_value, std::ios::beg);
+            IFD_off = true;
+            val = IFD_value;
           } else {
             fi.seekg(pos - 4, std::ios::beg);
             IFD_off = false;
+            if(IFD_count == 0) {
+              val = R_NilValue;
+            } else {
+              val = IFD_value;
+            }
           }
           if(verbose) Rcout << "Tag:" << IFD_tag << " Typ:" << IFD_type << " Count:" << IFD_count << " Value:" << IFD_value << " Bytes:" << IFD_bytes << " Off:" << IFD_off << std::endl;
           NAMES[k] = to_string(IFD_tag);
@@ -610,13 +621,13 @@ List cpp_getTAGS (const std::string fname,
               fi.read(buf_offset.data(), L * sizes[IFD_type]);
               std::string IFD_map(buf_offset.begin(), buf_offset.end());
               INFOS[k] = List::create(_["tag"] = IFD_tag,
-                                      _["typ"] = IFD_type, 
-                                      _["siz"] = IFD_count, 
-                                      _["val"] = IFD_value, 
-                                      _["byt"] = IFD_bytes, 
-                                      _["len"] = IFD_count * multi[IFD_type], 
-                                      _["off"] = IFD_off,
-                                      _["map"] = IFD_map);
+                                      _["typ"] = IFD_type,
+                                      _["siz"] = IFD_count,
+                                      _["val"] = val,
+                                      _["byt"] = IFD_bytes,
+                                      _["len"] = IFD_count * multi[IFD_type],
+                                                                  _["off"] = IFD_off,
+                                                                  _["map"] = (IFD_count == 0) ? CharacterVector(0):IFD_map);
             } else {
               RawVector IFD_map(L);
               switch(IFD_type) {
@@ -648,11 +659,11 @@ List cpp_getTAGS (const std::string fname,
               INFOS[k] = List::create(_["tag"] = IFD_tag,
                                       _["typ"] = IFD_type, 
                                       _["siz"] = IFD_count, 
-                                      _["val"] = IFD_value, 
+                                      _["val"] = val, 
                                       _["byt"] = IFD_bytes, 
                                       _["len"] = IFD_count * multi[IFD_type], 
-                                      _["off"] = IFD_off,
-                                      _["map"] = IFD_map);
+                                                                  _["off"] = IFD_off,
+                                                                  _["map"] = IFD_map);
             }
           } else {
             NumericVector IFD_map(L);
@@ -766,11 +777,11 @@ List cpp_getTAGS (const std::string fname,
             INFOS[k] = List::create(_["tag"] = IFD_tag,
                                     _["typ"] = IFD_type, 
                                     _["siz"] = IFD_count, 
-                                    _["val"] = IFD_value, 
+                                    _["val"] = val, 
                                     _["byt"] = IFD_bytes, 
                                     _["len"] = IFD_count * multi[IFD_type], 
-                                    _["off"] = IFD_off,
-                                    _["map"] = IFD_map);
+                                                                _["off"] = IFD_off,
+                                                                _["map"] = IFD_map);
           }
         }
       }

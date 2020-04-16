@@ -224,8 +224,8 @@ ExportToXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
           seek(toread, i_tag$val)
           # extra content
           if(i_tag$tag %in% off_tags) {
-            if(i_tag$tag == 273) add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$val, endian = r_endian)
-            if(i_tag$tag == 324) add_content = readBin(toread, what = "raw", n = IFD$tags[["325"]]$val, endian = r_endian)
+            if(i_tag$tag == 273) add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
+            if(i_tag$tag == 324) add_content = readBin(toread, what = "raw", n = IFD$tags[["325"]]$map, endian = r_endian)
           } else {
             add_content = readBin(toread, what = "raw", n = i_tag$byt, endian = r_endian)
           }
@@ -258,13 +258,13 @@ ExportToXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
                   stop(f, "\nCan't deal with non-binary features")
                 }
 
-                feat_where = ifelse((length(V) == 0) && (length(IFD_f$tags[["33080"]]$val) != 0) && IFD_f$tags[["33080"]]$val < file.size(fileName),
-                                    ifelse(length(IFD_f$tags[["33080"]]$val)==0, 
+                feat_where = ifelse((length(V) == 0) && (length(IFD_f$tags[["33080"]]$map) != 0) && IFD_f$tags[["33080"]]$map < file.size(fileName),
+                                    ifelse(length(IFD_f$tags[["33080"]]$map)==0, 
                                            stop("can't find pointer '33080' to extract features"), 
-                                           IFD_f$tags[["33080"]]$val),
-                                    ifelse(length(IFD_f$tags[["33083"]]$val)==0, 
+                                           IFD_f$tags[["33080"]]$map),
+                                    ifelse(length(IFD_f$tags[["33083"]]$map)==0, 
                                            stop("can't find pointer '33083' to extract features"), 
-                                           IFD_f$tags[["33083"]]$val))
+                                           IFD_f$tags[["33083"]]$map))
                 seek(toread2, feat_where)
                 
                 obj_number_r = readBin(toread2, what = "raw", n = 4, endian = r_endian)
