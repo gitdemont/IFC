@@ -43,7 +43,6 @@ getFullTag <- function(IFD, which = 1, tag = "256") {
     }
   }
   tag = ifd$tags[[tag]]
-  if(tag$typ == 2) if(tag$len == nchar(tag$map)) return(tag$map)
   if(tag$off) {
     #TODO add checksum
     toread = file(description = attr(IFD, "fileName_image"), open = "rb")
@@ -55,6 +54,6 @@ getFullTag <- function(IFD, which = 1, tag = "256") {
       return(readBin(toread, n = tag$byt, what = "raw"))
     }
   } else {
-    return(tag$val)
+    return(tag$map)
   }
 }
