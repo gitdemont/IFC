@@ -3,7 +3,7 @@
 #' Extracts IFDs (Image File Directory) in RIF or CIF files.
 #' @param fileName path to file.
 #' @param offsets either "all", "first" or an object of class `IFC_offset`. Default is "first".
-#' @param trunc_bytes a positive integer maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 22.\cr
+#' @param trunc_bytes a positive integer maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 12.\cr
 #' However, if less is found, less is returned in map. 
 #' Note that, if 0 is provided, it will be automatically set to 1.
 #' @param force_trunc whether to force truncation for all TAGS types. Default is FALSE.\cr
@@ -43,7 +43,7 @@
 #' -curr_IFD_offset, the position of current IFD offset\cr
 #' -next_IFD_offset, the position of next IFD offset
 #' @export
-getIFD <- function(fileName, offsets = "first", trunc_bytes = 8, force_trunc = FALSE,
+getIFD <- function(fileName, offsets = "first", trunc_bytes = 12, force_trunc = FALSE,
                    verbose = FALSE, verbosity = 1, display_progress = FALSE, bypass = FALSE, ...) {
   dots = list(...)
   # various check

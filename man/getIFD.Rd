@@ -7,7 +7,7 @@
 TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
 }
 \usage{
-getIFD(fileName, offsets = "first", trunc_bytes = 8,
+getIFD(fileName, offsets = "first", trunc_bytes = 12,
   force_trunc = FALSE, verbose = FALSE, verbosity = 1,
   display_progress = FALSE, bypass = FALSE, ...)
 }
@@ -16,7 +16,7 @@ getIFD(fileName, offsets = "first", trunc_bytes = 8,
 
 \item{offsets}{either "all", "first" or an object of class `IFC_offset`. Default is "first".}
 
-\item{trunc_bytes}{a positive integer maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 22.\cr
+\item{trunc_bytes}{a positive integer maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 12.\cr
 However, if less is found, less is returned in map. 
 Note that, if 0 is provided, it will be automatically set to 1.}
 
