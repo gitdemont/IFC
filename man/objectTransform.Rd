@@ -4,10 +4,22 @@
 \alias{objectTransform}
 \title{Object Transformation}
 \usage{
-objectTransform(mat, msk, color, input_range, mode, type,
-  add_noise = TRUE, random_seed = NULL, size = c(0, 0),
-  bg_mean = 0, bg_sd = 0, full_range = FALSE, force_range = FALSE,
-  gamma = 1)
+objectTransform(
+  mat,
+  msk,
+  color,
+  input_range,
+  mode,
+  type,
+  add_noise = TRUE,
+  random_seed = NULL,
+  size = c(0, 0),
+  bg_mean = 0,
+  bg_sd = 0,
+  full_range = FALSE,
+  force_range = FALSE,
+  gamma = 1
+)
 }
 \arguments{
 \item{mat}{a finite numeric matrix.}

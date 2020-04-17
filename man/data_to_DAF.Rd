@@ -4,10 +4,20 @@
 \alias{data_to_DAF}
 \title{DAF File Writer}
 \usage{
-data_to_DAF(obj, write_to, viewing_pop = "All", overwrite = FALSE,
-  binary = TRUE, endianness = .Platform$endian,
-  display_progress = TRUE, verbose = FALSE, fullname = TRUE,
-  cifdir = dirname(obj$fileName), ntry = +Inf, ...)
+data_to_DAF(
+  obj,
+  write_to,
+  viewing_pop = "All",
+  overwrite = FALSE,
+  binary = TRUE,
+  endianness = .Platform$endian,
+  display_progress = TRUE,
+  verbose = FALSE,
+  fullname = TRUE,
+  cifdir = dirname(obj$fileName),
+  ntry = +Inf,
+  ...
+)
 }
 \arguments{
 \item{obj}{an `IFC_data` object extracted with features extracted.}

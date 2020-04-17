@@ -302,68 +302,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_AND_M
-LogicalMatrix cpp_AND_M(const List list);
-RcppExport SEXP _IFC_cpp_AND_M(SEXP listSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const List >::type list(listSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_AND_M(list));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cpp_OR_M
-LogicalMatrix cpp_OR_M(const List list);
-RcppExport SEXP _IFC_cpp_OR_M(SEXP listSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const List >::type list(listSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_OR_M(list));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cpp_NEG_M
-LogicalMatrix cpp_NEG_M(const LogicalMatrix mat);
-RcppExport SEXP _IFC_cpp_NEG_M(SEXP matSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const LogicalMatrix >::type mat(matSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_NEG_M(mat));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cpp_crop
-NumericMatrix cpp_crop(NumericMatrix mat, const R_len_t new_height, const R_len_t new_width);
-RcppExport SEXP _IFC_cpp_crop(SEXP matSEXP, SEXP new_heightSEXP, SEXP new_widthSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericMatrix >::type mat(matSEXP);
-    Rcpp::traits::input_parameter< const R_len_t >::type new_height(new_heightSEXP);
-    Rcpp::traits::input_parameter< const R_len_t >::type new_width(new_widthSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_crop(mat, new_height, new_width));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cpp_resize
-NumericMatrix cpp_resize(const NumericMatrix mat, const R_len_t new_height, const R_len_t new_width, const bool add_noise, const double bg, const double sd);
-RcppExport SEXP _IFC_cpp_resize(SEXP matSEXP, SEXP new_heightSEXP, SEXP new_widthSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericMatrix >::type mat(matSEXP);
-    Rcpp::traits::input_parameter< const R_len_t >::type new_height(new_heightSEXP);
-    Rcpp::traits::input_parameter< const R_len_t >::type new_width(new_widthSEXP);
-    Rcpp::traits::input_parameter< const bool >::type add_noise(add_noiseSEXP);
-    Rcpp::traits::input_parameter< const double >::type bg(bgSEXP);
-    Rcpp::traits::input_parameter< const double >::type sd(sdSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_resize(mat, new_height, new_width, add_noise, bg, sd));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cpp_smoothLinLog
 NumericVector cpp_smoothLinLog(const NumericVector x, const double hyper, const double base, const double lin_comp);
 RcppExport SEXP _IFC_cpp_smoothLinLog(SEXP xSEXP, SEXP hyperSEXP, SEXP baseSEXP, SEXP lin_compSEXP) {
@@ -480,11 +418,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_mark", (DL_FUNC) &_IFC_cpp_mark, 6},
     {"_IFC_cpp_transform", (DL_FUNC) &_IFC_cpp_transform, 13},
     {"_IFC_cpp_extract", (DL_FUNC) &_IFC_cpp_extract, 16},
-    {"_IFC_cpp_AND_M", (DL_FUNC) &_IFC_cpp_AND_M, 1},
-    {"_IFC_cpp_OR_M", (DL_FUNC) &_IFC_cpp_OR_M, 1},
-    {"_IFC_cpp_NEG_M", (DL_FUNC) &_IFC_cpp_NEG_M, 1},
-    {"_IFC_cpp_crop", (DL_FUNC) &_IFC_cpp_crop, 3},
-    {"_IFC_cpp_resize", (DL_FUNC) &_IFC_cpp_resize, 6},
     {"_IFC_cpp_smoothLinLog", (DL_FUNC) &_IFC_cpp_smoothLinLog, 4},
     {"_IFC_cpp_inv_smoothLinLog", (DL_FUNC) &_IFC_cpp_inv_smoothLinLog, 4},
     {"_IFC_cpp_int32_to_uint32", (DL_FUNC) &_IFC_cpp_int32_to_uint32, 1},

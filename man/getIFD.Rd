@@ -7,9 +7,17 @@
 TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
 }
 \usage{
-getIFD(fileName, offsets = "first", trunc_bytes = 12,
-  force_trunc = FALSE, verbose = FALSE, verbosity = 1,
-  display_progress = FALSE, bypass = FALSE, ...)
+getIFD(
+  fileName,
+  offsets = "first",
+  trunc_bytes = 12,
+  force_trunc = FALSE,
+  verbose = FALSE,
+  verbosity = 1,
+  display_progress = FALSE,
+  bypass = FALSE,
+  ...
+)
 }
 \arguments{
 \item{fileName}{path to file.}

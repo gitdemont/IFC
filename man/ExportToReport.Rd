@@ -4,11 +4,22 @@
 \alias{ExportToReport}
 \title{Graphical and Statistic Report Generation}
 \usage{
-ExportToReport(obj, selection, write_to, overwrite = FALSE,
-  onepage = TRUE, color_mode = c("white", "black")[1],
-  add_key = "panel", precision = c("light", "full")[1],
-  trunc_labels = 38, trans = asinh, bin, viewport = "ideas",
-  display_progress = TRUE, ...)
+ExportToReport(
+  obj,
+  selection,
+  write_to,
+  overwrite = FALSE,
+  onepage = TRUE,
+  color_mode = c("white", "black")[1],
+  add_key = "panel",
+  precision = c("light", "full")[1],
+  trunc_labels = 38,
+  trans = asinh,
+  bin,
+  viewport = "ideas",
+  display_progress = TRUE,
+  ...
+)
 }
 \arguments{
 \item{obj}{an `IFC_data` object extracted with features extracted.}

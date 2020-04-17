@@ -4,9 +4,19 @@
 \alias{popsCopy}
 \title{Copy Populations Fomr One File to Another File}
 \usage{
-popsCopy(from, into, write_to, pops, use_regex = FALSE,
-  overwrite = FALSE, append_name = TRUE, offset = 0,
-  endianness = .Platform$endian, verbose = FALSE, ...)
+popsCopy(
+  from,
+  into,
+  write_to,
+  pops,
+  use_regex = FALSE,
+  overwrite = FALSE,
+  append_name = TRUE,
+  offset = 0,
+  endianness = .Platform$endian,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{from}{path to file to copy populations from.}

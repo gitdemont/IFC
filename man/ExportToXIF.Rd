@@ -4,10 +4,20 @@
 \alias{ExportToXIF}
 \title{RIF/CIF File Subsetting}
 \usage{
-ExportToXIF(fileName, write_to, objects, offsets, fast = TRUE,
-  extract_features = FALSE, endianness = .Platform$endian,
-  verbose = FALSE, verbosity = 1, overwrite = FALSE,
-  display_progress = TRUE, ...)
+ExportToXIF(
+  fileName,
+  write_to,
+  objects,
+  offsets,
+  fast = TRUE,
+  extract_features = FALSE,
+  endianness = .Platform$endian,
+  verbose = FALSE,
+  verbosity = 1,
+  overwrite = FALSE,
+  display_progress = TRUE,
+  ...
+)
 }
 \arguments{
 \item{fileName}{path of file to read data from.

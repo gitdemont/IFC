@@ -4,8 +4,10 @@
 \alias{paletteIFC}
 \title{R/IDEAS Color Palette Mapping}
 \usage{
-paletteIFC(x = c("", "palette", "palette_R", "to_light", "to_dark")[1],
-  col = "White")
+paletteIFC(
+  x = c("", "palette", "palette_R", "to_light", "to_dark")[1],
+  col = "White"
+)
 }
 \arguments{
 \item{x}{either "", "palette","palette_R", to_light, to_dark. Default is "".}

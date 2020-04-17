@@ -4,8 +4,14 @@
 \alias{objectResize}
 \title{Object Resizing}
 \usage{
-objectResize(mat, size = c(0, 0), add_noise = TRUE,
-  random_seed = NULL, bg = 0, sd = 0)
+objectResize(
+  mat,
+  size = c(0, 0),
+  add_noise = TRUE,
+  random_seed = NULL,
+  bg = 0,
+  sd = 0
+)
 }
 \arguments{
 \item{mat}{a numeric matrix.}

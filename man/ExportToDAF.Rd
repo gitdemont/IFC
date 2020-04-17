@@ -4,11 +4,23 @@
 \alias{ExportToDAF}
 \title{DAF File Appender}
 \usage{
-ExportToDAF(fileName, write_to, pops = list(), regions = list(),
-  features = list(), graphs = list(), masks = list(),
-  viewing_pop = "All", endianness = .Platform$endian,
-  verbose = FALSE, overwrite = FALSE, fullname = TRUE,
-  cifdir = dirname(fileName), ntry = +Inf, ...)
+ExportToDAF(
+  fileName,
+  write_to,
+  pops = list(),
+  regions = list(),
+  features = list(),
+  graphs = list(),
+  masks = list(),
+  viewing_pop = "All",
+  endianness = .Platform$endian,
+  verbose = FALSE,
+  overwrite = FALSE,
+  fullname = TRUE,
+  cifdir = dirname(fileName),
+  ntry = +Inf,
+  ...
+)
 }
 \arguments{
 \item{fileName}{path of file to read data from.}
