@@ -258,7 +258,7 @@ ExportToXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
                   stop(f, "\nCan't deal with non-binary features")
                 }
 
-                feat_where = ifelse((length(V) == 0) && (length(IFD_f$tags[["33080"]]$map) != 0) && IFD_f$tags[["33080"]]$val < file.size(fileName),
+                feat_where = ifelse((length(V) == 0) && (length(IFD_f$tags[["33080"]]$map) != 0) && (IFD_f$tags[["33080"]]$val < file.size(fileName)),
                                     ifelse(length(IFD_f$tags[["33080"]]$map)==0, 
                                            stop("can't find pointer '33080' to extract features"), 
                                            IFD_f$tags[["33080"]]$val),
@@ -429,21 +429,3 @@ ExportToXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   message(mess)
   return(invisible(write_to))
 }
-# library(IFC)
-# source("F:/InDev_Packages/build_IFC/Not_in_IFC/dev_mode.R")
-# test ExportToXIF
-# info1 = getInfo("F:/ISX_Files/clipped.cif")
-# DisplayGallery(info = info1, removal = "clipped")
-# off = getOffsets(fileName = info1$fileName_image)
-# tmp = ExportToXIF(fileName = info1$fileName_image, offsets = off, write_to = "%d/%s_fromR.%e", extract_features = T, objects = c(7,2,3,4), overwrite = T, fast = F) #c(7,2,3,4)
-# IFD = getIFD(tmp, offsets = "first")
-# sapply(IFD[[1]]$tags, FUN=function(x) x)
-# IFD[[1]]$tags[["33083"]]$map
-# info2 = getInfo(tmp)
-# DisplayGallery(info = info2, removal = "clipped")
-# ifd = getIFD(fileName = info1$fileName, offsets = "first", trunc_bytes = 8)
-# sapply(ifd[[1]]$tags, FUN=function(x) x)
-# feat2 = readIFC(tmp)$features
-# feat1 = readIFC(info1$fileName_image)$features
-# head(feat1[c(2,3,4,7)+1, 1:4])
-# head(feat2[, 1:4])

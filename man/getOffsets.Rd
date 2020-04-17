@@ -7,7 +7,8 @@
 TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
 }
 \usage{
-getOffsets(fileName, fast = TRUE, display_progress = TRUE, verbose = FALSE)
+getOffsets(fileName, fast = TRUE, display_progress = TRUE,
+  verbose = FALSE)
 }
 \arguments{
 \item{fileName}{path to file.}

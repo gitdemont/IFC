@@ -4,14 +4,8 @@
 \alias{ExtractImages_toFile}
 \title{Shorcut for Batch Images Extraction to Files}
 \usage{
-ExtractImages_toFile(
-  ...,
-  objects,
-  offsets,
-  display_progress = TRUE,
-  mode = c("rgb", "gray")[1],
-  write_to
-)
+ExtractImages_toFile(..., objects, offsets, display_progress = TRUE,
+  mode = c("rgb", "gray")[1], write_to)
 }
 \arguments{
 \item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="file"), 'write_to', 'mode' and bypass(=TRUE).\cr

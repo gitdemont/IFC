@@ -4,14 +4,8 @@
 \alias{getImagesValues}
 \title{RIF/CIF Image Values Extraction}
 \usage{
-getImagesValues(
-  fileName,
-  offsets,
-  objects,
-  display_progress = FALSE,
-  fast = TRUE,
-  ...
-)
+getImagesValues(fileName, offsets, objects, display_progress = FALSE,
+  fast = TRUE, ...)
 }
 \arguments{
 \item{fileName}{path to file.}

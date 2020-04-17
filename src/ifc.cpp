@@ -276,8 +276,11 @@ IntegerVector cpp_getoffsets_noid(const std::string fname,
 //' @param fname string, path to file.
 //' @param offset uint32_t, position of the IFD beginning.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is 'false'.
-//' @param trunc_bytes uint8_t, number of bytes to extract for bytes/strings TAGS (1, 2, 6 or 7). Default is 22.
-//' @param force_trunc bool, whether to force truncation for all TAGS types. Default is 'false'.
+//' @param trunc_bytes uint32_t maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 22.\cr
+//' However, if less is found, less is returned in map.
+//' Note that, if 0 is provided, it will be automatically set to 1.
+//' @param force_trunc whether to force truncation for all TAGS types. Default is FALSE.\cr
+//' If 'true', 'trunc_bytes' will be used for TAGS (3, 4, 5, 8, 9, 10, 11 and 12) to extract desired number of individual scalar corresponding to each types.
 //' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
 //' @keywords internal
 ////' @export
@@ -308,14 +311,14 @@ List cpp_getTAGS (const std::string fname,
       uint16_t IFD_type;
       uint32_t IFD_count;
       uint32_t IFD_value;
-      RObject val;
       uint32_t IFD_bytes;
       uint32_t i;
-      uint32_t L;
+      uint32_t tot_scalar;
+      uint32_t ext_scalar;
+      uint32_t max_scalar = (trunc_bytes > 1) ? trunc_bytes:1;
       bool IFD_off;
       bool is_char;
       size_t pos;
-      // R_len_t i_map;
       char buf_entries [2];
       char buf_dir_entry [12];
       
@@ -370,13 +373,9 @@ List cpp_getTAGS (const std::string fname,
           pos = fi.tellg();
           
           IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
-          L = multi[IFD_type] * IFD_count;
+          tot_scalar = multi[IFD_type] * IFD_count;
           is_char = (IFD_type == 1) || (IFD_type == 2) || (IFD_type == 6) || (IFD_type == 7);
-          if(is_char || force_trunc) {
-            if(L > trunc_bytes) {
-              L = trunc_bytes;
-            }
-          }
+          ext_scalar = ((tot_scalar > max_scalar) & (is_char | force_trunc)) ? max_scalar:tot_scalar;
           
           if(IFD_bytes > 4) {
             if((IFD_value + IFD_bytes) > filesize) {
@@ -385,38 +384,32 @@ List cpp_getTAGS (const std::string fname,
             }
             fi.seekg(IFD_value, std::ios::beg);
             IFD_off = true;
-            val = IFD_value;
           } else {
             fi.seekg(pos - 4, std::ios::beg);
             IFD_off = false;
-            if(IFD_count == 0) {
-              val = R_NilValue;
-            } else {
-              val = IFD_value;
-            }
           }
           if(verbose) Rcout << "Tag:" << IFD_tag << " Typ:" << IFD_type << " Count:" << IFD_count << " Value:" << IFD_value << " Bytes:" << IFD_bytes << " Off:" << IFD_off << std::endl;
           NAMES[k] = to_string(IFD_tag);
           
           if(is_char) {
             if(IFD_type == 2) {
-              std::vector<char> buf_offset(L * sizes[IFD_type]);
-              fi.read(buf_offset.data(), L * sizes[IFD_type]);
+              std::vector<char> buf_offset(ext_scalar * sizes[IFD_type]);
+              fi.read(buf_offset.data(), ext_scalar * sizes[IFD_type]);
               std::string IFD_map(buf_offset.begin(), buf_offset.end());
               INFOS[k] = List::create(_["tag"] = IFD_tag,
                                       _["typ"] = IFD_type,
                                       _["siz"] = IFD_count,
-                                      _["val"] = val,
+                                      _["val"] = IFD_value,
                                       _["byt"] = IFD_bytes,
-                                      _["len"] = IFD_count * multi[IFD_type],
-                                                                  _["off"] = IFD_off,
-                                                                  _["map"] = (IFD_count == 0) ? CharacterVector(0):IFD_map);
+                                      _["len"] = tot_scalar,
+                                      _["off"] = IFD_off,
+                                      _["map"] = (IFD_count == 0) ? CharacterVector(0):IFD_map);
             } else {
-              RawVector IFD_map(L);
+              RawVector IFD_map(ext_scalar);
               switch(IFD_type) {
               case 1: {
                 unsigned char ele;
-                for(i = 0; i < L; i++) {
+                for(i = 0; i < ext_scalar; i++) {
                   fi.read((char *)&ele, sizes[IFD_type]);
                   IFD_map[i] = ele;
                 }
@@ -424,7 +417,7 @@ List cpp_getTAGS (const std::string fname,
                 break;
               case 6: {
                 signed char ele;
-                for(i = 0; i < L; i++) {
+                for(i = 0; i < ext_scalar; i++) {
                   fi.read((char *)&ele, sizes[IFD_type]);
                   IFD_map[i] = ele;
                 }
@@ -432,7 +425,7 @@ List cpp_getTAGS (const std::string fname,
                 break;
               case 7: {
                 char ele;
-                for(i = 0; i < L; i++) {
+                for(i = 0; i < ext_scalar; i++) {
                   fi.read((char *)&ele, sizes[IFD_type]);
                   IFD_map[i] = ele;
                 }
@@ -442,18 +435,18 @@ List cpp_getTAGS (const std::string fname,
               INFOS[k] = List::create(_["tag"] = IFD_tag,
                                       _["typ"] = IFD_type, 
                                       _["siz"] = IFD_count, 
-                                      _["val"] = val, 
+                                      _["val"] = IFD_value, 
                                       _["byt"] = IFD_bytes, 
-                                      _["len"] = IFD_count * multi[IFD_type], 
-                                                                  _["off"] = IFD_off,
-                                                                  _["map"] = IFD_map);
+                                      _["len"] = tot_scalar, 
+                                      _["off"] = IFD_off,
+                                      _["map"] = IFD_map);
             }
           } else {
-            NumericVector IFD_map(L);
+            NumericVector IFD_map(ext_scalar);
             switch(IFD_type) {
             case 3: {
               uint16_t ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = bytes_swap(ele);
               }
@@ -461,7 +454,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 4: {
               uint32_t ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = bytes_swap(ele);
               }
@@ -469,7 +462,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 5: {
               uint32_t ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = bytes_swap(ele);
               }
@@ -477,7 +470,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 8: {
               int16_t ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = bytes_swap(ele);
               }
@@ -485,7 +478,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 9: {
               int32_t ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = bytes_swap(ele);
               }
@@ -493,7 +486,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 10: {
               int32_t ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = bytes_swap(ele);
               }
@@ -501,7 +494,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 11: {
               float ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = bytes_swap(ele);
               }
@@ -509,7 +502,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 12: {
               double ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = bytes_swap(ele);
               }
@@ -560,11 +553,11 @@ List cpp_getTAGS (const std::string fname,
             INFOS[k] = List::create(_["tag"] = IFD_tag,
                                     _["typ"] = IFD_type, 
                                     _["siz"] = IFD_count, 
-                                    _["val"] = val, 
+                                    _["val"] = IFD_value, 
                                     _["byt"] = IFD_bytes, 
-                                    _["len"] = IFD_count * multi[IFD_type], 
-                                                                _["off"] = IFD_off,
-                                                                _["map"] = IFD_map);
+                                    _["len"] = tot_scalar, 
+                                    _["off"] = IFD_off,
+                                    _["map"] = IFD_map);
           }
         }
       } else {
@@ -587,13 +580,9 @@ List cpp_getTAGS (const std::string fname,
           pos = fi.tellg();
           
           IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
-          L = multi[IFD_type] * IFD_count;
+          tot_scalar = multi[IFD_type] * IFD_count;
           is_char = (IFD_type == 1) || (IFD_type == 2) || (IFD_type == 6) || (IFD_type == 7);
-          if(is_char || force_trunc) {
-            if(L > trunc_bytes) {
-              L = trunc_bytes;
-            }
-          }
+          ext_scalar = ((tot_scalar > max_scalar) & (is_char | force_trunc)) ? max_scalar:tot_scalar;
           
           if(IFD_bytes > 4) {
             if((IFD_value + IFD_bytes) > filesize) {
@@ -602,38 +591,32 @@ List cpp_getTAGS (const std::string fname,
             }
             fi.seekg(IFD_value, std::ios::beg);
             IFD_off = true;
-            val = IFD_value;
           } else {
             fi.seekg(pos - 4, std::ios::beg);
             IFD_off = false;
-            if(IFD_count == 0) {
-              val = R_NilValue;
-            } else {
-              val = IFD_value;
-            }
           }
           if(verbose) Rcout << "Tag:" << IFD_tag << " Typ:" << IFD_type << " Count:" << IFD_count << " Value:" << IFD_value << " Bytes:" << IFD_bytes << " Off:" << IFD_off << std::endl;
           NAMES[k] = to_string(IFD_tag);
           
           if(is_char) {
             if(IFD_type == 2) {
-              std::vector<char> buf_offset(L * sizes[IFD_type]);
-              fi.read(buf_offset.data(), L * sizes[IFD_type]);
+              std::vector<char> buf_offset(ext_scalar * sizes[IFD_type]);
+              fi.read(buf_offset.data(), ext_scalar * sizes[IFD_type]);
               std::string IFD_map(buf_offset.begin(), buf_offset.end());
               INFOS[k] = List::create(_["tag"] = IFD_tag,
                                       _["typ"] = IFD_type,
                                       _["siz"] = IFD_count,
-                                      _["val"] = val,
+                                      _["val"] = IFD_value,
                                       _["byt"] = IFD_bytes,
-                                      _["len"] = IFD_count * multi[IFD_type],
-                                                                  _["off"] = IFD_off,
-                                                                  _["map"] = (IFD_count == 0) ? CharacterVector(0):IFD_map);
+                                      _["len"] = tot_scalar,
+                                      _["off"] = IFD_off,
+                                      _["map"] = (IFD_count == 0) ? CharacterVector(0):IFD_map);
             } else {
-              RawVector IFD_map(L);
+              RawVector IFD_map(ext_scalar);
               switch(IFD_type) {
               case 1: {
                 unsigned char ele;
-                for(i = 0; i < L; i++) {
+                for(i = 0; i < ext_scalar; i++) {
                   fi.read((char *)&ele, sizes[IFD_type]);
                   IFD_map[i] = ele;
                 }
@@ -641,7 +624,7 @@ List cpp_getTAGS (const std::string fname,
                 break;
               case 6: {
                 signed char ele;
-                for(i = 0; i < L; i++) {
+                for(i = 0; i < ext_scalar; i++) {
                   fi.read((char *)&ele, sizes[IFD_type]);
                   IFD_map[i] = ele;
                 }
@@ -649,7 +632,7 @@ List cpp_getTAGS (const std::string fname,
                 break;
               case 7: {
                 char ele;
-                for(i = 0; i < L; i++) {
+                for(i = 0; i < ext_scalar; i++) {
                   fi.read((char *)&ele, sizes[IFD_type]);
                   IFD_map[i] = ele;
                 }
@@ -659,18 +642,18 @@ List cpp_getTAGS (const std::string fname,
               INFOS[k] = List::create(_["tag"] = IFD_tag,
                                       _["typ"] = IFD_type, 
                                       _["siz"] = IFD_count, 
-                                      _["val"] = val, 
+                                      _["val"] = IFD_value, 
                                       _["byt"] = IFD_bytes, 
-                                      _["len"] = IFD_count * multi[IFD_type], 
-                                                                  _["off"] = IFD_off,
-                                                                  _["map"] = IFD_map);
+                                      _["len"] = tot_scalar, 
+                                      _["off"] = IFD_off,
+                                      _["map"] = IFD_map);
             }
           } else {
-            NumericVector IFD_map(L);
+            NumericVector IFD_map(ext_scalar);
             switch(IFD_type) {
             case 3: {
               uint16_t ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = ele;
               }
@@ -678,7 +661,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 4: {
               uint32_t ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = ele;
               }
@@ -686,7 +669,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 5: {
               uint32_t ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = ele;
               }
@@ -694,7 +677,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 8: {
               int16_t ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = ele;
               }
@@ -702,7 +685,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 9: {
               int32_t ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = ele;
               }
@@ -710,7 +693,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 10: {
               int32_t ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = ele;
               }
@@ -718,7 +701,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 11: {
               float ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = ele;
               }
@@ -726,7 +709,7 @@ List cpp_getTAGS (const std::string fname,
               break;
             case 12: {
               double ele;
-              for(i = 0; i < L; i++) {
+              for(i = 0; i < ext_scalar; i++) {
                 fi.read((char *)&ele, sizes[IFD_type]);
                 IFD_map[i] = ele;
               }
@@ -777,11 +760,11 @@ List cpp_getTAGS (const std::string fname,
             INFOS[k] = List::create(_["tag"] = IFD_tag,
                                     _["typ"] = IFD_type, 
                                     _["siz"] = IFD_count, 
-                                    _["val"] = val, 
+                                    _["val"] = IFD_value, 
                                     _["byt"] = IFD_bytes, 
-                                    _["len"] = IFD_count * multi[IFD_type], 
-                                                                _["off"] = IFD_off,
-                                                                _["map"] = IFD_map);
+                                    _["len"] = tot_scalar, 
+                                    _["off"] = IFD_off,
+                                    _["map"] = IFD_map);
           }
         }
       }

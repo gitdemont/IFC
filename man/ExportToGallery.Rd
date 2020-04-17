@@ -4,28 +4,12 @@
 \alias{ExportToGallery}
 \title{Gallery Export}
 \usage{
-ExportToGallery(
-  ...,
-  objects,
-  offsets,
-  image_type = "img",
-  layout,
-  export = c("file", "matrix", "base64")[2],
-  write_to,
-  base64_id = FALSE,
-  base64_att = "",
-  overwrite = FALSE,
-  main = "",
-  add_channels = TRUE,
-  add_ids = 1,
-  add_lines = 2,
-  bg_color = "grey20",
-  dpi = 300,
-  scale = list(),
-  extract_max = 10,
-  sampling = FALSE,
-  display_progress = TRUE
-)
+ExportToGallery(..., objects, offsets, image_type = "img", layout,
+  export = c("file", "matrix", "base64")[2], write_to,
+  base64_id = FALSE, base64_att = "", overwrite = FALSE, main = "",
+  add_channels = TRUE, add_ids = 1, add_lines = 2,
+  bg_color = "grey20", dpi = 300, scale = list(), extract_max = 10,
+  sampling = FALSE, display_progress = TRUE)
 }
 \arguments{
 \item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'mode'(="rgb") and bypass(=TRUE).\cr

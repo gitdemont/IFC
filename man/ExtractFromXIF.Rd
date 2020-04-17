@@ -7,22 +7,12 @@
 For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 }
 \usage{
-ExtractFromXIF(
-  fileName,
-  extract_features = TRUE,
-  extract_images = FALSE,
-  extract_offsets = FALSE,
-  extract_stats = TRUE,
-  pnt_in_poly_algorithm = 1,
-  pnt_in_poly_epsilon = 1e-12,
-  force_default = TRUE,
-  verbose = FALSE,
-  verbosity = 1,
-  display_progress = TRUE,
-  fast = TRUE,
-  recursive = FALSE,
-  ...
-)
+ExtractFromXIF(fileName, extract_features = TRUE,
+  extract_images = FALSE, extract_offsets = FALSE,
+  extract_stats = TRUE, pnt_in_poly_algorithm = 1,
+  pnt_in_poly_epsilon = 1e-12, force_default = TRUE, verbose = FALSE,
+  verbosity = 1, display_progress = TRUE, fast = TRUE,
+  recursive = FALSE, ...)
 }
 \arguments{
 \item{fileName}{path to file.}

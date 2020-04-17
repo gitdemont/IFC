@@ -4,23 +4,11 @@
 \alias{DisplayGallery}
 \title{Gallery Display}
 \usage{
-DisplayGallery(
-  ...,
-  objects,
-  offsets,
-  image_type = "img",
-  layout,
-  name = "DisplayGallery",
-  caption = FALSE,
-  pageLength = 10L,
-  pdf_pageSize = "A2",
-  pdf_pageOrientation = "landscape",
-  pdf_image_dpi = 96,
-  extract_max = 10,
-  sampling = FALSE,
-  display_progress = TRUE,
-  mode = c("rgb", "gray")[1]
-)
+DisplayGallery(..., objects, offsets, image_type = "img", layout,
+  name = "DisplayGallery", caption = FALSE, pageLength = 10L,
+  pdf_pageSize = "A2", pdf_pageOrientation = "landscape",
+  pdf_image_dpi = 96, extract_max = 10, sampling = FALSE,
+  display_progress = TRUE, mode = c("rgb", "gray")[1])
 }
 \arguments{
 \item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr

@@ -4,14 +4,8 @@
 \alias{toBIN_features}
 \title{IFC_features Raw Conversion}
 \usage{
-toBIN_features(
-  features,
-  endianness = .Platform$endian,
-  verbose = FALSE,
-  display_progress = TRUE,
-  title_progress = "",
-  ...
-)
+toBIN_features(features, endianness = .Platform$endian,
+  verbose = FALSE, display_progress = TRUE, title_progress = "", ...)
 }
 \arguments{
 \item{features}{an `IFC_features` object.}

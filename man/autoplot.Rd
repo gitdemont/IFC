@@ -4,24 +4,11 @@
 \alias{autoplot}
 \title{Automatic Parameters Detection for IFC Graphs}
 \usage{
-autoplot(
-  obj,
-  shown_pops = NULL,
-  subset = NULL,
-  x = NULL,
-  x_trans = NULL,
-  y = NULL,
-  y_trans = NULL,
-  type = NULL,
-  smoothingfactor = NULL,
-  normalize = NULL,
-  bin,
-  viewport = "ideas",
-  precision = c("light", "full")[1],
-  color_mode = c("white", "black")[1],
-  draw = TRUE,
-  ...
-)
+autoplot(obj, shown_pops = NULL, subset = NULL, x = NULL,
+  x_trans = NULL, y = NULL, y_trans = NULL, type = NULL,
+  smoothingfactor = NULL, normalize = NULL, bin, viewport = "ideas",
+  precision = c("light", "full")[1], color_mode = c("white",
+  "black")[1], draw = TRUE, ...)
 }
 \arguments{
 \item{obj}{an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}

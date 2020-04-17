@@ -7,26 +7,21 @@
 TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
 }
 \usage{
-getIFD(
-  fileName,
-  offsets = "first",
-  trunc_bytes = 8,
-  force_trunc = FALSE,
-  verbose = FALSE,
-  verbosity = 1,
-  display_progress = FALSE,
-  bypass = FALSE,
-  ...
-)
+getIFD(fileName, offsets = "first", trunc_bytes = 8,
+  force_trunc = FALSE, verbose = FALSE, verbosity = 1,
+  display_progress = FALSE, bypass = FALSE, ...)
 }
 \arguments{
 \item{fileName}{path to file.}
 
 \item{offsets}{either "all", "first" or an object of class `IFC_offset`. Default is "first".}
 
-\item{trunc_bytes}{number of characters to extract for string TAGS. Default is 8.}
+\item{trunc_bytes}{a positive integer maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 22.\cr
+However, if less is found, less is returned in map. 
+Note that, if 0 is provided, it will be automatically set to 1.}
 
-\item{force_trunc}{whether to force truncation for all TAGS types. Default is FALSE.}
+\item{force_trunc}{whether to force truncation for all TAGS types. Default is FALSE.\cr
+If TRUE, 'trunc_bytes' will be used for TAGS (3, 4, 5, 8, 9, 10, 11 and 12) to extract desired number of individual scalar corresponding to each types.}
 
 \item{verbose}{whether to display information (use for debugging purpose). Default is FALSE.}
 

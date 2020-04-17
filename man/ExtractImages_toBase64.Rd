@@ -4,13 +4,8 @@
 \alias{ExtractImages_toBase64}
 \title{Shorcut for Batch Images Extraction to Base64}
 \usage{
-ExtractImages_toBase64(
-  ...,
-  objects,
-  offsets,
-  display_progress = TRUE,
-  mode = c("rgb", "gray")[1]
-)
+ExtractImages_toBase64(..., objects, offsets, display_progress = TRUE,
+  mode = c("rgb", "gray")[1])
 }
 \arguments{
 \item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr

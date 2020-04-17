@@ -4,12 +4,8 @@
 \alias{toXML2_images}
 \title{IFC_images XML Conversion}
 \usage{
-toXML2_images(
-  images,
-  verbose = FALSE,
-  display_progress = TRUE,
-  title_progress = ""
-)
+toXML2_images(images, verbose = FALSE, display_progress = TRUE,
+  title_progress = "")
 }
 \arguments{
 \item{images}{an `IFC_images` object.}

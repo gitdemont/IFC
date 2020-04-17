@@ -4,13 +4,8 @@
 \alias{toXML2_pops}
 \title{IFC_pops XML Conversion}
 \usage{
-toXML2_pops(
-  pops,
-  verbose = FALSE,
-  display_progress = TRUE,
-  title_progress = "",
-  ...
-)
+toXML2_pops(pops, verbose = FALSE, display_progress = TRUE,
+  title_progress = "", ...)
 }
 \arguments{
 \item{pops}{an `IFC_pops` object.}

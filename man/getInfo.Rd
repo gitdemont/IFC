@@ -4,17 +4,9 @@
 \alias{getInfo}
 \title{IFC File Information Extraction}
 \usage{
-getInfo(
-  fileName,
-  from = c("acquisition", "analysis")[2],
-  verbose = FALSE,
-  verbosity = 1,
-  warn = TRUE,
-  force_default = TRUE,
-  cifdir = dirname(fileName),
-  ntry = +Inf,
-  ...
-)
+getInfo(fileName, from = c("acquisition", "analysis")[2],
+  verbose = FALSE, verbosity = 1, warn = TRUE,
+  force_default = TRUE, cifdir = dirname(fileName), ntry = +Inf, ...)
 }
 \arguments{
 \item{fileName}{path to file..}

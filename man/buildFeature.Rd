@@ -4,13 +4,8 @@
 \alias{buildFeature}
 \title{IFC Feature Coercion}
 \usage{
-buildFeature(
-  name,
-  type = c("single", "combined", "computed")[1],
-  def = "Camera Line Number",
-  val = NULL,
-  ...
-)
+buildFeature(name, type = c("single", "combined", "computed")[1],
+  def = "Camera Line Number", val = NULL, ...)
 }
 \arguments{
 \item{name}{feature's name. If missing, it will be determined thanks to def.}

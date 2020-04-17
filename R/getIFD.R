@@ -3,8 +3,11 @@
 #' Extracts IFDs (Image File Directory) in RIF or CIF files.
 #' @param fileName path to file.
 #' @param offsets either "all", "first" or an object of class `IFC_offset`. Default is "first".
-#' @param trunc_bytes number of characters to extract for string TAGS. Default is 8.
-#' @param force_trunc whether to force truncation for all TAGS types. Default is FALSE.
+#' @param trunc_bytes a positive integer maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 22.\cr
+#' However, if less is found, less is returned in map. 
+#' Note that, if 0 is provided, it will be automatically set to 1.
+#' @param force_trunc whether to force truncation for all TAGS types. Default is FALSE.\cr
+#' If TRUE, 'trunc_bytes' will be used for TAGS (3, 4, 5, 8, 9, 10, 11 and 12) to extract desired number of individual scalar corresponding to each types.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param verbosity quantity of information displayed when verbose is TRUE; 1: normal, 2: rich. Default is 1.
 #' @param display_progress whether to display a progress bar. Default is FALSE.

@@ -92,7 +92,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   # TODO ask AMNIS how merged are defined / can be checked
   # Merged CIF Files
   if(!is.null(IFD[[1]]$tags[["33029"]])) {
-    if(IFD[[1]]$tags[["33029"]]$byt != 0) V = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33029")), "|", fixed = TRUE)[[1]]
+    if(IFD[[1]]$tags[["33029"]]$byt != 0) V = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33029")), split = "|", fixed = TRUE)[[1]]
     LV = length(V)
     if(LV > 1) merged = TRUE
     if(merged & recursive) {
@@ -114,7 +114,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   }
   # Merged RIF Files
   if(!is.null(IFD[[1]]$tags[["33030"]])) {
-    if(IFD[[1]]$tags[["33030"]]$byt != 0) V = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33030")), "|", fixed = TRUE)[[1]]
+    if(IFD[[1]]$tags[["33030"]]$byt != 0) V = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33030")), split = "|", fixed = TRUE)[[1]]
     LV = length(V)
     if(LV > 1) merged = TRUE
     if(merged & recursive) {

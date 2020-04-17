@@ -7,18 +7,11 @@
 For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 }
 \usage{
-ExtractFromDAF(
-  fileName,
-  extract_features = TRUE,
-  extract_images = TRUE,
-  extract_offsets = TRUE,
-  extract_stats = TRUE,
-  endianness = .Platform$endian,
-  pnt_in_poly_algorithm = 1,
-  pnt_in_poly_epsilon = 1e-12,
-  display_progress = TRUE,
-  ...
-)
+ExtractFromDAF(fileName, extract_features = TRUE,
+  extract_images = TRUE, extract_offsets = TRUE,
+  extract_stats = TRUE, endianness = .Platform$endian,
+  pnt_in_poly_algorithm = 1, pnt_in_poly_epsilon = 1e-12,
+  display_progress = TRUE, ...)
 }
 \arguments{
 \item{fileName}{path to file.}

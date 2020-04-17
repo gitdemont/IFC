@@ -4,19 +4,11 @@
 \alias{ExportToNumpy}
 \title{Numpy Export}
 \usage{
-ExportToNumpy(
-  ...,
-  objects,
-  offsets,
-  image_type = "img",
-  display_progress = TRUE,
-  python = Sys.getenv("RETICULATE_PYTHON"),
-  dtype = c("uint8", "int16", "uint16", "double")[3],
-  mode = c("raw", "gray")[1],
-  export = c("file", "matrix")[2],
-  write_to,
-  overwrite = FALSE
-)
+ExportToNumpy(..., objects, offsets, image_type = "img",
+  display_progress = TRUE, python = Sys.getenv("RETICULATE_PYTHON"),
+  dtype = c("uint8", "int16", "uint16", "double")[3], mode = c("raw",
+  "gray")[1], export = c("file", "matrix")[2], write_to,
+  overwrite = FALSE)
 }
 \arguments{
 \item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and bypass(=TRUE).

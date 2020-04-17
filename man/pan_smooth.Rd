@@ -7,23 +7,8 @@
 derived from \pkg{lattice} from Deepayan Sarkar
 }
 \usage{
-pan_smooth(
-  x,
-  type,
-  br,
-  normalize,
-  fill,
-  lwd,
-  lty,
-  col,
-  alpha,
-  ylim,
-  bin,
-  border,
-  include.lowest = TRUE,
-  right = TRUE,
-  factor = 0
-)
+pan_smooth(x, type, br, normalize, fill, lwd, lty, col, alpha, ylim, bin,
+  border, include.lowest = TRUE, right = TRUE, factor = 0)
 }
 \description{
 Helper to smooth histogram

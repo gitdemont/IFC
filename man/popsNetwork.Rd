@@ -4,16 +4,9 @@
 \alias{popsNetwork}
 \title{IFC_pops Network Display}
 \usage{
-popsNetwork(
-  obj,
-  hierarchical = TRUE,
-  color_mode = "white",
-  highlight = NULL,
-  seed = NULL,
-  direction = "LR",
-  weighted = TRUE,
-  ...
-)
+popsNetwork(obj, hierarchical = TRUE, color_mode = "white",
+  highlight = NULL, seed = NULL, direction = "LR", weighted = TRUE,
+  ...)
 }
 \arguments{
 \item{obj}{an `IFC_data` object extracted with features extracted.}

@@ -7,14 +7,8 @@
 For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 }
 \usage{
-data_add_pops(
-  obj,
-  pops,
-  pnt_in_poly_algorithm = 1,
-  pnt_in_poly_epsilon = 1e-12,
-  display_progress = TRUE,
-  ...
-)
+data_add_pops(obj, pops, pnt_in_poly_algorithm = 1,
+  pnt_in_poly_epsilon = 1e-12, display_progress = TRUE, ...)
 }
 \arguments{
 \item{obj}{an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}

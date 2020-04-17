@@ -4,19 +4,8 @@
 \alias{newPB}
 \title{Progress Bar Initializer}
 \usage{
-newPB(
-  session,
-  title,
-  label,
-  min = 0,
-  max = 1,
-  initial = 0,
-  steps = 21,
-  width,
-  style,
-  char = "=",
-  file = ""
-)
+newPB(session, title, label, min = 0, max = 1, initial = 0,
+  steps = 21, width, style, char = "=", file = "")
 }
 \arguments{
 \item{session}{the shiny session object, as provided by shinyServer to the server function. Default is missing, to use "txtProgressBar" or "winProgressBar" (on Windows).}

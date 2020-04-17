@@ -4,11 +4,9 @@
 \alias{whoami}
 \title{Input Identification}
 \usage{
-whoami(
-  entries = as.list(match.call()),
-  search = list(info = "IFC_info", param = "IFC_param", offsets = "IFC_offset"),
-  reinit = TRUE
-)
+whoami(entries = as.list(match.call()), search = list(info =
+  "IFC_info", param = "IFC_param", offsets = "IFC_offset"),
+  reinit = TRUE)
 }
 \arguments{
 \item{entries}{arguments from the function \code{\link{whoami}} is called.

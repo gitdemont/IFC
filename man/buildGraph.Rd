@@ -4,44 +4,21 @@
 \alias{buildGraph}
 \title{IFC Graph Coercion}
 \usage{
-buildGraph(
-  type = c("histogram", "scatter", "density")[3],
-  xlocation = 0,
-  ylocation = 0,
-  f1 = "Object Number",
-  f2 = "Object Number",
-  scaletype = 1,
-  xmin = -1,
-  xmax = 1,
-  ymin = 0,
-  ymax = 1,
-  title = paste0(c(unlist(lapply(BasePop, FUN = function(x) x$name)),
-    unlist(lapply(GraphRegion, FUN = function(x) x$name))), collapse = ", "),
-  xlabel = f1,
-  ylabel = f2,
-  axislabelsfontsize = 10,
-  axistickmarklabelsfontsize = 10,
-  graphtitlefontsize = 12,
-  regionlabelsfontsize = 10,
-  bincount = 0,
-  freq = c("T", "F")[1],
-  histogramsmoothingfactor = 0,
-  xlogrange = "P",
-  ylogrange = "P",
-  splitterdistance = 120,
-  stats = c("true", "false")[2],
-  xsize = c(320, 480, 640)[1],
+buildGraph(type = c("histogram", "scatter", "density")[3],
+  xlocation = 0, ylocation = 0, f1 = "Object Number",
+  f2 = "Object Number", scaletype = 1, xmin = -1, xmax = 1,
+  ymin = 0, ymax = 1, title = paste0(c(unlist(lapply(BasePop, FUN =
+  function(x) x$name)), unlist(lapply(GraphRegion, FUN = function(x)
+  x$name))), collapse = ", "), xlabel = f1, ylabel = f2,
+  axislabelsfontsize = 10, axistickmarklabelsfontsize = 10,
+  graphtitlefontsize = 12, regionlabelsfontsize = 10, bincount = 0,
+  freq = c("T", "F")[1], histogramsmoothingfactor = 0,
+  xlogrange = "P", ylogrange = "P", splitterdistance = 120,
+  stats = c("true", "false")[2], xsize = c(320, 480, 640)[1],
   ysize = xsize + ifelse(stats == "true", splitterdistance, 0),
-  xstats = "Count|\%Gated|Mean",
-  ystats = xstats,
-  order,
-  xstatsorder,
-  Legend,
-  BasePop = list(list()),
-  GraphRegion = list(list()),
-  ShownPop = list(list()),
-  ...
-)
+  xstats = "Count|\%Gated|Mean", ystats = xstats, order, xstatsorder,
+  Legend, BasePop = list(list()), GraphRegion = list(list()),
+  ShownPop = list(list()), ...)
 }
 \arguments{
 \item{type}{Graph's type. Either "histogram", "scatter" or "density". Default is "density".}

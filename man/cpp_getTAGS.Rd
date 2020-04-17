@@ -13,9 +13,12 @@ TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TI
 
 \item{verbose}{bool, whether to display information (use for debugging purpose). Default is 'false'.}
 
-\item{trunc_bytes}{uint8_t, number of bytes to extract for bytes/strings TAGS (1, 2, 6 or 7). Default is 22.}
+\item{trunc_bytes}{uint32_t maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 22.\cr
+However, if less is found, less is returned in map.
+Note that, if 0 is provided, it will be automatically set to 1.}
 
-\item{force_trunc}{bool, whether to force truncation for all TAGS types. Default is 'false'.}
+\item{force_trunc}{whether to force truncation for all TAGS types. Default is FALSE.\cr
+If 'true', 'trunc_bytes' will be used for TAGS (3, 4, 5, 8, 9, 10, 11 and 12) to extract desired number of individual scalar corresponding to each types.}
 }
 \description{
 Returns TAGS contained within an IFD (Image Field Directory) entry.

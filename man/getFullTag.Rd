@@ -16,11 +16,6 @@ getFullTag(IFD, which = 1, tag = "256")
 
 \item{tag}{scalar, integer (index) or the name of the IFD[[which]] of the desired 'tag'.}
 }
-\value{
-If 'tag' is of type 2, it returns a character string.\cr
-If 'tag' is of type 1, 6 or 7 it returns a raw vector.\cr
-For other types, it will return mapped value corresponding to TIFF 6.0 specifications.
-}
 \description{
 Retrieves full tag value from IFDs (Image Field Directory) extracted by \code{\link{getIFD}}.
 }
