@@ -315,6 +315,7 @@ List cpp_getTAGS (const std::string fname,
       uint32_t i;
       uint32_t tot_scalar;
       uint32_t ext_scalar;
+      // ensure that, if not NULL, at least 1 scalar will be extracted
       uint32_t max_scalar = (trunc_bytes > 1) ? trunc_bytes:1;
       bool IFD_off;
       bool is_char;
@@ -375,7 +376,12 @@ List cpp_getTAGS (const std::string fname,
           IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
           tot_scalar = multi[IFD_type] * IFD_count;
           is_char = (IFD_type == 1) || (IFD_type == 2) || (IFD_type == 6) || (IFD_type == 7);
-          ext_scalar = ((tot_scalar > max_scalar) & (is_char | force_trunc)) ? max_scalar:tot_scalar;
+          
+          // allow to extract less scalar than total number of scalars available
+          // for char types or when force_trunc is choosen.
+          // Except for tag 33052 (BG_MEAN) and 33053 (BG_STD)
+          // that are retrieved completly (needed for img/msk extraction)
+          ext_scalar = ((is_char || force_trunc) && (tot_scalar > max_scalar) && ((IFD_tag != 33052) || (IFD_tag != 33053))) ? max_scalar:tot_scalar;
           
           if(IFD_bytes > 4) {
             if((IFD_value + IFD_bytes) > filesize) {
@@ -582,7 +588,12 @@ List cpp_getTAGS (const std::string fname,
           IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
           tot_scalar = multi[IFD_type] * IFD_count;
           is_char = (IFD_type == 1) || (IFD_type == 2) || (IFD_type == 6) || (IFD_type == 7);
-          ext_scalar = ((tot_scalar > max_scalar) & (is_char | force_trunc)) ? max_scalar:tot_scalar;
+          
+          // allow to extract less scalar than total number of scalars available
+          // for char types or when force_trunc is choosen.
+          // Except for tag 33052 (BG_MEAN) and 33053 (BG_STD)
+          // that are retrieved completly (needed for img/msk extraction)
+          ext_scalar = ((is_char || force_trunc) && (tot_scalar > max_scalar) && ((IFD_tag != 33052) || (IFD_tag != 33053))) ? max_scalar:tot_scalar;
           
           if(IFD_bytes > 4) {
             if((IFD_value + IFD_bytes) > filesize) {
