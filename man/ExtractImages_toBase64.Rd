@@ -13,8 +13,9 @@ ExtractImages_toBase64(
 )
 }
 \arguments{
-\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr
-If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
+If 'param' is provided 'export'(="base64") and 'mode' will be overwritten.\cr
+If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr
 /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 
 \item{objects}{integers, indices of objects to use.
@@ -25,7 +26,7 @@ This argument is not mandatory but it may allow to save time for repeated image 
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
-\item{mode}{(\code{\link{objectExtract}} argument) color mode export. Either "rgb", "gray". Default is "rgb".}
+\item{mode}{(\code{\link{objectParam}} argument) color mode export. Either "rgb", "gray". Default is "rgb".}
 }
 \value{
 A list of base64 encoded images corresponding to objects extracted.

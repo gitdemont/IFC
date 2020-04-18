@@ -1,16 +1,17 @@
 #' @title Shorcut for Batch Images Extraction to Files
 #' @description
 #' Function to shortcut extraction, normalization and eventually colorization of images to matrix ! excludes mask.
-#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="file"), 'write_to', 'mode' and bypass(=TRUE).\cr
-#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
+#' If 'param' is provided 'export'(="file"), 'write_to' and 'mode' will be overwritten.\cr
+#' If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr
 #' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integers, indices of objects to use.
 #' This argument is not mandatory, if missing, the default, all objects will be used.
 #' @param offsets object of class `IFC_offset`. 
 #' This argument is not mandatory but it may allow to save time for repeated image export on same file.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param mode (\code{\link{objectExtract}} argument) color mode export. Either "rgb", "gray" . Default is "rgb".
-#' @param write_to (\code{\link{objectExtract}} argument) used to compute exported file name.\cr
+#' @param mode (\code{\link{objectParam}} argument) color mode export. Either "rgb", "gray" . Default is "rgb".
+#' @param write_to (\code{\link{objectParam}} argument) used to compute exported file name.\cr
 #' Exported "file" extension will be deduced from this pattern. Allowed export are '.bmp', '.jpg', '.jpeg', '.png', '.tif', '.tiff'.
 #' Note that '.bmp' are faster but not compressed producing bigger data.\cr
 #' Placeholders, if found, will be substituted:\cr
@@ -101,6 +102,18 @@ ExtractImages_toFile <- function(...,
     }
   } else {
     param = input$param
+    param$export = "file"
+    param$mode = mode
+    param$write_to <- write_to
+    param$splitp_obj = splitp(param$write_to)
+    param$dir_name <- dirname(formatn(splitp_obj = splitp(param$write_to), splitf_obj = param$splitf_obj))
+    type = getFileExt(param$write_to)
+    switch(type,
+           "jpg" = {type <- "jpeg"},
+           "tif" = {type <- "tiff"})
+    ##### check type
+    assert(type, len = 1, alw = c("bmp", "jpeg", "png", "tiff"))
+    param$type <- type
   }
   fileName = param$fileName
   title_progress = basename(fileName)

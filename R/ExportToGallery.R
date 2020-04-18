@@ -1,8 +1,9 @@
 #' @title Gallery Export
 #' @description
 #' Exports gallery of `IFC_img` / `IFC_msk`objects
-#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'mode'(="rgb") and bypass(=TRUE).\cr
-#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
+#' If 'param' is provided 'mode'(="rgb") and the above parameters will be overwritten.\cr
+#' If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr
 #' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integers, indices of objects to use.
 #' This argument is not mandatory, if missing, the default, all objects will be used.
@@ -160,6 +161,14 @@ ExportToGallery <- function(...,
   } else {
     force_width = dots[["force_width"]]
   }
+  # check size
+  force_width = as.logical(force_width); assert(force_width, len = 1, alw = c(TRUE,FALSE)) 
+  size = na.omit(as.integer(size[1:2]))
+  assert(size, len=2, typ="integer")
+  if(!force_width) {
+    if(length(objects)!=1) if(size[2] == 0) stop("'size' width should be provided when 'force_width' is set to FALSE and 'objects' length not equal to one")
+  }
+  
   param_extra = names(dots) %in% c("ifd","param","export","write_to","mode","size","force_width","overwrite","bypass")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("base64_id","base64_att",
@@ -190,7 +199,9 @@ ExportToGallery <- function(...,
     }
   } else {
     param = input$param
-    param$size = size
+    param$export = "matrix"
+    param$mode = "rgb"
+    if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width can't be [0] when 'param' is provided and 'object' length not equal to one")
   }
   fileName = param$fileName
   title_progress = basename(fileName)

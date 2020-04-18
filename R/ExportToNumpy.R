@@ -1,8 +1,9 @@
 #' @title Numpy Export
 #' @description
 #' Exports IFC objects to numpy array [objects,height,width,channels]
-#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and bypass(=TRUE).
-#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.
+#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
+#' If 'param' is provided the above parameters will be overwritten.\cr
+#' If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr
 #' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integers, indices of objects to use.
 #' This argument is not mandatory, if missing, the default, all objects will be used.
@@ -13,7 +14,7 @@
 #' @param python path to python. Default is Sys.getenv("RETICULATE_PYTHON").\cr
 #' Note that this numpy should be available in this python to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".
 #' @param dtype desired array’s data-type. Default is "double". Allowed are "uint8", "int16", "uint16" or "double". If 'mode' is "raw", this parameter will be forced to "int16".
-#' @param mode (\code{\link{objectExtract}} argument) color mode export. Either "raw", "gray" . Default is "gray".
+#' @param mode (\code{\link{objectParam}} argument) color mode export. Either "raw", "gray" . Default is "gray".
 #' @param export export format. Either "file", "matrix". Default is "matrix".\cr
 #' Note that you will need 'reticulate' package installed to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".
 #' @param write_to used when 'export' is "file" to compute respectively filename.
@@ -121,6 +122,14 @@ ExportToNumpy <- function(...,
   } else {
     force_width = dots[["force_width"]]
   }
+  # check size
+  force_width = as.logical(force_width); assert(force_width, len = 1, alw = c(TRUE,FALSE)) 
+  size = na.omit(as.integer(size[1:2]))
+  assert(size, len=2, typ="integer")
+  if(!force_width) {
+    if(length(objects)!=1) if(size[2] == 0) stop("'size' width should be provided when 'force_width' is set to FALSE and 'objects' length not equal to one")
+  }
+  
   param_extra = names(dots) %in% c("ifd","param","mode","export","size","force_width","bypass")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("write_to","base64_id","base64_att","overwrite",
@@ -151,8 +160,11 @@ ExportToNumpy <- function(...,
     }
   } else {
     param = input$param
-    param$size = size
+    param$export = "matrix"
+    param$mode = mode
+    if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width can't be [0] when 'param' is provided and 'object' length not equal to one")
   }
+  
   fileName = param$fileName
   title_progress = basename(fileName)
   file_extension = getFileExt(fileName)
@@ -180,16 +192,6 @@ ExportToNumpy <- function(...,
       warning("Some objects that are not in ", fileName, " have been automatically removed from extraction process:\n", paste0(objects[!tokeep], collapse=", "))
       objects = objects[tokeep]
     }
-  }
-  
-  # check size
-  force_width = as.logical(force_width); assert(force_width, len = 1, alw = c(TRUE,FALSE)) 
-  size = na.omit(as.integer(size[1:2]))
-  assert(size, len=2, typ="integer")
-  if(!force_width) {
-    if(length(objects)!=1) if(size[2] == 0) stop("'size' width should be provided when 'force_width' is set to FALSE and 'objects' length not equal to one")
-  } else {
-    size = c(size[1], as.integer(param$channelwidth))
   }
   
   # check input offsets if any

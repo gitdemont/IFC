@@ -1,8 +1,9 @@
 #' @title Shorcut for Batch Images Extraction to Matrices/Arrays
 #' @description
 #' Function to shortcut extraction, normalization and eventually colorization of images to matrix ! excludes mask.
-#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="matrix") and bypass(=TRUE).\cr
-#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
+#' If 'param' is provided 'export'(="matrix") will be overwritten.\cr
+#' If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr
 #' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integers, indices of objects to use.
 #' This argument is not mandatory, if missing, the default, all objects will be used.
@@ -79,6 +80,7 @@ ExtractImages_toMatrix <- function(...,
     }
   } else {
     param = input$param
+    param$export = "matrix"
   }
   fileName = param$fileName
   title_progress = basename(fileName)

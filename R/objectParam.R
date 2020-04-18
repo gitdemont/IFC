@@ -105,6 +105,7 @@ objectParam <- function(...,
     random_seed = na.omit(as.integer(random_seed[is.finite(random_seed)]))
     assert(random_seed, len = 1, typ = "integer")
   }
+  assert(overwrite, len = 1, alw = c(TRUE, FALSE))
   
   ##### retrieve channels
   channels = info$Images[info$Images$physicalChannel %in% which(info$in_use), ]
@@ -179,6 +180,7 @@ objectParam <- function(...,
              splitp_obj = NULL,
              base64_id = FALSE,
              base64_att = "",
+             overwrite = overwrite,
              colors = sapply(channels[,"color"], simplify = FALSE, FUN=function(x) {tmp = c(rgb2hsv(col2rgb(x))); names(tmp) = x; tmp }), 
              channels = channels, 
              chan_to_extract = chan_to_extract,
@@ -205,8 +207,6 @@ objectParam <- function(...,
     if(export == "file") { # file
       # not allowed to write file without user input
       if(missing(write_to)) stop("'write_to' can't be missing when 'export' is \"file\"")
-      assert(overwrite, len = 1, alw = c(TRUE, FALSE))
-      ans$overwrite = overwrite
     } else { # base64
       base64_id = as.logical(base64_id)
       assert(base64_id, len = 1, alw = c(TRUE,FALSE))

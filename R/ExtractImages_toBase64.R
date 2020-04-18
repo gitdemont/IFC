@@ -1,15 +1,16 @@
 #' @title Shorcut for Batch Images Extraction to Base64
 #' @description
 #' Function to shortcut extraction, normalization and eventually colorization of images to matrix ! excludes mask.
-#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd', 'export'(="base64"), 'mode' and bypass(=TRUE).\cr
-#' If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.\cr
+#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
+#' If 'param' is provided 'export'(="base64") and 'mode' will be overwritten.\cr
+#' If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr
 #' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integers, indices of objects to use.
 #' This argument is not mandatory, if missing, the default, all objects will be used.
 #' @param offsets object of class `IFC_offset`. 
 #' This argument is not mandatory but it may allow to save time for repeated image export on same file.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param mode (\code{\link{objectExtract}} argument) color mode export. Either "rgb", "gray". Default is "rgb".
+#' @param mode (\code{\link{objectParam}} argument) color mode export. Either "rgb", "gray". Default is "rgb".
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toBase64}} input arguments.
 #' @return A list of base64 encoded images corresponding to objects extracted.
 #' @export
@@ -84,6 +85,8 @@ ExtractImages_toBase64 <- function(...,
     }
   } else {
     param = input$param
+    param$export = "base64"
+    param$mode = mode
   }
   fileName = param$fileName
   title_progress = basename(fileName)

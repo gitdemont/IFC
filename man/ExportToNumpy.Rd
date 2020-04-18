@@ -19,8 +19,9 @@ ExportToNumpy(
 )
 }
 \arguments{
-\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and bypass(=TRUE).
-If 'offsets' are not provided arguments can also be passed to \code{\link{getOffsets}}.
+\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
+If 'param' is provided the above parameters will be overwritten.\cr
+If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr
 /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 
 \item{objects}{integers, indices of objects to use.
@@ -38,7 +39,7 @@ Note that this numpy should be available in this python to be able to export to 
 
 \item{dtype}{desired array’s data-type. Default is "double". Allowed are "uint8", "int16", "uint16" or "double". If 'mode' is "raw", this parameter will be forced to "int16".}
 
-\item{mode}{(\code{\link{objectExtract}} argument) color mode export. Either "raw", "gray" . Default is "gray".}
+\item{mode}{(\code{\link{objectParam}} argument) color mode export. Either "raw", "gray" . Default is "gray".}
 
 \item{export}{export format. Either "file", "matrix". Default is "matrix".\cr
 Note that you will need 'reticulate' package installed to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".}
