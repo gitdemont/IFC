@@ -185,12 +185,20 @@ getInfo <- function(fileName,
   infos$magnification = as.numeric(acquisition$Imaging[["Magnification"]])
   infos$coremode = as.numeric(acquisition$Fluidics[["CoreMode"]])
   if(from == "analysis" & file_extension != "rif") {
-    infos$CrossTalkMatrix = IFD[[1]]$tags[["33020"]]$map
-    if(length(infos$CrossTalkMatrix)!=0) infos$CrossTalkMatrix = matrix(infos$CrossTalkMatrix, nrow = sqrt(length(infos$CrossTalkMatrix)), byrow = TRUE)
+    if(length(IFD[[1]]$tags[["33020"]]$map)!=0) {
+      cross = getFullTag(IFD = IFD, which = 1, tag = "33020")
+      infos$CrossTalkMatrix = matrix(cross, nrow = sqrt(length(cross)), byrow = TRUE)
+    } else {
+      infos$CrossTalkMatrix = NULL
+    }
   } else {
     if(length(acquisition$Imaging$InspireCrossTalkMatrix) == 0) {
-      infos$CrossTalkMatrix = IFD[[1]]$tags[["33020"]]$map
-      if(length(infos$CrossTalkMatrix)!=0) infos$CrossTalkMatrix = matrix(infos$CrossTalkMatrix, nrow = sqrt(length(infos$CrossTalkMatrix)), byrow = TRUE)
+      if(length(IFD[[1]]$tags[["33020"]]$map)!=0) {
+        cross = getFullTag(IFD = IFD, which = 1, tag = "33020")
+        infos$CrossTalkMatrix = matrix(cross, nrow = sqrt(length(cross)), byrow = TRUE)
+      } else {
+        infos$CrossTalkMatrix = NULL
+      }
     } else {
       infos$CrossTalkMatrix = matrix(as.numeric(strsplit(x = acquisition$Imaging$InspireCrossTalkMatrix, split=" ", fixed = TRUE)[[1]]), nrow = length(infos$in_use), byrow = TRUE)
     }
