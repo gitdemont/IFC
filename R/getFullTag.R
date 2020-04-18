@@ -44,9 +44,9 @@ getFullTag <- function(IFD, which = 1, tag = "256") {
   on.exit(close(toread))
   seek(toread, where = ifd$tags[[tag]]$val, origin = "start")
   switch(ifd$tags[[tag]]$typ,
-         { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw")) # 1 BYTE
+         { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw")) # 1 BYTE, 1 Byte
          },
-         { return(readChar(toread, nchars = ifd$tags[[tag]]$byt, useBytes = TRUE)) # 2 ASCII
+         { return(readChar(toread, nchars = ifd$tags[[tag]]$byt, useBytes = TRUE)) # 2 ASCII, 1 Byte
          },
          { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 2, signed = FALSE, endian = endian)) # 3 SHORT 2 bytes
          },
@@ -62,7 +62,7 @@ getFullTag <- function(IFD, which = 1, tag = "256") {
            odd = seq(from = 1, to = ifd$tags[[tag]]$len, by = 2)
            return(foo[odd] / foo[-odd])
          },
-         { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw")) # 6 SBYTE
+         { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = TRUE)) # 6 SBYTE, 1 Byte
          },
          { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw")) # 7 UNDEFINED, 1 Byte
          },
