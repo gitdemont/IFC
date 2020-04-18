@@ -276,7 +276,7 @@ IntegerVector cpp_getoffsets_noid(const std::string fname,
 //' @param fname string, path to file.
 //' @param offset uint32_t, position of the IFD beginning.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is 'false'.
-//' @param trunc_bytes uint32_t maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 22.\cr
+//' @param trunc_bytes uint32_t maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 12.\cr
 //' However, if less is found, less is returned in map.
 //' Note that, if 0 is provided, it will be automatically set to 1.
 //' @param force_trunc whether to force truncation for all TAGS types. Default is FALSE.\cr
@@ -288,7 +288,7 @@ IntegerVector cpp_getoffsets_noid(const std::string fname,
 List cpp_getTAGS (const std::string fname, 
                   const uint32_t offset, 
                   const bool verbose = false, 
-                  const uint8_t trunc_bytes = 22, 
+                  const uint8_t trunc_bytes = 12, 
                   const bool force_trunc = false) {
   bool swap = false;
   std::string endianness = cpp_checkTIFF(fname); // it may be better to remove this check each time
