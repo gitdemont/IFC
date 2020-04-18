@@ -80,7 +80,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
     on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) {
       setPB(pb, value = i, title = title_progress, label = "extracting images values (binary)")
-      t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"), trunc_bytes = 8,
+      t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"), trunc_bytes = 12,
                       force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = TRUE, ...), FUN = function(ifd) {
                         c(ifd$infos$OBJECT_ID, # id
                           ifd$curr_IFD_offset, # imgIFD
@@ -101,7 +101,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
     })
   } else {
     ans = lapply(1:L, FUN=function(i) {
-      t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"), trunc_bytes = 8,
+      t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"), trunc_bytes = 12,
                       force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = TRUE, ...), FUN = function(ifd) {
                         c(ifd$infos$OBJECT_ID, # id
                           ifd$curr_IFD_offset, # imgIFD
