@@ -6,15 +6,15 @@
 using namespace Rcpp;
 
 // cpp_assert
-Rcpp::LogicalVector cpp_assert(RObject x, Rcpp::Nullable<IntegerVector> len, Rcpp::Nullable<CharacterVector> cla, Rcpp::Nullable<CharacterVector> typ, RObject alw, Rcpp::CharacterVector fun);
+Rcpp::LogicalVector cpp_assert(RObject x, Rcpp::Nullable<Rcpp::IntegerVector> len, Rcpp::Nullable<Rcpp::CharacterVector> cla, Rcpp::Nullable<Rcpp::CharacterVector> typ, RObject alw, Rcpp::CharacterVector fun);
 RcppExport SEXP _IFC_cpp_assert(SEXP xSEXP, SEXP lenSEXP, SEXP claSEXP, SEXP typSEXP, SEXP alwSEXP, SEXP funSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< RObject >::type x(xSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<IntegerVector> >::type len(lenSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<CharacterVector> >::type cla(claSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Nullable<CharacterVector> >::type typ(typSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::IntegerVector> >::type len(lenSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type cla(claSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::CharacterVector> >::type typ(typSEXP);
     Rcpp::traits::input_parameter< RObject >::type alw(alwSEXP);
     Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type fun(funSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_assert(x, len, cla, typ, alw, fun));

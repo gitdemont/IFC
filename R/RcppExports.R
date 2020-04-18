@@ -174,7 +174,7 @@ NULL
 #' @param fname string, path to file.
 #' @param offset uint32_t, position of the IFD beginning.
 #' @param verbose bool, whether to display information (use for debugging purpose). Default is 'false'.
-#' @param trunc_bytes uint32_t maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 22.\cr
+#' @param trunc_bytes uint32_t maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 12.\cr
 #' However, if less is found, less is returned in map.
 #' Note that, if 0 is provided, it will be automatically set to 1.
 #' @param force_trunc whether to force truncation for all TAGS types. Default is FALSE.\cr
@@ -474,7 +474,7 @@ cpp_getoffsets_noid <- function(fname, obj_count = 0L, display_progress = FALSE,
     .Call(`_IFC_cpp_getoffsets_noid`, fname, obj_count, display_progress, verbose)
 }
 
-cpp_getTAGS <- function(fname, offset, verbose = FALSE, trunc_bytes = 22L, force_trunc = FALSE) {
+cpp_getTAGS <- function(fname, offset, verbose = FALSE, trunc_bytes = 12L, force_trunc = FALSE) {
     .Call(`_IFC_cpp_getTAGS`, fname, offset, verbose, trunc_bytes, force_trunc)
 }
 

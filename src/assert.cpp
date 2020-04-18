@@ -2,8 +2,8 @@
 using namespace Rcpp;
 
 // combines 2 character vector into one
-Rcpp::CharacterVector cpp_combine(CharacterVector x, CharacterVector y) {
-  CharacterVector out(x.size() + y.size());
+Rcpp::CharacterVector cpp_combine(Rcpp::CharacterVector x, Rcpp::CharacterVector y) {
+  Rcpp::CharacterVector out(x.size() + y.size());
   R_len_t i = 0, j = 0;
   for(; i<x.size(); i++) out[i] = x[i];
   for(; j<y.size(); i++, j++) out[i] = y[j];
@@ -48,8 +48,8 @@ bool cpp_allowed (RObject x, RObject alw) {
   R_len_t i, j;
   switch( TYPEOF(x) ) {
   case LGLSXP: {
-    Rcpp::LogicalVector x_copy = as<Rcpp::LogicalVector>(x); // 10
-    Rcpp::LogicalVector alw_copy = as<Rcpp::LogicalVector>(alw);
+    Rcpp::LogicalVector x_copy = Rcpp::as<Rcpp::LogicalVector>(x); // 10
+    Rcpp::LogicalVector alw_copy = Rcpp::as<Rcpp::LogicalVector>(alw);
     LogicalVector b(alw_copy.size());
     for(i = 0; i < x_copy.size() && out ; i++) {
       for(j = 0; j < alw_copy.size(); j++) {
@@ -60,8 +60,8 @@ bool cpp_allowed (RObject x, RObject alw) {
   }
     break;
   case INTSXP: {
-    Rcpp::IntegerVector x_copy = as<Rcpp::IntegerVector>(x); // 13
-    Rcpp::IntegerVector alw_copy = as<Rcpp::IntegerVector>(alw);
+    Rcpp::IntegerVector x_copy = Rcpp::as<Rcpp::IntegerVector>(x); // 13
+    Rcpp::IntegerVector alw_copy = Rcpp::as<Rcpp::IntegerVector>(alw);
     LogicalVector b(alw_copy.size());
     for(i = 0; i < x_copy.size() && out ; i++) {
       for(j = 0; j < alw_copy.size(); j++) {
@@ -72,8 +72,8 @@ bool cpp_allowed (RObject x, RObject alw) {
   }
     break;
   case REALSXP: {
-    Rcpp::NumericVector x_copy = as<Rcpp::NumericVector>(x); // 14
-    Rcpp::NumericVector alw_copy = as<Rcpp::NumericVector>(alw);
+    Rcpp::NumericVector x_copy = Rcpp::as<Rcpp::NumericVector>(x); // 14
+    Rcpp::NumericVector alw_copy = Rcpp::as<Rcpp::NumericVector>(alw);
     LogicalVector b(alw_copy.size());
     for(i = 0; i < x_copy.size() && out ; i++) {
       for(j = 0; j < alw_copy.size(); j++) {
@@ -84,9 +84,9 @@ bool cpp_allowed (RObject x, RObject alw) {
   }
     break;
   case CPLXSXP: {
-    Rcpp::ComplexVector x_copy = as<Rcpp::ComplexVector>(x); // 15
-    Rcpp::ComplexVector alw_copy = as<Rcpp::ComplexVector>(alw);
-    LogicalVector b(alw_copy.size());
+    Rcpp::ComplexVector x_copy = Rcpp::as<Rcpp::ComplexVector>(x); // 15
+    Rcpp::ComplexVector alw_copy = Rcpp::as<Rcpp::ComplexVector>(alw);
+    Rcpp::LogicalVector b(alw_copy.size());
     for(i = 0; i < x_copy.size() && out ; i++) {
       for(j = 0; j < alw_copy.size(); j++) {
         b[j] = (alw_copy[j] == x_copy[i]);
@@ -96,8 +96,8 @@ bool cpp_allowed (RObject x, RObject alw) {
   }
     break;
   case STRSXP: {
-    Rcpp::CharacterVector x_copy = as<Rcpp::CharacterVector>(x); // 16
-    Rcpp::CharacterVector alw_copy = as<Rcpp::CharacterVector>(alw);
+    Rcpp::CharacterVector x_copy = Rcpp::as<Rcpp::CharacterVector>(x); // 16
+    Rcpp::CharacterVector alw_copy = Rcpp::as<Rcpp::CharacterVector>(alw);
     LogicalVector b(alw_copy.size());
     for(i = 0; i < x_copy.size() && out ; i++) {
       for(j = 0; j < alw_copy.size(); j++) {
@@ -108,8 +108,8 @@ bool cpp_allowed (RObject x, RObject alw) {
   }
     break;
   case RAWSXP: {
-    Rcpp::RawVector x_copy = as<Rcpp::RawVector>(x); // 24
-    Rcpp::RawVector alw_copy = as<Rcpp::RawVector>(alw);
+    Rcpp::RawVector x_copy = Rcpp::as<Rcpp::RawVector>(x); // 24
+    Rcpp::RawVector alw_copy = Rcpp::as<Rcpp::RawVector>(alw);
     LogicalVector b(alw_copy.size());
     for(i = 0; i < x_copy.size() && out ; i++) {
       for(j = 0; j < alw_copy.size(); j++) {
@@ -138,17 +138,17 @@ bool cpp_allowed (RObject x, RObject alw) {
 ////' @export
 // [[Rcpp::export]]
 Rcpp::LogicalVector cpp_assert(RObject x,
-                               Rcpp::Nullable<IntegerVector> len = R_NilValue,
-                               Rcpp::Nullable<CharacterVector> cla = R_NilValue,
-                               Rcpp::Nullable<CharacterVector> typ = R_NilValue,
+                               Rcpp::Nullable<Rcpp::IntegerVector> len = R_NilValue,
+                               Rcpp::Nullable<Rcpp::CharacterVector> cla = R_NilValue,
+                               Rcpp::Nullable<Rcpp::CharacterVector> typ = R_NilValue,
                                RObject alw = R_NilValue,
                                Rcpp::CharacterVector fun = "stop") {
-  Rcpp::LogicalVector ele = LogicalVector::create(len.isNotNull(), cla.isNotNull(), typ.isNotNull(), !alw.isNULL());
+  Rcpp::LogicalVector ele = Rcpp::LogicalVector::create(len.isNotNull(), cla.isNotNull(), typ.isNotNull(), !alw.isNULL());
   if(fun.size() != 1) Rcpp::stop("'fun' should be of length 1");
   if(!cpp_allowed(fun, Rcpp::CharacterVector::create("stop", "warning", "message", "return"))) Rcpp::stop("'fun' has to be either 'stop', 'warning', 'message', 'return'");
   if(any(ele).is_true()) {
     if(ele[0]) {
-      Rcpp::IntegerVector len_v = as<IntegerVector>(len);
+      Rcpp::IntegerVector len_v = Rcpp::as<Rcpp::IntegerVector>(len);
       for(R_len_t i = 0; i<len_v.size(); i++) {
         if(len_v[i] == Rf_xlength(x)) {
           ele[0] = false;
@@ -161,11 +161,11 @@ Rcpp::LogicalVector cpp_assert(RObject x,
       SEXP cl = x.attr("class");
       Rcpp::CharacterVector K;
       if(!Rf_isNull(cl) && (Rf_length(cl) > 0)) {
-        K = cpp_combine(as<CharacterVector>(cl), cpp_type(x));
+        K = cpp_combine(Rcpp::as<Rcpp::CharacterVector>(cl), cpp_type(x));
       } else {
         K = cpp_type(x);
       }
-      Rcpp::CharacterVector cla_v = as<CharacterVector>(cla);
+      Rcpp::CharacterVector cla_v = Rcpp::as<Rcpp::CharacterVector>(cla);
       R_len_t cla_i = 0; 
       for(R_len_t i = 0; i<cla_v.size(); i++) {
         for(R_len_t k = 0; k<K.size(); k++) {
@@ -180,7 +180,7 @@ Rcpp::LogicalVector cpp_assert(RObject x,
       }
     }
     if(ele[2]) {
-      if(cpp_allowed(cpp_type(x), as<CharacterVector>(typ))) {
+      if(cpp_allowed(cpp_type(x), Rcpp::as<Rcpp::CharacterVector>(typ))) {
         ele[2] = false;
       }
     }
