@@ -381,8 +381,7 @@ List cpp_getTAGS (const std::string fname,
           // for char types or when force_trunc is choosen.
           // Except for tag 33052 (BG_MEAN) and 33053 (BG_STD)
           // that are retrieved completly (needed for img/msk extraction)
-          ext_scalar = ((is_char || force_trunc) && (tot_scalar > max_scalar) && ((IFD_tag != 33052) || (IFD_tag != 33053))) ? max_scalar:tot_scalar;
-          
+          ext_scalar = ((is_char || force_trunc) && (tot_scalar > max_scalar) && (IFD_tag != 33052) && (IFD_tag != 33053)) ? max_scalar:tot_scalar;
           if(IFD_bytes > 4) {
             if((IFD_value + IFD_bytes) > filesize) {
               Rcerr << "cpp_getTAGS: in IFD: " << k << " @" << IFD_value + IFD_bytes << " is outside of " << fname << std::endl;
@@ -593,8 +592,7 @@ List cpp_getTAGS (const std::string fname,
           // for char types or when force_trunc is choosen.
           // Except for tag 33052 (BG_MEAN) and 33053 (BG_STD)
           // that are retrieved completly (needed for img/msk extraction)
-          ext_scalar = ((is_char || force_trunc) && (tot_scalar > max_scalar) && ((IFD_tag != 33052) || (IFD_tag != 33053))) ? max_scalar:tot_scalar;
-          
+          ext_scalar = ((is_char || force_trunc) && (tot_scalar > max_scalar) && (IFD_tag != 33052) && (IFD_tag != 33053)) ? max_scalar:tot_scalar;
           if(IFD_bytes > 4) {
             if((IFD_value + IFD_bytes) > filesize) {
               Rcerr << "cpp_getTAGS: in IFD: " << k << " @" << IFD_value + IFD_bytes << " is outside of " << fname << std::endl;
