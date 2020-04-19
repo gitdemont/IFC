@@ -60,7 +60,7 @@ A good trick is to use:\cr
 }
 \value{
 Depending on 'export':\cr
--"matrix", a numpy array,\cr
+-"matrix", an array whose dimensions are [object, height, width, channel].\cr
 -"file", an invisible vector of ids corresponding to the objects exported.
 }
 \description{

@@ -33,7 +33,7 @@
 #' \code{\link{ExportToNumpy}} requires reticulate package, python and numpy installed. to create npy file.\cr
 #' If one of these is missing, 'export' will be set to "matrix".
 #' @return Depending on 'export':\cr
-#' -"matrix", a numpy array,\cr
+#' -"matrix", an array whose dimensions are [object, height, width, channel].\cr
 #' -"file", an invisible vector of ids corresponding to the objects exported. 
 #' @export
 ExportToNumpy <- function(...,
@@ -311,6 +311,10 @@ ExportToNumpy <- function(...,
          {
            ret = aperm(array(unlist(ans), dim = c(nrow(ans[[1]][[1]]), ncol(ans[[1]][[1]]), length(ans[[1]]), length(objects))), perm = c(4,1,2,3))
          })
+  dimnames(ret) = list("object" = ids,
+                       "height" = nrow(ans[[1]][[1]]),
+                       "width" = ncol(ans[[1]][[1]]),
+                       "channel" = channel_id)
   attr(ret, "object_id") <- ids
   attr(ret, "channel_id") <- channel_id
   attr(ret, "channel_names") <- channel_names
