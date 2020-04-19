@@ -312,10 +312,10 @@ ExportToNumpy <- function(...,
            ret = aperm(array(unlist(ans), dim = c(nrow(ans[[1]][[1]]), ncol(ans[[1]][[1]]), length(ans[[1]]), length(objects))), perm = c(4,1,2,3))
          })
   dimnames(ret) = list("object" = ids,
-                       "height" = nrow(ans[[1]][[1]]),
-                       "width" = ncol(ans[[1]][[1]]),
+                       "height" = NULL,
+                       "width" = NULL,
                        "channel" = channel_id)
-  attr(ret, "object_id") <- ids
+  attr(ret, "offset_id") <- sapply(ans, attr, which = "offset_id")
   attr(ret, "channel_id") <- channel_id
   attr(ret, "channel_names") <- channel_names
   tryCatch({
