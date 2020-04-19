@@ -122,13 +122,6 @@ ExportToNumpy <- function(...,
   } else {
     force_width = dots[["force_width"]]
   }
-  # check size
-  force_width = as.logical(force_width); assert(force_width, len = 1, alw = c(TRUE,FALSE)) 
-  size = na.omit(as.integer(size[1:2]))
-  assert(size, len=2, typ="integer")
-  if(!force_width) {
-    if(length(objects)!=1) if(size[2] == 0) stop("'size' width should be provided when 'force_width' is set to FALSE and 'objects' length not equal to one")
-  }
   
   param_extra = names(dots) %in% c("ifd","param","mode","export","size","force_width","bypass")
   dots = dots[!param_extra] # remove not allowed param
@@ -162,7 +155,6 @@ ExportToNumpy <- function(...,
     param = input$param
     param$export = "matrix"
     param$mode = mode
-    if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width can't be [0] when 'param' is provided and 'object' length not equal to one")
   }
   
   fileName = param$fileName
@@ -193,6 +185,7 @@ ExportToNumpy <- function(...,
       objects = objects[tokeep]
     }
   }
+  if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width should be provided when 'object' length not equal to one")
   
   # check input offsets if any
   compute_offsets = TRUE

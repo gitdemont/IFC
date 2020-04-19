@@ -143,13 +143,6 @@ DisplayGallery <- function(...,
   } else {
     force_width = dots[["force_width"]]
   }
-  # check size
-  force_width = as.logical(force_width); assert(force_width, len = 1, alw = c(TRUE,FALSE)) 
-  size = na.omit(as.integer(size[1:2]))
-  assert(size, len=2, typ="integer")
-  if(!force_width) {
-    if(length(objects)!=1) if(size[2] == 0) stop("'size' width should be provided when 'force_width' is set to FALSE and 'objects' length not equal to one")
-  }
   
   param_extra = names(dots) %in% c("ifd","param","mode","export","size","force_width","bypass")
   dots = dots[!param_extra] # remove not allowed param
@@ -183,8 +176,7 @@ DisplayGallery <- function(...,
     param = input$param
     param$export = "base64"
     param$mode = mode
-    if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width can't be [0] when 'param' is provided and 'object' length not equal to one")
-  }
+ }
   fileName = param$fileName
   title_progress = basename(fileName)
   
@@ -206,6 +198,7 @@ DisplayGallery <- function(...,
   }
   extract_max = as.integer(min(extract_max, length(objects)))
   if(sampling) {objects=sample(objects,extract_max)} else {objects=objects[1:extract_max]}
+  if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width should be provided when 'object' length not equal to one")
   
   # check input offsets if any
   compute_offsets = TRUE
@@ -313,8 +306,6 @@ DisplayGallery <- function(...,
             elementId = name,
             data = dat,
             autoHideNavigation = TRUE,
-            # callback = JS(sprintf("$('#%s').css({'width':'%spx'}); # TODO try make display more beautiful when names are too long
-            # return table;", name, 60*txt_col + ncol(ans)*size[length(size)])),
             options = list(pageLength = pageLength,
                            dom = dt_dom,
                            autoWidth = FALSE,
