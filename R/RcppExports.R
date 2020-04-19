@@ -407,6 +407,21 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title Matrix Resizing
+#' @name cpp_resize2
+#' @description
+#' Resizes mat according to new_height and new_width parameters.
+#' @param mat a numeric matrix.
+#' @param new_height an unsigned integer, giving the new height of returned mat. Default is 0 for no change.
+#' @param new_width an unsigned integer, giving the new width of returned mat. Default is 0 for no change.
+#' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
+#' Rcpp::rnorm() function is used. Default is true.
+#' @param bg double, mean value of the background added if add_noise is true. Default is 0.
+#' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
+#' @return a resized matrix with padding background if new_height or new_width is larger than original mat dimensions.
+#' @keywords internal
+NULL
+
 #' @title Matrix Transformation
 #' @name cpp_transform
 #' @description
@@ -512,6 +527,10 @@ cpp_mask <- function(A, B, mask) {
 
 cpp_mark <- function(A, B, mask, xoff = 0L, yoff = 0L, invert = FALSE) {
     .Call(`_IFC_cpp_mark`, A, B, mask, xoff, yoff, invert)
+}
+
+cpp_resize2 <- function(mat, new_height = 0L, new_width = 0L, add_noise = TRUE, bg = 0.0, sd = 0.0) {
+    .Call(`_IFC_cpp_resize2`, mat, new_height, new_width, add_noise, bg, sd)
 }
 
 cpp_transform <- function(mat, color, msk, size = as.integer( c(0,0)), mode = "raw", type = 2L, input_range = as.numeric( c(0.0,4095.0)), add_noise = TRUE, bg = 0.0, sd = 0.0, full_range = FALSE, force_range = FALSE, gamma = 1.0) {

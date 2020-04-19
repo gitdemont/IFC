@@ -253,6 +253,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_resize2
+Rcpp::NumericMatrix cpp_resize2(const Rcpp::NumericMatrix mat, const R_len_t new_height, const R_len_t new_width, const bool add_noise, const double bg, const double sd);
+RcppExport SEXP _IFC_cpp_resize2(SEXP matSEXP, SEXP new_heightSEXP, SEXP new_widthSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< const R_len_t >::type new_height(new_heightSEXP);
+    Rcpp::traits::input_parameter< const R_len_t >::type new_width(new_widthSEXP);
+    Rcpp::traits::input_parameter< const bool >::type add_noise(add_noiseSEXP);
+    Rcpp::traits::input_parameter< const double >::type bg(bgSEXP);
+    Rcpp::traits::input_parameter< const double >::type sd(sdSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_resize2(mat, new_height, new_width, add_noise, bg, sd));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_transform
 NumericVector cpp_transform(const NumericMatrix mat, const NumericVector color, const IntegerMatrix msk, const IntegerVector size, const std::string mode, const uint16_t type, const NumericVector input_range, const bool add_noise, const double bg, const double sd, const bool full_range, const bool force_range, const double gamma);
 RcppExport SEXP _IFC_cpp_transform(SEXP matSEXP, SEXP colorSEXP, SEXP mskSEXP, SEXP sizeSEXP, SEXP modeSEXP, SEXP typeSEXP, SEXP input_rangeSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP, SEXP full_rangeSEXP, SEXP force_rangeSEXP, SEXP gammaSEXP) {
@@ -416,6 +432,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_cleanse", (DL_FUNC) &_IFC_cpp_cleanse, 5},
     {"_IFC_cpp_mask", (DL_FUNC) &_IFC_cpp_mask, 3},
     {"_IFC_cpp_mark", (DL_FUNC) &_IFC_cpp_mark, 6},
+    {"_IFC_cpp_resize2", (DL_FUNC) &_IFC_cpp_resize2, 6},
     {"_IFC_cpp_transform", (DL_FUNC) &_IFC_cpp_transform, 13},
     {"_IFC_cpp_extract", (DL_FUNC) &_IFC_cpp_extract, 16},
     {"_IFC_cpp_smoothLinLog", (DL_FUNC) &_IFC_cpp_smoothLinLog, 4},

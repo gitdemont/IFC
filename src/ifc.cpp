@@ -1550,6 +1550,29 @@ NumericMatrix cpp_mark (const NumericMatrix A,
   return out;
 }
 
+//' @title Matrix Resizing
+//' @name cpp_resize2
+//' @description
+//' Resizes mat according to new_height and new_width parameters.
+//' @param mat a numeric matrix.
+//' @param new_height an unsigned integer, giving the new height of returned mat. Default is 0 for no change.
+//' @param new_width an unsigned integer, giving the new width of returned mat. Default is 0 for no change.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
+//' Rcpp::rnorm() function is used. Default is true.
+//' @param bg double, mean value of the background added if add_noise is true. Default is 0.
+//' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
+//' @return a resized matrix with padding background if new_height or new_width is larger than original mat dimensions.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix cpp_resize2 (const Rcpp::NumericMatrix mat, 
+                                 const R_len_t new_height = 0, 
+                                 const R_len_t new_width = 0,
+                                 const bool add_noise = true, 
+                                 const double bg = 0.0, const double sd = 0.0) {
+  return cpp_resize(mat, new_height, new_width, add_noise, bg, sd);
+}
+
 //' @title Matrix Transformation
 //' @name cpp_transform
 //' @description

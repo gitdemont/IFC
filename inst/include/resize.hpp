@@ -3,7 +3,7 @@
 
 #include <Rcpp.h>
 
-//' @title Matrix Cropping
+//' @title Header for Matrix Cropping
 //' @name cpp_crop
 //' @description
 //' Crops mat according to new_height and new_width parameters.
@@ -143,7 +143,7 @@ Rcpp::NumericMatrix cpp_expand_w_noise ( const Rcpp::NumericMatrix mat,
   return cpp_expand_row(M0, new_height, bg, sd);
 }
 
-//' @title Matrix Resizing
+//' @title Header for Matrix Resizing
 //' @name cpp_resize
 //' @description
 //' Resizes mat according to new_height and new_width parameters.
