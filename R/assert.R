@@ -8,7 +8,7 @@
 #' @param alw allowed values for x. Default is NULL, for not checking this parameter.
 #' @param fun function to execute when mandatory parameters are not met. Default is "stop". Allowed are "stop","warning","message","return".
 #' @details /!\ alw parameter when used should be coercible to a logical, integer, numeric, complex or character vector. Otherwise, an error will be thrown.
-#' @export
+#' @keywords internal
 assert = function(x, len=NULL, cla=NULL, typ=NULL, alw=NULL, fun="stop") {
   foo = cpp_assert(x, len=len, cla=cla, typ=typ, alw=alw, fun=fun)
   if(!any(foo)) return(invisible(NULL))

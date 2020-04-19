@@ -18,3 +18,4 @@ the file extension in lower case if found. Otherwise, "".
 \description{
 Determines extension from alpha numeric file name.
 }
+\keyword{internal}

@@ -25,3 +25,4 @@ Validate that variable respects several parameters
 \details{
 /!\ alw parameter when used should be coercible to a logical, integer, numeric, complex or character vector. Otherwise, an error will be thrown.
 }
+\keyword{internal}
