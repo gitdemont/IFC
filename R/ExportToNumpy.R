@@ -305,6 +305,13 @@ ExportToNumpy <- function(...,
          "uint8" = {
            ret = aperm(array(as.integer(unlist(ans) * 255), dim = c(nrow(ans[[1]][[1]]), ncol(ans[[1]][[1]]), length(ans[[1]]), length(objects))), perm = c(4,1,2,3))
          },
+         "int16" = {
+           if(mode == "raw") {
+             ret = aperm(array(unlist(ans), dim = c(nrow(ans[[1]][[1]]), ncol(ans[[1]][[1]]), length(ans[[1]]), length(objects))), perm = c(4,1,2,3))
+           } else {
+             ret = aperm(array(as.integer(unlist(ans) * 32767), dim = c(nrow(ans[[1]][[1]]), ncol(ans[[1]][[1]]), length(ans[[1]]), length(objects))), perm = c(4,1,2,3))
+           }
+         },
          "uint16" = {
            ret = aperm(array(as.integer(unlist(ans) * 65535), dim = c(nrow(ans[[1]][[1]]), ncol(ans[[1]][[1]]), length(ans[[1]]), length(objects))), perm = c(4,1,2,3))
          },
