@@ -102,5 +102,5 @@ This parameter will be repeated with rep_len() from \pkg{base} for every physica
 an object of class `IFC_param`.
 }
 \description{
-Defines IFC_object object extraction parameters.
+Defines `IFC_object` object extraction parameters.
 }

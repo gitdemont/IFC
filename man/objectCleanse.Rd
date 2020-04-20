@@ -23,5 +23,5 @@ objectCleanse(mat, msk, add_noise = TRUE, random_seed = NULL, bg = 0, sd = 0)
 According to msk, pixel values in mat are substituted by either bg [add_noise == FALSE] or rnorm(n = prod(dim(mat), mean=bg, sd=sd)) [add_noise == TRUE].
 }
 \description{
-Removes abnormalities (clipped/debris) from image
+Removes abnormalities (clipped/debris) from image.
 }

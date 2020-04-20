@@ -1,4 +1,4 @@
-#' @title Copy Populations Fomr One File to Another File
+#' @title Copy Populations From One File to Another File
 #' @description
 #' Copies populations from a DAF file into a copy of another DAF file.
 #' Only creates new file with copied population.

@@ -1,6 +1,6 @@
 #' @title Object Cleanser
 #' @description
-#' Removes abnormalities (clipped/debris) from image
+#' Removes abnormalities (clipped/debris) from image.
 #' @param mat a numeric matrix (image).
 #' @param msk a numeric matrix (mask identifying abnormalities).
 #' @param add_noise if TRUE adds normal noise to background using rnorm(), from \pkg{Rcpp}. Default is TRUE.

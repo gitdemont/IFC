@@ -15,6 +15,6 @@ toXML2_masks(masks, verbose = FALSE)
 a xml_node.
 }
 \description{
-Helper function intended to convert masks (`IFC_masks` object) to XML nodes.
+Helper to convert masks (`IFC_masks` object) to XML nodes.
 }
 \keyword{internal}

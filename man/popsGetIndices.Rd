@@ -2,7 +2,7 @@
 % Please edit documentation in R/popsGetIndices.R
 \name{popsGetIndices}
 \alias{popsGetIndices}
-\title{IFC_pops Indices Getter}
+\title{IFC_pops Indices}
 \usage{
 popsGetIndices(obj, pop = "")
 }

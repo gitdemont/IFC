@@ -1,6 +1,6 @@
 #' @title IFC File Information Extraction
 #' @description
-#' Extracts information from RIF, CIF and DAF files.
+#' Retrieves rich information from RIF, CIF and DAF files.
 #' @param fileName path to file..
 #' @param from whether to extract information from 'acquisition' or 'analysis'. Default is 'analysis'.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.

@@ -7,21 +7,21 @@
 buildIFD(val, typ, tag, endianness = .Platform$endian)
 }
 \arguments{
-\item{val}{the value of the ifd}
+\item{val}{the value of the IFD}
 
-\item{typ}{desired ifd type}
+\item{typ}{desired IFD type}
 
-\item{tag}{the desired ifd 'tag'}
+\item{tag}{the desired IFD 'tag'}
 
 \item{endianness}{the desired endian-ness ("big" or "little"). Default is .Platform$endian.}
 }
 \value{
 NULL or a list of 2 members:\cr
--min_content: the minimal ifd content,\cr
--add_content: the additional ifd content if 'val' converted to raw does not fit in 4 bytes.
+-min_content: the minimal IFD content,\cr
+-add_content: the additional IFD content if 'val' converted to raw does not fit in 4 bytes.
 }
 \description{
-build IFD
+Builds Image Field Directory (IFD)
 }
 \details{
 if 'val' if of type "character", 'tag' is automatically set to 2.\cr

@@ -1,4 +1,4 @@
-#' @title Image Field Directory Full Tag Getter
+#' @title Image Field Directory Full Tag Retrieval
 #' @description
 #' Retrieves full tag value from IFDs (Image Field Directory) extracted by \code{\link{getIFD}}.
 #' @param IFD an object of class `IFC_ifd_list` extracted by \code{\link{getIFD}}.

@@ -12,7 +12,7 @@ readIFC(fileName, ...)
 \item{...}{arguments to pass to \code{\link{ExtractFromDAF}} or \code{\link{ExtractFromXIF}}.}
 }
 \description{
-Extracts IFC data from IFC files no matter if they are DAF, RIF or CIF.
+Reads IFC data from IFC files no matter if they are DAF, RIF or CIF.
 }
 \details{
 see \code{\link{ExtractFromDAF}} or \code{\link{ExtractFromXIF}}.

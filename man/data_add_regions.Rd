@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_add_regions.R
 \name{data_add_regions}
 \alias{data_add_regions}
-\title{Regions Adder to IFC_data Object}
+\title{Add Region to IFC_data Object}
 \usage{
 data_add_regions(obj, regions, ...)
 }

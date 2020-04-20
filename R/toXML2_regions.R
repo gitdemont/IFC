@@ -1,4 +1,4 @@
-#' @title IFC_regions XMLconversion
+#' @title IFC_regions XML conversion
 #' @description 
 #' Helper to convert regions (`IFC_regions` object) to XML nodes.
 #' @param regions an `IFC_regions` object.

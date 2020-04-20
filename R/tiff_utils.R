@@ -1,14 +1,14 @@
 #' @title Image Field Directory Builder
-#' @description build IFD
-#' @param val the value of the ifd
-#' @param typ desired ifd type
-#' @param tag the desired ifd 'tag'
+#' @description Builds Image Field Directory (IFD)
+#' @param val the value of the IFD
+#' @param typ desired IFD type
+#' @param tag the desired IFD 'tag'
 #' @param endianness the desired endian-ness ("big" or "little"). Default is .Platform$endian.
 #' @details if 'val' if of type "character", 'tag' is automatically set to 2.\cr
 #' if 'val' is of length 0 NULL is returned.
 #' @return NULL or a list of 2 members:\cr
-#' -min_content: the minimal ifd content,\cr
-#' -add_content: the additional ifd content if 'val' converted to raw does not fit in 4 bytes.
+#' -min_content: the minimal IFD content,\cr
+#' -add_content: the additional IFD content if 'val' converted to raw does not fit in 4 bytes.
 #' @keywords internal
 buildIFD = function(val, typ, tag, endianness = .Platform$endian) {
   sizes = c(1,1,2,4,4,1,1,2,4,4,4,8)

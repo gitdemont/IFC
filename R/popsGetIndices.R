@@ -1,4 +1,4 @@
-#' @title IFC_pops Indices Getter
+#' @title IFC_pops Indices
 #' @description
 #' Retrieves indices of objects belonging to a population.
 #' @param obj an `IFC_data` object extracted with features extracted.
@@ -25,6 +25,6 @@ popsGetIndices <- function(obj, pop = "") {
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
   if(length(pop) != 1) stop("'pop' should be of length 1")
   N = names(obj$pops)
-  if(!all(pop%in%N)) stop(paste0("pop:[",pop,"] was not found in DAF object, valid names are:\n", paste0(paste("-", N), collapse = "\n")))
+  if(!all(pop%in%N)) stop(paste0("pop:[",pop,"] was not found in 'obj', valid names are:\n", paste0(paste("-", N), collapse = "\n")))
   return(as.integer(which(obj$pops[[pop]][["obj"]])-1))
 }

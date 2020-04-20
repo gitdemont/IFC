@@ -11,7 +11,7 @@ popsGetSiblings <- function(obj, pops) {
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
   if(is.null(pops)) stop("'pops' argument can't be NULL")
   N = names(obj$pops)
-  if(!all(pops%in%N)) stop(paste0("pops was not found in DAF object, valid names are:\n", paste0(N, collapse=", ")))
+  if(!all(pops%in%N)) stop(paste0("pops was not found in 'obj', valid names are:\n", paste0(N, collapse=", ")))
   lapply(obj$pops[pops], FUN=function(p) {
     if(p$type!="G") return(p$name)
     map = sapply(obj$pops, FUN=function(m) {

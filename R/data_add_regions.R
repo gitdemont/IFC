@@ -1,4 +1,4 @@
-#' @title Regions Adder to IFC_data Object
+#' @title Add Region to IFC_data Object
 #' @description
 #' Adds regions to an already existing `IFC_data` object.
 #' @param obj an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).

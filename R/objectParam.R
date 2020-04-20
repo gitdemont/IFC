@@ -1,6 +1,6 @@
 #' @title Object Extraction Parameters Definition
 #' @description
-#' Defines IFC_object object extraction parameters.
+#' Defines `IFC_object` object extraction parameters.
 #' @param ... arguments to be passed to \code{\link{getInfo}}, only if 'info' is not provided.
 #' @param info object of class `IFC_info`, rich information extracted by \code{\link{getInfo}}. 
 #' This argument is not mandatory but it may allow to save time for repeated image export on same file.

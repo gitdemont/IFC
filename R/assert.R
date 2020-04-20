@@ -1,6 +1,6 @@
 #' @title Assert that Certain Conditions are Met
 #' @description
-#' Validate that variable respects several parameters
+#' Ensures that a variable respects several parameters
 #' @param x variable to test
 #' @param len integer vector of allowed length for x. Default is NULL, for not checking this parameter.
 #' @param cla character vector of allowed classes of x. Default is NULL, for not checking this parameter.

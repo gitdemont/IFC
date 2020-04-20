@@ -1,6 +1,6 @@
 #' @title IFC_pops Computation
 #' @description
-#' Function used to compute IFC_pops\cr
+#' Function used to compute `IFC_pops`\cr
 #' It requires pops, regions and features.
 #' @param pops list of populations.
 #' @param regions list of regions.

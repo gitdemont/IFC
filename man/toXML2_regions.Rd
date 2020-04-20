@@ -2,7 +2,7 @@
 % Please edit documentation in R/toXML2_regions.R
 \name{toXML2_regions}
 \alias{toXML2_regions}
-\title{IFC_regions XMLconversion}
+\title{IFC_regions XML conversion}
 \usage{
 toXML2_regions(regions, verbose = FALSE)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/popsCopy.R
 \name{popsCopy}
 \alias{popsCopy}
-\title{Copy Populations Fomr One File to Another File}
+\title{Copy Populations From One File to Another File}
 \usage{
 popsCopy(
   from,

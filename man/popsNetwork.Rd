@@ -22,7 +22,7 @@ popsNetwork(
 
 \item{color_mode}{Whether to extract colors from 'obj' in "white" or "black" mode. Default is "white".}
 
-\item{highlight}{population to permanently highlight. If found in DAF object, this population will be displayed with its color. Default is NULL.}
+\item{highlight}{population to permanently highlight. If found in 'obj', this population will be displayed with its color. Default is NULL.}
 
 \item{seed}{If you provide a seed manually, the layout will be the same every time. Default is NULL.}
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/getFullTag.R
 \name{getFullTag}
 \alias{getFullTag}
-\title{Image Field Directory Full Tag Getter}
+\title{Image Field Directory Full Tag Retrieval}
 \source{
 TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
 }

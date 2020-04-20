@@ -4,7 +4,7 @@
 #' @param obj an `IFC_data` object extracted with features extracted.
 #' @param hierarchical whether to display network using a hierarchical layout or not. Default is TRUE.
 #' @param color_mode Whether to extract colors from 'obj' in "white" or "black" mode. Default is "white".
-#' @param highlight population to permanently highlight. If found in DAF object, this population will be displayed with its color. Default is NULL.
+#' @param highlight population to permanently highlight. If found in 'obj', this population will be displayed with its color. Default is NULL.
 #' @param seed If you provide a seed manually, the layout will be the same every time. Default is NULL.
 #' @param direction The direction of the hierarchical layout. Default is 'LR'.\cr
 #' The available options are: 'UD', 'DU', 'LR', 'RL'. To simplify: up-down, down-up, left-right, right-left.

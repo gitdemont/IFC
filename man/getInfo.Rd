@@ -63,7 +63,7 @@ a list of information (open .daf file in an text editor for more details) about 
 -fileName_image, path of fileName_image.
 }
 \description{
-Extracts information from RIF, CIF and DAF files.
+Retrieves rich information from RIF, CIF and DAF files.
 }
 \examples{
 if(requireNamespace("IFCdata", quietly = TRUE)) {

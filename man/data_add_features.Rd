@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_add_features.R
 \name{data_add_features}
 \alias{data_add_features}
-\title{Features Adder to IFC_data Object}
+\title{Add Feature to IFC_data Object}
 \usage{
 data_add_features(obj, features, ...)
 }

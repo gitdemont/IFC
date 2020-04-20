@@ -17,7 +17,7 @@ subsetOffsets(offsets, objects, image_type = c("img", "msk"))
 A class IFC_offset integer vector or empty list if objects are outside of offsets.
 }
 \description{
-Subsets IFC_offset
+Subsets `IFC_offset`
 }
 \examples{
 if(requireNamespace("IFCdata", quietly = TRUE)) {

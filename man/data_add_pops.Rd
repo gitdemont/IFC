@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_add_pops.R
 \name{data_add_pops}
 \alias{data_add_pops}
-\title{Pops Adder to IFC_data Object}
+\title{Add Population to IFC_data Object}
 \source{
 For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 }

@@ -1,6 +1,6 @@
 #' @title IFC Files Generic Reader
 #' @description
-#' Extracts IFC data from IFC files no matter if they are DAF, RIF or CIF.
+#' Reads IFC data from IFC files no matter if they are DAF, RIF or CIF.
 #' @param fileName path to file.
 #' @param ... arguments to pass to \code{\link{ExtractFromDAF}} or \code{\link{ExtractFromXIF}}.
 #' @details see \code{\link{ExtractFromDAF}} or \code{\link{ExtractFromXIF}}.
