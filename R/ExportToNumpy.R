@@ -34,7 +34,7 @@
 #' If one of these is missing, 'export' will be set to "matrix".
 #' @return Depending on 'export':\cr
 #' -"matrix", an array whose dimensions are [object, height, width, channel].\cr
-#' -"file", an invisible vector of ids corresponding to the objects exported. 
+#' -"file", it invisibly returns path of exported file. 
 #' @export
 ExportToNumpy <- function(...,
                           objects,
@@ -78,11 +78,11 @@ ExportToNumpy <- function(...,
       warning("ExportToNumpy: Please install 'reticulate' to export to numpy array file. 'export' has been forced to \"matrix\"")
       export = "matrix"
     } else {
-      if(!reticulate::py_module_available("numpy")) {
+      if(py_numpy_available()) {
+        np <- reticulate::import("numpy", convert  = FALSE)
+      } else {
         warning("ExportToNumpy: Can't find numpy in your python installation. 'export' has been forced to \"matrix\"")
         export = "matrix"
-      } else {
-        np <- reticulate::import("numpy", convert  = FALSE)
       }
     }
   }
@@ -329,10 +329,12 @@ ExportToNumpy <- function(...,
     if(export == "file") {
       np$save(file = write_to, arr = np$array(ret, dtype=np[[dtype]], order='C'))
       message(paste0("\n######################\n", normalizePath(write_to, winslash = "/", mustWork = FALSE), "\nhas been successfully ", ifelse(overwritten, "overwritten", "exported"), "\n"))
-      attr(ids, "filename") <- write_to
-      attr(ids, "channel_id") <- channel_id
-      attr(ids, "channel_names") <- channel_names
-      return(invisible(ids))
+      attr(write_to, "fileName") <- fileName
+      attr(write_to, "object_id") <- ids
+      attr(write_to, "offset_id") <- sapply(ans, attr, which = "offset_id")
+      attr(write_to, "channel_id") <- channel_id
+      attr(write_to, "channel_names") <- channel_names
+      return(invisible(write_to))
     }
     return(ret)
   }, error = function(e) {
