@@ -61,7 +61,7 @@ A good trick is to use:\cr
 \value{
 Depending on 'export':\cr
 -"matrix", an array whose dimensions are [object, height, width, channel].\cr
--"file", an invisible vector of ids corresponding to the objects exported.
+-"file", it invisibly returns path of exported file.
 }
 \description{
 Exports IFC objects to numpy array [objects,height,width,channels]
