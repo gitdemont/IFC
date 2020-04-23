@@ -115,7 +115,7 @@ ExtractImages_toFile <- function(...,
     assert(type, len = 1, alw = c("bmp", "jpeg", "png", "tiff"))
     param$type <- type
   }
-  fileName = param$fileName
+  fileName = param$fileName_image
   title_progress = basename(fileName)
   
   # check objects to extract

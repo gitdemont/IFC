@@ -83,7 +83,7 @@ ExtractMasks_toMatrix <- function(...,
     param = input$param
     param$export = "matrix"
   }
-  fileName = param$fileName
+  fileName = param$fileName_image
   title_progress = basename(fileName)
 
   # check objects to extract

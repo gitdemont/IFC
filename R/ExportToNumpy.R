@@ -157,7 +157,7 @@ ExportToNumpy <- function(...,
     param$mode = mode
   }
   
-  fileName = param$fileName
+  fileName = param$fileName_image
   title_progress = basename(fileName)
   file_extension = getFileExt(fileName)
   
@@ -322,6 +322,8 @@ ExportToNumpy <- function(...,
                        "height" = NULL,
                        "width" = NULL,
                        "channel" = channel_id)
+  attr(ret, "fileName_image") <- param$fileName_image
+  attr(ret, "object_id") <- ids
   attr(ret, "offset_id") <- sapply(ans, attr, which = "offset_id")
   attr(ret, "channel_id") <- channel_id
   attr(ret, "channel_names") <- channel_names
@@ -329,7 +331,7 @@ ExportToNumpy <- function(...,
     if(export == "file") {
       np$save(file = write_to, arr = np$array(ret, dtype=np[[dtype]], order='C'))
       message(paste0("\n######################\n", normalizePath(write_to, winslash = "/", mustWork = FALSE), "\nhas been successfully ", ifelse(overwritten, "overwritten", "exported"), "\n"))
-      attr(write_to, "fileName") <- fileName
+      attr(write_to, "fileName_image") <- param$fileName_image
       attr(write_to, "object_id") <- ids
       attr(write_to, "offset_id") <- sapply(ans, attr, which = "offset_id")
       attr(write_to, "channel_id") <- channel_id

@@ -195,7 +195,7 @@ ExportToGallery <- function(...,
     param$export = "matrix"
     param$mode = "rgb"
   }
-  fileName = param$fileName
+  fileName = param$fileName_image
   title_progress = basename(fileName)
   file_extension = getFileExt(fileName)
   

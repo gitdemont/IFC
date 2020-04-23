@@ -88,7 +88,7 @@ ExtractImages_toBase64 <- function(...,
     param$export = "base64"
     param$mode = mode
   }
-  fileName = param$fileName
+  fileName = param$fileName_image
   title_progress = basename(fileName)
   
   # check objects to extract
