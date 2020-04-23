@@ -1793,7 +1793,7 @@ List cpp_extract (const std::string fname,
                         imw, iml, nb_channels,
                         0, com, verbose);
   IntegerMatrix msk_init(iml, imw / nb_channels);
-  msk_init.fill(1);
+  msk_init.fill(0);
   IntegerMatrix msk = clone(msk_init);
   IntegerMatrix MC = clone(msk_init);
   
@@ -1812,8 +1812,11 @@ List cpp_extract (const std::string fname,
       for(R_len_t i = 0; i < masks.length(); i++) {
         IntegerMatrix CUR_M = clone(Rcpp::as<Rcpp::IntegerMatrix>(masks[i]));
         for(R_len_t i_row = 0; i_row < iml; i_row ++) {
-          MC(i_row, _) = (CUR_M(i_row, _) != 1) & (MC(i_row, _) == 1);
+          MC(i_row, _) = (CUR_M(i_row, _) == 1) | (MC(i_row, _) == 1);
         }
+      }
+      for(R_len_t i_row = 0; i_row < iml; i_row ++) {
+        MC(i_row, _) = (MC(i_row, _) == 0);
       }
     }
     masks.attr("names") = physicalChannel;
