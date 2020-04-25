@@ -197,6 +197,8 @@ objectParam <- function(...,
              channelwidth = info$channelwidth,
              in_use = info$in_use,
              brightfield = info$brightfield,
+             coremode = info$coremode,
+             magnification = info$magnification,
              checksum = info$checksum,
              fileName_image = info$fileName_image)
   
