@@ -78,7 +78,7 @@ ExportToNumpy <- function(...,
       warning("ExportToNumpy: Please install 'reticulate' to export to numpy array file. 'export' has been forced to \"matrix\"")
       export = "matrix"
     } else {
-      if(py_numpy_available()) {
+      if(reticulate::py_numpy_available()) {
         np <- reticulate::import("numpy", convert  = FALSE)
       } else {
         warning("ExportToNumpy: Can't find numpy in your python installation. 'export' has been forced to \"matrix\"")
