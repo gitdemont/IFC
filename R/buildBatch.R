@@ -182,8 +182,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
     coeff = paste0(as.numeric(sapply(1:num_channels, FUN=function(x) 1:num_channels==x)), collapse="|")
   } else {
     IFD = getIFD(fileName = fileName_comp, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, bypass = FALSE)
-    coeff = getFullTag(IFD = IFD, which = 1, tag = "33020")
-    coeff = paste0(readBin(coeff, what="double", n=length(coeff)/8),collapse="|")
+    coeff = paste0(getFullTag(IFD = IFD, which = 1, tag = "33020"),collapse="|")
   }
   chunk = c(1,100,1000,5000,10000,50000,100000)
   names(chunk) = allowed_chunk
