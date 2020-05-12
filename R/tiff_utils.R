@@ -16,14 +16,14 @@ buildIFD = function(val, typ, tag, endianness = .Platform$endian) {
   switch(typeof(val),
          "character" = { 
            typ <- 2
-           val = strsplit(x = val, split = character())
+           val = strsplit(x = unname(val), split = character())
            if(length(val) == 1) val = val[[1]]
          })
-  val_raw = lapply(val, FUN = function(x) {
+  val_raw = lapply(unname(val), FUN = function(x) {
     switch(typ,
            { x # 1 BYTE
            },
-           { charToRaw(x) # 2 ASCII
+           { charToRaw(as.character(x)) # 2 ASCII
            },
            { packBits(intToBits(x),type="raw")[1:2] # 3 SHORT 2 bytes, what happen when endianness is swapped ?
            },
@@ -59,10 +59,10 @@ buildIFD = function(val, typ, tag, endianness = .Platform$endian) {
     ifd = c(ifd, packBits(intToBits(0),type="raw")) #val/offsets
     add = val_raw
   } else {
-    ifd = c(ifd, sapply(4:1, FUN=function(i) { ifelse(i > bytes, as.raw(0x00), unlist(val_raw)[bytes-i+1]) }))
+    ifd = c(ifd, sapply(1:4, FUN=function(i) { ifelse(i <= bytes, unlist(val_raw)[i], as.raw(0x00)) }))
     add = raw()
   }
-  ifd = list(list(min_content = unlist(ifd), add_content = unlist(add)))
+  ifd = list(list(min_content = as.raw(unlist(ifd)), add_content = unlist(add)))
   names(ifd) = tag
   return(ifd)
 }
