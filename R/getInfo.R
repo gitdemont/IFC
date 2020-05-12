@@ -7,8 +7,8 @@
 #' @param verbosity quantity of information print to console when verbose is TRUE; 1: normal, 2: rich. Default is 1.
 #' @param warn whether to send warning message when trying to read 'analysis' information from a 'rif' file. Default is TRUE.
 #' @param force_default when display information can't be retrieved whether to use default values. Default is TRUE.
-#' @param cifdir the path of the directory to initially look to cif file. Default is dirname(fileName). Only apply when 'fullname' is set to TRUE.
-#' @param ntry number of times \code{\link{getInfo}} will be allowed to find corresponding cif file. Default is +Inf. Only apply when 'fullname' is set to TRUE.
+#' @param cifdir the path of the directory to initially look to cif file. Default is dirname(fileName). Only apply when 'fileName' is a .daf file.
+#' @param ntry number of times \code{\link{getInfo}} will be allowed to find corresponding cif file. Default is +Inf. Only apply when 'fileName' is a .daf file.
 #' If cif can't be found, but 'ntry' is reached, then an error will be thrown.
 #' @param ... other arguments to be passed.
 #' @examples
