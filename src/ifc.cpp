@@ -890,18 +890,18 @@ List cpp_getoffsets_wid(const std::string fname,
       // bool force_trunc = true;
       while(offset){
         p.increment();
-        List IFD = cpp_getTAGS(fname, offset, verbose, 8, true);
-        offset = as<uint32_t>(IFD["next_IFD_offset"]);
+        List IFD = cpp_getTAGS(fname, offset, verbose, 4, true);
+        offset = IFD["next_IFD_offset"];
         List infos = IFD["infos"];
         
         if(iNotisNULL(infos["OBJECT_ID"])) {
-          out_obj.push_back(as<int32_t>(infos["OBJECT_ID"]));
+          out_obj.push_back(infos["OBJECT_ID"]);
           // obj[0] = clone(as<int32_t>(infos["OBJECT_ID"])); // min 0?, max ?
         } else {
           out_obj.push_back(NA_INTEGER);
         }
         if(iNotisNULL(infos["TYPE"])) {
-          out_typ.push_back(as<int32_t>(infos["TYPE"]));
+          out_typ.push_back(infos["TYPE"]);
           // typ[0] = clone(as<int32_t>(infos["TYPE"])); // [1,3]
         } else {
           out_typ.push_back(NA_INTEGER);
@@ -909,7 +909,7 @@ List cpp_getoffsets_wid(const std::string fname,
         
         // out_obj.push_back(obj[0]);
         // out_typ.push_back(typ[0]);
-        out_off.push_back(as<uint32_t>(IFD["curr_IFD_offset"]));
+        out_off.push_back(IFD["curr_IFD_offset"]);
         
         if(Progress::check_abort()) {
           Rcerr << "cpp_getoffsets_wid: Interrupted by user" << std::endl;
@@ -1658,7 +1658,7 @@ NumericVector cpp_transform(const NumericMatrix mat,
   } else {
     double bg_2;
     double sd_2;
-    if((!add_noise) && ((removal[0] == "masked") || (removal[0] == "MC"))) {
+    if((!add_noise) && (mode != "raw") && ((removal[0] == "masked") || (removal[0] == "MC"))) {
       bg_2 = -4096.0;
       sd_2 = 0.0;
     } else {
