@@ -165,16 +165,12 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   # 33004 corresponds to file date
   # 33005 corresponds to user
   # 33018 corresponds to total object number
-  # 33029 corresponds to merged files in CIF, will be removed since new subset file can't contain this tag
-  # 33030 corresponds to merged files in RIF, will be removed since new subset file can't contain this tag
   # 33080 corresponds to offset of Features values, will be overwritten if features are found
   # 33081 appears in merged file, it has same val = 33080, but is of typ = 2 and map NULL 
   # 33082 corresponds to binary Features version, will be overwritten if features are found
   # 33083 corresponds to Features values in merged or subset
-  # 33085 corresponds to ?
-  # 33086 corresponds to ?
   # 33090, 33091, 33092, 33093 corresponds to tags we add to track objects origin
-  unwanted = c(33004, 33005, 33018, 33029, 33030, 33080, 33081, 33082, 33083, 33085, 33086, 33090, 33091, 33092, 33093)
+  unwanted = c(33004, 33005, 33018, 33080, 33081, 33082, 33083, 33090, 33091, 33092, 33093)
   
   # tags of StripOffsets (273) and TileOffsets (324)
   off_tags = c(273, 324)
@@ -197,7 +193,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
     pos = 4
     
     if(display_progress) {
-      pb1 = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+      pb1 = newPB(session = dots$session, title = title_progress, label = "objects subsetting", min = 0, max = L, initial = 0, style = 3)
       on.exit(endPB(pb1), add = TRUE)
     }
     for(i_off in 1:off_number) {
@@ -214,7 +210,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
         }
       }
       if(display_progress) {
-        setPB(pb1, title = title_progress, value = (obj_id+1)/2, label = "objects subsetting")
+        setPB(pb1, value = (obj_id+1)/2)
       }
       
       # go to file IFD offset
@@ -341,39 +337,31 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
         }
         # change now time
         ifd = c(ifd, buildIFD(val = format(Sys.time(), "%d-%m-%Y %H:%M:%S %p"), typ = 2, tag = 33004, endianness = r_endian))
-        
         # change user
         ifd = c(ifd, buildIFD(val = "IFC package", typ = 2, tag = 33005, endianness = r_endian))
-
+        # modify total objects count
+        ifd = c(ifd, buildIFD(val = L, typ = 4, tag = 33018, endianness = r_endian))
         # add pkg version tag /!\ mandatory to prevent overwriting original file
         ifd = c(ifd, buildIFD(val = paste0(unlist(packageVersion("IFC")), collapse = "."), typ = 2, tag = 33090, endianness = r_endian))
-        
         # add fileName tag /!\ allow to track were exported objects are coming from
         ifd = c(ifd, buildIFD(val = fileName, typ = 2, tag = 33091, endianness = r_endian))
-        
         # add checksum tag /!\ allow to track were exported objects are coming from
         ifd = c(ifd, buildIFD(val = checksumXIF(fileName), typ = 4, tag = 33092, endianness = r_endian))
-        
-        # modify total objects count
-        tmp = packBits(intToBits(L),type="raw")
+      } else {
+        # register current object id in new tag to be able to track it
+        ifd = c(ifd, buildIFD(val = cur_obj$OBJECT_ID, typ = 4, tag = 33093, endianness = r_endian)) 
+        # modify object id
+        tmp = packBits(intToBits(floor(obj_id/2)),type="raw")
         if(endianness!=r_endian) tmp = rev(tmp)
-        ifd[["33018"]]$min_content[9:12] <- tmp
-      }
-
-      # register current object id in new tag to be able to track it
-      ifd = c(ifd, buildIFD(val = cur_obj$OBJECT_ID, typ = 4, tag = 33093, endianness = r_endian))
-      
-      # modify object id
-      tmp = packBits(intToBits(floor(obj_id/2)),type="raw")
-      if(endianness!=r_endian) tmp = rev(tmp)
-      
-      # TODO ask amnis what to do with 33024
-      if(length(ifd[["33024"]])!=0) {
-        if(length(ifd[["33003"]])!=0) {
-          ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
+        
+        # TODO ask amnis what to do with 33024
+        if(length(ifd[["33024"]])!=0) {
+          if(length(ifd[["33003"]])!=0) {
+            ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
+          }
         }
+        if(length(ifd[["33003"]])!=0) ifd[["33003"]]$min_content[9:12] <- tmp
       }
-      if(length(ifd[["33003"]])!=0) ifd[["33003"]]$min_content[9:12] <- tmp
       
       # reorder ifd
       ifd = ifd[order(as.integer(names(ifd)))]

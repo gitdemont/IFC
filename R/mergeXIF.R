@@ -37,7 +37,7 @@ mergeXIF <- function (fileName, write_to,
   if(missing(fileName)) stop("'fileName' can't be missing")
   tmp = duplicated(fileName)
   if(any(tmp)) {
-    warning(paste0("duplicated files have been removed from 'fileName': ","\n-", paste0(fileName[tmp],collapse="\n-")))
+    warning(paste0("duplicated files have been removed from 'fileName': ","\n-", paste0(fileName[tmp],collapse="\n-")), call. = FALSE, immediate. = TRUE)
     fileName = fileName[!tmp]
   }
   if(length(fileName) < 2) stop("'fileName' should be at least of length 2 to create a merge")
@@ -125,10 +125,8 @@ mergeXIF <- function (fileName, write_to,
   # 33081 appears in merged file, it has same val = 33080, but is of typ = 2 and map NULL 
   # 33082 corresponds to binary Features version, will be overwritten if features are found
   # 33083 corresponds to Features values in merged or subset
-  # 33085 corresponds to ?
-  # 33086 corresponds to ?
   # 33090, 33091, 33092, 33093 corresponds to tags we add to track objects origin
-  unwanted = c(33004, 33005, 33018, 33029, 33030, 33080, 33081, 33082, 33083, 33085, 33086, 33090, 33091, 33092, 33093)
+  unwanted = c(33004, 33005, 33018, 33029, 33030, 33080, 33081, 33082, 33083, 33090, 33091, 33092, 33093)
 
   # tags of StripOffsets (273) and TileOffsets (324)
   off_tags = c(273, 324)
