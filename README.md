@@ -85,7 +85,7 @@ Then these predicted populations can be injected so as to be checked using IDEAS
 - subset or merge .rif, .cif,
 
 use: **writeIFC()** or **ExportToXIF()**
-Once data are parsed and treated new elements can be used to subset raw / compensated images files
+Once data are parsed and treated new elements can be used to subset or merge raw / compensated images files
 
 - Scale up productivity; here are several (among others) functions that have been created to:
 
