@@ -416,27 +416,3 @@ mergeXIF <- function (fileName, write_to,
   message(mess)
   return(invisible(write_to))
 }
-files = c("F:/ISX_Files/telophase.rif", "F:/ISX_Files/prophase.rif", "F:/ISX_Files/metaphase.rif")
-new = mergeXIF(files, write_to = "F:/ISX_Files/test_merge14.rif", overwrite = T)
-# closeAllConnections()
-off1 = cpp_getoffsets_noid("F:/ISX_Files/test_merge14.rif")
-IFD1 = cpp_getTAGS("F:/ISX_Files/test_merge14.rif", off1[1], verbose = T)
-sapply(IFD1$tags, FUN=function(i) i)
-# off2 = getOffsets("F:/ISX_Files/telophase.rif")
-# IFD2 = cpp_getTAGS("F:/ISX_Files/telophase.rif", off2[5], verbose = F)
-# sapply(IFD2$tags, FUN=function(i) i)
-
-# str(cpp_getTAGS("F:/ISX_Files/test_merge9.rif", offset = off[4], verbose = T)$infos)
-# DisplayGallery(fileName = new)
-
-# IFD2 = getIFD(system.file("extdata", "example.rif", package = "IFCdata"))
-# IFD2 = getIFD("F:/ISX_Files/T-Yoda_40_1.rif")
-# IFD3 = getIFD("F:/ISX_Files/Merged_T-Yoda_40.rif")
-# off3 = getOffsets("F:/ISX_Files/Merged_T-Yoda_40.rif")
-# sapply(IFD1$tags, FUN=function(x) x)
-
-# sapply(IFD2[[1]]$tags, FUN=function(x) x)
-# IFD3 = getIFD("F:/ISX_Files/Merged_T-Yoda_40.rif", subsetOffsets(offsets = off3, objects = 0, image_type = "img"))
-# sapply(IFD2$tags, FUN=function(x) x)
-IFD3 = getIFD("F:/ISX_Files/Merged_T-Yoda_40.rif")
-sapply(IFD3[[1]]$tags, FUN=function(x) x)
