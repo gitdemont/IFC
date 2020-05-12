@@ -28,7 +28,7 @@
 writeIFC <- function(fileName, ...) {
   dots=list(...)
   file_extension = getFileExt(fileName)
-  assert(file_extension, len = 1, alw = c("daf", "rif", "cif"))
-  if(file_extension == "daf") return(ExportToDAF(fileName = fileName, ...))
+  assert(file_extension, alw = c("daf", "rif", "cif"))
+  if((length(file_extension) == 1) && (file_extension == "daf")) return(ExportToDAF(fileName = fileName, ...))
   return(ExportToXIF(fileName = fileName, ...))
 }
