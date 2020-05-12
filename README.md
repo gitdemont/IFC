@@ -82,7 +82,7 @@ use: **writeIFC()** or **ExportToDAF()**
 Once data are parsed and treated new elements can be injected in daf file, e.g. a ML model is trained on a daf file and used to predict populations in other daf files.
 Then these predicted populations can be injected so as to be checked using IDEAS in addition to their predicted probability values (or other features like PCA/t-SNE dimensions).
 
-- subset .rif, .cif,
+- subset or merge .rif, .cif,
 
 use: **writeIFC()** or **ExportToXIF()**
 Once data are parsed and treated new elements can be used to subset raw / compensated images files

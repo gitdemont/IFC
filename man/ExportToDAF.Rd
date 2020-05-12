@@ -2,7 +2,7 @@
 % Please edit documentation in R/ExportToDAF.R
 \name{ExportToDAF}
 \alias{ExportToDAF}
-\title{DAF File Appender}
+\title{DAF File Writer}
 \usage{
 ExportToDAF(
   fileName,

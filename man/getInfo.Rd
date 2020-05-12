@@ -29,9 +29,9 @@ getInfo(
 
 \item{force_default}{when display information can't be retrieved whether to use default values. Default is TRUE.}
 
-\item{cifdir}{the path of the directory to initially look to cif file. Default is dirname(fileName). Only apply when 'fullname' is set to TRUE.}
+\item{cifdir}{the path of the directory to initially look to cif file. Default is dirname(fileName). Only apply when 'fileName' is a .daf file.}
 
-\item{ntry}{number of times \code{\link{getInfo}} will be allowed to find corresponding cif file. Default is +Inf. Only apply when 'fullname' is set to TRUE.
+\item{ntry}{number of times \code{\link{getInfo}} will be allowed to find corresponding cif file. Default is +Inf. Only apply when 'fileName' is a .daf file.
 If cif can't be found, but 'ntry' is reached, then an error will be thrown.}
 
 \item{...}{other arguments to be passed.}

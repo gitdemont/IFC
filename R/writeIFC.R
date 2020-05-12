@@ -1,6 +1,6 @@
 #' @title IFC Files Generic Writer
 #' @description
-#' Writes IFC data to DAF or subsets RIF/CIF Files.
+#' Writes IFC data to DAF and subsets or merges RIF/CIF Files.
 #' @param fileName path to file.
 #' @param ... arguments to pass to \code{\link{ExportToDAF}} or \code{\link{ExportToXIF}}.
 #' @details see \code{\link{ExportToDAF}} or \code{\link{ExportToXIF}}.

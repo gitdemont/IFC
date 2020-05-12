@@ -12,7 +12,7 @@ writeIFC(fileName, ...)
 \item{...}{arguments to pass to \code{\link{ExportToDAF}} or \code{\link{ExportToXIF}}.}
 }
 \description{
-Writes IFC data to DAF or subsets RIF/CIF Files.
+Writes IFC data to DAF and subsets or merges RIF/CIF Files.
 }
 \details{
 see \code{\link{ExportToDAF}} or \code{\link{ExportToXIF}}.

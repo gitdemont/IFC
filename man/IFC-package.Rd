@@ -6,7 +6,7 @@
 \alias{IFC}
 \title{Tools for Imaging Flow Cytometry}
 \description{
-Contains several tools to treat Imaging Flow Cytometry data from ImageStream(R) and FlowSight(R) cytometers (Amnis(R), part of Luminex(R)). Provides an easy and simple way to read, write and subset .rif, .cif and .daf files. Information such as masks, features, regions and populations set within these files can be retrieved. In addition, raw data such as images stored can also be accessed. Users, may hopefully increase their productivity thanks to dedicated functions to extract, visualize and export IFC data.
+Contains several tools to treat Imaging Flow Cytometry data from ImageStream(R) and FlowSight(R) cytometers (Amnis(R), part of Luminex(R)). Provides an easy and simple way to read or write .rif, .cif and .daf files. Information such as masks, features, regions and populations set within these files can be retrieved. In addition, raw data such as images stored can also be accessed. Users, may hopefully increase their productivity thanks to dedicated functions to extract, visualize and export IFC data.
 }
 \details{
 The IFC package provides several categories of functions:\cr
