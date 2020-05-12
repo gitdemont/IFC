@@ -46,14 +46,11 @@ std::string to_string(uint16_t x) {
 // determines range of a numeric vector AND ensures that it is of finite values.
 // minimal value will be clipped to -4095.0
 NumericVector cpp_check_range(const NumericVector x) {
-  double Min = R_PosInf, Max = -4095.0;
+  double Min = R_PosInf, Max = R_NegInf;
   if(nNotisNULL(x)) {
     for(R_len_t i = 0; i < x.size(); i++) {
       if(!Rcpp::traits::is_finite<REALSXP>(x[i])) Rcpp::stop("cpp_check_range: 'x' contains non-finite values");
-      if(x[i] < Min) {
-        Min = x[i];
-        continue;
-      }
+      if((x[i] < Min) && (x[i] > -4095.0)) Min = x[i];
       if(x[i] > Max) Max = x[i];
     }
   } else {
