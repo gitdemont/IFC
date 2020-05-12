@@ -28,6 +28,13 @@
 #' If no offsets is found an error is thrown.
 #' @export
 getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose = FALSE) {
+  if(missing(fileName)) stop("'fileName' can't be missing")
+  tmp = duplicated(fileName)
+  if(any(tmp)) {
+    warning(paste0("duplicated files have been removed from 'fileName': ","\n-", paste0(fileName[tmp],collapse="\n-")))
+    fileName = fileName[!tmp]
+  }
+  if(length(fileName) != 1) stop("'fileName' should be of length 1")
   fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
   verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))

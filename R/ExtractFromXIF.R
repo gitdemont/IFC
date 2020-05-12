@@ -62,6 +62,13 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
                            force_default = TRUE, verbose = FALSE, verbosity = 1, display_progress = TRUE,
                            fast = TRUE, recursive = FALSE, ...) {
   dots=list(...)
+  if(missing(fileName)) stop("'fileName' can't be missing")
+  tmp = duplicated(fileName)
+  if(any(tmp)) {
+    warning(paste0("duplicated files have been removed from 'fileName': ","\n-", paste0(fileName[tmp],collapse="\n-")))
+    fileName = fileName[!tmp]
+  }
+  if(length(fileName) != 1) stop("'fileName' should be of length 1")
   extract_features = as.logical(extract_features); assert(extract_features, len = 1, alw = c(TRUE, FALSE))
   extract_images = as.logical(extract_images); assert(extract_images, len = 1, alw = c(TRUE, FALSE))
   extract_offsets = as.logical(extract_offsets); assert(extract_offsets, len = 1, alw = c(TRUE, FALSE))

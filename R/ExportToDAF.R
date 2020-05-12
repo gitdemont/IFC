@@ -1,4 +1,4 @@
-#' @title DAF File Appender
+#' @title DAF File Writer
 #' @description
 #' Writes a new DAF file based on another one and exports new region(s), pop(s), feature(s), graph(s) and / or mask(s).
 #' @param fileName path of file to read data from.
@@ -56,6 +56,12 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
   
   # check mandatory param
   if(missing(fileName)) stop("'fileName' can't be missing")
+  tmp = duplicated(fileName)
+  if(any(tmp)) {
+    warning(paste0("duplicated files have been removed from 'fileName': ","\n-", paste0(fileName[tmp],collapse="\n-")))
+    fileName = fileName[!tmp]
+  }
+  if(length(fileName) != 1) stop("'fileName' should be of length 1")
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
   if(getFileExt(fileName)!="daf") stop("'fileName' should be a .daf file")
   if(missing(write_to)) stop("'write_to' can't be missing")

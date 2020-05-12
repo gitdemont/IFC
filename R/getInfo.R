@@ -61,6 +61,13 @@ getInfo <- function(fileName,
                     ...) {
   dots = list(...)
   if(missing(fileName)) stop("'fileName' can't be missing")
+  if(missing(fileName)) stop("'fileName' can't be missing")
+  tmp = duplicated(fileName)
+  if(any(tmp)) {
+    warning(paste0("duplicated files have been removed from 'fileName': ","\n-", paste0(fileName[tmp],collapse="\n-")))
+    fileName = fileName[!tmp]
+  }
+  if(length(fileName) != 1) stop("'fileName' should be of length 1")
   if(!file.exists(fileName)) stop(paste0("can't find ",fileName))
   file_extension = getFileExt(fileName)
   assert(file_extension, len = 1, alw = c("daf", "cif", "rif"))

@@ -32,6 +32,13 @@
 #' @return A data.frame is returned.
 getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE, fast = TRUE, ...) {
   dots = list(...)
+  if(missing(fileName)) stop("'fileName' can't be missing")
+  tmp = duplicated(fileName)
+  if(any(tmp)) {
+    warning(paste0("duplicated files have been removed from 'fileName': ","\n-", paste0(fileName[tmp],collapse="\n-")))
+    fileName = fileName[!tmp]
+  }
+  if(length(fileName) != 1) stop("'fileName' should be of length 1")
   fileName = normalizePath(fileName, winslash = "/", mustWork = TRUE)
   title_progress = basename(fileName)
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
