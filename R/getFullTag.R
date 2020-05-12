@@ -40,48 +40,52 @@ getFullTag <- function(IFD, which = 1, tag = "256") {
       return(NULL)
     }
   }
-  toread = file(description = attr(IFD, "fileName_image"), open = "rb")
-  on.exit(close(toread))
-  seek(toread, where = ifd$tags[[tag]]$val, origin = "start")
-  switch(ifd$tags[[tag]]$typ,
-         { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = FALSE)) # 1 BYTE, 1 Byte
-         },
-         { return(readChar(toread, nchars = ifd$tags[[tag]]$byt, useBytes = TRUE)) # 2 ASCII, 1 Byte
-         },
-         { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 2, signed = FALSE, endian = endian)) # 3 SHORT 2 bytes
-         },
-         { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, signed = FALSE, endian = endian)) # 4 LONG, 4 bytes
-         },
-         { # 5 RATIONAL = 2 LONG, 1st numerator, 2nd denominator
-           if(length(ifd$tags[[tag]]$byt) == 0) return(numeric(0))
-           foo = readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, signed = FALSE, endian = endian) 
-           if(ifd$tags[[tag]]$len %% 2) {
-             warning(paste0("IFD 'tag'[",tag,"] is of 'typ'[5] is expected to be even but number of bytes is odd.\neven was not divided by odd in returned value."))
-             return(foo)
-           } 
-           odd = seq(from = 1, to = ifd$tags[[tag]]$len, by = 2)
-           return(foo[odd] / foo[-odd])
-         },
-         { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = TRUE)) # 6 SBYTE, 1 Byte
-         },
-         { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw")) # 7 UNDEFINED, 1 Byte
-         },
-         { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, signed = TRUE, endian = endian)) # 8 SSHORT, 2 bytes
-         },
-         { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, signed = TRUE, endian = endian)) # 9 SLONG, 4 bytes
-         },
-         { # 10 SRATIONAL, 2 SLONG, 1st numerator, 2nd denominator
-           if(length(ifd$tags[[tag]]$byt) == 0) return(numeric(0))
-           foo = readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, signed = TRUE, endian = endian) 
-           if(ifd$tags[[tag]]$len %% 2) {
-             warning(paste0("IFD 'tag'[",tag,"] is of 'typ'[10] is expected to be even but number of bytes is odd.\neven was not divided by odd in returned value."))
-             return(foo)
-           } 
-           odd = seq(from = 1, to = ifd$tags[[tag]]$len, by = 2)
-           return(foo[odd] / foo[-odd])
-         },
-         { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "double", size = 4, endian = endian)) # 11 FLOAT, 4 bytes
-         },
-         { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "double", size = 8, endian = endian)) # 12 DOUBLE, 8 bytes
-         })
+  if(ifd$tags[[tag]]$off) {
+    toread = file(description = attr(IFD, "fileName_image"), open = "rb")
+    on.exit(close(toread))
+    seek(toread, where = ifd$tags[[tag]]$val, origin = "start")
+    switch(ifd$tags[[tag]]$typ,
+           { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = FALSE)) # 1 BYTE, 1 Byte
+           },
+           { return(readChar(toread, nchars = ifd$tags[[tag]]$byt, useBytes = TRUE)) # 2 ASCII, 1 Byte
+           },
+           { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 2, signed = FALSE, endian = endian)) # 3 SHORT 2 bytes
+           },
+           { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, endian = endian)) # 4 LONG, 4 bytes
+           },
+           { # 5 RATIONAL = 2 LONG, 1st numerator, 2nd denominator
+             if(length(ifd$tags[[tag]]$byt) == 0) return(numeric(0))
+             foo = readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, endian = endian) 
+             if(ifd$tags[[tag]]$len %% 2) {
+               warning(paste0("IFD 'tag'[",tag,"] is of 'typ'[5] is expected to be even but number of bytes is odd.\neven was not divided by odd in returned value."))
+               return(foo)
+             } 
+             odd = seq(from = 1, to = ifd$tags[[tag]]$len, by = 2)
+             return(foo[odd] / foo[-odd])
+           },
+           { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = TRUE)) # 6 SBYTE, 1 Byte
+           },
+           { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw")) # 7 UNDEFINED, 1 Byte
+           },
+           { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, endian = endian)) # 8 SSHORT, 2 bytes
+           },
+           { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, endian = endian)) # 9 SLONG, 4 bytes
+           },
+           { # 10 SRATIONAL, 2 SLONG, 1st numerator, 2nd denominator
+             if(length(ifd$tags[[tag]]$byt) == 0) return(numeric(0))
+             foo = readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, endian = endian) 
+             if(ifd$tags[[tag]]$len %% 2) {
+               warning(paste0("IFD 'tag'[",tag,"] is of 'typ'[10] is expected to be even but number of bytes is odd.\neven was not divided by odd in returned value."))
+               return(foo)
+             } 
+             odd = seq(from = 1, to = ifd$tags[[tag]]$len, by = 2)
+             return(foo[odd] / foo[-odd])
+           },
+           { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "double", size = 4, endian = endian)) # 11 FLOAT, 4 bytes
+           },
+           { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "double", size = 8, endian = endian)) # 12 DOUBLE, 8 bytes
+           })
+  } else {
+    return(ifd$tags[[tag]]$map)
+  }
 }
