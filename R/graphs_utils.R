@@ -44,25 +44,11 @@ myScales=function(x=list(), y=list()) {
 }
 
 #' @title 2D Binned Kernel Density Estimation
+#' @name calcDensity
 #' @description Helper to compute density plot
-#' @author R Core Team, Florian Hahne at FHCRC, originally
-#' @source copyed from \pkg{grDevices}
 #' @keywords internal
-calcDensity=function (x, nbin, bandwidth, range.x) { # slightly modifyied .smoothScatterCalcDensity has been renamed to calcDensity
-  if(length(nbin) == 1) nbin <- c(nbin, nbin)
-  if(!is.numeric(nbin) || length(nbin) != 2) stop("'nbin' must be numeric of length 1 or 2")
-  if(missing(bandwidth)) {
-    bandwidth <- diff(apply(x, 2, quantile, probs = c(0.05, 0.95), na.rm = TRUE, names = FALSE))/25
-    bandwidth[bandwidth == 0] <- 1
-  }
-  else {
-    if (!is.numeric(bandwidth)) stop("'bandwidth' must be numeric")
-    if (any(bandwidth <= 0)) stop("'bandwidth' must be positive")
-  }
-  rv <- KernSmooth::bkde2D(x, bandwidth = bandwidth, gridsize = nbin, range.x = range.x)
-  rv$bandwidth <- bandwidth
-  rv
-}
+calcDensity <- getFromNamespace(x = ".smoothScatterCalcDensity", ns = "grDevices")
+
 #' @title Colors for Smooth Density Plots
 #' @description Helper to map density to colors
 #' @source derived from \pkg{grDevices} R Core Team, Florian Hahne at FHCRC, originally
@@ -98,16 +84,10 @@ colConv=function(col){
 }
 
 #' @title Histogram Constructor
+#' @name hist_constr
 #' @description Helper to construct histogram 
-#' @source derived from \pkg{lattice} from Deepayan Sarkar
 #' @keywords internal
-hist_constr=function (x, breaks, include.lowest=TRUE, right=TRUE, plot=FALSE) {
-  if (is.numeric(breaks) && length(breaks) > 1) {
-    hist(as.numeric(x), breaks=breaks, include.lowest=include.lowest, right=right, plot=plot)
-  } else {
-    hist(as.numeric(x), breaks=breaks, include.lowest=include.lowest, right=right, plot=plot)
-  }
-}
+hist_constr <- getFromNamespace(x = "hist.constructor", ns = "lattice")
 
 #' @title Histogram Type Constructor
 #' @description Helper to construct histogram 

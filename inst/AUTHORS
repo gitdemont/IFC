@@ -14,19 +14,19 @@ popsNetwork in popsNetwork.R is using visNetwork package authored by Almende
 B.V., Benoit Thieurmel and Titouan Robert under MIT + file LICENSE
 
 --------------------------------------------------------------------------------
-getFileExt is an adapation of file_ext from tools R package
+getFileExt is an adapation of file_ext function from tools R package
 authored by Kurt Hornik and Friedrich Leisch, The R Core Team under GPL >= 2.0
 
 --------------------------------------------------------------------------------
-Several functions to compute histograms in graphs_utils are derived from Lattice
+Several functions to compute graphs in graphs_utils are derived from Lattice
 R package authored by Deepayan Sarkar under GPL >= 2.0
 
 --------------------------------------------------------------------------------
-calcDensity and densCols are adaptation from File grDevices
+densCols is an adaptation from File smooth2d.R in grDevices R package
 authored Florian Hahne at FHCRC, originally, The R Core Team under GPL >= 2.0
 
 --------------------------------------------------------------------------------
-cpp_HSV2RGB is an adapation from File grDevices
+cpp_HSV2RGB is an adapation from File color.c in grDevices R package
 The R Core Team, The R Foundation, under GPL >= 2.0
 
 --------------------------------------------------------------------------------

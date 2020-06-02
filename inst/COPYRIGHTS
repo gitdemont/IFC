@@ -73,7 +73,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 --------------------------------------------------------------------------------
-getFileExt in getFileExt.R is an adapation of file_ext from File
+getFileExt is an adapation of file_ext function from File
 src/library/tools/R/utils.R, authored by Kurt Hornik and Friedrich Leisch
 Part of the R package, https://www.R-project.org
 Copyright (C) 1995-2016 The R Core Team
@@ -92,7 +92,7 @@ A copy of the GNU General Public License is available at
 https://www.R-project.org/Licenses/
 
 --------------------------------------------------------------------------------
-Several functions to compute histograms in graphs_utils.R are derived from 
+Several functions to compute graphs in graphs_utils.R are derived from 
 File src/library/lattice/R/histogram.R, authored by Deepayan Sarkar
 Copyright (C) 2001-2006  Deepayan Sarkar <Deepayan.Sarkar@R-project.org>
 
@@ -123,7 +123,7 @@ in files GPL-2 and GPL-3 in the sources of this package, as well as at
 http://www.r-project.org/Licenses/
 
 --------------------------------------------------------------------------------
-calcDensity and densCols are adaptation from File 
+densCols is an adaptation from File 
 src/library/grDevices/R/smooth2d.R, authored Florian Hahne at FHCRC, originally
 Part of the R package, https://www.R-project.org
 
