@@ -10,7 +10,7 @@
 #' -min_content: the minimal IFD content,\cr
 #' -add_content: the additional IFD content if 'val' converted to raw does not fit in 4 bytes.
 #' @keywords internal
-buildIFD = function(val, typ, tag, endianness = .Platform$endian) {
+buildIFD <- function(val, typ, tag, endianness = .Platform$endian) {
   sizes = c(1,1,2,4,4,1,1,2,4,4,4,8)
   multi = c(1,1,1,1,2,1,1,1,1,2,1,1)
   switch(typeof(val),

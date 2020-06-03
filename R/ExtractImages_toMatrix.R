@@ -125,8 +125,8 @@ ExtractImages_toMatrix <- function(...,
   if(display_progress) {
     pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
-    ans = lapply(1:L, FUN=function(i) { 
-      setPB(pb, value = i, title = title_progress, label = "exporting images to matrix")
+    ans = lapply(1:L, FUN=function(i) {
+     setPB(pb, value = i, title = title_progress, label = "exporting images to matrix")
       do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
                                                                  offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"),
                                                                  trunc_bytes = 8, 
@@ -138,7 +138,7 @@ ExtractImages_toMatrix <- function(...,
                                                     verbose = verbose,
                                                     bypass = TRUE),
                                                dots))
-    }) 
+    })
   } else {
     ans = lapply(1:L, FUN=function(i) { 
       do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
@@ -156,9 +156,9 @@ ExtractImages_toMatrix <- function(...,
   }
   channel_id = attr(ans[[1]][[1]], "channel_id")
   if(L>1) {
-    ans = do.call(what="c", args=ans)
+  ans = do.call(what="c", args=ans)
   } else {
-    ans = ans[[1]]
+  ans = ans[[1]]
   }
   ids = sapply(ans, attr, which="object_id")
   if(!all(objects == ids)) warning("Extracted object_ids differ from expected ones. Concider running with 'fast' = FALSE", call. = FALSE, immediate. = TRUE)
