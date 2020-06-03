@@ -1,0 +1,108 @@
+---
+title: "IFC_vignette"
+output: html_document
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+IFC is an R-package for data analysis of image flow cytometry.
+Installation:
+```{r setup}
+devtools::install_github(repo = "gitdemont/IFC", ref = "master", dependencies = FALSE, local = FALSE)
+```
+
+
+
+Activation
+```{r}
+library(IFC)
+```
+For the following example, three files are needed:
+- `example.rif`: raw image file
+- `example.cif`: compensated image file
+- `example.daf`: data analysis file
+
+```{r}
+fileNamedaf <- "example.daf"
+fileNameRif <- "example.rif"
+fileNameCif <- "example.cif"
+```
+
+
+R object can be construted from these files:
+
+```{r}
+rifn1 <- ExtractFromXIF(fileNameRif, extract_features = T, extract_images = F, extract_offsets = F, extract_stats = F, display_progress = F)
+cifn1 = ExtractFromXIF(fileNameCif, extract_features = T, extract_images = T, extract_offsets = T, extract_stats = T, fast = T)
+dafn1 <- ExtractFromDAF(fileNameDaf, extract_features = T, extract_images = T, extract_offsets = T, extract_stats = F, display_progress = T)
+```
+The obtained R object is an "IFC_data" class, whose description is given in the help (`? ExtractFromXIF` or `? ExtractFromDAF`).
+GSremarque: dans le help de ExtractFromXIF, fast and recursive are difficult to understand.
+GSremarque: dans le hehlp de ExtratFromXIF and ExtractFromDAF, offsets is not easy to understand.
+GSremarque: dans le help de ExtractFromDAF, endianess is not clear, I am not sure everyuser know what endianess is.
+
+
+For .daf file, the function readIFC can also be used:
+```{r}
+dafn2 = readIFC(fileNameDaf, extract_features = T, extract_images = T, extract_offsets = T, extract_stats = T)
+```
+GSremarque: quelle est la différence entre readIFC et ExtractfromDAF ?
+
+Offsets (GSremarque: need to explain what is offset? also in helps?) are in object obtained from a .daf file:
+```{r}
+offsets_daf = dafn1$offsets
+str(offsets_daf)
+```
+
+Offsets can also be extracted from .cif file:
+```{r}
+offsets_cif = getOffsets(fileNameCif, fast = T, display_progress = T)
+```
+
+GSremark: I am not sure that getIFD should be represented in the vignette. Anyway, for me it is difficult to understand.
+- The name 'getIFD' itself seems strange as "directory" seems related to a folder
+- As I undesrand, the inforamtions are related to TIFF format. If it is the case, it should mention at first in the help.
+- although I don't know wat "offset", it seems strange to have the possiblity of "first" or "all".
+- I don't understand what are trunc_bytes and force_trunc.
+- The part "Details" of the help is hard to understand, as the "Value" is easier.
+Similar remarks about getFullTag. For me, it is diffcult to understant what are these "Tags".
+
+It is possible to produce a report (pdf file or csv file):
+```{r}
+ExportToReport(dafn1, write_to = c("test.pdf"), selection = 12,  precision = "light", overwrite = T, onepage = T)
+```
+GSrmarks on "ExportToReport": choice of name "write_to" is strange. Why not simply "Outfile"? In the example of the help, I think it is not a good idea to put the file in tmpdir. I would prefer to put it in the working directory. 
+
+
+The images can be displayed and/or exported.
+```{r}
+disp = getInfo(fileName1, from = "analysis")
+DisplayGallery(display = disp, offsets = dafn1$offsets, objects = which(dafn1$pops[["tagged_S"]]$obj)-1, extract_max = 10, forceRange = F, force_width = T, display_progress = F, base64_id = T, objects_type = "msk")
+imageExport = ExportToGallery(disp, offsets = dafn1$offsets, objects = (which(dafn1$pops[["tagged_S"]]$obj)-1)[1], export = "base64",overwrite = T, dpi = 300, force_width = F, add_channels = F, scale = list(size = 8), mode = "rgb")
+```
+GSRemarks: name of argument "object" for DisplayGallery and ExportToGallery  (and also ExtractImages_toBase64) is strange, which simple "indices" or "objectIndices".
+
+It is possible to extract population inidces from an object:
+```{r}
+popIndicesTCli <- popsGetIndices(dafn1, "tagged_cli")
+```
+
+Finally, it is possible to export data to .daf of .xif (GSRemark: can you explain what does exaclyt the code below, in term of pop and reg?)
+```{r}
+pop = dafn1$pops[sapply(dafn1$pops, FUN=function(x) x$type=="G")][[3]]
+pop_copy = pop
+pop_copy$name = paste0(pop_copy$name,"_copy")
+reg = dafn1$regions[[pop_copy$region]]
+reg_copy = reg
+reg_copy$label = paste0(reg_copy$label,"_copy")
+pop_copy$region = reg_copy$label
+ExportToDAF(dafn1$fileName, write_to = "ExportFile.daf",pops = list(pop_copy),regions = list(reg_copy), verbose = T, overwrite = T)
+ExportToXIF(fileName = "example.cif", write_to = "ExportFile.cif", objects = popIndicesTCli[c(7,2,3,4)], overwrite = T, fast = F)
+```
+GSremarks on "ExportToDAF,ExportToXIF": choice of name "write_to" is strange. Why not simply "Outfile"? In the example, I think it is not a good idea to put the file in tmpdir. I would prefer to put it in the working directory. 
+
+GSRemarks on "ExportToXIF: name of argument "object" for DisplayGallery and ExportToGallery  (and also ExtractImages_toBase64 is strange, which simple "indices" or "objectIndices".
+
+
