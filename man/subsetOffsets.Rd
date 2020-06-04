@@ -9,7 +9,7 @@ subsetOffsets(offsets, objects, image_type = c("img", "msk"))
 \arguments{
 \item{offsets}{object of class `IFC_offset` to subset.}
 
-\item{objects}{integer vector, indices of objects to extract.}
+\item{objects}{integer vector, IDEAS objects ids numbers to extract.}
 
 \item{image_type}{image_type of desired offsets. Default is c("img", "msk"). Allowed are "img" and/or "msk".}
 }

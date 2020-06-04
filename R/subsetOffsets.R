@@ -31,7 +31,7 @@
 #' @description
 #' Subsets `IFC_offset`
 #' @param offsets object of class `IFC_offset` to subset.
-#' @param objects integer vector, indices of objects to extract.
+#' @param objects integer vector, IDEAS objects ids numbers to extract.
 #' @param image_type image_type of desired offsets. Default is c("img", "msk"). Allowed are "img" and/or "msk".
 #' @examples
 # #' \dontrun{

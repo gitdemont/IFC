@@ -33,7 +33,7 @@
 #' @param fileName path to file.
 #' @param offsets Object of class `IFC_offset`. If missing, the default, 'offsets' will be extracted from 'fileName'.\cr
 #' This param is not mandatory but it may allow to save time when exporting repeated image value on same file.
-#' @param objects integers, indices of objects to extract.\cr
+#' @param objects integer vector, IDEAS objects ids numbers to extract.\cr
 #' If missing, the default, images values from all objects will be extracted.
 #' @param display_progress whether to display a progress bar. Default is FALSE.
 #' @param fast when no 'offsets' are provided whether to fast extract 'offsets' or not. Default is TRUE.\cr

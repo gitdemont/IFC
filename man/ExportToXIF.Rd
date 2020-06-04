@@ -33,7 +33,7 @@ Placeholders, like "\%d/\%s_fromR.\%e", will be substituted:\cr
 -\%s: with shortname from of first element of 'fileName' (i.e. basename without extension).\cr
 Exported file extension will be deduced from this pattern. It has to be the same as 'fileName', i.e. .cif or .rif.}
 
-\item{objects}{integers, indices of objects to use. If missing, the default, all objects will be used. Only apply for subsetting.}
+\item{objects}{integer vector, IDEAS objects ids numbers to use. If missing, the default, all objects will be used. Only apply for subsetting.}
 
 \item{offsets}{object of class `IFC_offset`. If missing, the default, offsets will be extracted from 'fileName'.\cr
 This param is not mandatory but it may allow to save time for repeated XIF export on same file. Only apply for subsetting.}

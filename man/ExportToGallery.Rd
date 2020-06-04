@@ -33,7 +33,7 @@ If 'param' is provided 'mode'(="rgb") and the above parameters will be overwritt
 If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr
 /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 
-\item{objects}{integers, indices of objects to use.
+\item{objects}{integer vector, IDEAS objects ids numbers to use.
 This argument is not mandatory, if missing, the default, all objects will be used.}
 
 \item{offsets}{object of class `IFC_offset`. 

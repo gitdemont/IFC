@@ -39,7 +39,7 @@
 #' -\%e: with extension of 'fileName' (without leading .)\cr
 #' -\%s: with shortname from 'fileName' (i.e. basename without extension).\cr
 #' Exported file extension will be deduced from this pattern. It has to be the same as 'fileName', i.e. .cif or .rif.
-#' @param objects integers, indices of objects to use. If missing, the default, all objects will be used.
+#' @param objects integer vector, IDEAS objects ids numbers to use. If missing, the default, all objects will be used.
 #' @param offsets object of class `IFC_offset`. If missing, the default, offsets will be extracted from 'fileName'.\cr
 #' This param is not mandatory but it may allow to save time for repeated XIF export on same file.
 #' @param fast whether to fast extract 'objects' or not. Default is TRUE.

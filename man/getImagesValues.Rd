@@ -19,7 +19,7 @@ getImagesValues(
 \item{offsets}{Object of class `IFC_offset`. If missing, the default, 'offsets' will be extracted from 'fileName'.\cr
 This param is not mandatory but it may allow to save time when exporting repeated image value on same file.}
 
-\item{objects}{integers, indices of objects to extract.\cr
+\item{objects}{integer vector, IDEAS objects ids numbers to extract.\cr
 If missing, the default, images values from all objects will be extracted.}
 
 \item{display_progress}{whether to display a progress bar. Default is FALSE.}
