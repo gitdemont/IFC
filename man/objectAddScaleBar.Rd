@@ -31,7 +31,7 @@ This parameter can't be lesser than 6px and higher than image width + scale text
 \item{yoff}{positive integer. y offset in image to draw scale, starting from bottom left corner.}
 }
 \value{
-scale is added to the bottom left corner of the image.
+an image with scale added to the bottom left corner.
 }
 \description{
 Adds scale bar to image

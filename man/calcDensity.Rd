@@ -3,16 +3,10 @@
 \name{calcDensity}
 \alias{calcDensity}
 \title{2D Binned Kernel Density Estimation}
-\source{
-copyed from \pkg{grDevices}
-}
 \usage{
 calcDensity(x, nbin, bandwidth, range.x)
 }
 \description{
 Helper to compute density plot
-}
-\author{
-R Core Team, Florian Hahne at FHCRC, originally
 }
 \keyword{internal}

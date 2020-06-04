@@ -93,6 +93,8 @@ Once data are parsed and treated new elements can be used to subset or merge raw
 
 > export gallery of cells (with desired channels) to image files (tiff, png, jpeg, …), use **ExportToGallery()**,
 
+> export gallery of cells (with desired channels) to Numpy arrays, use **ExportToNumpy()**,
+
 > export graphs and associated stats from analysis worksheet of files, use **ExportToReport()**,
 
 > view in R / export population hierarchy, use **popsNetwork()**,

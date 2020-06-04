@@ -16,6 +16,9 @@ getFullTag(IFD, which = 1, tag = "256")
 
 \item{tag}{scalar, integer (index) or the name of the IFD[[which]] of the desired 'tag'.}
 }
+\value{
+the full value of the corresponding IFD tag.
+}
 \description{
 Retrieves full tag value from IFDs (Image Field Directory) extracted by \code{\link{getIFD}}.
 }

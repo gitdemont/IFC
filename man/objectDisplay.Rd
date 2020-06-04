@@ -32,6 +32,9 @@ Note that this parameter takes the precedence over 'input_range' and 'full_range
 
 \item{dpi}{display resolution. Default is 300.}
 }
+\value{
+it invisibly returns NULL
+}
 \description{
 This function is intended to display object extracted by \code{\link{objectExtract}}.
 }

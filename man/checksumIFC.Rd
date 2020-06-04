@@ -11,6 +11,9 @@ checksumIFC(fileName, ...)
 
 \item{...}{arguments to pass to \code{\link{checksumDAF}} or \code{\link{checksumXIF}}.}
 }
+\value{
+an integer corresponding to IFC file checksum.
+}
 \description{
 This function returns RIF/CIF checksum.
 Checksum is the sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.

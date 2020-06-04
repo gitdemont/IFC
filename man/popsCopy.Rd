@@ -2,7 +2,7 @@
 % Please edit documentation in R/popsCopy.R
 \name{popsCopy}
 \alias{popsCopy}
-\title{Copy Populations From One File to Another File}
+\title{Copy Populations from One File to Another File}
 \usage{
 popsCopy(
   from,
@@ -48,7 +48,8 @@ Otherwise, you will get an error saying that overwritting original file is not a
 
 \item{offset}{Object number of 1st object of 'from' in 'into'. Default is 0.}
 
-\item{endianness}{The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.}
+\item{endianness}{The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
+Endianness describes the bytes order of data stored within the files. This parameter may not be modified.}
 
 \item{verbose}{whether to display information (use for debugging purpose). Default is FALSE.}
 

@@ -3,11 +3,8 @@
 \name{hist_constr}
 \alias{hist_constr}
 \title{Histogram Constructor}
-\source{
-derived from \pkg{lattice} from Deepayan Sarkar
-}
 \usage{
-hist_constr(x, breaks, include.lowest = TRUE, right = TRUE, plot = FALSE)
+hist_constr(x, breaks, include.lowest = TRUE, right = TRUE, ...)
 }
 \description{
 Helper to construct histogram

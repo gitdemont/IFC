@@ -36,6 +36,9 @@ Note that for the moment only 1(Trigonometry) is available.}
 
 \item{...}{other arguments to be passed.}
 }
+\value{
+an object of class `IFC_pops`.
+}
 \description{
 Function used to compute `IFC_pops`\cr
 It requires pops, regions and features.

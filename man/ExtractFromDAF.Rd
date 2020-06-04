@@ -27,11 +27,13 @@ ExtractFromDAF(
 
 \item{extract_images}{whether to extract images information from file. Default is TRUE.}
 
-\item{extract_offsets}{whether to extract IFDs offsets from corresponding. Default is TRUE.}
+\item{extract_offsets}{whether to extract IFDs offsets from corresponding. Default is TRUE.\cr
+See \code{\link{getOffsets}} for further details.}
 
 \item{extract_stats}{whether to extract population statistics. Default is TRUE.}
 
-\item{endianness}{The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.}
+\item{endianness}{The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
+Endianness describes the bytes order of data stored within the files. This parameter may not be modified.}
 
 \item{pnt_in_poly_algorithm}{algorithm used to determine if object belongs to a polygon region or not. Default is 1.\cr
 Note that for the moment only 1(Trigonometry) is available.}

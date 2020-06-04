@@ -13,7 +13,7 @@ getOffsets(fileName, fast = TRUE, display_progress = TRUE, verbose = FALSE)
 \item{fileName}{path to file.}
 
 \item{fast}{whether to fast extract objects or not. Default is TRUE.\cr
-Meaning that offsets will be extracting expecting that raw object are stored in ascending order.\cr
+Meaning that offsets will be extracting expecting that objects are stored in ascending order.\cr
 A message will be thrown since fast extraction method does not ensure correct mapping between objects and offsets.\cr
 If set to FALSE, all object_ids will be scanned from 'fileName' to ensure extraction of desired offsets.}
 
@@ -22,11 +22,12 @@ If set to FALSE, all object_ids will be scanned from 'fileName' to ensure extrac
 \item{verbose}{whether to display information (use for debugging purpose). Default is FALSE.}
 }
 \value{
-an integer vector of class `IFC_offset` of IFD offsets found in XIF file.
+an integer vector of class `IFC_offset` of IFDs offsets found in XIF file.
 If no offsets is found an error is thrown.
 }
 \description{
 Extracts offsets of the IFDs (Image Field Directories) within a XIF file.
+Users are highly encouraged to read TIFF specifications to have a better understanding about what offsets and IFDs are.
 }
 \details{
 Offsets are byte positions of IFDs found within RIF or CIF file. For more details see TIFF specifications.

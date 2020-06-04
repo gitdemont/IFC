@@ -37,7 +37,7 @@ This argument is not mandatory but it may allow to save time for repeated image 
 \item{python}{path to python. Default is Sys.getenv("RETICULATE_PYTHON").\cr
 Note that this numpy should be available in this python to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".}
 
-\item{dtype}{desired array’s data-type. Default is "double". Allowed are "uint8", "int16", "uint16" or "double". If 'mode' is "raw", this parameter will be forced to "int16".}
+\item{dtype}{desired array?s data-type. Default is "double". Allowed are "uint8", "int16", "uint16" or "double". If 'mode' is "raw", this parameter will be forced to "int16".}
 
 \item{mode}{(\code{\link{objectParam}} argument) color mode export. Either "raw", "gray" . Default is "gray".}
 
@@ -61,7 +61,7 @@ A good trick is to use:\cr
 \value{
 Depending on 'export':\cr
 -"matrix", an array whose dimensions are [object, height, width, channel].\cr
--"file", it invisibly returns path of exported file.
+-"file", it invisibly returns path of .npy exported file.
 }
 \description{
 Exports IFC objects to numpy array [objects,height,width,channels]

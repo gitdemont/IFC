@@ -31,7 +31,7 @@ newPB(
 
 \item{width}{only apply when 'session' is missing,the width of the progress bar. If missing, the default, will be NA for "txtProgressBar" and 300 for "winProgressBar".}
 
-\item{style}{does not apply for "winProgressBar", the ‘style’ of the bar. If missing, the default, will be 3 "txtProgressBar" and getShinyOption("progress.style", default = "notification") for shiny progress bar}
+\item{style}{does not apply for "winProgressBar", the style of the bar. If missing, the default, will be 3 "txtProgressBar" and getShinyOption("progress.style", default = "notification") for shiny progress bar}
 
 \item{char}{only apply for "txtProgressBar", the character (or character string) to form the progress bar.}
 

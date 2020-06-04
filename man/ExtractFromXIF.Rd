@@ -33,7 +33,8 @@ Otherwise, graphs, pops and regions will be also extracted.}
 
 \item{extract_images}{whether to extract images information from file. Default is FALSE.}
 
-\item{extract_offsets}{whether to extract IFDs offsets from corresponding. Default is FALSE.}
+\item{extract_offsets}{whether to extract IFDs offsets from corresponding. Default is FALSE.\cr
+See \code{\link{getOffsets}} for further details.}
 
 \item{extract_stats}{whether to extract population statistics. Default is TRUE.}
 
@@ -50,7 +51,7 @@ Note that for the moment only 1(Trigonometry) is available.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
-\item{fast}{whether to fast extract objects offsets or not. Default is TRUE.\cr
+\item{fast}{whether to fast 'extract_offsets' or not. Default is TRUE.\cr
 Meaning that offsets will be extracting expecting that raw object are stored in ascending order.
 if extract_images is FALSE, a message will be thrown since extraction method does not ensure correct mapping between objects and offsets.\cr
 if extract_images is TRUE, a warning will be sent if an object is found at an unexpected order.}

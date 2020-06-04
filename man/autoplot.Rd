@@ -101,6 +101,9 @@ Default is missing to allow \code{\link{autoplot}} to determine it by itself.}
 
 \item{...}{Other arguments to be passed.}
 }
+\value{
+an \pkg{lattice} trellis object
+}
 \description{
 Function intended to generate IFC graphs with minimal inputs from users.\cr
 It is essentially based on automatic detection of graphical parameters thanks to 'shown_pops' argument.

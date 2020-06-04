@@ -38,12 +38,12 @@ Exported file extension will be deduced from this pattern. It has to be the same
 \item{offsets}{object of class `IFC_offset`. If missing, the default, offsets will be extracted from 'fileName'.\cr
 This param is not mandatory but it may allow to save time for repeated XIF export on same file. Only apply for subsetting.}
 
-\item{fast}{whether to fast extract objects or not. Default is TRUE.
-Meaning that 'objects' will be extracting expecting that raw object are stored in ascending order.\cr
+\item{fast}{whether to fast extract 'objects' or not. Default is TRUE.
+Meaning that 'objects' will be extracting expecting that objects are stored in ascending order.\cr
 Note that a warning will be sent if an 'object' is found at an unexpected order.
 In such a case you may need to rerun function with 'fast' = FALSE.
-If set to FALSE, all raw object_ids will be scanned from 'fileName' to ensure extraction of desired 'objects'.\cr
-IMPORTANT: whatever this argument is, features are extracted assuming an ascending order of storage in raw file.\cr
+If set to FALSE, all object_ids will be scanned from 'fileName' to ensure extraction of desired 'objects'.\cr
+IMPORTANT: whatever this argument is, features are extracted assuming an ascending order of storage in file.\cr
 Only apply for subsetting.}
 
 \item{extract_features}{whether to try to extract features. Default is FALSE.
@@ -51,7 +51,8 @@ IMPORTANT: it is not clear if how features are stored and which objects they rel
 For this reason it should be carefully checked.
 Note that features extraction is not implemented for merging.}
 
-\item{endianness}{the endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.}
+\item{endianness}{the endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
+Endianness describes the bytes order of data stored within the files. This parameter may not be modified.}
 
 \item{verbose}{whether to display information (use for debugging purpose). Default is FALSE.}
 

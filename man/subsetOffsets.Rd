@@ -14,7 +14,7 @@ subsetOffsets(offsets, objects, image_type = c("img", "msk"))
 \item{image_type}{image_type of desired offsets. Default is c("img", "msk"). Allowed are "img" and/or "msk".}
 }
 \value{
-A class IFC_offset integer vector or empty list if objects are outside of offsets.
+a class `IFC_offset` integer vector or empty list if objects are outside of offsets.
 }
 \description{
 Subsets `IFC_offset`

@@ -52,7 +52,10 @@ BG_MEAN, BG_STD\cr
 -next_IFD_offset, the position of next IFD offset
 }
 \description{
-Extracts IFDs (Image File Directory) in RIF or CIF files.
+Extracts IFDs (Image File Directory) in RIF or CIF files.\cr
+IFDs contain information about images or masks of objects stored within XIF files.\cr
+The first IFD is special in that it does not contain image of mask information but general information about the file.\cr
+Users are highly encouraged to read TIFF specifications to have a better understanding about what IFDs are.
 }
 \details{
 Function will return IFDs (image, mask or first) from the file using provided offsets argument.\cr

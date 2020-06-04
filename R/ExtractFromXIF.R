@@ -1,3 +1,32 @@
+################################################################################
+# This file is released under the GNU General Public License, Version 3, GPL-3 #
+# Copyright (C) 2020 Yohann Demont                                             #
+#                                                                              #
+# It is part of IFC package, please cite:                                      #
+# -IFC: An R Package for Imaging Flow Cytometry                                #
+# -YEAR: 2020                                                                  #
+# -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,             #
+#                     Jean-Pierre Marolleau, Loïc Garçon,                      #
+#                     INSERM, UPD, CHU Amiens                                  #
+#                                                                              #
+# DISCLAIMER:                                                                  #
+# -You are using this package on your own risk!                                #
+# -We do not guarantee privacy nor confidentiality.                            #
+# -This program is distributed in the hope that it will be useful, but WITHOUT #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        #
+# FITNESS FOR A PARTICULAR PURPOSE. In no event shall the copyright holders or #
+# contributors be liable for any direct, indirect, incidental, special,        #
+# exemplary, or consequential damages (including, but not limited to,          #
+# procurement of substitute goods or services; loss of use, data, or profits;  #
+# or business interruption) however caused and on any theory of liability,     #
+# whether in contract, strict liability, or tort (including negligence or      #
+# otherwise) arising in any way out of the use of this software, even if       #
+# advised of the possibility of such damage.                                   #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
+################################################################################
+
 #' @title RIF/CIF File Reader
 #' @description
 #' Extracts data from RIF or CIF Files.
@@ -6,7 +35,8 @@
 #' If TRUE, \code{\link{ExtractFromXIF}} will try to export features. It it fails a message will be sent.\cr
 #' Otherwise, graphs, pops and regions will be also extracted.
 #' @param extract_images whether to extract images information from file. Default is FALSE.
-#' @param extract_offsets whether to extract IFDs offsets from corresponding. Default is FALSE.
+#' @param extract_offsets whether to extract IFDs offsets from corresponding. Default is FALSE.\cr
+#' See \code{\link{getOffsets}} for further details.
 #' @param extract_stats whether to extract population statistics. Default is TRUE.
 #' @param pnt_in_poly_algorithm algorithm used to determine if object belongs to a polygon region or not. Default is 1.\cr
 #' Note that for the moment only 1(Trigonometry) is available.
@@ -15,7 +45,7 @@
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param verbosity quantity of information displayed when verbose is TRUE; 1: normal, 2: rich. Default is 1.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param fast whether to fast extract objects offsets or not. Default is TRUE.\cr
+#' @param fast whether to fast 'extract_offsets' or not. Default is TRUE.\cr
 #' Meaning that offsets will be extracting expecting that raw object are stored in ascending order.
 #' if extract_images is FALSE, a message will be thrown since extraction method does not ensure correct mapping between objects and offsets.\cr
 #' if extract_images is TRUE, a warning will be sent if an object is found at an unexpected order.

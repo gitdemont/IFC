@@ -16,7 +16,7 @@ getImagesValues(
 \arguments{
 \item{fileName}{path to file.}
 
-\item{offsets}{Object of class `IFC_offset`. If missing, the default, offsets will be extracted from 'fileName'.\cr
+\item{offsets}{Object of class `IFC_offset`. If missing, the default, 'offsets' will be extracted from 'fileName'.\cr
 This param is not mandatory but it may allow to save time when exporting repeated image value on same file.}
 
 \item{objects}{integers, indices of objects to extract.\cr
@@ -24,9 +24,9 @@ If missing, the default, images values from all objects will be extracted.}
 
 \item{display_progress}{whether to display a progress bar. Default is FALSE.}
 
-\item{fast}{when no offsets are provided whether to fast extract objects offsets or not. Default is TRUE.\cr
-Meaning that 'objects' will be extracting expecting that raw object are stored in ascending order.\cr
-Only apply when offsets are not provided.\cr
+\item{fast}{when no 'offsets' are provided whether to fast extract 'offsets' or not. Default is TRUE.\cr
+Meaning that 'objects' will be extracting expecting that 'objects' are stored in ascending order.\cr
+Only apply when 'offsets' are not provided.\cr
 Note that a warning will be sent if an object is found at an unexpected order.}
 
 \item{...}{other arguments to be passed.}

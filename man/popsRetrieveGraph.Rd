@@ -15,6 +15,9 @@ popsRetrieveGraph(obj, pops, vis2D = "density", all_siblings = FALSE)
 
 \item{all_siblings}{whether to add all 'pop' siblings in the graph. Default is FALSE.}
 }
+\value{
+a list of parameters needed to build an IFC graph.
+}
 \description{
 Retrieves the graph a graphical population originate from
 }

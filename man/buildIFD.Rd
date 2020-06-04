@@ -13,7 +13,8 @@ buildIFD(val, typ, tag, endianness = .Platform$endian)
 
 \item{tag}{the desired IFD 'tag'}
 
-\item{endianness}{the desired endian-ness ("big" or "little"). Default is .Platform$endian.}
+\item{endianness}{the desired endian-ness ("big" or "little"). Default is .Platform$endian.\cr
+Endianness describes the bytes order of data stored within the files. This parameter may not be modified.}
 }
 \value{
 NULL or a list of 2 members:\cr

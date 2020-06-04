@@ -15,6 +15,9 @@ smoothLinLog(x, hyper = 1000, base = 10, lin_comp = log(base))
 
 \item{lin_comp}{value that is used to smooth transition between Lin/Log. Default is log(base).}
 }
+\value{
+the smoothLinLog transformation of the input.
+}
 \description{
 Transforms values in lin-log
 }

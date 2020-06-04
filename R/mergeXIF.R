@@ -1,3 +1,32 @@
+################################################################################
+# This file is released under the GNU General Public License, Version 3, GPL-3 #
+# Copyright (C) 2020 Yohann Demont                                             #
+#                                                                              #
+# It is part of IFC package, please cite:                                      #
+# -IFC: An R Package for Imaging Flow Cytometry                                #
+# -YEAR: 2020                                                                  #
+# -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,             #
+#                     Jean-Pierre Marolleau, Loïc Garçon,                      #
+#                     INSERM, UPD, CHU Amiens                                  #
+#                                                                              #
+# DISCLAIMER:                                                                  #
+# -You are using this package on your own risk!                                #
+# -We do not guarantee privacy nor confidentiality.                            #
+# -This program is distributed in the hope that it will be useful, but WITHOUT #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        #
+# FITNESS FOR A PARTICULAR PURPOSE. In no event shall the copyright holders or #
+# contributors be liable for any direct, indirect, incidental, special,        #
+# exemplary, or consequential damages (including, but not limited to,          #
+# procurement of substitute goods or services; loss of use, data, or profits;  #
+# or business interruption) however caused and on any theory of liability,     #
+# whether in contract, strict liability, or tort (including negligence or      #
+# otherwise) arising in any way out of the use of this software, even if       #
+# advised of the possibility of such damage.                                   #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
+################################################################################
+
 #' @title RIF/CIF File Merging
 #' @description
 #' Merges RIF or CIF files.
@@ -12,7 +41,8 @@
 #' -\%s: with shortname from of first element of 'fileName' (i.e. basename without extension).\cr
 #' Exported file extension will be deduced from this pattern. It has to be the same as 'fileName', i.e. .cif or .rif.
 #' @param extract_features whether to try to extract features. Default is FALSE. Not yet implemented.
-#' @param endianness the endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.
+#' @param endianness the endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
+#' Endianness describes the bytes order of data stored within the files. This parameter may not be modified.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param verbosity quantity of information displayed when verbose is TRUE; 1: normal, 2: rich. Default is 1.
 #' @param overwrite whether to overwrite file or not. Default is FALSE.\cr

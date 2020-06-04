@@ -1,12 +1,43 @@
+################################################################################
+# This file is released under the GNU General Public License, Version 3, GPL-3 #
+# Copyright (C) 2020 Yohann Demont                                             #
+#                                                                              #
+# It is part of IFC package, please cite:                                      #
+# -IFC: An R Package for Imaging Flow Cytometry                                #
+# -YEAR: 2020                                                                  #
+# -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,             #
+#                     Jean-Pierre Marolleau, Loïc Garçon,                      #
+#                     INSERM, UPD, CHU Amiens                                  #
+#                                                                              #
+# DISCLAIMER:                                                                  #
+# -You are using this package on your own risk!                                #
+# -We do not guarantee privacy nor confidentiality.                            #
+# -This program is distributed in the hope that it will be useful, but WITHOUT #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        #
+# FITNESS FOR A PARTICULAR PURPOSE. In no event shall the copyright holders or #
+# contributors be liable for any direct, indirect, incidental, special,        #
+# exemplary, or consequential damages (including, but not limited to,          #
+# procurement of substitute goods or services; loss of use, data, or profits;  #
+# or business interruption) however caused and on any theory of liability,     #
+# whether in contract, strict liability, or tort (including negligence or      #
+# otherwise) arising in any way out of the use of this software, even if       #
+# advised of the possibility of such damage.                                   #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
+################################################################################
+
 #' @title DAF File Reader
 #' @description
 #' Extracts data from DAF Files.
 #' @param fileName path to file.
 #' @param extract_features whether to extract features (and graphs, pops and regions) from file. Default is TRUE.
 #' @param extract_images whether to extract images information from file. Default is TRUE.
-#' @param extract_offsets whether to extract IFDs offsets from corresponding. Default is TRUE.
+#' @param extract_offsets whether to extract IFDs offsets from corresponding. Default is TRUE.\cr
+#' See \code{\link{getOffsets}} for further details.
 #' @param extract_stats whether to extract population statistics. Default is TRUE.
-#' @param endianness The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.
+#' @param endianness The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
+#' Endianness describes the bytes order of data stored within the files. This parameter may not be modified.
 #' @param pnt_in_poly_algorithm algorithm used to determine if object belongs to a polygon region or not. Default is 1.\cr
 #' Note that for the moment only 1(Trigonometry) is available.
 #' @param pnt_in_poly_epsilon epsilon to determine if object belongs to a polygon region or not. It only applies when algorithm is 1. Default is 1e-12.

@@ -1,3 +1,32 @@
+################################################################################
+# This file is released under the GNU General Public License, Version 3, GPL-3 #
+# Copyright (C) 2020 Yohann Demont                                             #
+#                                                                              #
+# It is part of IFC package, please cite:                                      #
+# -IFC: An R Package for Imaging Flow Cytometry                                #
+# -YEAR: 2020                                                                  #
+# -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,             #
+#                     Jean-Pierre Marolleau, Loïc Garçon,                      #
+#                     INSERM, UPD, CHU Amiens                                  #
+#                                                                              #
+# DISCLAIMER:                                                                  #
+# -You are using this package on your own risk!                                #
+# -We do not guarantee privacy nor confidentiality.                            #
+# -This program is distributed in the hope that it will be useful, but WITHOUT #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        #
+# FITNESS FOR A PARTICULAR PURPOSE. In no event shall the copyright holders or #
+# contributors be liable for any direct, indirect, incidental, special,        #
+# exemplary, or consequential damages (including, but not limited to,          #
+# procurement of substitute goods or services; loss of use, data, or profits;  #
+# or business interruption) however caused and on any theory of liability,     #
+# whether in contract, strict liability, or tort (including negligence or      #
+# otherwise) arising in any way out of the use of this software, even if       #
+# advised of the possibility of such damage.                                   #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
+################################################################################
+
 #' @title Image Scale Bar Incrustation
 #' @description
 #' Adds scale bar to image
@@ -9,7 +38,7 @@
 #' @param res positive integer. Resolution in ppi of 'image'. Default is '96'.
 #' @param xoff positive integer. x offset in image to draw scale, starting from bottom left corner.
 #' @param yoff positive integer. y offset in image to draw scale, starting from bottom left corner.
-#' @return scale is added to the bottom left corner of the image.
+#' @return an image with scale added to the bottom left corner.
 objectAddScaleBar <- function(image, size, style=c("dash","line")[1], color="white", res=96, xoff = 0, yoff = 0) {
   # several checks
   size = na.omit(as.integer(size)); size = size[size>0]

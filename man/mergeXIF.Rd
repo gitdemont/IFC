@@ -31,7 +31,8 @@ Exported file extension will be deduced from this pattern. It has to be the same
 
 \item{extract_features}{whether to try to extract features. Default is FALSE. Not yet implemented.}
 
-\item{endianness}{the endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.}
+\item{endianness}{the endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
+Endianness describes the bytes order of data stored within the files. This parameter may not be modified.}
 
 \item{verbose}{whether to display information (use for debugging purpose). Default is FALSE.}
 

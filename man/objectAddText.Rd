@@ -20,7 +20,7 @@ objectAddText(image, text, color, xoff = 0, yoff = 0, corner = "TL")
 \item{corner}{a character string. where to position text in the image. Allowed are "TL", "TR", "BL", "BR", for top-left, top-right, bottom-left, bottom-right, respectively.}
 }
 \value{
-an image with text.
+an image with text added.
 }
 \description{
 Adds Text to image.

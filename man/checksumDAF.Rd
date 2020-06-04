@@ -9,7 +9,8 @@ checksumDAF(fileName, endianness = .Platform$endian, ...)
 \arguments{
 \item{fileName}{path to file.}
 
-\item{endianness}{The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.}
+\item{endianness}{The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
+Endianness describes the bytes order of data stored within the files. This parameter may not be modified.}
 
 \item{...}{other arguments to be passed.}
 }

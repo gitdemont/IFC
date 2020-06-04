@@ -33,6 +33,9 @@ The available options are: 'UD', 'DU', 'LR', 'RL'. To simplify: up-down, down-up
 
 \item{...}{other argument to be passed.}
 }
+\value{
+a \pkg{visNetwork} object.
+}
 \description{
 Builds and displays populations network.
 }

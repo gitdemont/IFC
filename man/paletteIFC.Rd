@@ -17,6 +17,9 @@ if 'x' == to_light, function will convert 'col' to lightModeColor.\cr
 if 'x' == to_dark, function will convert 'col' to color.\cr
 if 'col' is not found or 'x' is anything else then a data.frame of compatible colors is returned.}
 }
+\value{
+IFC palette of available colors.
+}
 \description{
 Maps colors between IDEAS and R.
 }
