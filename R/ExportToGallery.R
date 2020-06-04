@@ -1,11 +1,13 @@
 ################################################################################
 # This file is released under the GNU General Public License, Version 3, GPL-3 #
+# Copyright (C) 2020 Yohann Demont                                             #
 #                                                                              #
 # It is part of IFC package, please cite:                                      #
 # -IFC: An R Package for Imaging Flow Cytometry                                #
 # -YEAR: 2020                                                                  #
-# -COPYRIGHT HOLDERS: Yohann Demont, INSERM, UPD, CHU Amiens                   #
-# -Copyright (C) 2020 Yohann Demont                                            #
+# -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,             #
+#                     Jean-Pierre Marolleau, Loïc Garçon,                      #
+#                     INSERM, UPD, CHU Amiens                                  #
 #                                                                              #
 # DISCLAIMER:                                                                  #
 # -You are using this package on your own risk!                                #
