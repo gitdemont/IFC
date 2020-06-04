@@ -27,9 +27,9 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
-#' @title IFC_pops Indices
+#' @title IFC_pops Object Numbers
 #' @description
-#' Retrieves indices of objects belonging to a population.
+#' Retrieves objects ids belonging to a population.
 #' @param obj an `IFC_data` object extracted with features extracted.
 #' @param pop a population name from 'obj'. Default is "".
 #' If left as is or not found an error is thrown displaying all available population in 'obj'.
@@ -39,7 +39,7 @@
 #'   ## use a daf file
 #'   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
 #'   daf <- ExtractFromDAF(fileName = file_daf)
-#'   obj <- popsGetIndices(obj = daf, pop = names(daf$pops)[length(daf$pops)])
+#'   obj <- popsGetObjectsIds(obj = daf, pop = names(daf$pops)[length(daf$pops)])
 #' } else {
 #'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',
@@ -48,12 +48,16 @@
 # #' }
 #' @return An integer vector is returned
 #' @export
-popsGetIndices <- function(obj, pop = "") {
+popsGetObjectsIds <- function(obj, pop = "") {
   if(missing(obj)) stop("'obj' can't be missing")
   if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class `IFC_data`")
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
   if(length(pop) != 1) stop("'pop' should be of length 1")
   N = names(obj$pops)
   if(!all(pop%in%N)) stop(paste0("pop:[",pop,"] was not found in 'obj', valid names are:\n", paste0(paste("-", N), collapse = "\n")))
-  return(as.integer(which(obj$pops[[pop]][["obj"]])-1))
+  if("Object Number" %in% names(obj$features)) {
+    return(as.integer(obj$features[obj$pops[[pop]][["obj"]] ,"Object Number"]))
+  } else {
+    return(as.integer(which(obj$pops[[pop]][["obj"]])-1))
+  }
 }

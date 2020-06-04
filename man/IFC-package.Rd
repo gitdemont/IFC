@@ -19,7 +19,7 @@ The IFC package provides several categories of functions:\cr
 - to treat object images:\cr
 \code{\link{objectCleanse}}, \code{\link{objectColorize}}, \code{\link{objectDisplay}}, \code{\link{objectNormalize}}, \code{\link{objectResize}}, \code{\link{objectTransform}}, \code{\link{objectAddScaleBar}}, \code{\link{objectAddText}}\cr
 - dedicated to populations:\cr
-\code{\link{popsCopy}}, \code{\link{popsCompute}}, \code{\link{popsGetIndices}}, \code{\link{popsGetSiblings}}, \code{\link{popsNetwork}}, \code{\link{popsRetrieveGraph}}, \code{\link{popsWithin}}\cr
+\code{\link{popsCopy}}, \code{\link{popsCompute}}, \code{\link{popsGetObjectsIds}}, \code{\link{popsGetSiblings}}, \code{\link{popsNetwork}}, \code{\link{popsRetrieveGraph}}, \code{\link{popsWithin}}\cr
 - for adding features, regions, populations:\cr
 \code{\link{data_add_features}}, \code{\link{data_add_regions}}, \code{\link{data_add_pops}}\cr
 - to allow several coercion:\cr
