@@ -1712,7 +1712,7 @@ NumericVector cpp_transform(const NumericMatrix mat,
       bar.attr("full_range") = full_range;
       bar.attr("force_range") = force_range;
       bar.attr("gamma") = gamma;
-      bar.attr("color") = col_name[0];
+      bar.attr("color") = Rcpp::String(col_name[0]);
       bar.attr("mode") = mode;
       bar.attr("removal") = removal;
       bar.attr("raw") = mat;
