@@ -107,7 +107,7 @@ Once data are parsed and treated new elements can be used to subset or merge raw
 
 **objectExtract()** for extracting individual image or mask within .rif or .cif file,
 
-**plotGraph()** and  **autoplot()** for displaying graphical elements of analysis worksheet."# IFC" 
+**plotGraph()** and  **autoplot()** for displaying graphical elements of analysis worksheet.
 
 ## DISCLAMER
 
