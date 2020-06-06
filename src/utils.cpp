@@ -41,6 +41,7 @@ using namespace Rcpp;
 //   }
 //   return false;
 // }
+static std::string base64_LUT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 // Ensures NumericVector is not NULL
 bool nNotisNULL(Nullable<NumericVector> x_ = R_NilValue) {
@@ -127,37 +128,29 @@ double cpp_computeGamma (const NumericVector V) {
 ////' @export
 // [[Rcpp::export]]
 std::string cpp_base64_encode ( const RawVector x) {
-  std::string encodeLookup = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  std::string out;
   R_len_t i = 0, a = x.size() / 3, b = x.size() % 3;
   uint32_t val;
+  std::string out;
   out.reserve(((a) + (b > 0)) * 4);
-  
-  for(R_len_t idx = 0; idx < a; idx++)
-  {
-    val  = x[i++] << 16; //Convert to big endian
-    val += x[i++] << 8;
-    val += x[i++];
-    out.append(1,encodeLookup[(val >> 18) & 0x3F]);
-    out.append(1,encodeLookup[(val >> 12) & 0x3F]);
-    out.append(1,encodeLookup[(val >>  6) & 0x3F]);
-    out.append(1,encodeLookup[(val      ) & 0x3F]);
+  for(R_len_t idx = 0; idx < a; idx++, i += 3) { 
+    val = (x[i] << 16) + (x[i + 1] << 8) + x[i + 2];
+    for(short k = 18; k >= 0; k -= 6) {
+      out.push_back(base64_LUT[(val >> k) & 0x3F]);
+    }
   }
-  switch(b)
-  {
+  switch(b) {
   case 1:
-    val  = x[i++] << 16; //Convert to big endian
-    out.append(1,encodeLookup[(val >> 18) & 0x3F]);
-    out.append(1,encodeLookup[(val >> 12) & 0x3F]);
+    val  = x[i++] << 16;
+    out.push_back(base64_LUT[(val >> 18) & 0x3F]);
+    out.push_back(base64_LUT[(val >> 12) & 0x3F]);
     out.append(2,'=');
     break;
   case 2:
-    val  = x[i++] << 16; //Convert to big endian
-    val += x[i++] << 8;
-    out.append(1,encodeLookup[(val >> 18) & 0x3F]);
-    out.append(1,encodeLookup[(val >> 12) & 0x3F]);
-    out.append(1,encodeLookup[(val >>  6) & 0x3F]);
-    out.append(1,'=');
+    val  = (x[i] << 16) + (x[i + 1] << 8);
+    out.push_back(base64_LUT[(val >> 18) & 0x3F]);
+    out.push_back(base64_LUT[(val >> 12) & 0x3F]);
+    out.push_back(base64_LUT[(val >>  6) & 0x3F]);
+    out.push_back('=');
     break;
   }
   return out;
@@ -253,7 +246,7 @@ RawVector cpp_writeBMP ( const NumericVector image) {
         for(i = d[0] -1; i >=0; i--) { // image in BMP is height inverted
           for(j = 0; j < d[1]; j++) {
             for(k = d[2] - 1; k >= 0; k--) { // image in BMP is rgb inverted
-              out[n++] = 255 * image[k * d[1] * d[0] + j * d[0] + i]; // out[n++] = 255 * image[k * d[1] * d[0] + (j*d[0] + i)];
+              out[n++] = 255 * image[k * d[1] * d[0] + j * d[0] + i];
             }
           }
           // apply padding
