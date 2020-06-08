@@ -297,18 +297,20 @@ mergeXIF <- function (fileName, write_to,
       IFD_first = getIFD(fileName = f, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE)
       obj_count = 2*getFullTag(IFD = IFD_first, which = 1, tag = "33018")
       IFD = IFD_first[[1]]
+      chk = checksumXIF(f)
 
       label_progress = basename(f)
       # open connections for reading
       toread = file(description = f, open = "rb")
       tryCatch({
+        OBJECT_ID = NULL
         for(i_obj in 1:obj_count) {
           cum_obj = i_obj + off_obj
           setPB(pb = pb2, value = cum_obj, label = paste0(label_progress, " - merging objects"))
           # extract IFD
           IFD = cpp_getTAGS(fname = f, offset = IFD$next_IFD_offset, trunc_bytes = 8, force_trunc = FALSE, verbose = VER)
           cur_obj = IFD$infos
-
+          if(cur_obj$TYPE == 2) OBJECT_ID = cur_obj$OBJECT_ID
           # extract raw content from current IFD
           # bar = list(IFD)
           # class(bar) <- "IFC_ifd_list"
@@ -357,9 +359,17 @@ mergeXIF <- function (fileName, write_to,
           
           # remove unwanted tags
           ifd = ifd[sapply(ifd, FUN=function(i_tag) length(i_tag$min_content)!=0)]
-
+          
+          #######
+          # SHOULD IT BE ADDED SINCE IT CAN BE RECOMPUTED FROM 1ST IFD ?
+          # add fileName tag /!\ allow to track where exported objects are coming from
+          # ifd = c(ifd, buildIFD(val = f, typ = 2, tag = 33091, endianness = r_endian))
+          # add checksum tag /!\ allow to track where exported objects are coming from
+          # ifd = c(ifd, buildIFD(val = chk, typ = 4, tag = 33092, endianness = r_endian))
+          #######
+          
           # register current object id in new tag to be able to track it
-          ifd = c(ifd, buildIFD(val = cur_obj$OBJECT_ID, typ = 4, tag = 33093, endianness = r_endian))
+          ifd = c(ifd, buildIFD(val = OBJECT_ID, typ = 4, tag = 33093, endianness = r_endian))
           
           # modify object id
           tmp = packBits(intToBits(floor(cum_obj/2)),type="raw")

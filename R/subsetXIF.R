@@ -179,6 +179,8 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   }
   if(compute_offsets) {
     offsets = suppressMessages(getOffsets(fileName = fileName, fast = fast, display_progress = display_progress))
+  } else {
+    fast = TRUE
   }
   
   # Initialize values
@@ -226,16 +228,17 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
       pb1 = newPB(session = dots$session, title = title_progress, label = "objects subsetting", min = 0, max = L, initial = 0, style = 3)
       on.exit(endPB(pb1), add = TRUE)
     }
+    OBJECT_ID = NULL
     for(i_off in 1:off_number) {
       # extract IFD
       IFD = cpp_getTAGS(fname = fileName, offset = offsets[i_off], trunc_bytes = 8, force_trunc = FALSE, verbose = VER)
-      
       cur_obj = IFD$infos
-      if(length(cur_obj$OBJECT_ID) == 1) {
+      if(cur_obj$TYPE == 2) OBJECT_ID = cur_obj$OBJECT_ID
+      if(length(OBJECT_ID) == 1) {
         if(fast) {
           expected_obj = as.integer(gsub("^.*_(.*)$", "\\1", names(offsets[i_off])))
-          if(cur_obj$TYPE == 2) if(cur_obj$OBJECT_ID != expected_obj) {
-            warning("Extracted object_id [",cur_obj$OBJECT_ID,"] differs from expected one [",expected_obj,"]", call. = FALSE, immediate. = TRUE)
+          if(cur_obj$TYPE == 2) if(OBJECT_ID != expected_obj) {
+            warning("Extracted object_id [",OBJECT_ID,"] differs from expected one [",expected_obj,"]", call. = FALSE, immediate. = TRUE)
           }
         }
       }
@@ -248,6 +251,9 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
       
       # read number of directory entries
       readBin(toread, what = "raw", n = 2, endian = r_endian)
+      # TODO ask amnis if we can remove unecessary tags for masks ?
+      # i.e. only keep: 254, 256, 257, 258, 259, 262, 273, 277, 278, 279, 306, 33002, 33016, 33017
+      # IFD$tags = IFD$tags[c(254, 256, 257, 258, 259, 262, 273, 277, 278, 279, 306, 33002, 33016, 33017)]
       ifd = sapply(IFD$tags, simplify = FALSE, FUN=function(i_tag) {
         add_content = raw()
         # read entry
@@ -373,13 +379,15 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
         ifd = c(ifd, buildIFD(val = L, typ = 4, tag = 33018, endianness = r_endian))
         # add pkg version tag /!\ mandatory to prevent overwriting original file
         ifd = c(ifd, buildIFD(val = paste0(unlist(packageVersion("IFC")), collapse = "."), typ = 2, tag = 33090, endianness = r_endian))
-        # add fileName tag /!\ allow to track were exported objects are coming from
+        # add fileName tag /!\ allow to track where exported objects are coming from
         ifd = c(ifd, buildIFD(val = fileName, typ = 2, tag = 33091, endianness = r_endian))
-        # add checksum tag /!\ allow to track were exported objects are coming from
+        # add checksum tag /!\ allow to track where exported objects are coming from
         ifd = c(ifd, buildIFD(val = checksumXIF(fileName), typ = 4, tag = 33092, endianness = r_endian))
       } else {
         # register current object id in new tag to be able to track it
-        ifd = c(ifd, buildIFD(val = cur_obj$OBJECT_ID, typ = 4, tag = 33093, endianness = r_endian)) 
+        ifd = c(ifd, buildIFD(val = OBJECT_ID, typ = 4, tag = 33093, endianness = r_endian))
+        # TODO if we remove mask tags it may be better to use offsets names as tracking object id
+
         # modify object id
         tmp = packBits(intToBits(floor(obj_id/2)),type="raw")
         if(endianness!=r_endian) tmp = rev(tmp)
