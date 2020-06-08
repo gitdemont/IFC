@@ -201,8 +201,8 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   # 33081 appears in merged file, it has same val = 33080, but is of typ = 2 and map NULL 
   # 33082 corresponds to binary Features version, will be overwritten if features are found
   # 33083 corresponds to Features values in merged or subset
-  # 33090, 33091, 33092, 33093 corresponds to tags we add to track objects origin
-  unwanted = c(33004, 33005, 33018, 33080, 33081, 33082, 33083, 33090, 33091, 33092, 33093)
+  # 33090, 33091, 33092, 33093, 33094 corresponds to tags we add to track objects origin
+  unwanted = c(33004, 33005, 33018, 33080, 33081, 33082, 33083, 33090, 33091, 33092, 33093, 33094)
   
   # tags of StripOffsets (273) and TileOffsets (324)
   off_tags = c(273, 324)

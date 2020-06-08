@@ -155,8 +155,8 @@ mergeXIF <- function (fileName, write_to,
   # 33081 appears in merged file, it has same val = 33080, but is of typ = 2 and map NULL 
   # 33082 corresponds to binary Features version, will be overwritten if features are found
   # 33083 corresponds to Features values in merged or subset
-  # 33090, 33091, 33092, 33093 corresponds to tags we add to track objects origin
-  unwanted = c(33004, 33005, 33018, 33029, 33030, 33080, 33081, 33082, 33083, 33090, 33091, 33092, 33093)
+  # 33090, 33091, 33092, 33093, 33094 corresponds to tags we add to track objects origin
+  unwanted = c(33004, 33005, 33018, 33029, 33030, 33080, 33081, 33082, 33083, 33090, 33091, 33092, 33093, 33094)
 
   # tags of StripOffsets (273) and TileOffsets (324)
   off_tags = c(273, 324)
@@ -294,10 +294,10 @@ mergeXIF <- function (fileName, write_to,
     off_obj = 0
     # repeat same process for img / msk data for all files
     for(f in fileName) {
+      f_ori = which(f == fileName)
       IFD_first = getIFD(fileName = f, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE)
       obj_count = 2*getFullTag(IFD = IFD_first, which = 1, tag = "33018")
       IFD = IFD_first[[1]]
-      chk = checksumXIF(f)
 
       label_progress = basename(f)
       # open connections for reading
@@ -360,16 +360,10 @@ mergeXIF <- function (fileName, write_to,
           # remove unwanted tags
           ifd = ifd[sapply(ifd, FUN=function(i_tag) length(i_tag$min_content)!=0)]
           
-          #######
-          # SHOULD IT BE ADDED SINCE IT CAN BE RECOMPUTED FROM 1ST IFD ?
-          # add fileName tag /!\ allow to track where exported objects are coming from
-          # ifd = c(ifd, buildIFD(val = f, typ = 2, tag = 33091, endianness = r_endian))
-          # add checksum tag /!\ allow to track where exported objects are coming from
-          # ifd = c(ifd, buildIFD(val = chk, typ = 4, tag = 33092, endianness = r_endian))
-          #######
-          
           # register current object id in new tag to be able to track it
           ifd = c(ifd, buildIFD(val = OBJECT_ID, typ = 4, tag = 33093, endianness = r_endian))
+          # add f_ori as an index of fileName to allow to track where exported objects are coming from
+          ifd = c(ifd, buildIFD(val = f_ori, typ = 4, tag = 33094, endianness = r_endian))
           
           # modify object id
           tmp = packBits(intToBits(floor(cum_obj/2)),type="raw")
