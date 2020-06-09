@@ -159,10 +159,10 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
       })
     }
   } else{
+    files = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33091")), "|", fixed = TRUE)[[1]]
     if(display_progress) {
       pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
       on.exit(endPB(pb))
-      files = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33091")), "|", fixed = TRUE)[[1]]
       ans = lapply(1:L, FUN=function(i) {
         setPB(pb, value = i, title = title_progress, label = "extracting images values (binary)")
         t(sapply(getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"), trunc_bytes = 12,
@@ -183,7 +183,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
                             ifd$tags$`33054`$map[1:chan_number],# satcount
                             ifd$tags$`33055`$map[1:chan_number],# satpercent
                             ifd$tags$`33093`$map,# obj_ori
-                            ifelse(length(ifd$tags[["33094"]] == 0), 1 , ifd$tags$`33094`$map))# fil_ori
+                            ifelse(length(ifd$tags[["33094"]]) == 0, 1 , ifd$tags$`33094`$map))# fil_ori
                         }))
       })
     } else {
@@ -206,7 +206,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
                             ifd$tags$`33054`$map[1:chan_number],# satcount
                             ifd$tags$`33055`$map[1:chan_number],# satpercent
                             ifd$tags$`33093`$map,# obj_ori
-                            ifelse(length(ifd$tags[["33094"]] == 0), 1 , ifd$tags$`33094`$map))# fil_ori
+                            ifelse(length(ifd$tags[["33094"]]) == 0, 1 , ifd$tags$`33094`$map))# fil_ori
                         }))
       })
     }

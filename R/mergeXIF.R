@@ -246,7 +246,7 @@ mergeXIF <- function (fileName, write_to,
     ifd = ifd[sapply(ifd, FUN=function(i_tag) length(i_tag$min_content)!=0)]
     
     # add extra ifd
-    ifd = c(ifd, ifd_time, ifd_user, ifd_obj, ifd_merged, ifd_version, ifd_checksum)
+    ifd = c(ifd, ifd_time, ifd_user, ifd_obj, ifd_merged, ifd_version, ifd_files, ifd_checksum)
 
     # reorder ifd
     ifd = ifd[order(as.integer(names(ifd)))]
