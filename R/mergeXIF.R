@@ -181,7 +181,7 @@ mergeXIF <- function (fileName, write_to,
     # extract information from first IFD of first file
     IFD_first = getIFD(fileName = file_first, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE)
     N = names(IFD_first[[1]]$tags)
-    if(display_progress) pb1 = newPB(session = dots$session, title_progress, label = "extracting 1st IFD", min = 0, max = length(IFD_first[[1]]$tags), initial = 0, style = 3)
+    if(display_progress) pb1 = newPB(session = dots$session, title = title_progress, label = "extracting 1st IFD", min = 0, max = length(IFD_first[[1]]$tags), initial = 0, style = 3)
     toread = file(description = file_first, open = "rb")
     tryCatch({
       # go to IFD start
@@ -288,7 +288,7 @@ mergeXIF <- function (fileName, write_to,
     pos = pos + l_min[length(l_min)] + 2
 
     if(display_progress) {
-      pb2 = newPB(session = dots$session, title_progress, label = " ", min = 0, max = final_obj * 2, initial = 0, style = 3)
+      pb2 = newPB(session = dots$session, title = title_progress, label = " ", min = 0, max = final_obj * 2, initial = 0, style = 3)
       on.exit(endPB(pb2), add = TRUE)
     }
     
@@ -308,7 +308,7 @@ mergeXIF <- function (fileName, write_to,
         OBJECT_ID = NULL
         for(i_obj in 1:obj_count) {
           cum_obj = i_obj + off_obj
-          setPB(pb = pb2, value = cum_obj, label = paste0(label_progress, " - merging objects"))
+          setPB(pb = pb2, value = cum_obj, title = title_progress, label = paste0(label_progress, " - merging objects"))
           # extract IFD
           IFD = cpp_getTAGS(fname = f, offset = IFD$next_IFD_offset, trunc_bytes = 8, force_trunc = FALSE, verbose = VER)
           cur_obj = IFD$infos

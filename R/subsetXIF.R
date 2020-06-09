@@ -243,7 +243,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
         }
       }
       if(display_progress) {
-        setPB(pb1, value = (obj_id+1)/2)
+        setPB(pb1, value = (obj_id+1)/2, title = title_progress, label = "objects subsetting")
       }
       
       # go to file IFD offset
@@ -323,7 +323,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
                 
                 title_progress = basename(f)
                 if(display_progress) {
-                  pb3 = newPB(session = dots$session, min = 0, max = obj_number, initial = 0, style = 3)
+                  pb3 = newPB(session = dots$session, title = title_progress, label = "extracting features information", min = 0, max = obj_number, initial = 0, style = 3)
                   tryCatch({
                     features = c(features, lapply(1:obj_number, FUN = function(i_obj) {
                       setPB(pb3, value = i_obj, title = title_progress, label = "extracting features information")
