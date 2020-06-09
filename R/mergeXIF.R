@@ -237,6 +237,8 @@ mergeXIF <- function (fileName, write_to,
     ifd_obj = buildIFD(val = final_obj, typ = 4, tag = 33018, endianness = r_endian)
     # 33090 ifc pkg version
     ifd_version = buildIFD(val = paste0(unlist(packageVersion("IFC")), collapse = "."), typ = 2, tag = 33090, endianness = r_endian)
+    # 33091 names of files that constitute the merge
+    ifd_files = buildIFD(val = paste0(normalizePath(fileName, winslash = "\\"), collapse = "|"), typ = 2, tag = 33091, endianness = r_endian)
     # 33092 checksum of each file constituting the merge
     ifd_checksum = buildIFD(val = unname(sapply(fileName, cpp_checksum)), typ = 4, tag = 33092, endianness = r_endian)
     

@@ -386,6 +386,11 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
       } else {
         # register current object id in new tag to be able to track it
         ifd = c(ifd, buildIFD(val = OBJECT_ID, typ = 4, tag = 33093, endianness = r_endian))
+        
+        # 33094 is not registered, since it is always the same
+        # register current fil_ori in new tag to be able to track it
+        # ifd = c(ifd, buildIFD(val = 1, typ = 4, tag = 33094, endianness = r_endian))
+        
         # TODO if we remove mask tags it may be better to use offsets names as tracking object id
 
         # modify object id
