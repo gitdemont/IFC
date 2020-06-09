@@ -252,6 +252,7 @@ IntegerVector cpp_getoffsets_noid(const std::string fname,
           memcpy(&offset, buf_offset, sizeof(offset));
           offset = bytes_swap(offset);
           if(Progress::check_abort()) {
+            p.cleanup();
             Rcerr << "cpp_getoffsets_noid: Interrupted by user" << std::endl;
             Rcpp::stop("cpp_getoffsets_noid: Interrupted by user");
           }
@@ -276,6 +277,7 @@ IntegerVector cpp_getoffsets_noid(const std::string fname,
           fi.read((char*)buf_offset, sizeof(buf_offset));
           memcpy(&offset, buf_offset, sizeof(offset));
           if(Progress::check_abort()) {
+            p.cleanup();
             Rcerr << "cpp_getoffsets_noid: Interrupted by user" << std::endl;
             Rcpp::stop("cpp_getoffsets_noid: Interrupted by user");
           }
@@ -942,6 +944,7 @@ List cpp_getoffsets_wid(const std::string fname,
         out_off.push_back(IFD["curr_IFD_offset"]);
         
         if(Progress::check_abort()) {
+          p.cleanup();
           Rcerr << "cpp_getoffsets_wid: Interrupted by user" << std::endl;
           Rcpp::stop("cpp_getoffsets_wid: Interrupted by user");
         }
