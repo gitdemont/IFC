@@ -380,16 +380,25 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
         # add pkg version tag /!\ mandatory to prevent overwriting original file
         ifd = c(ifd, buildIFD(val = paste0(unlist(packageVersion("IFC")), collapse = "."), typ = 2, tag = 33090, endianness = r_endian))
         # add fileName tag /!\ allow to track where exported objects are coming from
-        ifd = c(ifd, buildIFD(val = fileName, typ = 2, tag = 33091, endianness = r_endian))
+        ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33091")),
+                                          fileName),
+                                          collapse = ">"),
+                              typ = 2, tag = 33091, endianness = r_endian))
         # add checksum tag /!\ allow to track where exported objects are coming from
-        ifd = c(ifd, buildIFD(val = checksumXIF(fileName), typ = 4, tag = 33092, endianness = r_endian))
+        ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33092")),
+                                          checksumXIF(fileName)),
+                                          collapse = ">"), 
+                              typ = 2, tag = 33092, endianness = r_endian))
       } else {
         # register current object id in new tag to be able to track it
-        ifd = c(ifd, buildIFD(val = OBJECT_ID, typ = 4, tag = 33093, endianness = r_endian))
+        ifd = c(ifd, buildIFD(val = c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33093")),
+                                      OBJECT_ID),
+                              typ = 4, tag = 33093, endianness = r_endian))
         
-        # 33094 is not registered, since it is always the same
         # register current fil_ori in new tag to be able to track it
-        # ifd = c(ifd, buildIFD(val = 1, typ = 4, tag = 33094, endianness = r_endian))
+        ifd = c(ifd, buildIFD(val = c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33094")),
+                                      1), 
+                              typ = 4, tag = 33094, endianness = r_endian))
         
         # TODO if we remove mask tags it may be better to use offsets names as tracking object id
 
