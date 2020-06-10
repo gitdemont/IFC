@@ -157,12 +157,12 @@ setPB <- function(pb, value = NULL, title = NULL, label = NULL) {
          { # typ 2
            if(getWinProgressBar(pb$bar) == val) return(NULL)
            return(setWinProgressBar(pb = pb$bar, value = val, title = title, 
-                                    label = paste0(label, " ", round(100 * val/(pb$steps-1),0), "%")))
+                                    label = sprintf("%3.f%% - %s", 100 * val/(pb$steps-1), label)))
          },
          { # typ 3
            if(pb$bar$getValue() == val) return(NULL)
            return(pb$bar$set(value = val, message = title,
-                             detail = paste0(label, " ", round(100 * val/(pb$steps-1),0), "%")))
+                             detail = sprintf("%3.f%% - %s", 100 * val/(pb$steps-1),label)))
          })
 }
 
