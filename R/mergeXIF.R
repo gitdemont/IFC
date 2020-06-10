@@ -239,13 +239,13 @@ mergeXIF <- function (fileName, write_to,
     ifd_version = buildIFD(val = paste0(unlist(packageVersion("IFC")), collapse = "."), typ = 2, tag = 33090, endianness = r_endian)
     # 33091 names of files that constitute the merge
     ifd_files = buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = IFD_first, which = 1, tag = "33091")),
-                                     paste0(normalizePath(fileName, winslash = "\\"), collapse = "|")),
-                                     collapse = ">"),
+                                        paste0(normalizePath(fileName, winslash = "\\"), collapse = "|")),
+                                      collapse = ">"),
                          typ = 2, tag = 33091, endianness = r_endian)
     # 33092 checksum of each file constituting the merge
     ifd_checksum = buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = IFD_first, which = 1, tag = "33092")),
-                                        paste0(unname(sapply(fileName, cpp_checksum)), collapse = "|")),
-                                        collapse = ">"), 
+                                           paste0(unname(sapply(fileName, cpp_checksum)), collapse = "|")),
+                                         collapse = ">"), 
                             typ = 2, tag = 33092, endianness = r_endian)
     
     # remove unwanted tags
@@ -302,7 +302,6 @@ mergeXIF <- function (fileName, write_to,
     off_obj = 0
     # repeat same process for img / msk data for all files
     for(f in fileName) {
-      f_ori = which(f == fileName)
       IFD_first = getIFD(fileName = f, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE)
       obj_count = 2*getFullTag(IFD = IFD_first, which = 1, tag = "33018")
       IFD = IFD_first[[1]]
@@ -372,9 +371,10 @@ mergeXIF <- function (fileName, write_to,
           ifd = c(ifd, buildIFD(val = c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33093")),
                                         OBJECT_ID),
                                 typ = 4, tag = 33093, endianness = r_endian))
-          # add f_ori as an index of fileName to allow to track where exported objects are coming from
-          ifd = c(ifd, buildIFD(val = c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33094")),
-                                        f_ori),
+          # add origin fileName to allow to track where exported objects are coming from
+          ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33094")),
+                                               f),
+                                             collapse = ">"),
                                 typ = 4, tag = 33094, endianness = r_endian))
           
           # modify object id
