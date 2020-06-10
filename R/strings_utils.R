@@ -111,12 +111,14 @@ splitp = function(write_to = "%d/%s_fromR.%e") {
   assert(write_to, len = 1, typ = "character")
   foo = strsplit(write_to, split = "%", fixed = TRUE)[[1]]
   if(length(foo) > 1) {
+    pre = foo[1]
     foo = gsub("^(s|p|d|e|o|c)(.*)$", "\\1%\\2", foo[-1])
     foo = unlist(strsplit(foo, split = "%", fixed = TRUE))
     out = lapply(c("d","p","s","e","o","c"), FUN=function(char) {
       which(foo == char)
     })
   } else {
+    pre = ""
     out = list(0,0,0,0,0,0)
   }
   names(out) = c("dir", "parent", "short", "ext", "object", "channel")
@@ -127,6 +129,7 @@ splitp = function(write_to = "%d/%s_fromR.%e") {
   names(foo)[out[["ext"]]] <- "ext"
   names(foo)[out[["object"]]] <- "object"
   names(foo)[out[["channel"]]] <- "channel"
+  foo = c(pre, foo)
   out = c(out, decomp = list(foo))
   attr(out, "class") <- "splitp_obj"
   return(out)
