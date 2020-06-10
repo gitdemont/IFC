@@ -391,9 +391,10 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
                               typ = 2, tag = 33092, endianness = r_endian))
       } else {
         # register current object id in new tag to be able to track it
-        ifd = c(ifd, buildIFD(val = c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33093")),
-                                      OBJECT_ID),
-                              typ = 4, tag = 33093, endianness = r_endian))
+        ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33093")),
+                                             OBJECT_ID),
+                                           collapse = ">"),
+                              typ = 2, tag = 33093, endianness = r_endian))
         
         # register current fil_ori in new tag to be able to track it
         ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33094")),

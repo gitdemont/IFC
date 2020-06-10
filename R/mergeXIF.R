@@ -368,14 +368,15 @@ mergeXIF <- function (fileName, write_to,
           ifd = ifd[sapply(ifd, FUN=function(i_tag) length(i_tag$min_content)!=0)]
           
           # register current object id in new tag to be able to track it
-          ifd = c(ifd, buildIFD(val = c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33093")),
-                                        OBJECT_ID),
-                                typ = 4, tag = 33093, endianness = r_endian))
+          ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33093")),
+                                               OBJECT_ID),
+                                             collapse = ">"),
+                                typ = 2, tag = 33093, endianness = r_endian))
           # add origin fileName to allow to track where exported objects are coming from
           ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33094")),
                                                f),
                                              collapse = ">"),
-                                typ = 4, tag = 33094, endianness = r_endian))
+                                typ = 2, tag = 33094, endianness = r_endian))
           
           # modify object id
           tmp = packBits(intToBits(floor(cum_obj/2)),type="raw")
