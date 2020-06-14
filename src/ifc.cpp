@@ -1319,13 +1319,10 @@ List cpp_gray_Decomp (const std::string fname,
         IntegerMatrix img(imgHeight, imgWidth + 1);
         bool odd = false;
         uint32_t k = 0;
-        int shift, value, nibble;
         
         for(R_len_t y = 0 ; y < imgHeight ; y++) {
           for(R_len_t x = 1 ; x <= imgWidth ; x++) {
-            shift = 0;
-            value = 0;
-            nibble = -1;
+            int shift = 0, value = 0, nibble = -1;
             while((nibble & 0x8)) {
               nibble = odd ? buf_image[k++] >> 4 : buf_image[k] & 0xf;
               odd = !odd;
@@ -1518,11 +1515,10 @@ NumericMatrix cpp_cleanse (const NumericMatrix mat,
                            const double bg = 0.0, const double sd = 0.0) {
   if(!(msk.ncol() == mat.ncol()) && (msk.nrow() == mat.nrow())) Rcpp::stop("cpp_cleanse: 'mat' and 'msk' should have same dimensions");
   NumericMatrix out = no_init_matrix(mat.nrow(), mat.ncol());
-  R_len_t i = 0;
   if(add_noise) {
-    for(; i < out.size(); i++) out[i] = msk[i] ? Rf_rnorm(bg, sd):mat[i];
+    for(R_len_t i = 0; i < out.size(); i++) out[i] = msk[i] ? Rf_rnorm(bg, sd):mat[i];
   } else {
-    for(; i < out.size(); i++) out[i] = msk[i] ? bg:mat[i];
+    for(R_len_t i = 0; i < out.size(); i++) out[i] = msk[i] ? bg:mat[i];
   }
   out.attr("mask") = msk;
   return out;
