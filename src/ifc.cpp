@@ -39,6 +39,9 @@
 #include "../inst/include/resize.hpp"
 using namespace Rcpp;
 
+static int sizes[13] = {0,1,1,2,4,4,1,1,2,4,4,4,8};
+static int multi[13] = {0,1,1,1,1,2,1,1,1,1,2,1,1};
+
 // template to swap bytes for each types
 template <typename T> T bytes_swap(T val) {
   T out;
@@ -354,9 +357,6 @@ List cpp_getTAGS (const std::string fname,
       size_t pos;
       char buf_entries [2];
       char buf_dir_entry [12];
-      
-      IntegerVector sizes = IntegerVector::create(0,1,1,2,4,4,1,1,2,4,4,4,8);
-      IntegerVector multi = IntegerVector::create(0,1,1,1,1,2,1,1,1,1,2,1,1);
       
       fi.seekg(offset, std::ios::beg);
       fi.read((char*)&buf_entries, sizeof(buf_entries));
