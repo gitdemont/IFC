@@ -32,3 +32,4 @@ a resized matrix with padding background if desired size is larger than original
 \description{
 Resizes mat to new dimensions.
 }
+\keyword{internal}

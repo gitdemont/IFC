@@ -61,3 +61,4 @@ Function to normalize, colorize and add background to images.
 When 'add_noise' is FALSE and 'msk', `removal` attribute has value "masked" or "MC",
 backgound will be automatically set to minimal pixel value.
 }
+\keyword{internal}

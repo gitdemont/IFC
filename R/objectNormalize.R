@@ -39,7 +39,7 @@
 #' @param gamma gamma correction. Default is 1, for no correction.
 #' @details Note that negative values are used internally for removal of unmasked objects.
 #' @return a [0,1] normalized matrix
-#' @export
+#' @keywords internal
 objectNormalize <- function(mat, input_range=c(0,4095), full_range=FALSE, force_range=FALSE, gamma=1) {
   cpp_normalize(mat = mat, input_range = input_range, full_range = full_range, force_range = force_range, gamma = gamma)
 }

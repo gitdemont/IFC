@@ -17,3 +17,4 @@ a 3D array where 3rd dimension is rgb.
 \description{
 Colorizes a [0,1] grayscale image.
 }
+\keyword{internal}

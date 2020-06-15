@@ -37,7 +37,7 @@
 #' @param bg mean value of the background added if add_noise is TRUE. Default is 0.
 #' @param sd standard deviation of the background added if add_noise is TRUE. Default is 0.
 #' @return a resized matrix with padding background if desired size is larger than original mat dimensions.
-#' @export
+#' @keywords internal
 objectResize <- function(mat, size = c(0,0), add_noise = TRUE, random_seed = NULL, bg = 0, sd = 0) {
   if(length(size) != 2) return(mat)
   if(add_noise) {

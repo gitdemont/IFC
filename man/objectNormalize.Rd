@@ -34,3 +34,4 @@ Normalizes a matrix to [0,1].
 \details{
 Note that negative values are used internally for removal of unmasked objects.
 }
+\keyword{internal}

@@ -48,7 +48,7 @@
 #' @details When 'add_noise' is FALSE and 'msk', `removal` attribute has value "masked" or "MC",
 #' backgound will be automatically set to minimal pixel value.
 #' @return the matrix transformed according to input parameters
-#' @export
+#' @keywords internal
 objectTransform <- function(mat, msk, color, input_range, mode, type, 
                             add_noise = TRUE, random_seed = NULL, size = c(0,0),
                             bg_mean = 0, bg_sd = 0, full_range = FALSE, force_range = FALSE, gamma = 1) {
