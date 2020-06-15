@@ -70,11 +70,13 @@ Displays gallery of `IFC_img` / `IFC_msk` objects
 }
 \details{
 arguments of \code{\link{objectExtract}} will be deduced from \code{\link{DisplayGallery}} input arguments.\cr
-Please note that PDF export link will be available if 'write_to' wil not result in a "bmp".\cr
+Please note that PDF export link will be available if 'write_to' will not result in a "bmp".\cr
+Please note that exporting to "tiff" may depend on browser capabilities.\cr
 Please note that a warning may be sent if gallery to display contains large amount of data. This is due to use of datatable() from \pkg{DT}.\cr
 Warning message:\cr
 In instance$preRenderHook(instance) :\cr
-It seems your data is too big for client-side DataTables. You may consider server-side processing: http://rstudio.github.io/DT/server.html
+It seems your data is too big for client-side DataTables. You may consider server-side processing: http://rstudio.github.io/DT/server.html\cr
+For these reasons, it may be better to use "png" extension to display images.
 }
 \examples{
 if(requireNamespace("IFCdata", quietly = TRUE)) {
