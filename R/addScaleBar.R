@@ -6,7 +6,7 @@
 # -IFC: An R Package for Imaging Flow Cytometry                                #
 # -YEAR: 2020                                                                  #
 # -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,             #
-#                     Jean-Pierre Marolleau, Loïc Garçon,                      #
+#                     Jean-Pierre Marolleau, Lo?c Gar?on,                      #
 #                     INSERM, UPD, CHU Amiens                                  #
 #                                                                              #
 # DISCLAIMER:                                                                  #
@@ -39,7 +39,8 @@
 #' @param xoff positive integer. x offset in image to draw scale, starting from bottom left corner.
 #' @param yoff positive integer. y offset in image to draw scale, starting from bottom left corner.
 #' @return an image with scale added to the bottom left corner.
-objectAddScaleBar <- function(image, size, style=c("dash","line")[1], color="white", res=96, xoff = 0, yoff = 0) {
+#' @keywords internal
+addScaleBar <- function(image, size, style=c("dash","line")[1], color="white", res=96, xoff = 0, yoff = 0) {
   # several checks
   size = na.omit(as.integer(size)); size = size[size>0]
   assert(size, len = 1, typ = "integer")
@@ -70,7 +71,7 @@ objectAddScaleBar <- function(image, size, style=c("dash","line")[1], color="whi
   bar_img = bar_msk
   bar_img = objectColorize(bar_img,color)
   ret = array(sapply(1:d[3], FUN=function(x) cpp_mark(A = image[,,x], B = bar_img[,,x], mask = bar_msk, xoff = 2 + xoff, yoff = d[1] - 12 + 4 - yoff, invert = ifelse(lum<128,TRUE,FALSE))),dim = d)
-  ret = objectAddText(image = ret, text = size, color = color, xoff = bar_w + 4 + xoff,  yoff = d[1] - 12 - yoff)
-  ret = objectAddText(image = ret, text = "|", color = color, xoff = bar_w+ 4 + xoff + 6*nchar(size),  yoff = d[1] - 10 - yoff)
-  return(objectAddText(image = ret, text = "m", color = color, xoff = bar_w+ 10 + xoff + 6*nchar(size),  yoff = d[1] - 12 - yoff))
+  ret = addText(image = ret, text = size, color = color, xoff = bar_w + 4 + xoff,  yoff = d[1] - 12 - yoff)
+  ret = addText(image = ret, text = "|", color = color, xoff = bar_w+ 4 + xoff + 6*nchar(size),  yoff = d[1] - 10 - yoff)
+  return(addText(image = ret, text = "m", color = color, xoff = bar_w+ 10 + xoff + 6*nchar(size),  yoff = d[1] - 12 - yoff))
 }

@@ -6,7 +6,7 @@
 # -IFC: An R Package for Imaging Flow Cytometry                                #
 # -YEAR: 2020                                                                  #
 # -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,             #
-#                     Jean-Pierre Marolleau, LoÃ¯c GarÃ§on,                      #
+#                     Jean-Pierre Marolleau, Loïc Garçon,                      #
 #                     INSERM, UPD, CHU Amiens                                  #
 #                                                                              #
 # DISCLAIMER:                                                                  #
@@ -38,7 +38,8 @@
 #' @param corner a character string. where to position text in the image. Allowed are "TL", "TR", "BL", "BR", for top-left, top-right, bottom-left, bottom-right, respectively.
 #' @details One-lined text will be added so has to be fully contained within image and anchored at desired corner plus x and y offset from it.
 #' @return an image with text added.
-objectAddText <- function(image, text, color, xoff = 0, yoff = 0, corner = "TL") {
+#' @keywords internal
+addText <- function(image, text, color, xoff = 0, yoff = 0, corner = "TL") {
   # several checks
   text = na.omit(as.character(text))
   assert(text, len = 1, typ = "character")
