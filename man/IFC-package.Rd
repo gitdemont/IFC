@@ -16,8 +16,6 @@ The IFC package provides several categories of functions:\cr
 \code{\link{smoothLinLog}}, \code{\link{inv_smoothLinLog}}\cr
 - to deeply extract information from files:\cr
 \code{\link{getInfo}}, \code{\link{getOffsets}}, \code{\link{getIFD}}, \code{\link{getFullTag}}, \code{\link{getImagesValues}}, \code{\link{getAborted}}\cr
-- to treat object images:\cr
-\code{\link{objectCleanse}}, \code{\link{objectColorize}}, \code{\link{objectDisplay}}, \code{\link{objectNormalize}}, \code{\link{objectResize}}, \code{\link{objectTransform}}, \code{\link{objectAddScaleBar}}, \code{\link{objectAddText}}\cr
 - dedicated to populations:\cr
 \code{\link{popsCopy}}, \code{\link{popsCompute}}, \code{\link{popsGetObjectsIds}}, \code{\link{popsGetSiblings}}, \code{\link{popsNetwork}}, \code{\link{popsRetrieveGraph}}, \code{\link{popsWithin}}\cr
 - for adding features, regions, populations:\cr
