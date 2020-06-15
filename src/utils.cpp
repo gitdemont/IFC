@@ -242,28 +242,27 @@ RawVector cpp_writeBMP ( const NumericVector image) {
       
       //////////////////  copy image to out
       R_len_t n = 54;
-      R_len_t i, j, k, p;
       if(rgb) {
-        for(i = d[0] -1; i >=0; i--) { // image in BMP is height inverted
-          for(j = 0; j < d[1]; j++) {
-            for(k = d[2] - 1; k >= 0; k--) { // image in BMP is rgb inverted
+        for(R_len_t i = d[0] - 1; i >= 0; i--) { // image in BMP is height inverted
+          for(R_len_t j = 0; j < d[1]; j++) {
+            for(R_len_t k = d[2] - 1; k >= 0; k--) { // image in BMP is rgb inverted
               out[n++] = 255 * image[k * d[1] * d[0] + j * d[0] + i];
             }
           }
           // apply padding
-          for(p = 0; p < padding; p++) {
+          for(R_len_t p = 0; p < padding; p++) {
             out[n++] = 0;
           }
         }
       } else {
-        for(i = d[0] -1; i >=0; i--) { // image in BMP is height inverted
-          for(j = 0; j < d[1]; j++) {
-            for(k = 0; k < 3; k++) { // write 3 times the same value
-              out[n++] = 255 * image[j*d[0] + i];
+        for(R_len_t i = d[0] - 1; i >= 0; i--) { // image in BMP is height inverted
+          for(R_len_t j = 0; j < d[1]; j++) {
+            for(R_len_t k = 0; k < 3; k++) { // write 3 times the same value
+              out[n++] = 255 * image[j * d[0] + i];
             }
           }
           // apply padding
-          for(p = 0; p < padding; p++) {
+          for(R_len_t p = 0; p < padding; p++) {
             out[n++] = 0;
           }
         }
