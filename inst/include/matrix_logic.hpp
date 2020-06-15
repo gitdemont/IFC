@@ -6,7 +6,7 @@
   -IFC: An R Package for Imaging Flow Cytometry                                 
   -YEAR: 2020                                                                   
   -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,              
-                      Jean-Pierre Marolleau, Loï�c Gaççon,                       
+                      Jean-Pierre Marolleau, Loï?c Gaççon,                       
                       INSERM, UPD, CHU Amiens                                   
                                                                                 
                                                                                 
@@ -46,15 +46,13 @@ Rcpp::LogicalMatrix cpp_AND_M(const Rcpp::List list) {
   R_len_t L = list.length();
   if(L < 1) Rcpp::stop("cpp_AND_M: 'list' should contain at least 1 matrix");
   Rcpp::LogicalMatrix MAT = Rcpp::clone(Rcpp::as<Rcpp::LogicalMatrix>(list[0]));
-  R_len_t mat_r, mat_c; 
-  mat_r = MAT.nrow();
-  mat_c = MAT.ncol();
+  R_len_t mat_r = MAT.nrow(), mat_c = MAT.ncol();
   if(L > 1) for(R_len_t i = 1; i < L; i++) {
     Rcpp::LogicalMatrix CUR_M = Rcpp::clone(Rcpp::as<Rcpp::LogicalMatrix>(list[i]));
     if(mat_r != CUR_M.nrow()) Rcpp::stop("cpp_AND_M: 'All matrices in 'list' should have same number of rows/columns");
     if(mat_c != CUR_M.ncol()) Rcpp::stop("cpp_AND_M: 'All matrices in 'list' should have same number of rows/columns");
-    for(R_len_t i_row = 0; i_row < mat_r; i_row ++) {
-      MAT(i_row, Rcpp::_) = CUR_M(i_row, Rcpp::_) & MAT(i_row, Rcpp::_);
+    for(R_len_t i_col = 0; i_col < mat_c; i_col++) {
+      MAT(Rcpp::_, i_col) = CUR_M(Rcpp::_, i_col) & MAT(Rcpp::_, i_col);
     }
   }
   return MAT;
@@ -73,15 +71,13 @@ Rcpp::LogicalMatrix cpp_OR_M(const Rcpp::List list) {
   R_len_t L = list.length();
   if(L < 1) Rcpp::stop("cpp_OR_M: 'list' should contain at least 1 matrix");
   Rcpp::LogicalMatrix MAT = Rcpp::clone(Rcpp::as<Rcpp::LogicalMatrix>(list[0]));
-  R_len_t mat_r, mat_c; 
-  mat_r = MAT.nrow();
-  mat_c = MAT.ncol();
+  R_len_t mat_r = MAT.nrow(), mat_c = MAT.ncol();
   if(L > 1) for(R_len_t i = 1; i < L; i++) {
     Rcpp::LogicalMatrix CUR_M = Rcpp::clone(Rcpp::as<Rcpp::LogicalMatrix>(list[i]));
     if(mat_r != CUR_M.nrow()) Rcpp::stop("cpp_OR_M: 'All matrices in 'list' should have same number of rows/columns");
     if(mat_c != CUR_M.ncol()) Rcpp::stop("cpp_OR_M: 'All matrices in 'list' should have same number of rows/columns");
-    for(R_len_t i_row = 0; i_row < mat_r; i_row ++) {
-      MAT(i_row, Rcpp::_) = CUR_M(i_row, Rcpp::_) | MAT(i_row, Rcpp::_);
+    for(R_len_t i_col = 0; i_col < mat_c; i_col++) {
+      MAT(Rcpp::_, i_col) = CUR_M(Rcpp::_, i_col) | MAT(Rcpp::_, i_col);
     }
   }
   return MAT;
@@ -98,9 +94,8 @@ Rcpp::LogicalMatrix cpp_OR_M(const Rcpp::List list) {
 // [[Rcpp::export]]
 Rcpp::LogicalMatrix cpp_NEG_M(const Rcpp::LogicalMatrix mat) {
   Rcpp::LogicalMatrix OUT_M = Rcpp::no_init_matrix(mat.nrow(), mat.ncol());
-  R_len_t mat_r = mat.nrow();
-  for(R_len_t i_row = 0; i_row < mat_r; i_row++) {
-    OUT_M(i_row, Rcpp::_) = !OUT_M(i_row, Rcpp::_);
+  for(R_len_t i_col = 0; i_col < mat.ncol(); i_col++) {
+    OUT_M(Rcpp::_, i_col) = !OUT_M(Rcpp::_, i_col);
   }
   return OUT_M;
 }

@@ -129,29 +129,30 @@ double cpp_computeGamma (const NumericVector V) {
 // [[Rcpp::export]]
 std::string cpp_base64_encode ( const RawVector x) {
   R_len_t i = 0, a = x.size() / 3, b = x.size() % 3;
-  uint32_t val;
   std::string out;
   out.reserve(((a) + (b > 0)) * 4);
   for(R_len_t idx = 0; idx < a; idx++, i += 3) { 
-    val = (x[i] << 16) + (x[i + 1] << 8) + x[i + 2];
+    uint32_t val = (x[i] << 16) + (x[i + 1] << 8) + x[i + 2];
     for(short k = 18; k >= 0; k -= 6) {
       out.push_back(base64_LUT[(val >> k) & 0x3F]);
     }
   }
   switch(b) {
-  case 1:
-    val  = x[i++] << 16;
+  case 1: {
+    uint32_t val  = x[i++] << 16;
     out.push_back(base64_LUT[(val >> 18) & 0x3F]);
     out.push_back(base64_LUT[(val >> 12) & 0x3F]);
     out.append(2,'=');
     break;
-  case 2:
-    val  = (x[i] << 16) + (x[i + 1] << 8);
+  }
+  case 2: {
+    uint32_t val  = (x[i] << 16) + (x[i + 1] << 8);
     out.push_back(base64_LUT[(val >> 18) & 0x3F]);
     out.push_back(base64_LUT[(val >> 12) & 0x3F]);
     out.push_back(base64_LUT[(val >>  6) & 0x3F]);
     out.push_back('=');
     break;
+  }
   }
   return out;
 }

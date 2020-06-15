@@ -1130,90 +1130,89 @@ List cpp_rle_Decomp (const std::string fname,
         fi.read(buf_image.data(), nbytes);
         
         IntegerMatrix img(imgWidth,imgHeight);
-        uint32_t off, j, k, L = imgWidth * imgHeight, runLength = 0;
+        uint32_t L = imgWidth * imgHeight, runLength = 0;
         
-        int value;
         switch(removal) {
         case 1: { // clipped removal
-          for(k = 0; k < nbytes; k++) {
-          value = buf_image[k++];
+          for(uint32_t k = 0; k < nbytes; k++) {
+          int value = buf_image[k++];
           if(value > 1) value = -1;
-          off = runLength;
+          uint32_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
             Rcerr << "cpp_rle_Decomp: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("cpp_rle_Decomp: Buffer overrun");
           }
-          for(j = off; j < runLength; j++) img[j] = value;
+          for(uint32_t j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
         case 2: { // height clipped removal
-          for(k = 0; k < nbytes; k++) {
-          value = buf_image[k++];
+          for(uint32_t k = 0; k < nbytes; k++) {
+          int value = buf_image[k++];
           if(value == 2) value = -1;
-          off = runLength;
+          uint32_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
             Rcerr << "cpp_rle_Decomp: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("cpp_rle_Decomp: Buffer overrun");
           }
-          for(j = off; j < runLength; j++) img[j] = value;
+          for(uint32_t j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
         case 3: { // width clipped removal
-          for(k = 0; k < nbytes; k++) {
-          value = buf_image[k++];
+          for(uint32_t k = 0; k < nbytes; k++) {
+          int value = buf_image[k++];
           if(value == 3) value = -1;
-          off = runLength;
+          uint32_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
             Rcerr << "cpp_rle_Decomp: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("cpp_rle_Decomp: Buffer overrun");
           }
-          for(j = off; j < runLength; j++) img[j] = value;
+          for(uint32_t j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
         case 4: { // only keep background
-          for(k = 0; k < nbytes; k++) {
-          value = buf_image[k++];
+          for(uint32_t k = 0; k < nbytes; k++) {
+          int value = buf_image[k++];
           value = (value == 0) ? 1:-1;
-          off = runLength;
+          uint32_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
             Rcerr << "cpp_rle_Decomp: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("cpp_rle_Decomp: Buffer overrun");
           }
-          for(j = off; j < runLength; j++) img[j] = value;
+          for(uint32_t j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
         case 5: { // only keep non clipped foreground
-          for(k = 0; k < nbytes; k++) {
-          value = buf_image[k++];
+          for(uint32_t k = 0; k < nbytes; k++) {
+          int value = buf_image[k++];
           if(value != 1) value = -1;
-          off = runLength;
+          uint32_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
             Rcerr << "cpp_rle_Decomp: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("cpp_rle_Decomp: Buffer overrun");
           }
-          for(j = off; j < runLength; j++) img[j] = value;
+          for(uint32_t j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
         default: { // no removal 
-          for(k = 0; k < nbytes; k++) {
-          value = buf_image[k++];
-          off = runLength;
+          for(uint32_t k = 0; k < nbytes; k++) {
+          int value = buf_image[k++];
+          uint32_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
             Rcerr << "cpp_rle_Decomp: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("cpp_rle_Decomp: Buffer overrun");
           }
-          for(j = off; j < runLength; j++) img[j] = value;
+          for(uint32_t j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
@@ -1322,7 +1321,8 @@ List cpp_gray_Decomp (const std::string fname,
         
         for(R_len_t y = 0 ; y < imgHeight ; y++) {
           for(R_len_t x = 1 ; x <= imgWidth ; x++) {
-            int shift = 0, value = 0, nibble = -1;
+            int value = 0;
+            short shift = 0, nibble = -1;
             while((nibble & 0x8)) {
               nibble = odd ? buf_image[k++] >> 4 : buf_image[k] & 0xf;
               odd = !odd;
@@ -1358,7 +1358,6 @@ List cpp_gray_Decomp (const std::string fname,
   }
   return R_NilValue;
 }
-
 
 //' @title IFC_object Decompression
 //' @name cpp_decomp
