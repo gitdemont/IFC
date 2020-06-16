@@ -35,7 +35,7 @@
 #' @param vis2D when original graph is not an histogram, whether to display it as "scatter" or "density". Default is "density".
 #' @param all_siblings whether to add all 'pop' siblings in the graph. Default is FALSE.
 #' @return a list of parameters needed to build an IFC graph.
-#' @export
+#' @keywords internal
 popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE) {
   if(missing(obj)) stop("'obj' can't be missing")
   if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class `IFC_data`")

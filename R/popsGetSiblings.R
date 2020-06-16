@@ -33,7 +33,7 @@
 #' @param obj an `IFC_data` object extracted with features extracted.
 #' @param pops graphical populations names to get siblings of.
 #' @return names of population siblings.
-#' @export
+#' @keywords internal
 popsGetSiblings <- function(obj, pops) {
   if(missing(obj)) stop("'obj' can't be missing")
   if(missing(pops)) stop("'pops' can't be missing")
