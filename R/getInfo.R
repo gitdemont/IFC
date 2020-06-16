@@ -117,11 +117,8 @@ getInfo <- function(fileName,
     toskip = toskip + nchar("</Assay>") - 1
     tmp_daf = read_xml(readBin(con = fileName, what = "raw", n = toskip), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
     cname = xml_attr(xml_find_first(tmp_daf, "//SOD"), attr = "file")
-    fileName_image = file.path(cifdir, basename(cname)) # looks in same directory as fileName
-    
     found = FALSE
     checksum = checksumDAF(fileName)
-    
     fileName_image = file.path(cifdir, basename(cname)) # look in cifdir 1st
     if(file.exists(fileName_image)) {
       if(checksumXIF(fileName_image) == checksum) found = TRUE
