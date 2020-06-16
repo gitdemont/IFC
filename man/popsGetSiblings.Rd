@@ -17,3 +17,4 @@ names of population siblings.
 \description{
 Gives names of graphical pops's siblings in a `IFC_data` object.
 }
+\keyword{internal}

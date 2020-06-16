@@ -29,7 +29,7 @@
 
 #' @title Gallery Export
 #' @description
-#' Exports gallery of `IFC_img` / `IFC_msk`objects
+#' Exports gallery of `IFC_img` / `IFC_msk` objects
 #' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
 #' If 'param' is provided 'mode'(="rgb") and the above parameters will be overwritten.\cr
 #' If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr

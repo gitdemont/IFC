@@ -28,8 +28,8 @@
 ################################################################################
 
 #' @title Image Scale Bar Incrustation
-#' @description
-#' Adds scale bar to image
+#' @name addScaleBar
+#' @description Adds scale bar to image
 #' @param image a [0,1] image.
 #' @param size positive integer. Scale's bar size in micro-meter. Default is '7'.\cr
 #' This parameter can't be lesser than 6px and higher than image width + scale text.

@@ -109,7 +109,7 @@ Depending on 'export':\cr
 -"file", an invisible vector of ids corresponding to the objects exported.
 }
 \description{
-Exports gallery of `IFC_img` / `IFC_msk`objects
+Exports gallery of `IFC_img` / `IFC_msk` objects
 }
 \details{
 arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToGallery}} input arguments.

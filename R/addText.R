@@ -6,7 +6,7 @@
 # -IFC: An R Package for Imaging Flow Cytometry                                #
 # -YEAR: 2020                                                                  #
 # -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,             #
-#                     Jean-Pierre Marolleau, Loïc Garçon,                      #
+#                     Jean-Pierre Marolleau, Lo?c Gar?on,                      #
 #                     INSERM, UPD, CHU Amiens                                  #
 #                                                                              #
 # DISCLAIMER:                                                                  #
@@ -28,8 +28,8 @@
 ################################################################################
 
 #' @title Image Text Incrustation
-#' @description
-#' Adds Text to image.
+#' @name addText
+#' @description Adds Text to image.
 #' @param image a [0,1] image.
 #' @param text a character string.
 #' @param color a character string. color of the text.

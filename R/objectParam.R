@@ -116,6 +116,18 @@ objectParam <- function(...,
                                     "cifdir","ntry")
     info = do.call(what = "getInfo", args = dots[param_info])  
   }
+  # TODO add the folowing lines
+  # provided = names(as.list(match.call())[-(unique(attr(input, "was"))+1)])
+  # expected = setdiff(names(formals(objectParam)), c("...", "info",
+  #                                                   "fileName","from","verbose",
+  #                                                   "verbosity","warn","force_default",
+  #                                                   "cifdir","ntry"))
+  # matches = charmatch(provided, expected)
+  # untreated = provided[is.na(matches)]
+  # multiple = provided[!is.na(matches) & matches == 0]
+  # if(length(untreated) != 0) warning(paste0("objectParam: provided argument", ifelse(length(untreated) == 1, "", "s"), " [", paste0("'", untreated, "'", collapse = ","), "] will not be used"))
+  # if(length(multiple) != 0) warning(paste0("objectParam: provided argument", ifelse(length(multiple) == 1, "", "s"), " [", paste0("'", multiple, "'", collapse = ","), "] match with several parameters"))
+  #
   
   ##### check size
   size = na.omit(as.integer(size[1:2]))

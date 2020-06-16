@@ -21,3 +21,4 @@ a list of parameters needed to build an IFC graph.
 \description{
 Retrieves the graph a graphical population originate from
 }
+\keyword{internal}

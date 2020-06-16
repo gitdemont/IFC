@@ -43,3 +43,4 @@ an object of class `IFC_pops`.
 Function used to compute `IFC_pops`\cr
 It requires pops, regions and features.
 }
+\keyword{internal}
