@@ -15,7 +15,7 @@ The IFC package provides several categories of functions:\cr
 - to transform features values\cr
 \code{\link{smoothLinLog}}, \code{\link{inv_smoothLinLog}}\cr
 - to deeply extract information from files:\cr
-\code{\link{getInfo}}, \code{\link{getOffsets}}, \code{\link{getIFD}}, \code{\link{getFullTag}}, \code{\link{getImagesValues}}, \code{\link{getAborted}}\cr
+\code{\link{getInfo}}, \code{\link{getOffsets}}, \code{\link{getIFD}}, \code{\link{getFullTag}}, \code{\link{getAborted}}\cr
 - dedicated to populations:\cr
 \code{\link{popsCopy}}, \code{\link{popsGetObjectsIds}}, \code{\link{popsNetwork}}\cr
 - for adding features, regions, populations:\cr

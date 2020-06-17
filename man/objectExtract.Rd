@@ -41,15 +41,15 @@ objectExtract(ifd, param, verbose = FALSE, bypass = FALSE, ...)
 \item{param}{object of class `IFC_param`, containing extraction parameters defined by \code{\link{objectParam}}.\cr
 This argument is not mandatory but it may allow to save time for repeated image export on same file.
 If this parameter is missing, \code{\link{objectExtract}} will use extra ... to pass arguments to \code{\link{objectParam}} to control object extraction.\cr
-However, if provided, ... will be ignored.}
+However, if 'param' is provided, '...' will be ignored.}
 
 \item{verbose}{whether to display information (use for debugging purpose). Default is FALSE.}
 
 \item{bypass}{whether to bypass checks on 'ifd' and 'param'. Default is FALSE.}
 
 \item{...}{other arguments to be passed to \code{\link{objectParam}}.\cr
-If 'param' is not provided then ... will be used to compute param.\cr
-/!\ If not any of 'fileName', 'info' can be found in ... then attr(ifd, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
+If 'param' is not provided then '...' will be used to compute 'param'.\cr
+/!\ If not any of 'fileName', 'info' can be found in '...' then attr(ifd, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
 }
 \value{
 A list (for every extracted objects) of list (for every exported channels) depending on "export" parameter:\cr
@@ -59,10 +59,6 @@ A list (for every extracted objects) of list (for every exported channels) depen
 }
 \description{
 Extracts / Decompress objects stored in RIF or CIF Files.
-}
-\details{
-when a mask is detected, add_noise, full_range and force_range are set to FALSE,
-background mean and sd to 0, and input_range to [0,3].
 }
 \examples{
 if(requireNamespace("IFCdata", quietly = TRUE)) {

@@ -55,3 +55,4 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
                   'to install extra files required to run this example.'))
 }
 }
+\keyword{internal}

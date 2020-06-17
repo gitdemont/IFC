@@ -104,3 +104,6 @@ an object of class `IFC_param`.
 \description{
 Defines `IFC_object` object extraction parameters.
 }
+\details{
+when a mask is detected, 'add_noise', 'full_range' and 'force_range' are set to FALSE.
+}
