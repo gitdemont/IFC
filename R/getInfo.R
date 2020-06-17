@@ -120,6 +120,8 @@ getInfo <- function(fileName,
     checksum = checksumDAF(fileName)
     str("there")
     str(cname)
+    str(splitf(cname))
+    str("here")
     str(splitf(cname)[c("short","ext")])
     fileName_image = file.path(cifdir, paste0(splitf(cname)[c("short","ext")], collapse = ".")) # look in cifdir 1st
     str(fileName_image)
