@@ -120,6 +120,7 @@ getInfo <- function(fileName,
     found = FALSE
     checksum = checksumDAF(fileName)
     fileName_image = file.path(cifdir, basename(cname)) # look in cifdir 1st
+    str(fileName_image)
     if(file.exists(fileName_image)) {
       if(checksumXIF(fileName_image) == checksum) found = TRUE
     } else {
