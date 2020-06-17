@@ -109,7 +109,6 @@ getInfo <- function(fileName,
   cifdir = na.omit(as.character(cifdir)); assert(cifdir, len = 1, typ = "character")
   ntry = na.omit(as.numeric(ntry)); assert(ntry, len = 1, typ = "numeric")
   if(ntry < 0) ntry = 0
-  str("here")
   if(warn & file_extension == "rif" & from == "analysis") warning("Only information from 'acquisition' can be retrieved from 'rif' file", call. = FALSE, immediate. = TRUE)
   if(file_extension == "daf") {
     toskip = cpp_scanFirst(fname = fileName, target = "</Assay>", start = 0, end = 0)
@@ -119,7 +118,7 @@ getInfo <- function(fileName,
     cname = xml_attr(xml_find_first(tmp_daf, "//SOD"), attr = "file")
     found = FALSE
     checksum = checksumDAF(fileName)
-    fileName_image = file.path(cifdir, basename(cname)) # look in cifdir 1st
+    fileName_image = file.path(cifdir, basename(normalizePath(path = cname, winslash = "/" mustWork = FALSE))) # look in cifdir 1st
     str(fileName_image)
     if(file.exists(fileName_image)) {
       if(checksumXIF(fileName_image) == checksum) found = TRUE
