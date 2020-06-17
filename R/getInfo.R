@@ -118,7 +118,7 @@ getInfo <- function(fileName,
     cname = xml_attr(xml_find_first(tmp_daf, "//SOD"), attr = "file")
     found = FALSE
     checksum = checksumDAF(fileName)
-    fileName_image = file.path(cifdir, basename(normalizePath(path = cname, winslash = "/" mustWork = FALSE))) # look in cifdir 1st
+    fileName_image = file.path(cifdir, basename(normalizePath(path = cname, winslash = "/", mustWork = FALSE))) # look in cifdir 1st
     str(fileName_image)
     if(file.exists(fileName_image)) {
       if(checksumXIF(fileName_image) == checksum) found = TRUE
