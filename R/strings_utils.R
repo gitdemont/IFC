@@ -146,22 +146,6 @@ splitp = function(write_to = "%d/%s_fromR.%e") {
 #' short: 'file' with no extension nor dir\cr
 #' input: 'file' path as it was provided.
 #' @keywords internal
-# splitf <- function(file = NULL) {
-#   dir = NULL
-#   b_name = basename(file)
-#   dir = dirname(file)
-#   if(dir == "") {
-#     dir = suppressWarnings(normalizePath(file, mustWork = FALSE, winslash = "/"))
-#   } else {
-#     dir = suppressWarnings(normalizePath(dir, mustWork = FALSE, winslash = "/"))
-#   }
-#   ext = getFileExt(file)
-#   short = gsub(paste0("\\.", ext, "$"), "", b_name, ignore.case = TRUE)
-#   out = c("dir" = dir, "parent" = basename(dir), "ext" = ext, "short" = short, "input" = file)
-#   class(out) <- "splitf_obj"
-#   return(out)
-# }
-
 splitf <- function(file = NULL) {
   f = normalizePath(file, mustWork = FALSE, winslash = "/")
   dir = dirname(f)
@@ -177,6 +161,21 @@ splitf <- function(file = NULL) {
   class(out) <- "splitf_obj"
   return(out)
 }
+# splitf <- function(file = NULL) {
+#   dir = NULL
+#   b_name = basename(file)
+#   dir = dirname(file)
+#   if(dir == "") {
+#     dir = suppressWarnings(normalizePath(file, mustWork = FALSE, winslash = "/"))
+#   } else {
+#     dir = suppressWarnings(normalizePath(dir, mustWork = FALSE, winslash = "/"))
+#   }
+#   ext = getFileExt(file)
+#   short = gsub(paste0("\\.", ext, "$"), "", b_name, ignore.case = TRUE)
+#   out = c("dir" = dir, "parent" = basename(dir), "ext" = ext, "short" = short, "input" = file)
+#   class(out) <- "splitf_obj"
+#   return(out)
+# }
 
 #' @title File Path Placeholders Formatting
 #' @description
