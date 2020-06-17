@@ -147,11 +147,10 @@ splitp = function(write_to = "%d/%s_fromR.%e") {
 #' input: 'file' path as it was provided.
 #' @keywords internal
 splitf <- function(file = NULL) {
-  f = normalizePath(file, mustWork = FALSE, winslash = "/")
-  dir = dirname(f)
-  b_name = basename(gsub(dir, "", f))
+  b_name = basename(file)
+  dir = dirname(file)
   if(dir == "") {
-    dir = f
+    dir = suppressWarnings(normalizePath(file, mustWork = FALSE, winslash = "/"))
   } else {
     dir = suppressWarnings(normalizePath(dir, mustWork = FALSE, winslash = "/"))
   }
@@ -162,11 +161,11 @@ splitf <- function(file = NULL) {
   return(out)
 }
 # splitf <- function(file = NULL) {
-#   dir = NULL
-#   b_name = basename(file)
-#   dir = dirname(file)
+#   f = normalizePath(file, mustWork = FALSE, winslash = "/")
+#   dir = dirname(f)
+#   b_name = basename(gsub(dir, "", f))
 #   if(dir == "") {
-#     dir = suppressWarnings(normalizePath(file, mustWork = FALSE, winslash = "/"))
+#     dir = f
 #   } else {
 #     dir = suppressWarnings(normalizePath(dir, mustWork = FALSE, winslash = "/"))
 #   }
