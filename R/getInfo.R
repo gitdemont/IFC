@@ -120,8 +120,9 @@ getInfo <- function(fileName,
     checksum = checksumDAF(fileName)
     str("there")
     str(cname)
+    str(splitf(cname))
     str(basename(normalizePath(path = cname, winslash = "/", mustWork = FALSE)))
-    fileName_image = file.path(cifdir, basename(normalizePath(path = cname, winslash = "/", mustWork = FALSE))) # look in cifdir 1st
+    fileName_image = file.path(cifdir, paste0(splitf(cname)[c("short","ext")], collapse = ".")) # look in cifdir 1st
     str(fileName_image)
     if(file.exists(fileName_image)) {
       if(checksumXIF(fileName_image) == checksum) found = TRUE
