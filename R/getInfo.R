@@ -109,7 +109,7 @@ getInfo <- function(fileName,
   cifdir = na.omit(as.character(cifdir)); assert(cifdir, len = 1, typ = "character")
   ntry = na.omit(as.numeric(ntry)); assert(ntry, len = 1, typ = "numeric")
   if(ntry < 0) ntry = 0
-  
+  str("here")
   if(warn & file_extension == "rif" & from == "analysis") warning("Only information from 'acquisition' can be retrieved from 'rif' file", call. = FALSE, immediate. = TRUE)
   if(file_extension == "daf") {
     toskip = cpp_scanFirst(fname = fileName, target = "</Assay>", start = 0, end = 0)
