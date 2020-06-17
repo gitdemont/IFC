@@ -408,7 +408,9 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         rm(pops_)
       }
       class(pops) <- "IFC_pops"
-    } 
+    } else {
+      features = data.frame()
+    }
     
     l = length(pops)
     if(l>0) {
