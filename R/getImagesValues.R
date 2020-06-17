@@ -28,6 +28,7 @@
 ################################################################################
 
 #' @title RIF/CIF Image Values Extraction
+#' @name getImagesValues
 #' @description
 #' Extracts the image values from RIF or CIF as what can be found in DAF files
 #' @param fileName path to file.
@@ -59,6 +60,7 @@
 #'                   'to install extra files required to run this example.'))
 #' }
 #' @return A data.frame is returned.
+#' @keywords internal
 getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE, fast = TRUE, ...) {
   dots = list(...)
   if(missing(fileName)) stop("'fileName' can't be missing")
