@@ -34,12 +34,12 @@
 #' @param param object of class `IFC_param`, containing extraction parameters defined by \code{\link{objectParam}}.\cr
 #' This argument is not mandatory but it may allow to save time for repeated image export on same file.
 #' If this parameter is missing, \code{\link{objectExtract}} will use extra ... to pass arguments to \code{\link{objectParam}} to control object extraction.\cr
-#' However, if provided, ... will be ignored.
+#' However, if 'param' is provided, '...' will be ignored.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param bypass whether to bypass checks on 'ifd' and 'param'. Default is FALSE.
 #' @param ... other arguments to be passed to \code{\link{objectParam}}.\cr
-#' If 'param' is not provided then ... will be used to compute param.\cr
-#' /!\ If not any of 'fileName', 'info' can be found in ... then attr(ifd, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
+#' If 'param' is not provided then '...' will be used to compute 'param'.\cr
+#' /!\ If not any of 'fileName', 'info' can be found in '...' then attr(ifd, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/openmicroscopy/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
 #' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr\cr
 #' BSD implementations of Bio-Formats readers and writers\cr
@@ -67,8 +67,6 @@
 #' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #' POSSIBILITY OF SUCH DAMAGE.
-#' @details when a mask is detected, add_noise, full_range and force_range are set to FALSE,
-#' background mean and sd to 0, and input_range to [0,3].
 #' @examples
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a cif file

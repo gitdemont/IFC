@@ -86,6 +86,7 @@
 #' @param force_range only apply when mode is not "raw", if force_range is TRUE, then range will be adjusted to object range in [-4095, +inf] resulting in normalization. Default is FALSE.\cr
 #' Note that this parameter takes the precedence over 'full_range'.\cr
 #' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.
+#' @details when a mask is detected, 'add_noise', 'full_range' and 'force_range' are set to FALSE.
 #' @return an object of class `IFC_param`. 
 #' @export
 objectParam <- function(...,
