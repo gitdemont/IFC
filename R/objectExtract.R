@@ -198,6 +198,7 @@ objectExtract <- function(ifd,
                    warning(paste0("file ", export_name, " already exists and will not be overwritten"), call. = FALSE, immediate. = TRUE)
                  }
                } else {
+                 if(!dir.exists(dirname(export_name))) if(!dir.create(dirname(export_name), recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dirname(export_name)))
                  objectWrite(x = img[[i]], type = param$type, export_name)
                }
                return(normalizePath(export_name, winslash = "/", mustWork = FALSE))
