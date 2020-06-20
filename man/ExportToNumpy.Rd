@@ -39,7 +39,7 @@ Note that this numpy should be available in this python to be able to export to 
 
 \item{dtype}{desired array?s data-type. Default is "double". Allowed are "uint8", "int16", "uint16" or "double". If 'mode' is "raw", this parameter will be forced to "int16".}
 
-\item{mode}{(\code{\link{objectParam}} argument) color mode export. Either "raw", "gray" . Default is "gray".}
+\item{mode}{(\code{\link{objectParam}} argument) color mode export. Either "raw", "gray" . Default is "raw".}
 
 \item{export}{export format. Either "file", "matrix". Default is "matrix".\cr
 Note that you will need 'reticulate' package installed to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".}
