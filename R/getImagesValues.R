@@ -42,23 +42,6 @@
 #' Only apply when 'offsets' are not provided.\cr
 #' Note that a warning will be sent if an object is found at an unexpected order.
 #' @param ... other arguments to be passed.
-#' @examples
-#' if(requireNamespace("IFCdata", quietly = TRUE)) {
-#'   ## use a daf file
-#'   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
-#'   ## extract image values stored daf file
-#'   daf_im_val <- ExtractFromDAF(file_daf, extract_images = TRUE, extract_offsets = FALSE,
-#'                         extract_features = FALSE, extract_stats = FALSE)$images
-#'   ## use a cif file
-#'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
-#'   ## extract image values stored cif file  
-#'   cif_im_val <- getImagesValues(file_cif)
-#'   identical(daf_im_val, cif_im_val)
-#' } else {
-#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
-#'                   'https://gitdemont.github.io/IFCdata/',
-#'                   'to install extra files required to run this example.'))
-#' }
 #' @return A data.frame is returned.
 #' @keywords internal
 getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE, fast = TRUE, ...) {

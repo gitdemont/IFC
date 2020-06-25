@@ -37,22 +37,4 @@ A data.frame is returned.
 \description{
 Extracts the image values from RIF or CIF as what can be found in DAF files
 }
-\examples{
-if(requireNamespace("IFCdata", quietly = TRUE)) {
-  ## use a daf file
-  file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
-  ## extract image values stored daf file
-  daf_im_val <- ExtractFromDAF(file_daf, extract_images = TRUE, extract_offsets = FALSE,
-                        extract_features = FALSE, extract_stats = FALSE)$images
-  ## use a cif file
-  file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
-  ## extract image values stored cif file  
-  cif_im_val <- getImagesValues(file_cif)
-  identical(daf_im_val, cif_im_val)
-} else {
-  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
-                  'https://gitdemont.github.io/IFCdata/',
-                  'to install extra files required to run this example.'))
-}
-}
 \keyword{internal}
