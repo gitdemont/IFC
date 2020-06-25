@@ -1,9 +1,15 @@
-── IFC 0.0.2: NOTE
+-- IFC 0.0.7: ERROR
 
-  Build ID:   IFC_0.0.2.tar.gz-c5c45e3de33548bdbcdc5322b7672faf
+  Build ID:   IFC_0.0.7.tar.gz-ccf29885fe814b2582b987cc999b2b32
   Platform:   Windows Server 2008 R2 SP1, R-devel, 32/64 bit
-  Submitted:  30m 55.8s ago
-  Build time: 10m 26.9s
+  Submitted:  26m 58.2s ago
+  Build time: 2m 48.4s
+
+> checking package dependencies ... ERROR
+  Package required but not available: 'tiff'
+  
+  See section 'The DESCRIPTION file' in the 'Writing R Extensions'
+  manual.
 
 > checking CRAN incoming feasibility ... NOTE
   Maintainer: 'Yohann Demont <git.demont@gmail.com>'
@@ -11,29 +17,26 @@
   New submission
   
   Possibly mis-spelled words in DESCRIPTION:
-    Amnis (10:122)
-    Cytometry (4:38, 10:62)
-    FlowSight (10:99)
-    IFC (10:506)
-    ImageStream (10:82)
-    Luminex (10:138)
-    cif (10:192)
-    cytometers (10:110)
-    daf (10:201)
-    rif (10:186)
+    Cytometry (4:31)
+    cif (10:219)
+    cytometers (10:111)
+    cytometry (10:59)
+    daf (10:228)
+    rif (10:213)
+  
+  Suggests or Enhances not in mainstream repositories:
+    IFCdata
+  Availability using Additional_repositories specification:
+    IFCdata   yes   https://gitdemont.github.io/IFCdata
 
-> checking for non-standard things in the check directory ... NOTE
-  Found the following files/directories:
-    'IFC-Ex_i386.Rout' 'IFC-Ex_x64.Rout' 'examples_i386' 'examples_x64'
+1 error x | 0 warnings √ | 1 note x
 
-0 errors ✓ | 0 warnings ✓ | 2 notes x
+-- IFC 0.0.7: NOTE
 
-── IFC 0.0.2: NOTE
-
-  Build ID:   IFC_0.0.2.tar.gz-6d3103e46f754c109c937dc32e24e7e3
+  Build ID:   IFC_0.0.7.tar.gz-e00563b7e4c145e8ae0dd9e21b1ab9f4
   Platform:   Ubuntu Linux 16.04 LTS, R-release, GCC
-  Submitted:  30m 55.8s ago
-  Build time: 16m 39.8s
+  Submitted:  26m 58.3s ago
+  Build time: 12m 57.2s
 
 > checking CRAN incoming feasibility ... NOTE
   Maintainer: ‘Yohann Demont <git.demont@gmail.com>’
@@ -41,30 +44,31 @@
   New submission
   
   Possibly mis-spelled words in DESCRIPTION:
-    Amnis (10:122)
-    cif (10:192)
-    cytometers (10:110)
-    Cytometry (4:38, 10:62)
-    daf (10:201)
-    FlowSight (10:99)
-    IFC (10:506)
-    ImageStream (10:82)
-    Luminex (10:138)
-    rif (10:186)
+    cif (10:219)
+    cytometers (10:111)
+    cytometry (10:59)
+    Cytometry (4:31)
+    daf (10:228)
+    rif (10:213)
+  
+  Suggests or Enhances not in mainstream repositories:
+    IFCdata
+  Availability using Additional_repositories specification:
+    IFCdata   yes   https://gitdemont.github.io/IFCdata
 
 > checking installed package size ... NOTE
-    installed size is  6.0Mb
+    installed size is  5.9Mb
     sub-directories of 1Mb or more:
-      libs   5.2Mb
+      libs   4.9Mb
 
-0 errors ✓ | 0 warnings ✓ | 2 notes x
+0 errors √ | 0 warnings √ | 2 notes x
 
-── IFC 0.0.2: NOTE
+-- IFC 0.0.7: NOTE
 
-  Build ID:   IFC_0.0.2.tar.gz-9d56738d105d489a9b0217bdef2bf207
+  Build ID:   IFC_0.0.7.tar.gz-a7f101f049e448b98a586214a890909b
   Platform:   Fedora Linux, R-devel, clang, gfortran
-  Submitted:  30m 55.8s ago
-  Build time: 20m 52.6s
+  Submitted:  26m 58.3s ago
+  Build time: 14m 6.3s
 
 > checking CRAN incoming feasibility ... NOTE
   Maintainer: ‘Yohann Demont <git.demont@gmail.com>’
@@ -72,29 +76,30 @@
   New submission
   
   Possibly mis-spelled words in DESCRIPTION:
-    Amnis (10:122)
-    Cytometry (4:38, 10:62)
-    FlowSight (10:99)
-    IFC (10:506)
-    ImageStream (10:82)
-    Luminex (10:138)
-    cif (10:192)
-    cytometers (10:110)
-    daf (10:201)
-    rif (10:186)
+    Cytometry (4:31)
+    cif (10:219)
+    cytometers (10:111)
+    cytometry (10:59)
+    daf (10:228)
+    rif (10:213)
+  
+  Suggests or Enhances not in mainstream repositories:
+    IFCdata
+  Availability using Additional_repositories specification:
+    IFCdata   yes   https://gitdemont.github.io/IFCdata
 
 > checking installed package size ... NOTE
-    installed size is  5.0Mb
+    installed size is  5.3Mb
     sub-directories of 1Mb or more:
-      libs   4.2Mb
+      libs   4.4Mb
 
-0 errors ✓ | 0 warnings ✓ | 2 notes x
+0 errors √ | 0 warnings √ | 2 notes x
 
-── IFC 0.0.2: OK
+-- IFC 0.0.7: OK
 
-  Build ID:   IFC_0.0.2.tar.gz-30db7a4846ee4427ae75a2ceb5b1432f
+  Build ID:   IFC_0.0.7.tar.gz-a66c350006694145b61eee4375040231
   Platform:   Debian Linux, R-devel, GCC ASAN/UBSAN
-  Submitted:  30m 55.9s ago
-  Build time: 29m 40.6s
+  Submitted:  26m 58.3s ago
+  Build time: 24m 47.4s
 
-0 errors ✓ | 0 warnings ✓ | 0 notes ✓
+0 errors √ | 0 warnings √ | 0 notes √
