@@ -35,7 +35,7 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
     reg_copy <- reg
     ## modify region label and x boundaries
     reg_copy$label <- paste0(reg_copy$label,"_copy")
-    reg_copy$x <- c(-3,3)
+    reg_copy$x <- reg_copy$x*0.9
     ## create new object with this new region
     dafnew <- data_add_regions(obj = daf, regions = list(reg_copy))
   }
