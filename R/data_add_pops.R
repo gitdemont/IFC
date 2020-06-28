@@ -42,7 +42,6 @@
 #' @param ... Other arguments to be passed.
 #' @source For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a daf file
 #'   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
@@ -63,7 +62,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return an IFC_data object with pops added.
 #' @export
 data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsilon = 1e-12, display_progress = TRUE, ...) {

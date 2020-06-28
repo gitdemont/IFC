@@ -35,7 +35,6 @@
 #' @details If 'fileName' is a DAF file \code{\link{ExportToDAF}} will be used to write file whereas if it is a RIF or CIF file \code{\link{writeIFC}} will use \code{\link{ExportToXIF}}.
 #' @return it invisible returns the path of exported file.
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   tmp <- tempdir(check = TRUE)
 #'   ## use a daf file
@@ -53,7 +52,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @export
 writeIFC <- function(fileName, ...) {
   dots=list(...)

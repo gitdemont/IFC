@@ -37,7 +37,6 @@
 #' If any input feature is not well defined and can't be created then an error will occur.
 #' @param ... Other arguments to be passed.
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a daf file
 #'   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
@@ -59,7 +58,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return an IFC_data object with features added.
 #' @export
 data_add_features <- function(obj, features, ...) {

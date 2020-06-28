@@ -34,7 +34,6 @@
 #' @param pop a population name from 'obj'. Default is "".
 #' If left as is or not found an error is thrown displaying all available population in 'obj'.
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a daf file
 #'   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
@@ -45,7 +44,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return An integer vector is returned
 #' @export
 popsGetObjectsIds <- function(obj, pop = "") {

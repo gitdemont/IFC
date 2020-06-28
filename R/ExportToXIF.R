@@ -70,7 +70,6 @@
 #' If the input 'fileName' is a merged of several files then features will be extracted from these files.\cr
 #' If these files can't be found, Warning(s) will be thrown and input 'fileName' will be extracted without features values.
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   tmp <- tempdir(check = TRUE)
 #'   ## use a cif file, but you can also subset rif
@@ -83,7 +82,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return It invisibly returns full path of exported file.
 #' @export
 ExportToXIF <- function(fileName, write_to, 

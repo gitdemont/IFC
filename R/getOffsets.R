@@ -41,7 +41,6 @@
 #' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
 #' @details Offsets are byte positions of IFDs found within RIF or CIF file. For more details see TIFF specifications.
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a cif file
 #'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
@@ -53,7 +52,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return an integer vector of class `IFC_offset` of IFDs offsets found in XIF file.
 #' If no offsets is found an error is thrown.
 #' @export

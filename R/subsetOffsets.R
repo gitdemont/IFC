@@ -34,7 +34,6 @@
 #' @param objects integer vector, IDEAS objects ids numbers to extract.
 #' @param image_type image_type of desired offsets. Default is c("img", "msk"). Allowed are "img" and/or "msk".
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a cif file
 #'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
@@ -49,7 +48,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return a class `IFC_offset` integer vector or empty list if objects are outside of offsets.
 #' @export
 subsetOffsets <- function(offsets, objects, image_type = c("img", "msk")) {

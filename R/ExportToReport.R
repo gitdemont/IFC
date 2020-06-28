@@ -65,7 +65,6 @@
 #' - pdf file if created will contain graphs and to a certain extent some stats "Min.", "Median", "Mean", "Max." (no more than 7 rows).\cr
 #' Note that only graphs will be exported (no images, features values, population stats, ...) in the same layout they were created and without sizing.
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   tmp <- tempdir(check = TRUE)
 #'   ## use a daf file
@@ -84,7 +83,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return It invisibly returns full path of exported .pdf and/or .csv file(s).
 #' @export
 ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRUE,

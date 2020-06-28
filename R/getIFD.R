@@ -52,7 +52,6 @@
 #' If 'offsets' == "all" all images and masks IFDs will be returned but not "first" one.
 #' Be aware that errors may occur if offsets are not extracted with \code{\link{getOffsets}} or \code{\link{subsetOffsets}}.
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a cif file
 #'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
@@ -65,7 +64,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return A list of named lists, each containing:\cr
 #' -tags, a named list whose names are tags found, where each tag is a list of tag, typ, siz, val, byt, len, off, map information.\cr
 #' -infos, a named list containing essential information about IFDs,

@@ -59,7 +59,6 @@
 #' If the input fileName is a merged of several files and recursive is set to TRUE, then ExtractFromXIF will be applied recursively on these files.\cr
 #' /!\ Note that features extraction is mandatory to correctly extract graphs, pops, regions and statistics values.\cr
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a cif file, but you can also read rif
 #'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
@@ -69,7 +68,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return A named list of class `IFC_data`, whose members are:\cr
 #' -description, a list of descriptive information,\cr
 #' -fileName, path of fileName input,\cr

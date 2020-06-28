@@ -35,7 +35,6 @@
 #' @details If input 'fileName' is a DAF file \code{\link{ExtractFromDAF}} will be used to read the file whereas if it is a CIF or RIF file \code{\link{readIFC}} will use \code{\link{ExtractFromXIF}}.
 #' @return an object of class `IFC_data`.
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a rif file, but you can also read daf or cif
 #'   file_rif <- system.file("extdata", "example.rif", package = "IFCdata")
@@ -45,7 +44,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @export
 readIFC <- function(fileName, ...) {
   dots=list(...)

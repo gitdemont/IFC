@@ -40,7 +40,6 @@
 #' @param weighted whether to scale population's node size according to count. Default is TRUE.
 #' @param ... other argument to be passed.
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a daf file
 #'   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
@@ -51,7 +50,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return a \pkg{visNetwork} object.
 #' @export
 popsNetwork = function(obj, hierarchical=TRUE, color_mode="white", highlight=NULL, seed=NULL, direction="LR", weighted=TRUE, ...) {

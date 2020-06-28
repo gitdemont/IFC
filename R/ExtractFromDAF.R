@@ -50,7 +50,6 @@
 #' If extract_images is TRUE, information about images will be extracted.
 #' @source For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a daf file
 #'   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
@@ -60,7 +59,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return A named list of class `IFC_data`, whose members are:\cr
 #' -description, a list of descriptive information,\cr
 #' -fileName, path of fileName input,\cr

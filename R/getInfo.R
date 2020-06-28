@@ -41,7 +41,6 @@
 #' If cif can't be found, but 'ntry' is reached, then an error will be thrown.
 #' @param ... other arguments to be passed.
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a daf file
 #'   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
@@ -53,7 +52,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return a list of information (open .daf file in an text editor for more details) about input fileName of class `IFC_info` and `acquistion` or `analysis`, whose members are:\cr
 #' -objcount, number of object in file,\cr
 #' -date, date of file creation,\cr

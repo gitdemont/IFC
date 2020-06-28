@@ -58,7 +58,6 @@
 #' @param ntry number of times \code{\link{ExportToDAF}} will be allowed to find corresponding cif file. Default is +Inf. Only apply when 'fullname' is set to TRUE.
 #' @param ... other arguments to be passed.
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a daf file
 #'   file_daf <- system.file("extdata", "example.daf", package = "IFCdata")
@@ -72,7 +71,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return It invisibly returns full path of exported file.
 #' @export
 ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), features = list(), graphs = list(), masks = list(),

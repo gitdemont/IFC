@@ -61,7 +61,6 @@
 #' It seems your data is too big for client-side DataTables. You may consider server-side processing: http://rstudio.github.io/DT/server.html\cr
 #' For these reasons, it may be better to use "png" extension to display images.
 #' @examples
-# #' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a cif file
 #'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
@@ -75,7 +74,6 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-# #' }
 #' @return it invisibly returns a list whose members are:\cr
 #' -data, data for DT::datatable(),\cr
 #' -args, associated arguments to pass to DT::datatable().
