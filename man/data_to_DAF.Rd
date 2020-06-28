@@ -76,11 +76,9 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   ## export obj to file using binary mode
   data_to_DAF(obj = dafnew, write_to = paste0(tmp, "\\\\test_bin.daf"),
               overwrite = TRUE, binary = TRUE)
-  \dontrun{
   ## exporting to non binary mode
   data_to_DAF(obj = dafnew, write_to = paste0(tmp, "\\\\test_notbin.daf"),
               overwrite = TRUE, binary = FALSE)
-  }
 } else {
   message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
                   'https://gitdemont.github.io/IFCdata/',
