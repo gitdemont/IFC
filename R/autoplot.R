@@ -197,7 +197,7 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
   keep_region = FALSE
   siblings = list()
   if(length(shown_pops)!=0) siblings = popsGetSiblings(obj, shown_pops)
-  are_siblings = all(sapply(siblings, FUN=function(s) s == siblings[[1]]))
+  are_siblings = all(unlist(sapply(siblings, FUN=function(s) s == siblings[[1]])))
 
   # if 'shown_pops' is given and is/are siblings then
   # if 1st shown_pops is of type graphical original graph can be retrieved
