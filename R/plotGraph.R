@@ -51,7 +51,8 @@
 #' @param ... other arguments to be passed.
 #' @return it invisibly returns a list whose members are:\cr
 #' -plot, "trellis" object that can be displayed using plot,\cr
-#' -stats, a table of satistics computed for the graph.
+#' -stats, a table of satistics computed for the graph,\cr
+#' -input, a list with input parameters.
 #' @export
 plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                      color_mode = c("white","black")[1], add_key = "panel", precision = c("light","full")[1],
@@ -351,7 +352,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       if(trans_y != "P") Ylim = smoothLinLog(Ylim, hyper=trans_y, base=10)
       Ylim = Ylim + c(-0.07,0.07)*diff(Ylim)
     }
-    
+
     foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, main = trunc_string(g$title, trunc_labels), groups=groups,
                  scales =  myScales(x=list(hyper=trans_x), y=list(hyper=trans_y)),
                  xlab =  trunc_string(g$xlabel, trunc_labels), ylab =  trunc_string(g$ylabel, trunc_labels),
@@ -417,5 +418,18 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   if(any(c("global","both")%in%add_key)) foo = update(foo, key=KEY)
   if(draw) plot(foo)
   if(stats_print) print(stats)
-  return(invisible(list("plot" = foo, "stats" = as.table(stats))))
+  return(invisible(list("plot" = foo,
+                        "stats" = as.table(stats),
+                        "data" = list("data" = D, 
+                                      "xlim" = Xlim, "ylim" = Ylim, 
+                                      "trans_x" = trans_x, "trans_y" = trans_y,
+                                      "trans" = trans,
+                                      "base" = base_n,
+                                      "displayed" = displayed_n,
+                                      "region" = reg_n,
+                                      "viewport" = viewport,
+                                      "bin" = nbin,
+                                      "type" = ifelse(g$type=="histogram", type, g$type),
+                                      "precision" = precision,
+                                      "mode" = color_mode))))
 }
