@@ -54,7 +54,8 @@ Note that it only applies when display is seen as overlaying populations.}
 \value{
 it invisibly returns a list whose members are:\cr
 -plot, "trellis" object that can be displayed using plot,\cr
--stats, a table of satistics computed for the graph.
+-stats, a table of satistics computed for the graph,\cr
+-input, a list with input parameters.
 }
 \description{
 Computes plot and stats from a IFC graph
