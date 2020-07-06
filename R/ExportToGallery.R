@@ -153,6 +153,7 @@ ExportToGallery <- function(...,
   main = as.character(main); assert(main, len = 1, typ = "character")
   add_lines = na.omit(as.integer(add_lines)); add_lines=add_lines[add_lines>=0]
   assert(add_lines, len = 1, typ = "integer")
+  add_ids = na.omit(as.integer(add_ids)); assert(add_ids, len = 1, typ = "integer")
   if(any(c(add_channels, add_lines > 0, main != ""))) {
     bg_color = na.omit(as.character(bg_color)); assert(bg_color, len = 1, typ = "character")
     lum = getLuminance(bg_color)
