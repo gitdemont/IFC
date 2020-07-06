@@ -420,7 +420,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   if(stats_print) print(stats)
   return(invisible(list("plot" = foo,
                         "stats" = as.table(stats),
-                        "data" = list("data" = D, 
+                        "input" = list("data" = D, 
                                       "xlim" = Xlim, "ylim" = Ylim, 
                                       "trans_x" = trans_x, "trans_y" = trans_y,
                                       "trans" = trans,
