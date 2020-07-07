@@ -413,6 +413,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   lt$fontsize$text <- 6
   lt$fontsize$points <- 4
   lt$grid.pars <- get.gpar()
+  if((length(lt$grid.pars) != 0) && (length(dev.cur()) != 0)) dev.off(which = dev.cur()) # get.gpar() opens the device so we shut it down
   lt$grid.pars$fontfamily <- "serif"
   foo = update(foo, par.settings = lt)
   if(any(c("global","both")%in%add_key)) foo = update(foo, key=KEY)
