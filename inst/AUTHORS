@@ -1,13 +1,15 @@
 This package has been written by Yohann Demont and is released under
 the GNU General Public License, Version 3 (ie GPL-3). 
 YEAR: 2020
-COPYRIGHT HOLDER: Yohann Demont, INSERM, UPD, CHU Amiens
+COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,
+                   Jean-Pierre Marolleau, Loïc Garçon,
+                   INSERM, UPD, CHU Amiens
 IFC: An R Package for Imaging Flow Cytometry
 Copyright (C) 2020 Yohann Demont
 
 --------------------------------------------------------------------------------
-cpp_rle_Decomp and cpp_gray_Decomp decompression are port of Bio-Formats readers
-and writers authored by Lee Kamentsky under BSD license
+cpp_rle_Decomp, cpp_gray_Decomp1 and cpp_gray_Decomp2 decompression are port of
+Bio-Formats readers and writers authored by Lee Kamentsky under BSD license
 
 --------------------------------------------------------------------------------
 popsNetwork in popsNetwork.R is using visNetwork package authored by Almende
