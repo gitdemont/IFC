@@ -631,16 +631,6 @@ NULL
 #' @keywords internal
 NULL
 
-#' @title Numeric to String Formatting
-#' @name num_to_string
-#' @description
-#' Formats numeric to string used for features, images, ... values conversion when exporting to xml.
-#' @param x NumericVector.
-#' @param precision, number of significant decimal digits to keep when x < 1. Default is 16.
-#' @return a string vector.
-#' @keywords internal
-NULL
-
 cpp_smoothLinLog <- function(x, hyper = 1000.0, base = 10.0, lin_comp = 2.302585) {
     .Call(`_IFC_cpp_smoothLinLog`, x, hyper, base, lin_comp)
 }
@@ -655,10 +645,6 @@ cpp_int32_to_uint32 <- function(x) {
 
 cpp_uint32_to_int32 <- function(x) {
     .Call(`_IFC_cpp_uint32_to_int32`, x)
-}
-
-num_to_string <- function(x, precision = 16L) {
-    .Call(`_IFC_cpp_num_to_string`, x, precision)
 }
 
 #' @title Gamma Computation

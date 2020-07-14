@@ -385,18 +385,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_num_to_string
-Rcpp::StringVector cpp_num_to_string(const Rcpp::NumericVector x, const unsigned char precision);
-RcppExport SEXP _IFC_cpp_num_to_string(SEXP xSEXP, SEXP precisionSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const unsigned char >::type precision(precisionSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_num_to_string(x, precision));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cpp_computeGamma
 double cpp_computeGamma(const NumericVector V);
 RcppExport SEXP _IFC_cpp_computeGamma(SEXP VSEXP) {
@@ -457,7 +445,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_inv_smoothLinLog", (DL_FUNC) &_IFC_cpp_inv_smoothLinLog, 4},
     {"_IFC_cpp_int32_to_uint32", (DL_FUNC) &_IFC_cpp_int32_to_uint32, 1},
     {"_IFC_cpp_uint32_to_int32", (DL_FUNC) &_IFC_cpp_uint32_to_int32, 1},
-    {"_IFC_cpp_num_to_string", (DL_FUNC) &_IFC_cpp_num_to_string, 2},
     {"_IFC_cpp_computeGamma", (DL_FUNC) &_IFC_cpp_computeGamma, 1},
     {"_IFC_cpp_base64_encode", (DL_FUNC) &_IFC_cpp_base64_encode, 1},
     {"_IFC_cpp_writeBMP", (DL_FUNC) &_IFC_cpp_writeBMP, 1},
