@@ -1582,7 +1582,7 @@ NumericMatrix cpp_normalize (const NumericMatrix mat,
   }
   
   double diff = ran[1] - ran[0];
-  if(gamma == 1) {
+  if(gamma == 1.0) {
     for(R_len_t i = 0; i < mat.size(); i++) {
       if(mat[i] <= ran[0]) {
         out[i] = 0.0;
@@ -1604,7 +1604,7 @@ NumericMatrix cpp_normalize (const NumericMatrix mat,
         out[i] = 1.0;
         continue;
       }
-      out[i] = pow((mat[i] - ran[0])/diff, gam);
+      out[i] = std::pow((mat[i] - ran[0])/diff, gam);
     }
   }
   if(mat.hasAttribute("mask")) out.attr("mask") = mat.attr("mask");
