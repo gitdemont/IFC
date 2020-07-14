@@ -440,7 +440,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
         lapply(1:L, FUN=function(i_feat) {
           setPB(pb_fen, value = i_feat, title = title_progress, label = "writing features values (xml)")
           cat(indent3, sep = "", file = file_w, append = TRUE, 
-              sprintf('<UDFValues fid="%s" fv="%s" />\n', cpp_num_to_string(i_feat-1), paste0(cpp_num_to_string(obj$features[[i_feat]]), collapse = "|")))
+              sprintf('<UDFValues fid="%s" fv="%s" />\n', num_to_string(i_feat-1), paste0(num_to_string(obj$features[[i_feat]]), collapse = "|")))
         })
       }, error = function(e) {
         stop(e$message)
@@ -448,7 +448,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
       } else {
         lapply(1:L, FUN=function(i_feat) {
           cat(indent3, sep = "", file = file_w, append = TRUE, 
-              sprintf('<UDFValues fid="%s" fv="%s" />\n', cpp_num_to_string(i_feat-1), paste0(cpp_num_to_string(obj$features[[i_feat]]), collapse = "|")))
+              sprintf('<UDFValues fid="%s" fv="%s" />\n', num_to_string(i_feat-1), paste0(num_to_string(obj$features[[i_feat]]), collapse = "|")))
         })
       }
       cat(indent1, file = file_w, append = TRUE, "</FeatureValues>\n")
@@ -463,21 +463,21 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
           setPB(pb_imn, value = i_img, title = title_progress, label = "writing images values (xml)")
           cat(indent2, file = file_w, append = TRUE, sep = "",
               sprintf('<SO id="%s" imgIFD="%s" mskIFD="%s" spIFD="%s" w="%s" l="%s" fs="%s" cl="%s" ct="%s" objCenterX="%s" objCenterY="%s" bgmean="%s" bgstd="%s" satcount="%s" satpercent="%s" />\n',
-                      cpp_num_to_string(obj$images[i_img, 'id']),
-                      cpp_num_to_string(obj$images[i_img, 'imgIFD']),
-                      cpp_num_to_string(obj$images[i_img, 'mskIFD']),
-                      cpp_num_to_string(obj$images[i_img, 'spIFD']),
-                      cpp_num_to_string(obj$images[i_img, 'w']),
-                      cpp_num_to_string(obj$images[i_img, 'l']),
-                      cpp_num_to_string(obj$images[i_img, 'fs']),
-                      cpp_num_to_string(obj$images[i_img, 'cl']),
-                      cpp_num_to_string(obj$images[i_img, 'ct']),
-                      cpp_num_to_string(obj$images[i_img, 'objCenterX']),
-                      cpp_num_to_string(obj$images[i_img, 'objCenterY']),
-                      paste0(cpp_num_to_string(unlist(obj$images[i_img, bgm])), collapse = "|"),
-                      paste0(cpp_num_to_string(unlist(obj$images[i_img, bgs])), collapse = "|"),
-                      paste0(cpp_num_to_string(unlist(obj$images[i_img, satc])), collapse = "|"),
-                      paste0(cpp_num_to_string(unlist(obj$images[i_img, satp])), collapse = "|")))   
+                      num_to_string(obj$images[i_img, 'id']),
+                      num_to_string(obj$images[i_img, 'imgIFD']),
+                      num_to_string(obj$images[i_img, 'mskIFD']),
+                      num_to_string(obj$images[i_img, 'spIFD']),
+                      num_to_string(obj$images[i_img, 'w']),
+                      num_to_string(obj$images[i_img, 'l']),
+                      num_to_string(obj$images[i_img, 'fs']),
+                      num_to_string(obj$images[i_img, 'cl']),
+                      num_to_string(obj$images[i_img, 'ct']),
+                      num_to_string(obj$images[i_img, 'objCenterX']),
+                      num_to_string(obj$images[i_img, 'objCenterY']),
+                      paste0(num_to_string(unlist(obj$images[i_img, bgm])), collapse = "|"),
+                      paste0(num_to_string(unlist(obj$images[i_img, bgs])), collapse = "|"),
+                      paste0(num_to_string(unlist(obj$images[i_img, satc])), collapse = "|"),
+                      paste0(num_to_string(unlist(obj$images[i_img, satp])), collapse = "|")))   
         })
       }, error = function(e) {
         stop(e$message)
@@ -486,21 +486,21 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
         lapply(1:L, FUN=function(i_img) {
           cat(indent2, file = file_w, append = TRUE, sep = "",
               sprintf('<SO id="%s" imgIFD="%s" mskIFD="%s" spIFD="%s" w="%s" l="%s" fs="%s" cl="%s" ct="%s" objCenterX="%s" objCenterY="%s" bgmean="%s" bgstd="%s" satcount="%s" satpercent="%s" />\n',
-                      cpp_num_to_string(obj$images[i_img, 'id']),
-                      cpp_num_to_string(obj$images[i_img, 'imgIFD']),
-                      cpp_num_to_string(obj$images[i_img, 'mskIFD']),
-                      cpp_num_to_string(obj$images[i_img, 'spIFD']),
-                      cpp_num_to_string(obj$images[i_img, 'w']),
-                      cpp_num_to_string(obj$images[i_img, 'l']),
-                      cpp_num_to_string(obj$images[i_img, 'fs']),
-                      cpp_num_to_string(obj$images[i_img, 'cl']),
-                      cpp_num_to_string(obj$images[i_img, 'ct']),
-                      cpp_num_to_string(obj$images[i_img, 'objCenterX']),
-                      cpp_num_to_string(obj$images[i_img, 'objCenterY']),
-                      paste0(cpp_num_to_string(unlist(obj$images[i_img, bgm])), collapse = "|"),
-                      paste0(cpp_num_to_string(unlist(obj$images[i_img, bgs])), collapse = "|"),
-                      paste0(cpp_num_to_string(unlist(obj$images[i_img, satc])), collapse = "|"),
-                      paste0(cpp_num_to_string(unlist(obj$images[i_img, satp])), collapse = "|")))
+                      num_to_string(obj$images[i_img, 'id']),
+                      num_to_string(obj$images[i_img, 'imgIFD']),
+                      num_to_string(obj$images[i_img, 'mskIFD']),
+                      num_to_string(obj$images[i_img, 'spIFD']),
+                      num_to_string(obj$images[i_img, 'w']),
+                      num_to_string(obj$images[i_img, 'l']),
+                      num_to_string(obj$images[i_img, 'fs']),
+                      num_to_string(obj$images[i_img, 'cl']),
+                      num_to_string(obj$images[i_img, 'ct']),
+                      num_to_string(obj$images[i_img, 'objCenterX']),
+                      num_to_string(obj$images[i_img, 'objCenterY']),
+                      paste0(num_to_string(unlist(obj$images[i_img, bgm])), collapse = "|"),
+                      paste0(num_to_string(unlist(obj$images[i_img, bgs])), collapse = "|"),
+                      paste0(num_to_string(unlist(obj$images[i_img, satc])), collapse = "|"),
+                      paste0(num_to_string(unlist(obj$images[i_img, satp])), collapse = "|")))
         })
       }
       # finalizes temporary file by adding remaining shared nodes from .tempXMLOutput

@@ -77,7 +77,7 @@ toXML2_pops = function(pops, verbose = FALSE, display_progress = TRUE, title_pro
              },
              "T" = {
                xml_new_node(name = "Pop", attrs = pop[c("name", "type", "base", "color", "lightModeColor", "style")],
-                            .children = lapply(cpp_num_to_string(which(pop$obj)-1), FUN=function(o) {
+                            .children = lapply(num_to_string(which(pop$obj)-1), FUN=function(o) {
                               paste0('ob O="', o, '"')
                             }))
              })
@@ -108,7 +108,7 @@ toXML2_pops = function(pops, verbose = FALSE, display_progress = TRUE, title_pro
              },
              "T" = {
                xml_new_node(name = "Pop", attrs = pop[c("name", "type", "base", "color", "lightModeColor", "style")],
-                            .children = lapply(cpp_num_to_string(which(pop$obj)-1), FUN=function(o) {
+                            .children = lapply(num_to_string(which(pop$obj)-1), FUN=function(o) {
                               paste0('ob O="', o, '"')
                             }))
              })

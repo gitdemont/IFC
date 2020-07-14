@@ -49,7 +49,7 @@ toXML2_regions = function(regions, verbose = FALSE) {
     xml_new_node(name = "Region",
                attrs = i_reg[!grepl("^x$|^y$", names(i_reg))],
                .children = lapply(1:length(i_reg[["x"]]), FUN = function(i_coord) {
-                 xml_new_node(name = "axy", attrs = list(x = cpp_num_to_string(i_reg[["x"]][i_coord]), y = cpp_num_to_string(i_reg[["y"]][i_coord])))
+                 xml_new_node(name = "axy", attrs = list(x = num_to_string(i_reg[["x"]][i_coord]), y = num_to_string(i_reg[["y"]][i_coord])))
                }))
   }))
 }

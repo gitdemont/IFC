@@ -45,21 +45,21 @@ toXML2_images = function(images, verbose = FALSE, display_progress = TRUE, title
   satp = grep("^satpercent", names(images))
   lapply(1:nrow(images), FUN=function(i) {
     xml_new_node(name = "SO",
-               attrs = c("id" = cpp_num_to_string(images[i, "id"]),
-                         "imgIFD" = cpp_num_to_string(images[i, "imgIFD"]),
-                         "mskIFD" = cpp_num_to_string(images[i, "mskIFD"]),
-                         "spIFD" = cpp_num_to_string(images[i, "spIFD"]),
-                         "w" = cpp_num_to_string(images[i, "w"]),
-                         "l" = cpp_num_to_string(images[i, "l"]),
-                         "fs" = cpp_num_to_string(images[i, "fs"]),
-                         "cl" = cpp_num_to_string(images[i, "cl"]),
-                         "ct" = cpp_num_to_string(images[i, "ct"]),
-                         "objCenterX" = cpp_num_to_string(images[i, "objCenterX"]),
-                         "objCenterY" = cpp_num_to_string(images[i, "objCenterY"]),
-                         "bgmean" = paste0(cpp_num_to_string(unlist(images[i, bgm])), collapse = "|"),
-                         "bgstd" = paste0(cpp_num_to_string(unlist(images[i, bgs])), collapse = "|"),
-                         "satcount" = paste0(cpp_num_to_string(unlist(images[i, satc])), collapse = "|"),
-                         "satpercent" = paste0(cpp_num_to_string(unlist(images[i, satp])), collapse = "|")))
+               attrs = c("id" = num_to_string(images[i, "id"]),
+                         "imgIFD" = num_to_string(images[i, "imgIFD"]),
+                         "mskIFD" = num_to_string(images[i, "mskIFD"]),
+                         "spIFD" = num_to_string(images[i, "spIFD"]),
+                         "w" = num_to_string(images[i, "w"]),
+                         "l" = num_to_string(images[i, "l"]),
+                         "fs" = num_to_string(images[i, "fs"]),
+                         "cl" = num_to_string(images[i, "cl"]),
+                         "ct" = num_to_string(images[i, "ct"]),
+                         "objCenterX" = num_to_string(images[i, "objCenterX"]),
+                         "objCenterY" = num_to_string(images[i, "objCenterY"]),
+                         "bgmean" = paste0(num_to_string(unlist(images[i, bgm])), collapse = "|"),
+                         "bgstd" = paste0(num_to_string(unlist(images[i, bgs])), collapse = "|"),
+                         "satcount" = paste0(num_to_string(unlist(images[i, satc])), collapse = "|"),
+                         "satpercent" = paste0(num_to_string(unlist(images[i, satp])), collapse = "|")))
     
   })
 }

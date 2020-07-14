@@ -205,3 +205,15 @@ formatn <- function(splitp_obj, splitf_obj, channel = "", object = "") {
   splitp_obj$decomp[N == "channel"] <- channel
   return(paste0(splitp_obj$decomp, collapse=""))
 }
+
+#' @title Numeric to String Formatting
+#' @name num_to_string
+#' @description
+#' Formats numeric to string used for features, images, ... values conversion when exporting to xml.
+#' @param x a numeric vector.
+#' @param precision number of significant decimal digits to keep when abs(x) < 1. Default is 16.
+#' @return a string vector.
+#' @keywords internal
+num_to_string <- function(x, precision = 16) {
+  return(formatC(x, digits = precision, drop0trailing = FALSE, width = -1))
+}

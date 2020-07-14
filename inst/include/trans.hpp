@@ -6,7 +6,7 @@
   -IFC: An R Package for Imaging Flow Cytometry                                 
   -YEAR: 2020                                                                   
   -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,              
-                      Jean-Pierre Marolleau, Loï�c Gaççon,                       
+                      Jean-Pierre Marolleau, Loï?c Gaççon,                       
                       INSERM, UPD, CHU Amiens                                   
                                                                                 
                                                                                 
@@ -42,7 +42,5 @@ Rcpp::NumericVector cpp_inv_smoothLinLog (const Rcpp::NumericVector x,
                                           const double lin_comp = 2.302585);
 uint32_t cpp_int32_to_uint32 ( const int32_t x);
 int32_t cpp_uint32_to_int32 ( const uint32_t x);
-Rcpp::StringVector cpp_num_to_string(const Rcpp::NumericVector x, 
-                                     const unsigned char precision = 16);
 
 #endif

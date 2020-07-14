@@ -293,7 +293,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
         } else {
           new_nodes$features = c(new_nodes$features,
                                  as.raw(c(0x20,0x20)),
-                                 charToRaw(sprintf('<UDFValues fid="%s" fv="%s" />', cpp_num_to_string(fid), paste0(cpp_num_to_string(feat$val), collapse = "|"))),
+                                 charToRaw(sprintf('<UDFValues fid="%s" fv="%s" />', num_to_string(fid), paste0(num_to_string(feat$val), collapse = "|"))),
                                  as.raw(c(0x20,0x20)),
                                  collapse$features)
         }
@@ -315,7 +315,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
       new_nodes$regions = c(new_nodes$regions,
                             as.raw(c(0x20,0x20)),
                             charToRaw(to_xml_list(reg[-which(names(reg)%in%c("x","y"))], name = "Region", escape = rawToChar(c(collapse$regions,as.raw(c(0x20,0x20)))),
-                                                  kids = lapply(1:length(reg$x), FUN=function(k) to_xml_list(x=list("x"=cpp_num_to_string(reg$x[k]), "y"=cpp_num_to_string(reg$y[k])), name="axy")))),
+                                                  kids = lapply(1:length(reg$x), FUN=function(k) to_xml_list(x=list("x"=num_to_string(reg$x[k]), "y"=num_to_string(reg$y[k])), name="axy")))),
                             as.raw(c(0x20,0x20)),
                             collapse$regions)
     }
@@ -363,12 +363,12 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
           }
           if(obj_number != length(pop$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
           new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,as.raw(c(0x20,0x20)))),
-                                     kids = lapply(cpp_num_to_string(which(pop$obj)-1), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
+                                     kids = lapply(num_to_string(which(pop$obj)-1), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
         }
         if(K%in% c("numeric","integer")) {
           if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
           new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,as.raw(c(0x20,0x20)))),
-                                     kids = lapply(cpp_num_to_string(pop$obj), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
+                                     kids = lapply(num_to_string(pop$obj), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
         }
       }
       pops_alw = c(pops_alw, i)

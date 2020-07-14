@@ -632,7 +632,7 @@ NULL
 NULL
 
 #' @title Numeric to String Formatting
-#' @name cpp_num_to_string
+#' @name num_to_string
 #' @description
 #' Formats numeric to string used for features, images, ... values conversion when exporting to xml.
 #' @param x NumericVector.
@@ -657,7 +657,7 @@ cpp_uint32_to_int32 <- function(x) {
     .Call(`_IFC_cpp_uint32_to_int32`, x)
 }
 
-cpp_num_to_string <- function(x, precision = 16L) {
+num_to_string <- function(x, precision = 16L) {
     .Call(`_IFC_cpp_num_to_string`, x, precision)
 }
 
