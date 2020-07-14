@@ -58,9 +58,12 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                      color_mode = c("white","black")[1], add_key = "panel", precision = c("light","full")[1],
                      trunc_labels = 38, trans = asinh, bin, viewport = "ideas", ...) {
   dots = list(...)
-  # backup last state of device ask newpage and set to FALSE
-  old_ask <- devAskNewPage(ask = FALSE)
-  on.exit(devAskNewPage(ask = old_ask), add = TRUE)
+  dv <- dev.cur()
+  # backup last state of graphic device
+  tryCatch({
+  # old_ask <- devAskNewPage(ask = FALSE)
+  # on.exit(devAskNewPage(ask = old_ask), add = TRUE)
+
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
   on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
@@ -412,17 +415,14 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   })
   lt$fontsize$text <- 6
   lt$fontsize$points <- 4
-  dv <- dev.cur()
   lt$grid.pars <- get.gpar()
-  if(length(dv) != 0) { # get.gpar() opens the device so we shut it down
-    if(dv != dev.cur()) dev.off(which = dev.cur())
-  } else {
-    if(length(dev.cur() != 0)) dev.off(which = dev.cur())
-  }
   lt$grid.pars$fontfamily <- "serif"
   foo = update(foo, par.settings = lt)
   if(any(c("global","both")%in%add_key)) foo = update(foo, key=KEY)
-  if(draw) plot(foo)
+  if(draw) {
+    plot(foo)
+    dv = dev.cur()
+  }
   if(stats_print) print(stats)
   return(invisible(list("plot" = foo,
                         "stats" = as.table(stats),
@@ -438,4 +438,10 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                                       "type" = ifelse(g$type=="histogram", type, g$type),
                                       "precision" = precision,
                                       "mode" = color_mode))))
+  },
+  finally = {
+    while(!all(dv == dev.cur())) {
+      dev.off(which = rev(dev.cur())[1])
+    }
+  })
 }
