@@ -136,9 +136,6 @@ int32_t cpp_uint32_to_int32 ( const uint32_t x) {
 // [[Rcpp::export]]
 Rcpp::StringVector cpp_num_to_string(const Rcpp::NumericVector x, const unsigned char precision = 16) {
   Rcpp::StringVector out(x.size());
-  std::stringstream stream;
-  std::string s;
-  unsigned char relative;
   for(R_len_t i =0; i < x.size(); i++) {
     if(x(i) == R_PosInf) {
       out(i) = "+Inf";
@@ -152,11 +149,14 @@ Rcpp::StringVector cpp_num_to_string(const Rcpp::NumericVector x, const unsigned
       out(i) = "NaN";
       continue;
     }
+    std::stringstream stream;
+    std::string s;
+    double relative;
     if(x[i] < 1) {
-      relative = 0;
+      relative = 0.0;
     } else {
       relative = std::log10(x[i]);
-      if(x[i] > pow(10, relative)) {
+      if(x[i] > std::pow(10.0, relative)) {
         relative = relative + 1;
       } else {
         relative = relative + 2;
