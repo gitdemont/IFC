@@ -427,7 +427,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   }
   if(stats_print) print(stats)
   ret_order = names(D) %in% c("Object Number", "x1", "x2", "y1", "y2")
-  displayed = lapply(daf$pops[displayed_n], FUN = function(p) {
+  displayed = lapply(obj$pops[displayed_n], FUN = function(p) {
     return(p[!(names(p) %in% "obj")])
   })
   ret = list("plot" = foo,
