@@ -85,6 +85,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   if(!all(typeof(trans) == "builtin") && (class(trans) == "function")) stop("'trans' should be a function")
   
   # shortcuts
+  normalize = FALSE
   P = obj$pops
   R = obj$regions
   g = do.call(what=buildGraph, args=graph)
@@ -121,6 +122,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     trans_x = as.numeric(g$xlogrange)
     D[,"x2"] = smoothLinLog(D[,"x1"], hyper=trans_x, base=10)
     Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+    Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
   } else {
     D[,"x2"] = D[,"x1"]
   }
@@ -155,6 +157,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   displayed_o = c(base_o, shown_o)
   D = cbind(D, displayed_d)
   D = D[sub, ]
+
   if(g$type=="histogram") {
     KEY = list("text"=list(displayed_n),
                "lines"=list(col = sapply(displayed_n, FUN=function(p) P[[p]][c("color","lightModeColor")][[color_mode]]),
@@ -186,7 +189,6 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     }))
     colnames(stats) = c(colnames(stats)[1:2], paste0("x-",colnames(stats)[3:8]))
     
-    normalize = FALSE
     smooth = (g$histogramsmoothingfactor != 0)
     # br = do.breaks(range(D[,"x2"], na.rm = TRUE, finite = TRUE), nbin)
     if(viewport == "ideas") {
@@ -223,7 +225,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         Ylim = c(0,max(sapply(displayed_n, FUN=function(x) get_ylim(x=D[D[,x],"x2"], type=type, br=br))*1.07))
         if(Ylim[1] == Ylim[2]) Ylim = Ylim[1] + c(0,0.07)
       } 
-      foo = histogram(~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, main =  trunc_string(g$title, trunc_labels),
+      foo = histogram(~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, main = trunc_string(g$title, trunc_labels),
                       scales =  myScales(x=list("hyper"=trans_x)), border = "transparent",
                       xlab =  trunc_string(g$xlabel, trunc_labels), ylab = g$ylabel,
                       nint = nbin, type = type, breaks = br, normalize = normalize,
@@ -358,7 +360,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
 
     foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, main = trunc_string(g$title, trunc_labels), groups=groups,
                  scales =  myScales(x=list(hyper=trans_x), y=list(hyper=trans_y)),
-                 xlab =  trunc_string(g$xlabel, trunc_labels), ylab =  trunc_string(g$ylabel, trunc_labels),
+                 xlab =  trunc_string(g$xlabel, trunc_labels), ylab = trunc_string(g$ylabel, trunc_labels),
                  panel = function(x, y, groups=NULL, ...) {
                    if(any(c("panel","both")%in%add_key)) if(g$type=="scatter") pan_key(key=c(KEY,"background"="lightgrey","alpha.background"=0.8), x = 0.02)
                    if(g$type == "density") panel.xyplot(x=x, y=y, pch=".", col=densCols(x=x,y=y,colramp=colorRampPalette(colConv(g$BasePop[[base_o[1]]][c("densitycolorsdarkmode","densitycolorslightmode")][[color_mode]])),nbin=nbin, transformation=trans))
@@ -424,20 +426,32 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     dv = dev.cur()
   }
   if(stats_print) print(stats)
-  return(invisible(list("plot" = foo,
-                        "stats" = as.table(stats),
-                        "input" = list("data" = D, 
-                                      "xlim" = Xlim, "ylim" = Ylim, 
-                                      "trans_x" = trans_x, "trans_y" = trans_y,
-                                      "trans" = trans,
-                                      "base" = base_n,
-                                      "displayed" = displayed_n,
-                                      "region" = reg_n,
-                                      "viewport" = viewport,
-                                      "bin" = nbin,
-                                      "type" = ifelse(g$type=="histogram", type, g$type),
-                                      "precision" = precision,
-                                      "mode" = color_mode))))
+  ret_order = names(D) %in% c("Object Number", "x1", "x2", "y1", "y2")
+  displayed = lapply(daf$pops[displayed_n], FUN = function(p) {
+    return(p[!(names(p) %in% "obj")])
+  })
+  ret = list("plot" = foo,
+             "stats" = as.table(stats),
+             "input" = list("data" = D[ ,c(which(ret_order), which(!ret_order))], 
+                            "trunc_labels" = trunc_labels,
+                            "title" = g$title,
+                            "xlab" = g$xlab, "ylab" = g$ylab,
+                            "xlim" = Xlim, "ylim" = Ylim, 
+                            "trans_x" = trans_x, "trans_y" = trans_y,
+                            "trans" = trans,
+                            "order" = displayed_o,
+                            "base" = g$BasePop,
+                            "displayed" = displayed,
+                            "regions" = obj$regions[reg_n],
+                            "viewport" = viewport,
+                            "bin" = nbin,
+                            "type" = ifelse(g$type=="histogram", type, g$type),
+                            "histogramsmoothingfactor" = g$histogramsmoothingfactor,
+                            "normalize" = normalize,
+                            "precision" = precision,
+                            "mode" = color_mode))
+  class(ret) <- "IFC_plot"
+  return(invisible(ret))
   },
   finally = {
     while(!all(dv == dev.cur())) {

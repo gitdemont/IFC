@@ -209,3 +209,326 @@ toEllipse=function(gate, theta=2*pi, npoints=100) {
   yy <- c(ycoord_neg,ycoord_pos)
   return(list("x"=xx*cos(2*pi-theta)+yy*sin(2*pi-theta)+ell[3],"y"=yy*cos(2*pi-theta)-xx*sin(2*pi-theta)+ell[4]))
 }
+
+################################################################################
+#                       functions to use base plot                             #
+################################################################################
+#' @title Axis Constructor for 'base' Plot
+#' @name base_axis_constr
+#' @description Helper to rescale and label axes when linlog transformation is used.
+#' @param lim vector of length 2 of axis extents.
+#' @param hyper value where transition between Lin/Log is applied. Defaut is "P".
+#' @param nint positive integer value indicating (approximately) the desired number of intervals. Default is 10.
+#' @keywords internal
+base_axis_constr = function(lim, hyper = "P", nint = 10) {
+  nint = na.omit(as.integer(nint)); assert(nint, len = 1, typ = "integer")
+  assert(hyper, len = 1)
+  if(hyper == "P") {
+    at = axisTicks(lim, log = FALSE, nint = nint)
+    return(list("at" = at, "label" = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = T)))
+  }
+  hyper = na.omit(as.integer(hyper)); assert(hyper, len = 1, typ = "integer")
+  n_ticks = 0
+  p_ticks = 0
+  neg_log_ticks = 0
+  pos_log_ticks = 0
+  ran = lim / c(1.07)
+  ran = inv_smoothLinLog(ran, hyper)
+  n_ticks = max(ran[1], -hyper)
+  p_ticks = min(ran[2], hyper)
+  ran = ran + c(hyper, -hyper)
+  ran = sign(ran) * log10(abs(ran) / hyper)
+  dif = diff(ran)
+  if(ran[1] < 0) neg_log_ticks = floor(ran[1])
+  if(ran[2] > 0) pos_log_ticks = ceiling(ran[2])
+  tot = pos_log_ticks - neg_log_ticks + 
+    ifelse((neg_log_ticks < 0) && (n_ticks <= -hyper), 0.5, 0) + 
+    ifelse((pos_log_ticks > 0) && (p_ticks >= hyper), 0.5, 0)
+  
+  ticks_at = c()
+  ticks_lab = c()
+  if(neg_log_ticks != 0) {
+    at = sort(unique(c(outer(1:10, (abs(neg_log_ticks)-1):0 + log10(hyper),
+                             FUN=function(m,p) {-m*10^p}))), decreasing = FALSE)
+    at_scaled = smoothLinLog(at, hyper = hyper)
+    at_lab = rep("", length(at_scaled))
+    neg_nint = as.integer(-neg_log_ticks / tot * 3 * nint)
+    if(neg_nint > 0) {
+      if(length(at) < (1 * nint)) {
+        at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = T) 
+      } else {
+        pretty_lab = -axisTicks(log10(-range(at)), log = TRUE, nint = neg_nint)
+        at_lab[at %in% pretty_lab] <- formatC(x = at[at %in% pretty_lab], format = "g", width = -1, digits = 1)
+      }
+    }
+    ticks_at = c(ticks_at, at_scaled)
+    ticks_lab = c(ticks_lab, at_lab)
+  }
+  if(n_ticks <= -hyper) {
+    at = axisTicks(c(-hyper,0), log = FALSE, nint = ceiling(1/tot*nint))
+    at = at[at > -hyper]
+    if(length(at) > 0) {
+      at_scaled = smoothLinLog(at, hyper = hyper)
+      at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = T) 
+      ticks_at = c(ticks_at, at_scaled)
+      ticks_lab = c(ticks_lab, at_lab)
+    }
+  }
+  if(p_ticks >= hyper) {
+    at = axisTicks(c(0,hyper), log = FALSE, nint = ceiling(1/tot*nint))
+    at = at[at < hyper]
+    if(length(at) > 0) {
+      at_scaled = smoothLinLog(at, hyper = hyper)
+      at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = T) 
+      ticks_at = c(ticks_at, at_scaled)
+      ticks_lab = c(ticks_lab, at_lab)
+    }
+  }
+  if(pos_log_ticks != 0) {
+    at = sort(unique(c(outer(1:10, 0:(abs(pos_log_ticks)-1) + log10(hyper),
+                             FUN=function(m,p) {m*10^p}))), decreasing = FALSE)
+    at_scaled = smoothLinLog(at, hyper = hyper)
+    at_lab = rep("", length(at_scaled))
+    pos_nint = as.integer(pos_log_ticks / tot * 3 * nint)
+    if(pos_nint > 0) {
+      if(length(at) < (1 * nint)) {
+        at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = T) 
+      } else {
+        pretty_lab = axisTicks(log10(range(at)), log = TRUE, nint = pos_nint)
+        at_lab[at %in% pretty_lab] <- formatC(x = at[at %in% pretty_lab], format = "g", width = -1, digits = 1)
+      }
+    }
+    ticks_at = c(ticks_at, at_scaled)
+    ticks_lab = c(ticks_lab, at_lab)
+  }
+  keep = (ticks_at >= lim[1]) & (ticks_at <= lim[2])
+  dup = duplicated(ticks_at)
+  ticks_at = ticks_at[!dup & keep]
+  ticks_lab = ticks_lab[!dup & keep]
+  ord = order(ticks_at)
+  return(list("at" = ticks_at[ord], "label" = ticks_lab[ord]))
+}
+
+#' @title Histogram Constructor for 'base' Plot
+#' @name base_hist_constr
+#' @description Helper to create histogram.
+#' @param x a vector of values for which the histogram is desired.
+#' @param type histogram type. Default is missing. Allowed are "count" and "percent".
+#' @param br breakpoints given an interval and the number of pieces to break it into.
+#' @param normalize whether to normalize. Default is missing.
+#' @param fill whether to fill. Default is missing.
+#' @param smooth whether to smooth. Default is missing.
+#' @param lwd,lty,col,alpha,border graphical parameters. See par() from package 'graphics'.
+#' @param include.lowest logical; if TRUE, an x[i] equal to the breaks value will be included in the first (or last, for right = FALSE) bar. This will be ignored (with a warning) unless breaks is a vector.
+#' @param right logical; if TRUE, the histogram cells are right-closed (left open) intervals.
+#' @keywords internal
+base_hist_constr = function(x, type, br, normalize, fill, smooth, lwd, lty, col, alpha, border, include.lowest=TRUE, right=TRUE){
+  assert(type, len = 1, alw = c("count", "percent"))
+  normalize = as.logical(normalize); assert(normalize, len = 1, alw = c(TRUE, FALSE))
+  fill = as.logical(fill); assert(fill, len = 1, alw = c(TRUE, FALSE))
+  smooth = as.logical(smooth); assert(smooth, len = 1, alw = c(TRUE, FALSE))
+  include.lowest = as.logical(include.lowest); assert(include.lowest, len = 1, alw = c(TRUE, FALSE))
+  right = as.logical(right); assert(right, len = 1, alw = c(TRUE, FALSE))
+  h = hist_constr(x, br, include.lowest=include.lowest, right=right, plot=FALSE)
+  k = col2rgb(col, alpha = TRUE)
+  k["alpha",] <- alpha * k["alpha",]
+  b = col2rgb(border, alpha = TRUE)
+  b["alpha",] <- alpha * b["alpha",]
+  if(smooth) {
+    xx=val_constr(x, h, "mids")
+    yy=density(x, n=length(br)-1, na.rm=TRUE, from=min(br), to=max(br))$y
+    yy[xx<min(x, na.rm=TRUE)]=0
+    yy[xx>max(x, na.rm=TRUE)]=0
+    if(normalize) {yy=yy/max(yy)} else {yy=yy/max(yy)*max(val_constr(x, h, type))}
+    if(fill) {
+      x1=1
+      x2=length(xx)
+      polygon(x=c(xx[c(x1,x1:x2,x2)]), y= c(0, yy[x1:x2], 0), col=col, lwd=lwd, lty=lty)
+    } else {
+      lines(x=br, y=c(yy,0), col=col, type="l", lwd=lwd, lty=lty)
+    }
+  } else {
+    yy = val_constr(x, h, type)
+    if(normalize) { yy=yy/max(yy) }
+    if(fill) {
+      rect(xleft = br[-length(br)], ybottom=0, ytop=yy, xright = br[-1], col=k, lwd=lwd, lty=lty, border=border)
+    } else {
+      lines(x=br, y=c(yy,0), col=col, type="s", lwd=lwd, lty=lty)
+    }
+  }
+}
+
+#' @title IFC Graph Conversion to 'base' Plot
+#' @name convert_to_baseGraph
+#' @description Helper convert `IFC_plot` to 'base' plot.
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @keywords internal
+convert_to_baseGraph = function(obj) {
+  # variables for future use
+  n_ticks = 10
+  pkg = "base"
+  
+  # check obj is `IFC_plot`
+  assert(obj, cla = "IFC_plot")
+  
+  # short names
+  D = obj$input$data
+  displayed = obj$input$displayed
+  basepop = obj$input$base
+  Xlim = obj$input$xlim
+  Ylim = obj$input$ylim
+  
+  # draw plot
+  if(obj$input$type %in% c("percent", "count")) {
+    # 1D
+    if(nrow(D) > 0) {
+      br = do.breaks(Xlim, obj$input$bin)
+      hist(D[, "x2"], xlim = Xlim, ylim = Ylim, 
+           main = trunc_string(obj$input$title, obj$input$trunc_labels), 
+           xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
+           ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+           col = "transparent", border = "transparent", freq = obj$input$type == "count",
+           breaks = br, axes = FALSE)
+      if(length(displayed) > 0) {
+        for(disp in names(displayed)) {
+          if(any(D[,disp]))
+            base_hist_constr( D[D[,disp], "x2"], br = br, type = obj$input$type, 
+                              normalize = obj$input$normalize, 
+                              smooth = obj$input$histogramsmoothingfactor,
+                              fill = basepop[[obj$input$order[disp]]]$fill=="true",
+                              alpha = 0.8, lwd=1,
+                              col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
+                              border = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
+                              lty = c(1,2,3,4,6)[match(basepop[[obj$input$order[disp]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])
+          
+        }
+      }
+    }
+  } else {
+    # 2D
+    if(obj$input$type == "density") {
+      pch="."
+      col=densCols(x = obj$input$data$x2, y = obj$input$data$y2,
+                   colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[obj$input$mode]])),
+                   nbin=obj$input$bin,
+                   transformation=obj$input$trans)
+      
+      plot(x = obj$input$data$x2, y = obj$input$data$y2,
+           xlim = Xlim , ylim = Ylim ,
+           main = obj$input$title,
+           xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
+           ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+           pch = pch, col = col, 
+           axes = FALSE)
+    } else {
+      if(obj$input$precision == "full") {
+        disp = names(displayed)[1]
+        plot(x = obj$input$data$x2, y = obj$input$data$y2,
+             xlim = Xlim , ylim = Ylim ,
+             main = obj$input$title,
+             xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
+             ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+             pch = displayed[[disp]]$style, 
+             col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
+             axis = FALSE)
+        if(length(displayed) > 1) {
+          for(disp in names(displayed)[-1]) {
+            plot(x = obj$input$data$x2, y = obj$input$data$y2,
+                 xlim = Xlim , ylim = Ylim ,
+                 main = obj$input$title,
+                 xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
+                 ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+                 pch = displayed[[disp]]$style, 
+                 col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
+                 axes = FALSE, 
+                 add=TRUE)
+          }
+        }
+      } else {
+        groups = apply(as.data.frame(D[,names(displayed)]), 1, FUN=function(x) {
+          tmp = which(x)[1]
+          if(is.na(tmp)) return(NA)
+          return(names(displayed)[which(x)[1]])
+        })
+        pch = sapply(groups, FUN = function(disp) displayed[[disp]]$style)
+        col = sapply(groups, FUN = function(disp) displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
+        plot(x = obj$input$data$x2, y = obj$input$data$y2,
+             xlim = Xlim, ylim = Ylim ,
+             main = obj$input$title,
+             xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
+             ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+             pch = pch, col = col,
+             axes = FALSE)
+      }
+    }
+  }
+  
+  # axis
+  if(pkg == "base") {
+    x_ticks = base_axis_constr(lim = Xlim, hyper = obj$input$trans_x, nint = n_ticks)
+    y_ticks = base_axis_constr(lim = Ylim, hyper = obj$input$trans_y, nint = n_ticks)
+    x_axis = axis(side = 1, at = x_ticks$at, labels = FALSE, cex.axis = 0.8)
+    text(x_axis, Ylim[1] - diff(Ylim) * 0.07, x_ticks$label, srt=45, xpd=TRUE, pos = 1, cex = 0.8)
+    axis(side = 2, at = y_ticks$at, labels = y_ticks$label, las = 2, cex.axis = 0.8) 
+    box()
+  }
+  
+  # regions
+  for(reg in obj$input$regions) {
+    k = reg[c("color","lightcolor")][[obj$input$mode]]
+    coords = reg[c("x","y")]
+    if(obj$input$trans_x!="P") {
+      coords$x = smoothLinLog(coords$x, hyper=obj$input$trans_x, base=10)
+      reg$cx = smoothLinLog(reg$cx, hyper=obj$input$trans_x, base=10)
+    }
+    lab =  trunc_string(reg$label, obj$input$trunc_labels)
+    if(reg$type=="line") {
+      switch(pkg,
+             "lattice" = {
+               foo = foo +
+                 layer(panel.text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4)) +
+                 layer(panel.lines(x=coords$x, y=coords$y*diff(Ylim),col=k))
+             },
+             "base" = {
+               text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4)
+               polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
+             })
+    } else {
+      if(obj$input$trans_y!="P") {
+        coords$y = smoothLinLog(coords$y, hyper=obj$input$trans_y, base=10)
+        reg$cy = smoothLinLog(reg$cy, hyper=obj$input$trans_y, base=10)
+      }
+      if(reg$type=="rect") {
+        coords$x=c(coords$x[1],coords$x[1],coords$x[2],coords$x[2])
+        coords$y=c(coords$y[1],coords$y[2],coords$y[2],coords$y[1])
+      }
+      if(reg$type=="oval") {
+        coords = toEllipse(coords)
+      }
+      switch(pkg,
+             "lattice" = {
+               foo = foo +
+                 layer(panel.text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4)) +
+                 layer(panel.polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1))
+             },
+             "base" = {
+               text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4) 
+               polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
+             })
+    }
+  }
+  if(pkg != "base") plot(foo)
+  
+  # key
+  if(obj$input$type %in% c("percent", "count")) {
+    legend("topleft", inset = 0.025, 
+           lty = sapply(names(displayed), FUN=function(p) c(1,2,3,4,6)[match(basepop[[obj$input$order[p]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))]),
+           col = sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
+           legend = names(displayed), cex = 0.5, bg = "#ADADAD99", pt.cex = 1, bty ="o", box.lty = 0)
+  } else {
+    legend("topleft", inset = 0.025, 
+           pch = sapply(displayed, FUN=function(p) p$style),
+           col = sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
+           legend = names(displayed), cex = 0.5, bg = "#ADADAD99", pt.cex = 1, bty ="o", box.lty = 0)
+  }
+}

@@ -150,15 +150,15 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   xlogrange = as.character(xlogrange)
   ylogrange = as.character(ylogrange)
   if(xlogrange != "P") {
-    tmp = as.integer(xlogrange)
-    if(is.na(tmp)) stop("'xlogrange' should be coercible to positive integer")
-    if(tmp<0) stop("'xlogrange' should be coercible to positive integer")
+    tmp = as.numeric(xlogrange)
+    if(is.na(tmp)) stop("'xlogrange' should be coercible to positive numeric")
+    if(tmp<0) stop("'xlogrange' should be coercible to positive numeric")
     xlogrange = as.character(tmp)
   }
   if(ylogrange != "P") {
-    tmp = as.integer(ylogrange)
-    if(is.na(tmp)) stop("'ylogrange' should be coercible to positive integer")
-    if(tmp<0) stop("'ylogrange' should be coercible to positive integer")
+    tmp = as.numeric(ylogrange)
+    if(is.na(tmp)) stop("'ylogrange' should be coercible to positive numeric")
+    if(tmp<0) stop("'ylogrange' should be coercible to positive numeric")
     ylogrange = as.character(tmp)
   }
   stats_alw = c("Count","%Total","%Gated","%Plotted","Objects/mL","Mean","Median","Std. Dev.","MAD","CV","Minimum","Maximum","Geo. Mean","Mode","Variance","NaN")
