@@ -359,11 +359,11 @@ base_hist_constr = function(x, type, br, normalize, fill, smooth, lwd, lty, col,
 }
 
 #' @title IFC Graph Conversion to 'base' Plot
-#' @name convert_to_baseGraph
+#' @name convert_to_baseplot
 #' @description Helper convert `IFC_plot` to 'base' plot.
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
 #' @keywords internal
-convert_to_baseGraph = function(obj) {
+convert_to_baseplot = function(obj) {
   # variables for future use
   n_ticks = 10
   pkg = "base"
