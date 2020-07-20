@@ -43,7 +43,7 @@
   if(!.pkgenv[["data_avl"]]) {
     msg <- c(msg,
              "\nTo use examples in this package, you should install 'IFCdata' package.",
-             "\nTo install 'IFCdata' package, run `install.packages('IFCdata', 'https://gitdemont.github.io/IFCdata', type = 'source')`.")
+             "\nTo install 'IFCdata' package, run `install.packages('IFCdata', repos = 'https://gitdemont.github.io/IFCdata', type = 'source')`.")
   }
   packageStartupMessage(paste(strwrap(msg), collapse = "\n"))      
   invisible()
