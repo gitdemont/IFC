@@ -199,11 +199,11 @@ objectParam <- function(...,
   channels[,"string_removal"] <- "none"
   channels[chan_to_extract,"string_removal"] <- rep_len(removal, length.out = length(chan_to_extract))
   channels[,"removal"] = as.integer(factor(x = channels[,"string_removal"], levels = c("none", "raw", "clipped", "masked", "MC"))) - 1
-  channels[,"add_noise"] <- F
+  channels[,"add_noise"] <- FALSE
   channels[chan_to_extract,"add_noise"] <- rep_len(add_noise, length.out = length(chan_to_extract))
-  channels[,"full_range"] <- F
+  channels[,"full_range"] <- FALSE
   channels[chan_to_extract,"full_range"] <- rep_len(full_range, length.out = length(chan_to_extract))
-  channels[,"force_range"] <- F
+  channels[,"force_range"] <- FALSE
   channels[chan_to_extract,"force_range"] <- rep_len(force_range, length.out = length(chan_to_extract))
   
   ##### check gamma

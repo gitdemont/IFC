@@ -70,7 +70,7 @@ whoami = function(entries = as.list(match.call()),
   
   # empty 
   if(L == 0) {
-    new = sapply(classes, simplify = F, FUN = function(x) return(NULL))
+    new = sapply(classes, simplify = FALSE, FUN = function(x) return(NULL))
     attr(new, "was") <- rep(0, times = length(classes))
     attr(new, "from") <- from
     return(new)

@@ -97,7 +97,7 @@ getAborted <- function(aborted, default_batch_dir, config_file) {
     if(length(xml_find_first(tmp_aborted, "//AbortBatch")) < 1) stop("choosen file is not valid")
   }
   tmp_aborted_attrs = xml_attrs(xml_find_first(tmp_aborted, "//AbortBatch"))
-  tmp_aborted_errors = strsplit(tmp_aborted_attrs["error"], split = "\n", fixed = T)[[1]][-1]
+  tmp_aborted_errors = strsplit(tmp_aborted_attrs["error"], split = "\n", fixed = TRUE)[[1]][-1]
   aborted_batch_name = tmp_aborted_attrs["name"]
   pos <- regexpr(":.*$", tmp_aborted_errors)
   

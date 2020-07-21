@@ -417,9 +417,9 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
       # write shared nodes to temporary character vector
       .tempXMLOutput = readLines(file_w)
       # detects where features nodes are beginning
-      pos1 = grep("</DefinedFeatures>", .tempXMLOutput, perl = F, fixed = T)
+      pos1 = grep("</DefinedFeatures>", .tempXMLOutput, perl = FALSE, fixed = TRUE)
       # detects where tags start to get indents length
-      pos2 = regexpr("</DefinedFeatures>", .tempXMLOutput[pos1], perl = F, fixed = T)
+      pos2 = regexpr("</DefinedFeatures>", .tempXMLOutput[pos1], perl = FALSE, fixed = TRUE)
       # defines indents
       indent1 = paste0(rep(" ", times = pos2-2), collapse = "")
       indent2 = c(" ", indent1)

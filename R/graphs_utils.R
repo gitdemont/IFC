@@ -225,7 +225,7 @@ base_axis_constr = function(lim, hyper = "P", nint = 10) {
   assert(hyper, len = 1)
   if(hyper == "P") {
     at = axisTicks(lim, log = FALSE, nint = nint)
-    return(list("at" = at, "label" = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = T)))
+    return(list("at" = at, "label" = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE)))
   }
   hyper = na.omit(as.integer(hyper)); assert(hyper, len = 1, typ = "integer")
   n_ticks = 0
@@ -255,7 +255,7 @@ base_axis_constr = function(lim, hyper = "P", nint = 10) {
     neg_nint = as.integer(-neg_log_ticks / tot * 3 * nint)
     if(neg_nint > 0) {
       if(length(at) < (1 * nint)) {
-        at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = T) 
+        at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = TRUE) 
       } else {
         pretty_lab = -axisTicks(log10(-range(at)), log = TRUE, nint = neg_nint)
         at_lab[at %in% pretty_lab] <- formatC(x = at[at %in% pretty_lab], format = "g", width = -1, digits = 1)
@@ -269,7 +269,7 @@ base_axis_constr = function(lim, hyper = "P", nint = 10) {
     at = at[at > -hyper]
     if(length(at) > 0) {
       at_scaled = smoothLinLog(at, hyper = hyper)
-      at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = T) 
+      at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE) 
       ticks_at = c(ticks_at, at_scaled)
       ticks_lab = c(ticks_lab, at_lab)
     }
@@ -279,7 +279,7 @@ base_axis_constr = function(lim, hyper = "P", nint = 10) {
     at = at[at < hyper]
     if(length(at) > 0) {
       at_scaled = smoothLinLog(at, hyper = hyper)
-      at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = T) 
+      at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE) 
       ticks_at = c(ticks_at, at_scaled)
       ticks_lab = c(ticks_lab, at_lab)
     }
@@ -292,7 +292,7 @@ base_axis_constr = function(lim, hyper = "P", nint = 10) {
     pos_nint = as.integer(pos_log_ticks / tot * 3 * nint)
     if(pos_nint > 0) {
       if(length(at) < (1 * nint)) {
-        at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = T) 
+        at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = TRUE) 
       } else {
         pretty_lab = axisTicks(log10(range(at)), log = TRUE, nint = pos_nint)
         at_lab[at %in% pretty_lab] <- formatC(x = at[at %in% pretty_lab], format = "g", width = -1, digits = 1)
