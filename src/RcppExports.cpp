@@ -175,23 +175,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_gray_Decomp2
-List cpp_gray_Decomp2(const std::string fname, const uint32_t offset, const uint32_t nbytes, const R_len_t imgWidth, const R_len_t imgHeight, const R_len_t nb_channels, const bool verbose);
-RcppExport SEXP _IFC_cpp_gray_Decomp2(SEXP fnameSEXP, SEXP offsetSEXP, SEXP nbytesSEXP, SEXP imgWidthSEXP, SEXP imgHeightSEXP, SEXP nb_channelsSEXP, SEXP verboseSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
-    Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
-    Rcpp::traits::input_parameter< const uint32_t >::type nbytes(nbytesSEXP);
-    Rcpp::traits::input_parameter< const R_len_t >::type imgWidth(imgWidthSEXP);
-    Rcpp::traits::input_parameter< const R_len_t >::type imgHeight(imgHeightSEXP);
-    Rcpp::traits::input_parameter< const R_len_t >::type nb_channels(nb_channelsSEXP);
-    Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_gray_Decomp2(fname, offset, nbytes, imgWidth, imgHeight, nb_channels, verbose));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cpp_decomp
 List cpp_decomp(const std::string fname, const uint32_t offset, const uint32_t nbytes, const R_len_t imgWidth, const R_len_t imgHeight, const R_len_t nb_channels, const uint8_t removal, const uint32_t compression, const bool verbose);
 RcppExport SEXP _IFC_cpp_decomp(SEXP fnameSEXP, SEXP offsetSEXP, SEXP nbytesSEXP, SEXP imgWidthSEXP, SEXP imgHeightSEXP, SEXP nb_channelsSEXP, SEXP removalSEXP, SEXP compressionSEXP, SEXP verboseSEXP) {
@@ -432,7 +415,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_checksum", (DL_FUNC) &_IFC_cpp_checksum, 1},
     {"_IFC_cpp_rle_Decomp", (DL_FUNC) &_IFC_cpp_rle_Decomp, 8},
     {"_IFC_cpp_gray_Decomp1", (DL_FUNC) &_IFC_cpp_gray_Decomp1, 7},
-    {"_IFC_cpp_gray_Decomp2", (DL_FUNC) &_IFC_cpp_gray_Decomp2, 7},
     {"_IFC_cpp_decomp", (DL_FUNC) &_IFC_cpp_decomp, 9},
     {"_IFC_cpp_normalize", (DL_FUNC) &_IFC_cpp_normalize, 5},
     {"_IFC_cpp_cleanse", (DL_FUNC) &_IFC_cpp_cleanse, 5},

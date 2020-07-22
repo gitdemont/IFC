@@ -1109,7 +1109,7 @@ List cpp_rle_Decomp (const std::string fname,
                      const R_len_t nb_channels = 1,
                      const uint8_t removal = 0,
                      const bool verbose = false) {
-  if(nb_channels * imgWidth * imgHeight) {
+  if((nb_channels * imgWidth * imgHeight) != 0) {
     List out(nb_channels);
     R_len_t tile_width = imgWidth / nb_channels;
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -1294,7 +1294,7 @@ List cpp_gray_Decomp1 (const std::string fname,
                        const R_len_t imgHeight = 1, 
                        const R_len_t nb_channels = 1,
                        const bool verbose = false) {
-  if(nb_channels * imgWidth * imgHeight) {
+  if((nb_channels * imgWidth * imgHeight) != 0) {
     List out(nb_channels);
     R_len_t tile_width = imgWidth / nb_channels;
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -1356,122 +1356,6 @@ List cpp_gray_Decomp1 (const std::string fname,
   } else {
     Rcerr << "cpp_gray_Decomp1: imgWidth, imgHeight and nb_channels should be >0" << std::endl;
     Rcpp::stop("cpp_gray_Decomp1: imgWidth, imgHeight and nb_channels should be >0");    
-  }
-  return R_NilValue;
-}
-
-//' @title GRAY Decompression type 2
-//' @name cpp_gray_Decomp2
-//' @description
-//' Operates GrayScale decompression of compressed image stored in TIFF file.
-//' @param fname string, path to file.
-//' @param offset uint32_t, position of the beginning of compressed image.
-//' @param nbytes uint32_t, number of bytes of compressed image.
-//' @param imgWidth R_len_t, Width of the decompressed image. Default is 1.
-//' @param imgHeight R_len_t, Height of the decompressed image. Default is 1.
-//' @param nb_channels R_len_t, number of channels of the decompressed image. Default is 1.
-//' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-//' @details
-//' BSD implementations of Bio-Formats readers and writers
-//' %%
-//' Copyright (C) 2005 - 2017 Open Microscopy Environment:
-//'   - Board of Regents of the University of Wisconsin-Madison
-//'   - Glencoe Software, Inc.
-//'   - University of Dundee
-//' %%
-//' Redistribution and use in source and binary forms, with or without
-//' modification, are permitted provided that the following conditions are met:
-//' 
-//' 1. Redistributions of source code must retain the above copyright notice,
-//'    this list of conditions and the following disclaimer.
-//' 2. Redistributions in binary form must reproduce the above copyright notice,
-//'    this list of conditions and the following disclaimer in the documentation
-//'    and/or other materials provided with the distribution.
-//' 
-//' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-//' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-//' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-//' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
-//' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-//' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-//' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-//' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-//' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-//' POSSIBILITY OF SUCH DAMAGE.
-//' @source For image decompression, Lee Kamentsky's code porting from \url{http://github.com/openmicroscopy/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
-//' cited in \url{http://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
-//' @keywords internal
-////' @export
-// [[Rcpp::export]]
-List cpp_gray_Decomp2 (const std::string fname, 
-                       const uint32_t offset, 
-                       const uint32_t nbytes,
-                       const R_len_t imgWidth = 1, 
-                       const R_len_t imgHeight = 1, 
-                       const R_len_t nb_channels = 1,
-                       const bool verbose = false) {
-  if(nb_channels * imgWidth * imgHeight) {
-    List out(nb_channels);
-    R_len_t tile_width = imgWidth / nb_channels;
-    std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if(fi.is_open()) {
-      try {
-        fi.seekg(0, std::ios::end);
-        size_t filesize = fi.tellg();
-        if(offset > (filesize - nbytes)) {
-          Rcerr <<  "cpp_gray_Decomp2: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
-          Rcpp::stop("cpp_gray_Decomp2: GrayScale image offset is higher than file size");
-        }
-        if(verbose) {
-          Rcout << fname << std::endl;
-          Rcout << "Extracting " << nbytes << " Bytes GreyScale image type 2 @offset:" << offset << std::endl;
-        }
-        fi.seekg(offset, std::ios::beg);
-        std::vector<char> buf_image(nbytes);
-        fi.read(buf_image.data(), nbytes);
-        
-        IntegerVector lastRow(imgWidth + 1);
-        IntegerMatrix img(imgHeight, imgWidth + 1);
-        bool odd = false;
-        uint32_t k = nbytes - 1; // ensure that k will stay within [0, nbytes-1]
-        
-        for(R_len_t y = 0 ; y < imgHeight ; y++) {
-          for(R_len_t x = 1 ; x <= imgWidth ; x++) {
-            int value = 0;
-            short shift = 0, nibble = -1;
-            while((nibble & 0x8)) {
-              nibble = odd ? buf_image[k--] >> 4 : buf_image[k] & 0xf;
-              odd = !odd;
-              value += (nibble & 0x7) << shift;
-              shift += 3;
-            }
-            if(nibble & 0x4) value |= - (1 << shift);
-            lastRow[x] += value;
-            img(y,x) = img(y,x - 1) + lastRow[x];
-          }
-        }
-        fi.close();
-        for(R_len_t i = 0; i < nb_channels; i++) {
-          out[i] = img(_, Rcpp::Range(1 + tile_width * i, tile_width * (i + 1)));
-        }
-        return out;
-      }
-      catch(std::exception &ex) {	
-        fi.close();
-        forward_exception_to_r(ex);
-      }
-      catch(...) { 
-        Rcpp::stop("cpp_gray_Decomp2: c++ exception (unknown reason)"); 
-      }
-    }
-    else {
-      Rcerr << "cpp_gray_Decomp2: Unable to open " << fname << std::endl;
-      Rcpp::stop("cpp_gray_Decomp2: Unable to open file");
-    }
-  } else {
-    Rcerr << "cpp_gray_Decomp2: imgWidth, imgHeight and nb_channels should be >0" << std::endl;
-    Rcpp::stop("cpp_gray_Decomp2: imgWidth, imgHeight and nb_channels should be >0");    
   }
   return R_NilValue;
 }
@@ -1539,7 +1423,6 @@ List cpp_decomp (const std::string fname,
   switch(compression) {
   case 30817: return cpp_gray_Decomp1(fname, offset, nbytes, imgWidth, imgHeight, nb_channels, verbose);
   case 30818: return cpp_rle_Decomp(fname, offset, nbytes, imgWidth, imgHeight, nb_channels, removal, verbose);
-  case 30819: return cpp_gray_Decomp2(fname, offset, nbytes, imgWidth, imgHeight, nb_channels, verbose);
   }
   Rcerr << "cpp_decomp: can't deal with compression format:" << compression << std::endl;
   Rcpp::stop("cpp_decomp: can't deal with compression format");   
