@@ -72,7 +72,7 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
     offsets = cpp_getoffsets_noid(fileName, obj_count = obj_count, display_progress = display_progress, verbose = verbose)
     offsets_1 = offsets[1]
     offsets = offsets[-1]
-    if(length(offsets) != obj_count * 2) stop("Number of offsets found is different from expected object count.")
+    if(obj_count > 0) if(length(offsets) != obj_count * 2) stop("Number of offsets found is different from expected object count.")
     message("Offsets were extracted from XIF file with fast method.\nCorrect mapping between offsets and objects ids is not guaranteed.")
   } else {
     offsets = as.data.frame(do.call(what = "cbind", args = cpp_getoffsets_wid(fileName, obj_count = obj_count, display_progress = display_progress, verbose = verbose)), stringsAsFactors = FALSE)
@@ -88,10 +88,11 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
     offsets_1 = offsets_1$OFFSET
     
     if(length(offsets_img) != length(offsets_msk)) stop("Offsets contain different numbers of 'img' and 'msk'.")
-    if(length(offsets_img) != obj_count) stop("Number of offsets found is different from expected object count.")
+    if(obj_count > 0) if(length(offsets_img) != obj_count) stop("Number of offsets found is different from expected object count.")
     offsets = as.integer(apply(cbind(offsets_img, offsets_msk), 1, FUN=function(i) i))
   }
   if(length(offsets) != 0) {
+    if(obj_count <= 0) obj_count = length(offsets) / 2
     N = nchar(sprintf("%1.f",abs(obj_count-1)))
     names(offsets) = c(paste0(c("img_", "msk_"), rep(sprintf(paste0("%0",N,".f"), 0:(obj_count-1)), each = 2)))
     attr(offsets, "all") = offsets
