@@ -330,7 +330,7 @@ DisplayGallery <- function(...,
   # (object.size(ans) > 1.5e6 && getOption('DT.warn.size', TRUE)) is FALSE but I am still getting warning
   # create datatable
   datatable(escape = FALSE, rownames = FALSE, extensions = "Buttons",
-            selection = list(mode = 'api'), style = "bootstrap",
+            selection = list(mode = 'none'), style = "bootstrap",
             caption = cap,
             elementId = name,
             data = dat,
