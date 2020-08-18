@@ -49,34 +49,28 @@
 objectDisplay = function(image, input_range = c(0, 4095), full_range = FALSE, force_range = FALSE, gamma = 1, color = "Green", dpi = 300) {
   dpi = na.omit(as.integer(dpi)); dpi = dpi[dpi>0]; dpi = dpi[is.finite(dpi)]
   assert(dpi, len = 1, typ = "integer")
-  d = dim(image); 
-  switch(class(image), 
-         "IFC_img" = { 
-           if(missing(input_range)) input_range = attr(image, "input_range")
-           if(missing(full_range)) force_range = attr(image, "full_range")
-           if(missing(force_range)) force_range = attr(image, "force_range")
-           if(missing(gamma)) gamma = attr(image, "gamma")
-           if(missing(color)) color = attr(image, "color")
-           checkColor(color)
-           foo = objectColorize(objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = gamma), color)
-         },
-         "IFC_msk" = {
-           if(missing(input_range)) input_range = attr(image, "input_range")
-           if(missing(full_range)) force_range = attr(image, "full_range")
-           if(missing(force_range)) force_range = attr(image, "force_range")
-           if(missing(gamma)) gamma = attr(image, "gamma")
-           if(missing(color)) color = attr(image, "color")
-           if(missing(color)) color = attr(image, "color")
-           checkColor(color)
-           foo = objectColorize(objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = 1), color)
-         },
-         "matrix" = {
-           checkColor(color)
-           foo = objectColorize(objectNormalize(image, force_range = TRUE), color)
-         },
-         {
-           stop("'image' is not compatible with objectDisplay")
-         })
+  d = dim(image)
+  K = class(image)
+  foo = NULL
+  if(inherits(x = K, what = c("IFC_img", "IFC_msk"))) {
+    if(missing(input_range)) input_range = attr(image, "input_range")
+    if(missing(full_range)) force_range = attr(image, "full_range")
+    if(missing(force_range)) force_range = attr(image, "force_range")
+    if(missing(gamma)) gamma = attr(image, "gamma")
+    if(missing(color)) color = attr(image, "color")
+    checkColor(color)
+    if(K %in% "IFC_img") {
+      foo = objectColorize(objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = gamma), color)
+    } else {
+      foo = objectColorize(objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = 1), color)
+    }
+  } else {
+    if(inherits(x = K, what = "matrix")) {
+      checkColor(color)
+      foo = objectColorize(objectNormalize(image, force_range = TRUE), color)
+    }
+  }
+  if(length(foo) == 0) stop("'image' is not compatible with objectDisplay")
   grid.newpage()
   do.call(what = "grid.raster", args = list(image = foo,
                                             width = unit(dpi * d[2] / 96, "points"),
