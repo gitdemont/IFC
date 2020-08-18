@@ -58,7 +58,7 @@ addText <- function(image, text, color, xoff = 0, yoff = 0, corner = "TL") {
   txt_msk = texttomatrix(text)
   dt = dim(txt_msk)
   if((dt[1] + yoff > di[1]) | dt[2] + xoff > di[2]) {
-    txt_msk = cpp_resize2(mat = txt_msk, new_height = di[2] - xoff, new_width = di[1] - yoff, add_noise = FALSE, bg = 0, sd= 0)
+    txt_msk = cpp_resize(mat = txt_msk, new_height = di[2] - xoff, new_width = di[1] - yoff, add_noise = FALSE, bg = 0, sd= 0)
   }
   
   # modify xoff, yoff according to corner anchorage

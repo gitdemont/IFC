@@ -44,5 +44,5 @@ objectResize <- function(mat, size = c(0,0), add_noise = TRUE, random_seed = NUL
     set.seed(random_seed)
     on.exit(set.seed(NULL))
   }
-  return(cpp_resize2(mat = mat, new_height = size[1], new_width = size[2], add_noise = add_noise, bg = bg, sd= sd))
+  return(cpp_resize(mat = mat, new_height = size[1], new_width = size[2], add_noise = add_noise, bg = bg, sd= sd))
 }
