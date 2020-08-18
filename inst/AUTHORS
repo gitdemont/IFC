@@ -8,8 +8,8 @@ IFC: An R Package for Imaging Flow Cytometry
 Copyright (C) 2020 Yohann Demont
 
 --------------------------------------------------------------------------------
-hpp_rle_Decomp, hpp_gray_Decomp1 and hpp_gray_Decomp2 decompression are port of
-Bio-Formats readers and writers authored by Lee Kamentsky under BSD license
+hpp_rle_Decomp and hpp_gray_Decomp decompression are port of Bio-Formats readers
+and writers authored by Lee Kamentsky under BSD license
 
 --------------------------------------------------------------------------------
 popsNetwork in popsNetwork.R is using visNetwork package authored by Almende

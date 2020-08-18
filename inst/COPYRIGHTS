@@ -7,9 +7,9 @@ IFC: An R Package for Imaging Flow Cytometry
 Copyright (C) 2020 Yohann Demont
 
 --------------------------------------------------------------------------------
-hpp_rle_Decomp, hpp_gray_Decomp1 and hpp_gray_Decomp2 decompression in
-decomp.hpp are port from File src/loci/formats/in/FlowSightReader.java of BSD 
-implementations of Bio-Formats readers and writers authored by Lee Kamentsky
+hpp_rle_Decomp and hpp_gray_Decomp decompression in decomp.hpp are port from 
+File src/loci/formats/in/FlowSightReader.java of BSD implementations of
+Bio-Formats readers and writers authored by Lee Kamentsky
 
 Copyright (C) 2005 - 2017 Open Microscopy Environment:
  - Board of Regents of the University of Wisconsin-Madison
