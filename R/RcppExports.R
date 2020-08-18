@@ -14,85 +14,6 @@
 #' @keywords internal
 NULL
 
-cpp_assert <- function(x, len = NULL, cla = NULL, typ = NULL, alw = NULL, fun = "stop") {
-    .Call(`_IFC_cpp_assert`, x, len, cla, typ, alw, fun)
-}
-
-#' @title HSV to RGB Conversion
-#' @name cpp_HSV2RGB
-#' @description
-#' Converts a color from HSV [0,1] space to RGB [0,1] space.
-#' @param *r pointer to r
-#' @param *g pointer to g
-#' @param *b pointer to b
-#' @param h double, [0,1], hue. Default is 0.0
-#' @param s double, [0,1], saturation. Default is 0.0
-#' @param v double, [0,1], value. Default is 0.0
-#' @source see hsv source code from \pkg{grDevices}\cr
-#' Based on HSV_TO_RGB from Foley and Van Dam First Ed. Page 616\cr
-#' See Alvy Ray Smith, Color Gamut Transform Pairs, SIGGRAPH '78
-#' @keywords internal
-NULL
-
-#' @title Matrix HSV to RGB Conversion
-#' @name cpp_M_HSV2RGB
-#' @description
-#' Converts grayscale [0,1] mat to 3D rgb array according to hsv space.
-#' hue and saturation determines tint whereas v is given by each element of mat
-#' @param mat NumericMatrix, [0,1].
-#' @param h double, [0,1], hue. Default is 0.0
-#' @param s double, [0,1], saturation. Default is 0.0
-#' @return a NumericVector with 3 dimensions attribute i.e. a 3D array
-#' - 1st Dim is matrix rows count,
-#' - 2nd Dim is matrix cols count,
-#' - 3rd Dim is RGB
-#' @keywords internal
-NULL
-
-cpp_M_HSV2RGB <- function(mat, h = 0.0, s = 0.0) {
-    .Call(`_IFC_cpp_M_HSV2RGB`, mat, h, s)
-}
-
-#' @title Polygon Closing
-#' @name close_polygon
-#' @description
-#' Pushes 1st row at the end of a matrix.
-#' @param M NumericMatrix.
-#' @keywords internal
-NULL
-
-#' @title Point in Polygon
-#' @name trigo_pnt_in_poly
-#' @description
-#' This function works out if 2D point lies within the boundaries of a
-#' defined polygon. \cr \cr \bold{Note:} Points that lie on the boundaries of
-#' the polygon or vertices are assumed to be within the polygon.
-#' 
-#' The algorithm implements a sum of the angles made between the test point and
-#' each pair of points making up the polygon. The point is interior if the sum
-#' is 2pi, otherwise, the point is exterior if the sum is 0. This works for
-#' simple and complex polygons (with holes) given that the hole is defined with
-#' a path made up of edges into and out of the hole. \cr \cr This sum of angles
-#' is not able to consistently assign points that fall on vertices or on the
-#' boundary of the polygon. The algorithm defined here assumes that points
-#' falling on a boundary or polygon vertex are part of the polygon.
-#' @param pnt NumericVector, x and y coordinates of the points.
-#' @param poly NumericMatrix, a 2-column matrix defining the locations (x and y) of vertices of the polygon of interest.
-#' @param epsilon double, threshold value.  Default is 0.000000000001
-#' @author Jeremy VanDerWal, Lorena Falconi, Stephanie Januchowski, Luke Shoo and Collin Storlie \email{jjvanderwal@@gmail.com}.
-#' @source \url{http://github.com/jjvanderwal/SDMTools}
-#' @keywords internal
-NULL
-
-#' @title Point in Ellipse
-#' @name pnt_in_ell
-#' @description
-#' Checks if 2D point lies within a defined ellipse.
-#' @param pnt NumericVector, x and y coordinates of the point.
-#' @param ell NumericVector, coordinates of the ellipse.
-#' @keywords internal
-NULL
-
 #' @title Ellipse Boundaries to Coordinates
 #' @name cpp_ell_coord
 #' @description
@@ -116,29 +37,28 @@ NULL
 #' @keywords internal
 NULL
 
-cpp_ell_coord <- function(bound_x, bound_y) {
-    .Call(`_IFC_cpp_ell_coord`, bound_x, bound_y)
-}
-
-cpp_pnt_in_gate <- function(pnts, gate, algorithm = 1L, epsilon = 0.000000000001) {
-    .Call(`_IFC_cpp_pnt_in_gate`, pnts, gate, algorithm, epsilon)
-}
-
-#' @title File Scanner
-#' @name cpp_scanFirst
+#' @title Gamma Computation
+#' @name cpp_computeGamma
 #' @description
-#' Scans file for 1st occurence of a target string.
-#' If found, it returns the position in bytes of the target.
-#' Otherwise, it returns 0.
-#' @param fname string, path to file.
-#' @param target string, exact string to be searched for. At least 1 character and should not exceed 1024 characters.
-#' @param start size_t, position where to begin search.
-#' It can't be superior or equal than file size or end (when end is different from 0 and inferior than file size).
-#' @param end size_t, position where to stop searching. Default is 0.
-#' Search will end up at this position unless it is higher than file size.
-#' In such case, search will end up when file end will be reached.
-#' @param buf_size uint8_t, size of buffer used to search for target (in kilo-Bytes, will be forced to be between 2 and 1024). Default is 64.
-#' @return size_t index of first target character found within target plus 1 or 0 if not found.
+#' This function computes image gamma transformation value.
+#' @param V named NumericVector of channel display properties containing 'xmin', 'xmax', 'xmid' and 'ymid'.
+#' @keywords internal
+NULL
+
+#' @title Raw to Base64 Conversion
+#' @name cpp_base64_encode
+#' @description
+#' Converts a raw vector to base64 string.
+#' @param x RawVector.
+#' @return a string, representing the base64 encoding of x.
+#' @keywords internal
+NULL
+
+#' @title BMP Writer
+#' @name cpp_writeBMP
+#' @description
+#' Transforms 3D [0,1] image to uncompressed bmp
+#' @param image, a [0,1] normalized image matrix or 3D array. If 3D array, 3rd dimension should be of length 1 or 3.
 #' @keywords internal
 NULL
 
@@ -207,97 +127,104 @@ NULL
 #' @keywords internal
 NULL
 
-#' @title RLE Decompression
-#' @name cpp_rle_Decomp
+#' @title Matrix HSV to RGB Conversion
+#' @name cpp_M_HSV2RGB
 #' @description
-#' Operates RLE decompression of compressed image stored in TIFF file.
-#' @param fname string, path to file.
-#' @param offset uint32_t, position of the beginning of compressed image.
-#' @param nbytes uint32_t, number of bytes of compressed image.
-#' @param imgWidth R_len_t, Width of the decompressed image. Default is 1.
-#' @param imgHeight R_len_t, Height of the decompressed image. Default is 1.
-#' @param nb_channels R_len_t, number of channels of the decompressed image. Default is 1.
-#' @param removal uint8_t, object removal method. Default is no removal. Otherwise, if\cr
-#' -1, for clipped removal: height OR width clipped pixels will be set to -1.\cr
-#' -2, height clipped removal: height clipped pixels will be set to -1.\cr
-#' -3, width clipped removal: width clipped pixels will be set to -1.\cr
-#' -4, only keep background: background pixels will be set to 1 and all others to -1.\cr
-#' -5, only keep foreground: foreground pixels will be set to 1 and all others to -1
-#' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-#' @details
-#' BSD implementations of Bio-Formats readers and writers
-#' %%
-#' Copyright (C) 2005 - 2017 Open Microscopy Environment:
-#'   - Board of Regents of the University of Wisconsin-Madison
-#'   - Glencoe Software, Inc.
-#'   - University of Dundee
-#' %%
-#' Redistribution and use in source and binary forms, with or without
-#' modification, are permitted provided that the following conditions are met:
-#' 
-#' 1. Redistributions of source code must retain the above copyright notice,
-#'    this list of conditions and the following disclaimer.
-#' 2. Redistributions in binary form must reproduce the above copyright notice,
-#'     this list of conditions and the following disclaimer in the documentation
-#'     and/or other materials provided with the distribution.
-#'  
-#' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-#' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-#' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-#' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
-#' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-#' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-#' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-#' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-#' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-#' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-#' POSSIBILITY OF SUCH DAMAGE.
-#' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/openmicroscopy/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}
-#' cited in \url{http://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+#' Converts grayscale [0,1] mat to 3D rgb array according to hsv space.
+#' hue and saturation determines tint whereas v is given by each element of mat
+#' @param mat NumericMatrix, [0,1].
+#' @param h double, [0,1], hue. Default is 0.0
+#' @param s double, [0,1], saturation. Default is 0.0
+#' @return a NumericVector with 3 dimensions attribute i.e. a 3D array
+#' - 1st Dim is matrix rows count,
+#' - 2nd Dim is matrix cols count,
+#' - 3rd Dim is RGB
 #' @keywords internal
 NULL
 
-#' @title GRAY Decompression type 1
-#' @name cpp_gray_Decomp1
+#' @title Smooth LinLog Transformation with Rcpp
+#' @name cpp_smoothLinLog
 #' @description
-#' Operates GrayScale decompression of compressed image stored in TIFF file.
+#' Takes a numeric vector and return its transformation:
+#' - to linear, if abs(x) < hyper.
+#' - to log, if abs(x) > hyper.
+#' @param x NumericVector.
+#' @param hyper double, value where transition between Lin/Log is applied.
+#' @param base double, base of Log scale.
+#' @param lin_comp double, value that is used to smooth transition between Lin/Log.
+#' @keywords internal
+NULL
+
+#' @title Inverse Smooth LinLog Transformation with Rcpp
+#' @name cpp_inv_smoothLinLog
+#' @description
+#' Takes a numeric vector and return its transformation:
+#' - to linear, if abs(x) < log(base) / lin_comp.
+#' - to exp, if abs(x) > log(base) / lin_comp.
+#' @param x NumericVector.
+#' @param hyper double, value where transition between Lin/Log is applied.
+#' @param base double, base of Log scale.
+#' @param lin_comp double, value that is used to smooth transition between Lin/Log.
+#' @keywords internal
+NULL
+
+#' @title Int32 to Uint32 32bits Conversion
+#' @name cpp_int32_to_uint32
+#' @description
+#' Converts 32bits integer from signed to unsigned
+#' @param x int32_t.
+#' @keywords internal
+NULL
+
+#' @title Uint32 to Int32 32bits Conversion
+#' @name cpp_uint32_to_int32
+#' @description
+#' Converts 32bits integer from unsigned to signed
+#' @param x uint32_t.
+#' @keywords internal
+NULL
+
+#' @title File Scanner
+#' @name cpp_scanFirst
+#' @description
+#' Scans file for 1st occurence of a target string.
+#' If found, it returns the position in bytes of the target.
+#' Otherwise, it returns 0.
 #' @param fname string, path to file.
-#' @param offset uint32_t, position of the beginning of compressed image.
-#' @param nbytes uint32_t, number of bytes of compressed image.
-#' @param imgWidth R_len_t, Width of the decompressed image. Default is 1.
-#' @param imgHeight R_len_t, Height of the decompressed image. Default is 1.
-#' @param nb_channels R_len_t, number of channels of the decompressed image. Default is 1.
-#' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-#' @details
-#' BSD implementations of Bio-Formats readers and writers
-#' %%
-#' Copyright (C) 2005 - 2017 Open Microscopy Environment:
-#'   - Board of Regents of the University of Wisconsin-Madison
-#'   - Glencoe Software, Inc.
-#'   - University of Dundee
-#' %%
-#' Redistribution and use in source and binary forms, with or without
-#' modification, are permitted provided that the following conditions are met:
-#' 
-#' 1. Redistributions of source code must retain the above copyright notice,
-#'    this list of conditions and the following disclaimer.
-#' 2. Redistributions in binary form must reproduce the above copyright notice,
-#'    this list of conditions and the following disclaimer in the documentation
-#'    and/or other materials provided with the distribution.
-#' 
-#' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-#' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-#' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-#' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
-#' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-#' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-#' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-#' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-#' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-#' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-#' POSSIBILITY OF SUCH DAMAGE.
-#' @source For image decompression, Lee Kamentsky's code porting from \url{http://github.com/openmicroscopy/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
-#' cited in \url{http://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+#' @param target string, exact string to be searched for. At least 1 character and should not exceed 1024 characters.
+#' @param start size_t, position where to begin search.
+#' It can't be superior or equal than file size or end (when end is different from 0 and inferior than file size).
+#' @param end size_t, position where to stop searching. Default is 0.
+#' Search will end up at this position unless it is higher than file size.
+#' In such case, search will end up when file end will be reached.
+#' @param buf_size uint8_t, size of buffer used to search for target (in kilo-Bytes, will be forced to be between 2 and 1024). Default is 64.
+#' @return size_t index of first target character found within target plus 1 or 0 if not found.
+#' @keywords internal
+NULL
+
+#' @title Matrix Cropping
+#' @name cpp_crop
+#' @description
+#' Crops mat according to new_height and new_width parameters.
+#' @param mat a numeric matrix.
+#' @param new_height an unsigned integer, giving the new height of returned mat. Default is 0 for no change.
+#' @param new_width an unsigned integer, giving the new width of returned mat. Default is 0 for no change.
+#' @return a cropped matrix.
+#' @keywords internal
+NULL
+
+#' @title Matrix Resizing
+#' @name cpp_resize
+#' @description
+#' Resizes mat according to new_height and new_width parameters.
+#' @param mat a numeric matrix.
+#' @param new_height an unsigned integer, giving the new height of returned mat. Default is 0 for no change.
+#' @param new_width an unsigned integer, giving the new width of returned mat. Default is 0 for no change.
+#' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
+#' Rcpp::rnorm() function is used. Default is true.
+#' @param bg double, mean value of the background added if add_noise is true. Default is 0.
+#' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
+#' @return a resized matrix with padding background if new_height or new_width is larger than original mat dimensions.
 #' @keywords internal
 NULL
 
@@ -407,21 +334,6 @@ NULL
 #' @keywords internal
 NULL
 
-#' @title Matrix Resizing
-#' @name cpp_resize2
-#' @description
-#' Resizes mat according to new_height and new_width parameters.
-#' @param mat a numeric matrix.
-#' @param new_height an unsigned integer, giving the new height of returned mat. Default is 0 for no change.
-#' @param new_width an unsigned integer, giving the new width of returned mat. Default is 0 for no change.
-#' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
-#' Rcpp::rnorm() function is used. Default is true.
-#' @param bg double, mean value of the background added if add_noise is true. Default is 0.
-#' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
-#' @return a resized matrix with padding background if new_height or new_width is larger than original mat dimensions.
-#' @keywords internal
-NULL
-
 #' @title Matrix Transformation
 #' @name cpp_transform
 #' @description
@@ -477,8 +389,28 @@ NULL
 #' @keywords internal
 NULL
 
-cpp_scanFirst <- function(fname, target, start = 0L, end = 0L, buf_size = 64L) {
-    .Call(`_IFC_cpp_scanFirst`, fname, target, start, end, buf_size)
+cpp_assert <- function(x, len = NULL, cla = NULL, typ = NULL, alw = NULL, fun = "stop") {
+    .Call(`_IFC_cpp_assert`, x, len, cla, typ, alw, fun)
+}
+
+cpp_ell_coord <- function(bound_x, bound_y) {
+    .Call(`_IFC_cpp_ell_coord`, bound_x, bound_y)
+}
+
+cpp_pnt_in_gate <- function(pnts, gate, algorithm = 1L, epsilon = 0.000000000001) {
+    .Call(`_IFC_cpp_pnt_in_gate`, pnts, gate, algorithm, epsilon)
+}
+
+cpp_computeGamma <- function(V) {
+    .Call(`_IFC_cpp_computeGamma`, V)
+}
+
+cpp_base64_encode <- function(x) {
+    .Call(`_IFC_cpp_base64_encode`, x)
+}
+
+cpp_writeBMP <- function(image) {
+    .Call(`_IFC_cpp_writeBMP`, image)
 }
 
 cpp_checkTIFF <- function(fname) {
@@ -501,15 +433,39 @@ cpp_checksum <- function(fname) {
     .Call(`_IFC_cpp_checksum`, fname)
 }
 
-cpp_rle_Decomp <- function(fname, offset, nbytes, imgWidth = 1L, imgHeight = 1L, nb_channels = 1L, removal = 0L, verbose = FALSE) {
-    .Call(`_IFC_cpp_rle_Decomp`, fname, offset, nbytes, imgWidth, imgHeight, nb_channels, removal, verbose)
+cpp_M_HSV2RGB <- function(mat, h = 0.0, s = 0.0) {
+    .Call(`_IFC_cpp_M_HSV2RGB`, mat, h, s)
 }
 
-cpp_gray_Decomp1 <- function(fname, offset, nbytes, imgWidth = 1L, imgHeight = 1L, nb_channels = 1L, verbose = FALSE) {
-    .Call(`_IFC_cpp_gray_Decomp1`, fname, offset, nbytes, imgWidth, imgHeight, nb_channels, verbose)
+cpp_smoothLinLog <- function(x, hyper = 1000.0, base = 10.0, lin_comp = 2.302585) {
+    .Call(`_IFC_cpp_smoothLinLog`, x, hyper, base, lin_comp)
 }
 
-cpp_decomp <- function(fname, offset, nbytes, imgWidth = 1L, imgHeight = 1L, nb_channels = 1L, removal = 0L, compression = 1L, verbose = FALSE) {
+cpp_inv_smoothLinLog <- function(x, hyper = 1000.0, base = 10.0, lin_comp = 2.302585) {
+    .Call(`_IFC_cpp_inv_smoothLinLog`, x, hyper, base, lin_comp)
+}
+
+cpp_int32_to_uint32 <- function(x) {
+    .Call(`_IFC_cpp_int32_to_uint32`, x)
+}
+
+cpp_uint32_to_int32 <- function(x) {
+    .Call(`_IFC_cpp_uint32_to_int32`, x)
+}
+
+cpp_scanFirst <- function(fname, target, start = 0L, end = 0L, buf_size = 64L) {
+    .Call(`_IFC_cpp_scanFirst`, fname, target, start, end, buf_size)
+}
+
+cpp_crop <- function(mat, new_height = 0L, new_width = 0L) {
+    .Call(`_IFC_cpp_crop`, mat, new_height, new_width)
+}
+
+cpp_resize <- function(mat, new_height = 0L, new_width = 0L, add_noise = TRUE, bg = 0.0, sd = 0.0) {
+    .Call(`_IFC_cpp_resize`, mat, new_height, new_width, add_noise, bg, sd)
+}
+
+cpp_decomp <- function(fname, offset, nbytes, imgWidth = 1L, imgHeight = 1L, nb_channels = 1L, removal = 0L, compression = 30818L, verbose = FALSE) {
     .Call(`_IFC_cpp_decomp`, fname, offset, nbytes, imgWidth, imgHeight, nb_channels, removal, compression, verbose)
 }
 
@@ -529,110 +485,11 @@ cpp_mark <- function(A, B, mask, xoff = 0L, yoff = 0L, invert = FALSE) {
     .Call(`_IFC_cpp_mark`, A, B, mask, xoff, yoff, invert)
 }
 
-cpp_resize2 <- function(mat, new_height = 0L, new_width = 0L, add_noise = TRUE, bg = 0.0, sd = 0.0) {
-    .Call(`_IFC_cpp_resize2`, mat, new_height, new_width, add_noise, bg, sd)
-}
-
 cpp_transform <- function(mat, color, msk, size = as.integer( c(0,0)), mode = "raw", type = 2L, input_range = as.numeric( c(0.0,4095.0)), add_noise = TRUE, bg = 0.0, sd = 0.0, full_range = FALSE, force_range = FALSE, gamma = 1.0) {
     .Call(`_IFC_cpp_transform`, mat, color, msk, size, mode, type, input_range, add_noise, bg, sd, full_range, force_range, gamma)
 }
 
 cpp_extract <- function(fname, ifd, colors, physicalChannel, xmin, xmax, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk = 0L, mode = "raw", size = as.integer( c(0,0)), verbose = FALSE) {
     .Call(`_IFC_cpp_extract`, fname, ifd, colors, physicalChannel, xmin, xmax, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk, mode, size, verbose)
-}
-
-#' @title Smooth LinLog Transformation with Rcpp
-#' @name cpp_smoothLinLog
-#' @description
-#' Takes a numeric vector and return its transformation:
-#' - to linear, if abs(x) < hyper.
-#' - to log, if abs(x) > hyper.
-#' @param x NumericVector.
-#' @param hyper double, value where transition between Lin/Log is applied.
-#' @param base double, base of Log scale.
-#' @param lin_comp double, value that is used to smooth transition between Lin/Log.
-#' @keywords internal
-NULL
-
-#' @title Inverse Smooth LinLog Transformation with Rcpp
-#' @name cpp_inv_smoothLinLog
-#' @description
-#' Takes a numeric vector and return its transformation:
-#' - to linear, if abs(x) < log(base) / lin_comp.
-#' - to exp, if abs(x) > log(base) / lin_comp.
-#' @param x NumericVector.
-#' @param hyper double, value where transition between Lin/Log is applied.
-#' @param base double, base of Log scale.
-#' @param lin_comp double, value that is used to smooth transition between Lin/Log.
-#' @keywords internal
-NULL
-
-#' @title Int32 to Uint32 32bits Conversion
-#' @name cpp_int32_to_uint32
-#' @description
-#' Converts 32bits integer from signed to unsigned
-#' @param x int32_t.
-#' @keywords internal
-NULL
-
-#' @title Uint32 to Int32 32bits Conversion
-#' @name cpp_uint32_to_int32
-#' @description
-#' Converts 32bits integer from unsigned to signed
-#' @param x uint32_t.
-#' @keywords internal
-NULL
-
-cpp_smoothLinLog <- function(x, hyper = 1000.0, base = 10.0, lin_comp = 2.302585) {
-    .Call(`_IFC_cpp_smoothLinLog`, x, hyper, base, lin_comp)
-}
-
-cpp_inv_smoothLinLog <- function(x, hyper = 1000.0, base = 10.0, lin_comp = 2.302585) {
-    .Call(`_IFC_cpp_inv_smoothLinLog`, x, hyper, base, lin_comp)
-}
-
-cpp_int32_to_uint32 <- function(x) {
-    .Call(`_IFC_cpp_int32_to_uint32`, x)
-}
-
-cpp_uint32_to_int32 <- function(x) {
-    .Call(`_IFC_cpp_uint32_to_int32`, x)
-}
-
-#' @title Gamma Computation
-#' @name cpp_computeGamma
-#' @description
-#' This function computes image gamma transformation value.
-#' @param V named NumericVector of channel display properties containing 'xmin', 'xmax', 'xmid' and 'ymid'.
-#' @keywords internal
-NULL
-
-#' @title Raw to Base64 Conversion
-#' @name cpp_base64_encode
-#' @description
-#' Converts a raw vector to base64 string.
-#' @param x RawVector.
-#' @return a string, representing the base64 encoding of x.
-#' @keywords internal
-NULL
-
-#' @title BMP Writer
-#' @name cpp_writeBMP
-#' @description
-#' Transforms 3D [0,1] image to uncompressed bmp
-#' @param image, a [0,1] normalized image matrix or 3D array. If 3D array, 3rd dimension should be of length 1 or 3.
-#' @keywords internal
-NULL
-
-cpp_computeGamma <- function(V) {
-    .Call(`_IFC_cpp_computeGamma`, V)
-}
-
-cpp_base64_encode <- function(x) {
-    .Call(`_IFC_cpp_base64_encode`, x)
-}
-
-cpp_writeBMP <- function(image) {
-    .Call(`_IFC_cpp_writeBMP`, image)
 }
 

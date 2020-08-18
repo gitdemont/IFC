@@ -6,7 +6,7 @@
   -IFC: An R Package for Imaging Flow Cytometry                                 
   -YEAR: 2020                                                                   
   -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,              
-                      Jean-Pierre Marolleau, Loï�c Gaççon,                       
+                      Jean-Pierre Marolleau, Loï?c Gaççon,                       
                       INSERM, UPD, CHU Amiens                                   
                                                                                 
                                                                                 
@@ -32,6 +32,7 @@
 #define IFC_RESIZE_HPP
 
 #include <Rcpp.h>
+using namespace Rcpp;
 
 //' @title Header for Matrix Cropping
 //' @name cpp_crop
@@ -44,9 +45,9 @@
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-Rcpp::NumericMatrix cpp_crop ( Rcpp::NumericMatrix mat,
-                               const R_len_t new_height = 0,
-                               const R_len_t new_width = 0) {
+Rcpp::NumericMatrix hpp_crop (Rcpp::NumericMatrix mat,
+                              const R_len_t new_height = 0,
+                              const R_len_t new_width = 0) {
   R_len_t img_c, img_r;
   img_c = mat.ncol();
   img_r = mat.nrow();
@@ -80,10 +81,10 @@ Rcpp::NumericMatrix cpp_crop ( Rcpp::NumericMatrix mat,
 }
 
 // function to expand matrix without adding noise
-Rcpp::NumericMatrix cpp_expand_no_noise ( const Rcpp::NumericMatrix mat,
-                                    const R_len_t new_height = 0,
-                                    const R_len_t new_width = 0,
-                                    const double bg = 0.0) {
+Rcpp::NumericMatrix hpp_expand_no_noise (const Rcpp::NumericMatrix mat,
+                                         const R_len_t new_height = 0,
+                                         const R_len_t new_width = 0,
+                                         const double bg = 0.0) {
   R_len_t img_r, img_c;
   img_r = mat.nrow();
   img_c = mat.ncol();
@@ -114,9 +115,9 @@ Rcpp::NumericMatrix cpp_expand_no_noise ( const Rcpp::NumericMatrix mat,
 }
 
 // function to expand matrix with new rows adding noisy padding bg
-Rcpp::NumericMatrix cpp_expand_row ( const Rcpp::NumericMatrix mat,
-                               const R_len_t new_height = 0,
-                               const double bg = 0.0, const double sd = 0.0) {
+Rcpp::NumericMatrix hpp_expand_row (const Rcpp::NumericMatrix mat,
+                                    const R_len_t new_height = 0,
+                                    const double bg = 0.0, const double sd = 0.0) {
   R_len_t img_r = mat.nrow();
   // new dimensions are smaller than original dimensions, no need to expand
   if(img_r >= new_height) return mat;
@@ -139,9 +140,9 @@ Rcpp::NumericMatrix cpp_expand_row ( const Rcpp::NumericMatrix mat,
 }
 
 // function to expand matrix with new columns adding noisy padding bg
-Rcpp::NumericMatrix cpp_expand_col ( const Rcpp::NumericMatrix mat,
-                               const R_len_t new_width = 0,
-                               const double bg = 0.0, const double sd = 0.0) {
+Rcpp::NumericMatrix hpp_expand_col (const Rcpp::NumericMatrix mat,
+                                    const R_len_t new_width = 0,
+                                    const double bg = 0.0, const double sd = 0.0) {
   R_len_t img_c = mat.ncol();
   // new dimensions are smaller than original dimensions, no need to expand
   if(img_c >= new_width) return mat;
@@ -165,12 +166,12 @@ Rcpp::NumericMatrix cpp_expand_col ( const Rcpp::NumericMatrix mat,
 }
 
 // function to expand matrix with padding noisy bg
-Rcpp::NumericMatrix cpp_expand_w_noise ( const Rcpp::NumericMatrix mat, 
-                                   const R_len_t new_height = 0,
-                                   const R_len_t new_width = 0,
-                                   const double bg = 0.0, const double sd = 0.0) {
-  Rcpp::NumericMatrix M0 = cpp_expand_col(mat, new_width, bg, sd);
-  return cpp_expand_row(M0, new_height, bg, sd);
+Rcpp::NumericMatrix hpp_expand_w_noise (const Rcpp::NumericMatrix mat, 
+                                        const R_len_t new_height = 0,
+                                        const R_len_t new_width = 0,
+                                        const double bg = 0.0, const double sd = 0.0) {
+  Rcpp::NumericMatrix M0 = hpp_expand_col(mat, new_width, bg, sd);
+  return hpp_expand_row(M0, new_height, bg, sd);
 }
 
 //' @title Header for Matrix Resizing
@@ -188,17 +189,17 @@ Rcpp::NumericMatrix cpp_expand_w_noise ( const Rcpp::NumericMatrix mat,
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-Rcpp::NumericMatrix cpp_resize (const Rcpp::NumericMatrix mat, 
-                                  const R_len_t new_height = 0, 
-                                  const R_len_t new_width = 0,
-                                  const bool add_noise = true, 
-                                  const double bg = 0.0, const double sd = 0.0) {
-  Rcpp::NumericMatrix crop = cpp_crop(mat, new_height, new_width);
+Rcpp::NumericMatrix hpp_resize (const Rcpp::NumericMatrix mat, 
+                                const R_len_t new_height = 0, 
+                                const R_len_t new_width = 0,
+                                const bool add_noise = true, 
+                                const double bg = 0.0, const double sd = 0.0) {
+  Rcpp::NumericMatrix crop = hpp_crop(mat, new_height, new_width);
   Rcpp::NumericMatrix out;
   if(add_noise) {
-    out = cpp_expand_w_noise(crop, new_height, new_width, bg, sd);
+    out = hpp_expand_w_noise(crop, new_height, new_width, bg, sd);
   } else {
-    out = cpp_expand_no_noise(crop, new_height, new_width, bg);
+    out = hpp_expand_no_noise(crop, new_height, new_width, bg);
   }
   if(mat.hasAttribute("mask")) out.attr("mask") = mat.attr("mask");
   return out;

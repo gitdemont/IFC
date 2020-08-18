@@ -8,7 +8,7 @@ IFC: An R Package for Imaging Flow Cytometry
 Copyright (C) 2020 Yohann Demont
 
 --------------------------------------------------------------------------------
-cpp_rle_Decomp, cpp_gray_Decomp1 and cpp_gray_Decomp2 decompression are port of
+hpp_rle_Decomp, hpp_gray_Decomp1 and hpp_gray_Decomp2 decompression are port of
 Bio-Formats readers and writers authored by Lee Kamentsky under BSD license
 
 --------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ densCols is an adaptation from File smooth2d.R in grDevices R package
 authored Florian Hahne at FHCRC, originally, The R Core Team under GPL >= 2.0
 
 --------------------------------------------------------------------------------
-cpp_HSV2RGB is an adapation from File color.c in grDevices R package
+hpp_HSV2RGB is an adapation from File color.c in grDevices R package
 The R Core Team, The R Foundation, under GPL >= 2.0
 
 --------------------------------------------------------------------------------

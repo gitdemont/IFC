@@ -7,8 +7,8 @@ IFC: An R Package for Imaging Flow Cytometry
 Copyright (C) 2020 Yohann Demont
 
 --------------------------------------------------------------------------------
-cpp_rle_Decomp, cpp_gray_Decomp1 and cpp_gray_Decomp2 decompression in ifc.cpp
-are port from File src/loci/formats/in/FlowSightReader.java of BSD 
+hpp_rle_Decomp, hpp_gray_Decomp1 and hpp_gray_Decomp2 decompression in
+decomp.hpp are port from File src/loci/formats/in/FlowSightReader.java of BSD 
 implementations of Bio-Formats readers and writers authored by Lee Kamentsky
 
 Copyright (C) 2005 - 2017 Open Microscopy Environment:
@@ -146,7 +146,7 @@ A copy of the GNU General Public License is available at
 https://www.R-project.org/Licenses/
 
 --------------------------------------------------------------------------------
-cpp_HSV2RGB in color.cpp is an adapation from File 
+hpp_HSV2RGB in color.hpp is an adapation from File 
 src/library/grDevices/src/color.c
 
 R : A Computer Language for Statistical Data Analysis
@@ -168,6 +168,6 @@ along with this program; if not, a copy is available at
 https://www.R-project.org/Licenses/
 
 --------------------------------------------------------------------------------
-trigo_pnt_in_poly in gate.cpp is an adaptation of File src/ pointinpolygon.c
+trigo_pnt_in_poly in gate.hpp is an adaptation of File src/ pointinpolygon.c
 from SDMTools R package authored by Jeremy VanDerWal, Lorena Falconi, Stephanie
 Januchowski, Luke Shoo and Collin Storlie under GPL (>= 2)
