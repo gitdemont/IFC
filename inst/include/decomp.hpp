@@ -102,13 +102,13 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
       try{
         fi.seekg(0, std::ios::end);
         unsigned int filesize = fi.tellg();
+        if(verbose) {
+          Rcout << fname << std::endl;
+          Rcout << "Extracting " << nbytes << " Bytes BitMask image [30818] @offset:" << offset << std::endl;
+        }
         if(offset > (filesize - nbytes)) {
           Rcpp::Rcerr << "hpp_rle_Decomp: @offset:" << offset << " points to outside of\n" << fname << std::endl;
           Rcpp::stop("hpp_rle_Decomp: RLE image offset is higher than file size");
-        }
-        if(verbose) {
-          Rcout << fname << std::endl;
-          Rcout << "Extracting " << nbytes << " Bytes BitMask image @offset:" << offset << std::endl;
         }
         fi.seekg(offset, std::ios::beg);
         std::vector<char> buf_image(nbytes);
@@ -287,13 +287,13 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
       try {
         fi.seekg(0, std::ios::end);
         std::size_t filesize = fi.tellg();
-        if(offset > (filesize - nbytes)) {
-          Rcpp::Rcerr << "hpp_gray_Decomp1: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
-          Rcpp::stop("hpp_gray_Decomp1: GrayScale image offset is higher than file size");
-        }
         if(verbose) {
           Rcout << fname << std::endl;
-          Rcout << "Extracting " << nbytes << " Bytes GreyScale image type 1 @offset:" << offset << std::endl;
+          Rcout << "Extracting " << nbytes << " Bytes GreyScale image [30817] @offset:" << offset << std::endl;
+        }
+        if(offset > (filesize - nbytes)) {
+          Rcpp::Rcerr << "hpp_gray_Decomp: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
+          Rcpp::stop("hpp_gray_Decomp: GrayScale image offset is higher than file size");
         }
         fi.seekg(offset, std::ios::beg);
         std::vector<char> buf_image(nbytes);
@@ -332,16 +332,16 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
         forward_exception_to_r(ex);
       }
       catch(...) { 
-        Rcpp::stop("hpp_gray_Decomp1: c++ exception (unknown reason)"); 
+        Rcpp::stop("hpp_gray_Decomp: c++ exception (unknown reason)"); 
       }
     }
     else {
-      Rcpp::Rcerr << "hpp_gray_Decomp1: Unable to open " << fname << std::endl;
-      Rcpp::stop("hpp_gray_Decomp1: Unable to open file");
+      Rcpp::Rcerr << "hpp_gray_Decomp: Unable to open " << fname << std::endl;
+      Rcpp::stop("hpp_gray_Decomp: Unable to open file");
     }
   } else {
-    Rcpp::Rcerr << "hpp_gray_Decomp1: imgWidth, imgHeight and nb_channels should be >0" << std::endl;
-    Rcpp::stop("hpp_gray_Decomp1: imgWidth, imgHeight and nb_channels should be >0");    
+    Rcpp::Rcerr << "hpp_gray_Decomp: imgWidth, imgHeight and nb_channels should be >0" << std::endl;
+    Rcpp::stop("hpp_gray_Decomp: imgWidth, imgHeight and nb_channels should be >0");    
   }
   return R_NilValue;
 }
