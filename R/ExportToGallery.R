@@ -192,7 +192,7 @@ ExportToGallery <- function(...,
     force_width = dots[["force_width"]]
   }
   
-  param_extra = names(dots) %in% c("ifd","param","export","write_to","mode","size","force_width","overwrite","bypass")
+  param_extra = names(dots) %in% c("ifd","param","export","write_to","mode","size","force_width","overwrite","bypass","verbose")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("base64_id","base64_att",
                                    "composite","selection","random_seed",
