@@ -32,6 +32,7 @@
 #define IFC_TIFF_HPP
 
 #include <Rcpp.h>
+// [[Rcpp::depends(RcppProgress)]]
 #include <progress.hpp>
 #include <iostream>
 #include <fstream>

@@ -32,7 +32,6 @@
 #define IFC_TRANS_HPP
 
 #include <Rcpp.h>
-// [[Rcpp::depends(RcppProgress)]]
 #include "utils.hpp"
 using namespace Rcpp;
 
