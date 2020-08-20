@@ -52,20 +52,20 @@ objectDisplay = function(image, input_range = c(0, 4095), full_range = FALSE, fo
   d = dim(image)
   K = class(image)
   foo = NULL
-  if(inherits(x = K, what = c("IFC_img", "IFC_msk"))) {
+  if(any(c("IFC_img", "IFC_msk") %in% K)) {
     if(missing(input_range)) input_range = attr(image, "input_range")
     if(missing(full_range)) force_range = attr(image, "full_range")
     if(missing(force_range)) force_range = attr(image, "force_range")
     if(missing(gamma)) gamma = attr(image, "gamma")
     if(missing(color)) color = attr(image, "color")
     checkColor(color)
-    if(K %in% "IFC_img") {
+    if("IFC_img" %in% K) {
       foo = objectColorize(objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = gamma), color)
     } else {
       foo = objectColorize(objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = 1), color)
     }
   } else {
-    if(inherits(x = K, what = "matrix")) {
+    if("matrix" %in% K) {
       checkColor(color)
       foo = objectColorize(objectNormalize(image, force_range = TRUE), color)
     }
