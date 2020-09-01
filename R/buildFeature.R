@@ -59,7 +59,7 @@ buildFeature <- function(name, type = c("single","combined","computed")[1], def 
                                                   "Lobe Count","Major Axis Intensity", "Max Contour Position", "Min Pixel", "Minor Axis Intensity", "Raw Intensity", "Raw Mean Pixel",
                                                   "Raw Median Pixel", "Spot Intensity Max", "Spot Intensity Min", "Std Dev", "Symmetry 2", "Symmetry 3", "Symmetry 4", 
                                                   "Uncompensated Intensity", "Valley X", "Valley Y"),
-                               "Image Only"=paste0("Bkgd ", c("Mean", "Std")),
+                               "Image Only"=paste0("Bkgd ", c("Mean", "StdDev")),
                                "No Parameters"=c("Time", "Object Number", "Raw Centroid X", "Raw Centroid Y", "Flow Speed", "Camera Line Number", "Camera Timer", "Objects per mL", "Objects per sec"),
                                "Mask, Image and Scalar"=paste0(paste0("H ", rep(c("Contrast ","Correlation ","Energy ", "Entropy ", "Homogeneity ", "Variance "), each=2)), c("Mean", "Std")),
                                "Mask and Scalar"=c("Spot Count"),
