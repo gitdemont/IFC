@@ -180,7 +180,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
                                                "Lobe Count","Major Axis Intensity", "Max Contour Position", "Min Pixel", "Minor Axis Intensity", "Raw Intensity", "Raw Mean Pixel",
                                                "Raw Median Pixel", "Spot Intensity Max", "Spot Intensity Min", "Std Dev", "Symmetry 2", "Symmetry 3", "Symmetry 4", 
                                                "Uncompensated Intensity", "Valley X", "Valley Y"),
-                            "Image Only"=paste0("Bkgd ", c("Mean", "Std")),
+                            "Image Only"=paste0("Bkgd ", c("Mean", "StdDev")),
                             "No Parameters"=c("Time", "Object Number", "Raw Centroid X", "Raw Centroid Y", "Flow Speed", "Camera Line Number", "Camera Timer", "Objects per mL", "Objects per sec"),
                             "Mask, Image and Scalar"=paste0(paste0("H ", rep(c("Contrast ","Correlation ","Energy ", "Entropy ", "Homogeneity ", "Variance "), each=2)), c("Mean", "Std")),
                             "Mask and Scalar"=c("Spot Count"),
@@ -274,14 +274,25 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
           warning(paste0(feat$name, ", not exported: trying to export an already defined feature"), immediate. = TRUE, call. = FALSE)
           next
         }
-        def = strsplit(feat$def, split = "|", fixed = TRUE)[[1]]
+        def = feat$def
+        if(grepl("^H ", def)) def = gsub("|Granularity:|1|20", "", def, fixed = TRUE) # removes granularity from H features
+        def = strsplit(def, split = "|", fixed = TRUE)[[1]]
         def = def[!(def%in%userfeatures_avl[[feat$userfeaturetype]])] # removes possible features from definition
-        if(grepl("Mask",feat$userfeaturetype)) def = def[!(def%in%c(masks_daf, masks_new))] # removes masks from definition
-        if(grepl("Images",feat$userfeaturetype)) def = def[!(def%in%channels_daf)] # removes channels names from definition
-        if(grepl("Combined",feat$userfeaturetype)) def = def[!(def%in%c(features_daf, names(features)))] # removes features names from definition
+        if(grepl("Mask",feat$userfeaturetype)) {
+          def = def[!(def%in%c(obj$description$masks$name, 
+                               unlist(strsplit(obj$description$masks$def[obj$description$masks$name=="MC"], "|Or|", useBytes = TRUE, fixed=TRUE))))] # removes masks from definition
+        }
+        if(grepl("Image",feat$userfeaturetype)) {
+          def = def[!(def%in%obj$description$Images$name)] # removes channels names from definition
+        }
+        if(grepl("Combined",feat$userfeaturetype)) {
+          def = def[!(def%in%c(names(obj$features), names(features)))] # removes features names from definition
+        }
         def = def[!(def%in%operators_daf)] # removes operators from definition
         suppressWarnings({def = as.numeric(def)}) # converts remaining to numeric
-        if(length(def!=0)) if(is.na(def)) stop(paste0("bad feature definition: ", feat$def)) # if something remains which coercion to numeric produces NA, it means that features is not well defined
+        if(length(def) != 0) {
+          if(!grepl("Scalar",feat$userfeaturetype) || is.na(def)) stop(paste0(feat$name, "\nbad feature definition: ", feat$def)) # if something remains which coercion to numeric produces NA, it means that features is not well defined
+        }
         if(length(feat$val) != obj_number) stop(paste0(feat$name, "\nbad feature value length, expected: ",  obj_number, ", but is: ", length(feat$val))) # TODO add some lines to allow function to automatically compute feat$val when missing
 
         new_node_features_def = sprintf('<UDF name="%s" type="%s" userfeaturetype="%s" def="%s" />', feat[["name"]], feat[["type"]], feat[["userfeaturetype"]], feat[["def"]])
