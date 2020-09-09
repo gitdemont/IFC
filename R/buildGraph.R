@@ -178,7 +178,7 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   if(length(BasePop)==0) BasePop = list(list("name"="All"))
   GraphRegion = lapply(GraphRegion, FUN=function(x) {  # removes GraphRegion where name is missing
     if("name"%in%names(x)) {
-      return(x["name"])
+      return(x)
     }
     return(NULL)
   })
@@ -240,21 +240,25 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   })
   # defines default order and xstatsorder
   b_names = unlist(lapply(BasePop, FUN=function(x) x$name))
-  g_names = unlist(lapply(GraphRegion, FUN=function(x) x$name))
+  g_names = unlist(lapply(GraphRegion, FUN=function(x) x$def))
   s_names = unlist(lapply(ShownPop, FUN=function(x) x$name))
-  xstatsorder_tmp = gsub(" & All","", unlist(lapply(b_names, FUN=function(n) {
-    if(length(g_names)!=0) {
-      return(c(n,paste(g_names, n, sep=" & ")))
-    }
-    return(n)
-  })))
+  
+  # xstatsorder_tmp = gsub(" & All","", unlist(lapply(b_names, FUN=function(n) {
+  #   if(length(g_names)!=0) {
+  #     return(c(n,paste(g_names, n, sep=" & ")))
+  #   }
+  #   return(n)
+  # })))
+  xstatsorder_tmp = c(g_names, b_names)
+  
   if(type=="histogram") order_tmp = b_names
   if(type=="density") order_tmp = rep(b_names,5)
   if(type=="scatter") {
-    order_tmp = gsub(" & All","", unlist(lapply(rev(g_names), FUN=function(n) {
-      paste(n, rev(b_names), sep=" & ")
-    })))
-    order_tmp = c(s_names, order_tmp, b_names)
+    # order_tmp = gsub(" & All","", unlist(lapply(rev(g_names), FUN=function(n) {
+    #   paste(n, rev(b_names), sep=" & ")
+    # })))
+    # order_tmp = c(s_names, order_tmp, b_names)
+    order_tmp = c(s_names, g_names, b_names)
   }
   # checks order is possible
   # note that xstatsorder is not deeply checked ... TODO ???

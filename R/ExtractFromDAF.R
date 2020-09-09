@@ -382,7 +382,6 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       plots=plots[order(plot_order[2,])]
       rm(list=c("plots_tmp", "plot_order"))
     }
-    class(plots) <- "IFC_graphs"
     
     ##### TODO, add something for ChannelImage, ObjectFeatureControl, StatisticsControl
     
@@ -458,6 +457,28 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
         stats[,5] = as.numeric(stats[,5])
       }
     }
+    
+    #####  retrieve name(s) of graphical population created by region applied in graph
+    if(length(plots) > 0) {
+      plots = lapply(plots, FUN = function(g) {
+        if(length(g$GraphRegion) != 0) {
+          g$GraphRegion = sapply(g$GraphRegion, FUN = function(r) {
+            foo = sapply(pops,
+                   FUN = function(p) {
+                     bar = (p$type == "G") && 
+                       (p$region == r$name) && 
+                       (p$base %in% unique(unlist(lapply(g$BasePop, FUN = function(b) b$name)))) &&
+                       (g$f1 == p$fx)
+                     if(regions[[r$name]]$type != "line") bar = bar && (g$f2 == p$fy)
+                     return(bar)
+                   })
+            return(list(c(r, list(def = names(which(foo))))))
+          })
+        }
+        return(g)
+      })
+    }
+    class(plots) <- "IFC_graphs"
   }
   ans = list("description"=description, "fileName"=fileName, "fileName_image"=fileName_image, "features"=features, "features_def"=features_def, "graphs"=plots, "pops"=pops, "regions"=regions, "images"=images, "offsets"=offsets, "stats"=stats, "checksum" = checksum)
   attr(ans, "class") <- c("IFC_data") #,"analysis")

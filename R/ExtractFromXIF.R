@@ -365,7 +365,6 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         plots=plots[order(plot_order[2,])]
         rm(list=c("plots_tmp", "plot_order"))
       }
-      class(plots) <- "IFC_graphs"
       
       ##### TODO, add something for ChannelImage, ObjectFeatureControl, StatisticsControl
       
@@ -406,6 +405,29 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         rm(pops_)
       }
       class(pops) <- "IFC_pops"
+      
+      #####  retrieve name(s) of graphical population created by region applied in graph
+      if(length(plots) > 0) {
+        plots = lapply(plots, FUN = function(g) {
+          if(length(g$GraphRegion) != 0) {
+            N = sapply(g$GraphRegion, FUN = function(r) {
+              foo = sapply(pops,
+                           FUN = function(p) {
+                             bar = (p$type == "G") && 
+                               (p$region == r$name) && 
+                               (p$base %in% unique(unlist(lapply(g$BasePop, FUN = function(b) b$name)))) &&
+                               (g$f1 == p$fx)
+                             if(regions[[r$name]]$type != "line") bar = bar && (g$f2 == p$fy)
+                             return(bar)
+                           })
+              return(names(which(foo)))
+            })
+            g$GraphRegion$def = N
+          }
+          return(g)
+        })
+      }
+      class(plots) <- "IFC_graphs"
     } else {
       features = data.frame()
     }

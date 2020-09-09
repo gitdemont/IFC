@@ -57,7 +57,7 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
   }
   P = obj$pops[pops]
   SUB = obj$pops[[obj$pops[[pops[1]]]$base]]$obj
-  R = lapply(P, FUN=function(p) obj$regions[[p$region]])
+  R = sapply(P, simplify = F, FUN=function(p) obj$regions[[p$region]])
   foo = list()
   
   # start rebuilding original graph
@@ -93,6 +93,6 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
     foo$type = vis2D
   }
   foo$BasePop = list(list(name = P[[1]]$base))
-  foo$GraphRegion = lapply(R, FUN=function(r) list("name"=r$label))
+  foo$GraphRegion = lapply(1:length(R), FUN=function(i_reg) list("name" = R[[i_reg]]$label, def = names(R)[i_reg]))
   return(foo)
 }
