@@ -131,10 +131,10 @@ data_add_features <- function(obj, features, ...) {
   
   K = class(obj$features)
   obj$features = cbind(obj$features, sapply(exported_feats, FUN=function(x) x$val))
-  class(obj$features) = K
+  class(obj$features) = c(setdiff(K, "IFC_features"), "IFC_features")
 
   K = class(obj$features_def)
   obj$features_def = c(obj$features_def, lapply(exported_feats, FUN=function(x) x[c("name", "type", "userfeaturetype", "def")]))
-  class(obj$features_def) = K
+  class(obj$features_def) = c(setdiff(K, "IFC_features_def"), "IFC_features_def")
   return(obj)
 }

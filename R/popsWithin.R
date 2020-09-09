@@ -141,6 +141,6 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
       setPB(pb, value = i, title = title_progress, label = "extacting populations")
     }
   }
-  class(pops) = c(K, "Processed")
+  class(pops) = c(setdiff(K, "IFC_pops"), "IFC_pops", "Processed")
   return(pops)
 }
