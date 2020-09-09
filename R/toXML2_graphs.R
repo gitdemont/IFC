@@ -40,7 +40,8 @@ toXML2_graphs = function(graphs, verbose = FALSE) {
   assert(graphs, cla = "IFC_graphs")
   if(length(graphs)==0) return(xml_new_node(name = "Displays", text = ""))
   graphs = lapply(graphs, FUN=function(i) {
-    if(typeof(i) %in% c("integer","double")) { 
+    i$GraphRegion = lapply(i$GraphRegion, FUN = function(g) g[!grepl("def", names(g))]) # it is mandatory to remove def
+    if(typeof(i) %in% c("integer","double")) {
       return(num_to_string(i))
     } else {
       return(i)
