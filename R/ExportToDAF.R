@@ -279,14 +279,13 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
         def = strsplit(def, split = "|", fixed = TRUE)[[1]]
         def = def[!(def%in%userfeatures_avl[[feat$userfeaturetype]])] # removes possible features from definition
         if(grepl("Mask",feat$userfeaturetype)) {
-          def = def[!(def%in%c(obj$description$masks$name, 
-                               unlist(strsplit(obj$description$masks$def[obj$description$masks$name=="MC"], "|Or|", useBytes = TRUE, fixed=TRUE))))] # removes masks from definition
+          def = def[!(def%in%c(masks_daf, masks_new))] # removes masks from definition
         }
         if(grepl("Image",feat$userfeaturetype)) {
-          def = def[!(def%in%obj$description$Images$name)] # removes channels names from definition
+          def = def[!(def%in%channels_daf)] # removes channels names from definition
         }
         if(grepl("Combined",feat$userfeaturetype)) {
-          def = def[!(def%in%c(names(obj$features), names(features)))] # removes features names from definition
+          def = def[!(def%in%c(features_daf, names(features)))] # removes features names from definition
         }
         def = def[!(def%in%operators_daf)] # removes operators from definition
         suppressWarnings({def = as.numeric(def)}) # converts remaining to numeric
