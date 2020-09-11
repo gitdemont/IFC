@@ -223,10 +223,13 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
   # defines root node "Assay"
   root <- xml_new_root("Assay")
   # adds attributes to root node
+  IDEAS_version = obj$description$Assay$IDEAS_version
   if(binary) {
-    root %>% xml_set_attrs(value = c(IFC_version = pkg_ver, date = now, IDEAS_version = obj$description$Assay$IDEAS_version, binaryfeatures = "True"))
+    if(length(IDEAS_version) == 0) IDEAS_version = "6.2.183.0"
+    root %>% xml_set_attrs(value = c(IFC_version = pkg_ver, date = now, IDEAS_version = IDEAS_version, binaryfeatures = "True"))
   } else {
-    root %>% xml_set_attrs(value = c(IFC_version = pkg_ver, date = now, IDEAS_version = obj$description$Assay$IDEAS_version))
+    if(length(IDEAS_version) == 0) IDEAS_version = "6.1.822.0"
+    root %>% xml_set_attrs(value = c(IFC_version = pkg_ver, date = now, IDEAS_version = IDEAS_version))
   }
   # adds first children
   xml_add_child(root, .value = xml_new_node(name = "SampleName", text = splitf_obj["short"]))
