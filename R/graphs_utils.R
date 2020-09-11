@@ -407,7 +407,7 @@ convert_to_baseplot = function(obj) {
   } else {
     # 2D
     if(obj$input$type == "density") {
-      pch="."
+      pch=16
       col=densCols(x = obj$input$data$x2, y = obj$input$data$y2,
                    colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[obj$input$mode]])),
                    nbin=obj$input$bin,
