@@ -67,6 +67,7 @@
 data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsilon = 1e-12, display_progress = TRUE, ...) {
   dots = list(...)
   assert(obj, cla = "IFC_data")
+  obj_number = obj$description$ID$objcount
   
   # try to coerce inputs to compatible daf format
   pops = lapply(pops, FUN=function(x) do.call(what=buildPopulation, args=x))
@@ -81,8 +82,25 @@ data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsi
   
   exported_pops = sapply(pops, FUN=function(pop) {
     if(pop$name%in%names(obj$pops)) {
-      warning(paste0(pop$name, "\nnot exported: trying to export an already defined population"), immediate. = TRUE, call. = FALSE)
+      warning(paste0(pop$name, ", not exported: trying to export an already defined population"), immediate. = TRUE, call. = FALSE)
       return(FALSE)
+    }
+    if(pop$type=="T") {
+      K = class(pop$obj)
+      if(length(pop$obj)==0) {
+        warning(paste0(pop$name, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
+        return(FALSE)
+      }
+      if(K%in%"logical") {
+        if(sum(pop$obj)==0) {
+          warning(paste0(pop$name, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
+          return(FALSE)
+        }
+        if((obj_number !=0) && (obj_number != length(pop$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+      }
+      if(K%in% c("numeric","integer")) {
+        if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+      }
     }
     return(TRUE)
   })
