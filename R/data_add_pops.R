@@ -96,7 +96,7 @@ data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsi
           warning(paste0(pop$name, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
           return(FALSE)
         }
-        if((obj_number !=0) && (obj_number != length(pop$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+        if(obj_number != length(pop$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
       }
       if(K%in% c("numeric","integer")) {
         if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
