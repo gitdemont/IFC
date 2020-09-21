@@ -195,13 +195,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     
     smooth = (g$histogramsmoothingfactor != 0)
     # br = do.breaks(range(D[,"x2"], na.rm = TRUE, finite = TRUE), nbin)
-    if(viewport == "ideas") {
-      if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
-      D[D[,"x2"] < Xlim[1], "x2"] <- Xlim[1] # D = D[(D[,"x2"] >= Xlim[1]) & (D[,"x2"] <= Xlim[2]), ]
-      D[D[,"x2"] > Xlim[2], "x2"] <- Xlim[2] #
-    }
     if(viewport == "data") {
-      Xlim = range(D[,"x1"], na.rm = TRUE, finite = TRUE)
+      Xlim = suppressWarnings(range(D[,"x1"], na.rm = TRUE, finite = TRUE))
       if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
@@ -212,10 +207,26 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         coords = reg[["x"]]
         return(c(reg$cx, coords))
       })
-      Xlim = range(c(D[,"x1"], regx), na.rm = TRUE, finite = TRUE)
+      Xlim = suppressWarnings(range(c(D[,"x1"], regx), na.rm = TRUE, finite = TRUE))
       if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
+    }
+    if(viewport == "ideas") {
+      if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
+      D[D[,"x2"] < Xlim[1], "x2"] <- Xlim[1] # D = D[(D[,"x2"] >= Xlim[1]) & (D[,"x2"] <= Xlim[2]), ]
+      D[D[,"x2"] > Xlim[2], "x2"] <- Xlim[2] #
+    }
+    if(!all(is.finite(Xlim))) {
+      Xlim = c(g$xmin, g$xmax)
+      if(trans_x!="P") {
+        Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+        Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
+      }
+      if(!all(is.finite(Xlim))) Xlim = c(-1, 1)
+      if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
+      D[D[,"x2"] < Xlim[1], "x2"] <- Xlim[1]
+      D[D[,"x2"] > Xlim[2], "x2"] <- Xlim[2]
     }
     br = do.breaks(Xlim, nbin)
     
@@ -339,10 +350,10 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     })
     
     if(viewport == "data") {
-      Xlim = range(D[,"x1"], na.rm = TRUE, finite = TRUE)
+      Xlim = suppressWarnings(range(D[,"x1"], na.rm = TRUE, finite = TRUE))
       if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
-      Ylim = range(D[,"y1"], na.rm = TRUE, finite = TRUE)
+      Ylim = suppressWarnings(range(D[,"y1"], na.rm = TRUE, finite = TRUE))
       if(trans_y != "P") Ylim = smoothLinLog(Ylim, hyper=trans_y, base=10)
       Ylim = Ylim + c(-0.07,0.07)*diff(Ylim)
     }
@@ -352,7 +363,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         coords = reg[["x"]]
         return(c(reg$cx, coords))
       })
-      Xlim = range(c(D[,"x1"], regx), na.rm = TRUE, finite = TRUE)
+      Xlim = suppressWarnings(range(c(D[,"x1"], regx), na.rm = TRUE, finite = TRUE))
       if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       regy = sapply(reg_n, FUN=function(r) {
@@ -360,11 +371,29 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         coords = reg[["y"]]
         return(c(reg$cy, coords))
       })
-      Ylim = range(c(D[,"y1"], regy), na.rm = TRUE, finite = TRUE)
+      Ylim = suppressWarnings(range(c(D[,"y1"], regy), na.rm = TRUE, finite = TRUE))
       if(trans_y != "P") Ylim = smoothLinLog(Ylim, hyper=trans_y, base=10)
       Ylim = Ylim + c(-0.07,0.07)*diff(Ylim)
     }
-
+    if(!all(is.finite(Xlim))) {
+      Xlim = c(g$xmin, g$xmax)
+      if(trans_x!="P") {
+        Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+        Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
+      }
+      if(!all(is.finite(Xlim))) Xlim = c(-1, 1)
+      if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
+    }
+    if(!all(is.finite(Ylim))) {
+      Ylim = c(g$ymin, g$ymax)
+      if(trans_y!="P") {
+        Ylim = smoothLinLog(Ylim, hyper=trans_y, base=10)
+        Ylim = Ylim + c(-0.07,0.07)*diff(Ylim)
+      }
+      if(!all(is.finite(Ylim))) Ylim = c(-1, 1)
+      if(Ylim[1] == Ylim[2]) Ylim = Ylim[1] + c(-0.07,0.07)
+    }
+    
     foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, main = trunc_string(g$title, trunc_labels), groups=groups,
                  scales =  myScales(x=list(hyper=trans_x), y=list(hyper=trans_y)),
                  xlab =  trunc_string(g$xlabel, trunc_labels), ylab = trunc_string(g$ylabel, trunc_labels),
