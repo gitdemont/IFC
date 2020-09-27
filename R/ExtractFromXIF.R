@@ -343,6 +343,10 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
           features[, "Object Number"] = unique_id
         }
       }
+      if(any(duplicated(features$`Object Number`))) {
+        features$`Object Number` = 0:(nrow(features)-1)
+        warning(paste0("found duplicated objects when reading file: ", fileName))
+      }
       rownames(features) = 0:(nrow(features)-1)
       class(features) <- c(class(features),"IFC_features")
       class(features_def) <- c(class(features),"IFC_features_def")

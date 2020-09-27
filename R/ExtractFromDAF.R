@@ -353,12 +353,42 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       rm(list=c("fid"))
     }
     features_names = sapply(features_def, FUN=function(x) x$name)
+    def_def = sapply(features_def, FUN=function(x) x$def)
     names(features_def) = features_names
     names(features) = features_names
-    if(!("Object Number"%in%features_names)) {
-      features_names = c(features_names, "Object Number")
+    
+    modify_feat = FALSE
+    tmp_logical = features_names == "Object Number"
+    if(any(tmp_logical)) { # Object Number is found
+      if(any(def_def[tmp_logical] != "Object Number")) { # Object Number is not well defined # worst case because we are forced to remove it
+        # copy bad Object Number features
+        names(features)[tmp_logical] <- paste0(names(features)[tmp_logical], "_copied_by_IFC") # there should be only one
+        features_def[tmp_logical] <- lapply(features_def[tmp_logical], FUN = function(x) {
+          x$name = paste0(x$name, "_copied_by_IFC")
+          return(x)
+        })
+        modify_feat = TRUE
+        # add new Object Number feature
+        features_names = c(features_names, "Object Number")
+        features$`Object Number` = 0:(nrow(features)-1)
+        features_def = c(features_def, "Object Number" = list(name = "Object Number", type = "single", userfeaturetype = "No Parameters", def = "Object Number"))
+      } # otherwise it is ok i.e. Object Number exists and is well def
+    } else { # Object Number is not found
+      if(any(def_def == "Object Number")) { # Object Number is defined
+        # copy it
+        features_names = setdiff(features_names, "Object Number")
+        features$`Object Number` = features[, def_def == "Object Number"] # there should be only one
+        features_def = c(features_def, "Object Number" = list(name = "Object Number", type = "single", userfeaturetype = "No Parameters", def = "Object Number"))
+      } else {
+        # create it
+        features_names = c(features_names, "Object Number")
+        features$`Object Number` = 0:(nrow(features)-1)
+        features_def = c(features_def, "Object Number" = list(name = "Object Number", type = "single", userfeaturetype = "No Parameters", def = "Object Number"))
+      }
+    }
+    if(any(duplicated(features$`Object Number`))) {
       features$`Object Number` = 0:(nrow(features)-1)
-      features_def = c(features_def, "Object Number" = list(name = "Object Number", type = "single", userfeaturetype = "No Parameters", def = "Object Number"))
+      warning(paste0("found duplicated objects when reading file: ", fileName))
     }
     rownames(features) = 0:(nrow(features)-1)
     class(features) <- c(class(features),"IFC_features")
@@ -381,6 +411,15 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       plots=plots[order(plot_order[1,],plot_order[2,])]
       plots=plots[order(plot_order[2,])]
       rm(list=c("plots_tmp", "plot_order"))
+      if(modify_feat) {
+        plots = lapply(plots, FUN = function(g) {
+          if((length(g$f1)!=0) && (g$f1=="Object Number")) g$f1 = "Object Number_copied_by_IFC"
+          if((length(g$xlabel)!=0) && (g$xlabel=="Object Number")) g$xlabel = "Object Number_copied_by_IFC"
+          if((length(g$f2)!=0) && (g$f2=="Object Number")) g$f2 = "Object Number_copied_by_IFC"
+          if((length(g$ylabel)!=0) && (g$ylabel=="Object Number")) g$ylabel = "Object Number_copied_by_IFC"
+          return(g)
+        })
+      }
     }
     
     ##### TODO, add something for ChannelImage, ObjectFeatureControl, StatisticsControl
@@ -429,6 +468,13 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     operators = c("And","Or","Not","(",")")
     l = length(pops)
     if(l>0) {
+      if(modify_feat) {
+        pops = lapply(pops, FUN = function(p) {
+          if((length(p$fx)!=0) && (p$fx=="Object Number")) p$fx = "Object Number_copied"
+          if((length(p$fy)!=0) && (p$fy=="Object Number")) p$fy = "Object Number_copied"
+          return(p)
+        })
+      }
       ###### scrambles pops (for testing) 
       # pops = pops[sample.int(length(pops))]; str(names(pops))
       
