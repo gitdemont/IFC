@@ -374,10 +374,10 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
         features_def = c(features_def, "Object Number" = list(name = "Object Number", type = "single", userfeaturetype = "No Parameters", def = "Object Number"))
       } # otherwise it is ok i.e. Object Number exists and is well def
     } else { # Object Number is not found
-      if(any(def_def == "Object Number")) { # Object Number is defined
+      if(any(def_def == "Object Number")) { # Object Number is defined but not named Object Number
         # copy it
-        features_names = setdiff(features_names, "Object Number")
-        features$`Object Number` = features[, def_def == "Object Number"] # there should be only one
+        features_names = c(features_names, "Object Number")
+        features$`Object Number` = features[, which(def_def == "Object Number")[1]] # there could be several
         features_def = c(features_def, "Object Number" = list(name = "Object Number", type = "single", userfeaturetype = "No Parameters", def = "Object Number"))
       } else {
         # create it

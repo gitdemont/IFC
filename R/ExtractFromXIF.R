@@ -323,6 +323,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
     if(length(features) != 0) { # means features were extracted
       features = as.data.frame(do.call(what = "rbind", args = features), stringsAsFactors = FALSE)
       features_names = sapply(features_def, FUN=function(x) x$name)
+      def_def = sapply(features_def, FUN=function(x) x$def)
       names(features_def) = features_names
       names(features) = features_names
       if(!("Object Number"%in%features_names)) {
@@ -330,10 +331,10 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         features$`Object Number` = 0:(nrow(features)-1)
         features_def = c(features_def, "Object Number" = list(name = "Object Number", type = "single", userfeaturetype = "No Parameters", def = "Object Number"))
       } else { # try to define unique object id number based on "Object Number","Camera Timer","Camera Line Number" if present
-        if(all(c("Object Number","Camera Timer","Camera Line Number") %in% features_names)) {
+        if(all(c("Object Number","Camera Timer","Camera Line Number") %in% def_def)) {
           ids = rle(apply(sapply(c("Object Number","Camera Timer","Camera Line Number"),
                                  FUN=function(col) {
-                                   foo = rle(features[,col])
+                                   foo = rle(features[,which(def_def == col)[1]])
                                    bar = lapply(1:length(foo$lengths), FUN = function(i) rep(i-1, times = foo$lengths[i]))
                                    unlist(bar)
                                  }), 1, sum))
