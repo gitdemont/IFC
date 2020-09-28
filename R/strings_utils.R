@@ -211,9 +211,9 @@ formatn <- function(splitp_obj, splitf_obj, channel = "", object = "") {
 #' @description
 #' Formats numeric to string used for features, images, ... values conversion when exporting to xml.
 #' @param x a numeric vector.
-#' @param precision number of significant decimal digits to keep when abs(x) < 1. Default is 16.
+#' @param precision number of significant decimal digits to keep when abs(x) < 1. Default is 15.
 #' @return a string vector.
 #' @keywords internal
 num_to_string <- function(x, precision = 16) {
-  return(formatC(x, digits = precision, drop0trailing = FALSE, width = -1))
+  return(cpp_num_to_string(x, precision))
 }

@@ -208,6 +208,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_num_to_string
+Rcpp::StringVector cpp_num_to_string(const Rcpp::NumericVector x, const unsigned char precision);
+RcppExport SEXP _IFC_cpp_num_to_string(SEXP xSEXP, SEXP precisionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const unsigned char >::type precision(precisionSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_num_to_string(x, precision));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_scanFirst
 std::size_t cpp_scanFirst(const std::string fname, const std::string target, const std::size_t start, const std::size_t end, const uint8_t buf_size);
 RcppExport SEXP _IFC_cpp_scanFirst(SEXP fnameSEXP, SEXP targetSEXP, SEXP startSEXP, SEXP endSEXP, SEXP buf_sizeSEXP) {
@@ -397,6 +409,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_inv_smoothLinLog", (DL_FUNC) &_IFC_cpp_inv_smoothLinLog, 4},
     {"_IFC_cpp_int32_to_uint32", (DL_FUNC) &_IFC_cpp_int32_to_uint32, 1},
     {"_IFC_cpp_uint32_to_int32", (DL_FUNC) &_IFC_cpp_uint32_to_int32, 1},
+    {"_IFC_cpp_num_to_string", (DL_FUNC) &_IFC_cpp_num_to_string, 2},
     {"_IFC_cpp_scanFirst", (DL_FUNC) &_IFC_cpp_scanFirst, 5},
     {"_IFC_cpp_crop", (DL_FUNC) &_IFC_cpp_crop, 3},
     {"_IFC_cpp_resize", (DL_FUNC) &_IFC_cpp_resize, 6},

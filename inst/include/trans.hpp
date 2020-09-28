@@ -133,4 +133,51 @@ int32_t hpp_uint32_to_int32 (const uint32_t x) {
   return out;
 }
 
+//' @title Numeric to String Conversion
+//' @name cpp_num_to_string
+//' @description
+//' Formats numeric to string used for features, images, ... values conversion when exporting to xml.
+//' @param x a numeric vector.
+//' @param precision number of significant decimal digits to keep when abs(x) < 1. Default is 15.
+//' @return a string vector.
+//' @keywords internal
+// [[Rcpp::export]]
+Rcpp::StringVector hpp_num_to_string(const Rcpp::NumericVector x, const unsigned char precision = 16) {
+  Rcpp::StringVector out(x.size());
+  std::stringstream stream;
+  std::string s;
+  unsigned char relative;
+  for(R_len_t i =0; i < x.size(); i++) {
+    if(x(i) == R_PosInf) {
+      out(i) = "+Inf";
+      continue;
+    }
+    if(x(i) == R_NegInf) {
+      out(i) = "-Inf";
+      continue;
+    }
+    if(std::isnan(x[i])) { // for NaN or NA
+      out(i) = "NaN";
+      continue;
+    }
+    if(x[i] < 1) {
+      relative = 0;
+    } else {
+      relative = std::log10(x[i]);
+      if(x[i] > std::pow(10, relative)) {
+        relative = relative + 1;
+      } else {
+        relative = relative + 2;
+      }
+    }
+    stream << std::fixed << std::setprecision(precision - relative) << x(i);
+    s = stream.str();
+    s.erase(s.find_last_not_of('0') + 1, s.size());
+    s.erase(s.find_last_not_of('.') + 1, s.size());
+    out(i) = s;
+    stream.str(std::string()); // clear stream
+  }
+  return out;
+}
+
 #endif
