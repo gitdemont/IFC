@@ -9,6 +9,8 @@ ExportToNumpy(
   objects,
   offsets,
   image_type = "img",
+  size = c(64, 64),
+  force_width = FALSE,
   display_progress = TRUE,
   python = Sys.getenv("RETICULATE_PYTHON"),
   dtype = c("uint8", "int16", "uint16", "double")[3],
@@ -31,6 +33,11 @@ This argument is not mandatory, if missing, the default, all objects will be use
 This argument is not mandatory but it may allow to save time for repeated image export on same file.}
 
 \item{image_type}{image_type of desired offsets. Either "img" or "msk". Default is "img".}
+
+\item{size}{a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(64,64).}
+
+\item{force_width}{whether to use information in 'info' to fill size. Default is FALSE.
+When set to TRUE, width of 'size' argument will be overwritten.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
@@ -68,6 +75,7 @@ Exports IFC objects to numpy array [objects,height,width,channels]
 }
 \details{
 arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToNumpy}} input arguments.\cr
-\code{\link{ExportToNumpy}} requires reticulate package, python and numpy installed. to create npy file.\cr
+Please note that size parameter has to be supplied and could not be set to (0,) when 'object' length is not equal to one\cr
+\code{\link{ExportToNumpy}} requires reticulate package, python and numpy installed to create npy file.\cr
 If one of these is missing, 'export' will be set to "matrix".
 }

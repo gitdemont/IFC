@@ -39,6 +39,9 @@
 #' @param offsets object of class `IFC_offset`. 
 #' This argument is not mandatory but it may allow to save time for repeated image export on same file.
 #' @param image_type image_type of desired offsets. Either "img" or "msk". Default is "img".
+#' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(64,64).
+#' @param force_width whether to use information in 'info' to fill size. Default is FALSE.
+#' When set to TRUE, width of 'size' argument will be overwritten.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param python path to python. Default is Sys.getenv("RETICULATE_PYTHON").\cr
 #' Note that this numpy should be available in this python to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".
@@ -59,7 +62,8 @@
 #' -"\%d/\%s_Obj[\%o]_Ch[\%c].npy", when 'export' is "file"\cr
 #' @param overwrite whether to overwrite file or not. Default is FALSE.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToNumpy}} input arguments.\cr
-#' \code{\link{ExportToNumpy}} requires reticulate package, python and numpy installed. to create npy file.\cr
+#' Please note that size parameter has to be supplied and could not be set to (0,) when 'object' length is not equal to one\cr
+#' \code{\link{ExportToNumpy}} requires reticulate package, python and numpy installed to create npy file.\cr
 #' If one of these is missing, 'export' will be set to "matrix".
 #' @return Depending on 'export':\cr
 #' -"matrix", an array whose dimensions are [object, height, width, channel].\cr
@@ -69,6 +73,8 @@ ExportToNumpy <- function(...,
                           objects,
                           offsets, 
                           image_type = "img", 
+                          size = c(64,64),
+                          force_width = FALSE,
                           display_progress = TRUE,
                           python = Sys.getenv("RETICULATE_PYTHON"),
                           dtype = c("uint8", "int16", "uint16", "double")[3],
@@ -115,6 +121,10 @@ ExportToNumpy <- function(...,
       }
     }
   }
+  size = na.omit(as.integer(size[1:2]))
+  assert(size, len=2, typ="integer")
+  force_width = as.logical(force_width); assert(force_width, len = 1, alw = c(TRUE,FALSE)) 
+  if(force_width) size = c(size[1], as.integer(info$channelwidth))
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE,FALSE))
   overwrite = as.logical(overwrite); assert(overwrite, len = 1, alw = c(TRUE,FALSE))
   assert(python, len = 1, typ = "character")
@@ -138,19 +148,6 @@ ExportToNumpy <- function(...,
   fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
   verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
   verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
-  
-  # should be checked before being passed to objectParam/objectExtract
-  if(length(dots[["size"]]) == 0) {
-    size = c(0,0)
-  } else {
-    size = dots[["size"]]
-  }
-  # should be checked before being passed to objectParam/objectExtract
-  if(length(dots[["force_width"]]) == 0) {
-    force_width = TRUE
-  } else {
-    force_width = dots[["force_width"]]
-  }
   
   param_extra = names(dots) %in% c("ifd","param","mode","export","size","force_width","bypass","verbose")
   dots = dots[!param_extra] # remove not allowed param
@@ -214,7 +211,9 @@ ExportToNumpy <- function(...,
       objects = objects[tokeep]
     }
   }
+
   if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width should be provided when 'object' length not equal to one")
+  if(length(objects)!=1) if(param$size[1] == 0) stop("'size' height should be provided when 'object' length not equal to one")
   
   # check input offsets if any
   compute_offsets = TRUE
@@ -292,6 +291,7 @@ ExportToNumpy <- function(...,
                                                       verbose = verbose,
                                                       bypass = TRUE),
                                                  dots))
+        
       })
     } else {
       ans = lapply(1:L, FUN = function(i) {

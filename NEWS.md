@@ -5,7 +5,11 @@
 
 - fix bug in objectDisplay when image has more then one class
 
-- pass all cpp functions to header to allow more portability
+- fix bug in ExportToNumpyobject size was not correctly set
+
+- pass all cpp functions to header to allow more portability (side effect package installation is faster)
+
+- reintegrate num_to_string function using format() did not produce desired results
 
 ## 0.0.9
 - allow graph conversion from lattice to base
