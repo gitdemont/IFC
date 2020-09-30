@@ -181,6 +181,12 @@ ExportToNumpy <- function(...,
     param = input$param
     param$export = "matrix"
     param$mode = mode
+    if(force_width) {
+      param$size[1] <- size[1]
+      param$size[2] <- param$channelwidth
+    } else {
+      param$size <- size
+    }
   }
   
   fileName = param$fileName_image
