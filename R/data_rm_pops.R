@@ -57,23 +57,22 @@ data_rm_pops <- function(obj, pops, list_only = TRUE, ...) {
   }
   
   # forbids removal of "All" and ""
-  if(any("All", "") %in% to_remove_pops) warning("\"All\" and \"\" are mandatory and can not be removed", immediate. = TRUE, call. = FALSE)
+  if(any(c("All", "") %in% to_remove_pops)) warning("\"All\" and \"\" are mandatory and can not be removed", immediate. = TRUE, call. = FALSE)
   to_remove_pops = setdiff(to_remove_pops, c("All", ""))
   
   # removes duplicated inputs
   tmp = duplicated(to_remove_pops)
   if(any(tmp)) {
-    warning(paste0("duplicated 'pops' automatically removed:", paste0("\t- ", to_remove_pops[tmp]), collapse = "\n"), immediate. = TRUE, call. = FALSE)
+    warning(paste0("duplicated 'pops' automatically removed:\n", paste0(paste0("\t- ", to_remove_pops[tmp]), collapse = "\n")), immediate. = TRUE, call. = FALSE)
     to_remove_pops = to_remove_pops[!tmp]
   }
   
   # removes pops not in obj
   tmp = to_remove_pops %in% names(obj$pops)
   if(any(!tmp)) {
-    warning(paste0("some 'pops' are not in 'obj$pops' and can't be removed:", paste0("\t- ", to_remove_pops[!tmp]), collapse = "\n"), immediate. = TRUE, call. = FALSE)
+    warning(paste0("some 'pops' are not in 'obj$pops' and can't be removed:\n", paste0(paste0("\t- ", to_remove_pops[!tmp]), collapse = "\n")), immediate. = TRUE, call. = FALSE)
     to_remove_pops = to_remove_pops[tmp]
   }
-  
   if(length(to_remove_pops) == 0) {
     warning("no population to remove in 'obj'", immediate. = TRUE, call. = FALSE)
     if(list_only) {
@@ -92,8 +91,8 @@ data_rm_pops <- function(obj, pops, list_only = TRUE, ...) {
     if(any(to_remove_pops %in% c(obj$pops[[i]]$base, obj$pops[[i]]$names))) to_remove_pops = c(to_remove_pops, obj$pops[[i]]$name)
   }
   
-  to_remove_graphs = integer()
   # search graphs that depend on input pops
+  to_remove_graphs = integer()
   if(length(obj$graphs) > 0) for(i in 1:length(obj$graphs)) {
     g = obj$graphs[[i]]
     base = sapply(g$BasePop, FUN = function(p) p$name)

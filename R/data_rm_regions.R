@@ -59,15 +59,15 @@ data_rm_regions <- function(obj, regions, list_only = TRUE, ...) {
   # removes duplicated inputs
   tmp = duplicated(to_remove_regions)
   if(any(tmp)) {
-    warning(paste0("duplicated 'regions' automatically removed:", paste0("\t- ", to_remove_regions[tmp]), collapse = "\n"), immediate. = TRUE, call. = FALSE)
+    warning(paste0("duplicated 'regions' automatically removed:\n", paste0(paste0("\t- ", to_remove_regions[tmp]), collapse = "\n")), immediate. = TRUE, call. = FALSE)
     to_remove_regions = to_remove_regions[!tmp]
   }
   
   # removes regions not in obj
   tmp = to_remove_regions %in% names(obj$regions)
   if(any(!tmp)) {
-    warning(paste0("some 'regions' are not in 'obj$regions' and can't be removed:", paste0("\t- ", to_remove_regions[!tmp]), collapse = "\n"), immediate. = TRUE, call. = FALSE)
-    to_remove_regions = to_remove_regions[!tmp]
+    warning(paste0("some 'regions' are not in 'obj$regions' and can't be removed:\n", paste0(paste0("\t- ", to_remove_regions[!tmp]), collapse = "\n")), immediate. = TRUE, call. = FALSE)
+    to_remove_regions = to_remove_regions[tmp]
   }
   if(length(to_remove_regions) == 0) {
     warning("no region to remove in 'obj'", immediate. = TRUE, call. = FALSE)
@@ -85,7 +85,7 @@ data_rm_regions <- function(obj, regions, list_only = TRUE, ...) {
   # search pops that depend on input regions
   to_remove_pops = character()
   for(i in 1:length(obj$pops)) {
-    if((obj$pops[[i]]$type == "G") && any(to_remove_regions %in% obj$pops[[i]]$region)) to_remove = c(to_remove, obj$pops[[i]]$name)
+    if((obj$pops[[i]]$type == "G") && any(to_remove_regions %in% obj$pops[[i]]$region)) to_remove_pops = c(to_remove_pops, obj$pops[[i]]$name)
   }
   
   # search for pops that depend on previous pops
@@ -93,8 +93,8 @@ data_rm_regions <- function(obj, regions, list_only = TRUE, ...) {
     if(any(to_remove_pops %in% c(obj$pops[[i]]$base, obj$pops[[i]]$names))) to_remove_pops = c(to_remove_pops, obj$pops[[i]]$name)
   }
   
-  to_remove_graphs = integer()
   # search graphs that depend on input pops
+  to_remove_graphs = integer()
   if(length(obj$graphs) > 0) for(i in 1:length(obj$graphs)) {
     g = obj$graphs[[i]]
     base = sapply(g$BasePop, FUN = function(p) p$name)

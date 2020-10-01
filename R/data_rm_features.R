@@ -57,21 +57,21 @@ data_rm_features <- function(obj, features, list_only = TRUE, ...) {
   }
   
   # forbids removal of "Objet Number"
-  if(any("Object Number") %in% to_remove_features) warning("\"Object Number\" is mandatory and can not be removed", immediate. = TRUE, call. = FALSE)
+  if(any("Object Number" %in% to_remove_features)) warning("\"Object Number\" is mandatory and can not be removed", immediate. = TRUE, call. = FALSE)
   to_remove_features = setdiff(to_remove_features, c("Object Number"))
   
   # removes duplicated inputs
   tmp = duplicated(to_remove_features)
   if(any(tmp)) {
-    warning(paste0("duplicated 'features' automatically removed:", paste0("\t- ", to_remove_features[tmp]), collapse = "\n"), immediate. = TRUE, call. = FALSE)
+    warning(paste0("duplicated 'features' automatically removed:\n", paste0(paste0("\t- ", to_remove_features[tmp]), collapse = "\n")), immediate. = TRUE, call. = FALSE)
     to_remove_features = to_remove_features[!tmp]
   }
   
   # removes features not in obj
   tmp = to_remove_features %in% names(obj$features)
   if(any(!tmp)) {
-    warning(paste0("some 'features' are not in 'obj$features' and can't be removed:", paste0("\t- ", to_remove_features[!tmp]), collapse = "\n"), immediate. = TRUE, call. = FALSE)
-    to_remove_features = to_remove_features[!tmp]
+    warning(paste0("some 'features' are not in 'obj$features' and can't be removed:\n", paste0(paste0("\t- ", to_remove_features[!tmp]), collapse = "\n")), immediate. = TRUE, call. = FALSE)
+    to_remove_features = to_remove_features[tmp]
   }
   if(length(to_remove_features) == 0) {
     warning("no feature to remove in 'obj'", immediate. = TRUE, call. = FALSE)
@@ -116,13 +116,26 @@ data_rm_features <- function(obj, features, list_only = TRUE, ...) {
     if(any(to_remove_pops %in% c(obj$pops[[i]]$base, obj$pops[[i]]$names))) to_remove_pops = c(to_remove_pops, obj$pops[[i]]$name)
   }
   
+  # search graphs that depend on input pops
+  to_remove_graphs = integer()
+  if(length(obj$graphs) > 0) for(i in 1:length(obj$graphs)) {
+    g = obj$graphs[[i]]
+    base = sapply(g$BasePop, FUN = function(p) p$name)
+    shown = sapply(g$ShownPop, FUN = function(p) p$name)
+    region = sapply(g$GraphRegion, FUN = function(r) r$name)
+    region_def = sapply(g$GraphRegion, FUN = function(r) r$def)
+    if(any(c(to_remove_pops %in% c(base, shown, region_def), to_remove_features %in% unlist(g[c("f1","f2")])))) {
+      to_remove_graphs = c(to_remove_graphs, i)
+    }
+  }
+  
   # create list
   if(list_only) {
     return(list(masks = character(),
-                features = features,
+                features = to_remove_features,
                 regions = to_remove_regions,
                 pops = to_remove_pops,
-                graphs = integer()))
+                graphs = to_remove_graphs))
   }
   
   # remove regions and their dep
