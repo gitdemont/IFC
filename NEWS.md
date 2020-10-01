@@ -11,6 +11,8 @@
 
 - reintegrate num_to_string function using format() did not produce desired results
 
+- add functions family to remove features, regions and / or populations from IFC_data object
+
 ## 0.0.9
 - allow graph conversion from lattice to base
 

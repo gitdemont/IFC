@@ -18,8 +18,8 @@ The IFC package provides several categories of functions:\cr
 \code{\link{getInfo}}, \code{\link{getOffsets}}, \code{\link{getIFD}}, \code{\link{getFullTag}}, \code{\link{getAborted}}\cr
 - dedicated to populations:\cr
 \code{\link{popsCopy}}, \code{\link{popsGetObjectsIds}}, \code{\link{popsNetwork}}\cr
-- for adding features, regions, populations:\cr
-\code{\link{data_add_features}}, \code{\link{data_add_regions}}, \code{\link{data_add_pops}}\cr
+- for adding  / removing features, regions, populations:\cr
+\code{\link{data_add_features}}, \code{\link{data_add_regions}}, \code{\link{data_add_pops}}, \code{\link{data_rm_features}}, \code{\link{data_rm_regions}}, \code{\link{data_rm_pops}}\cr
 - to allow several coercion:\cr
 \code{\link{buildBatch}}, \code{\link{buildFeature}}, \code{\link{buildGraph}}, \code{\link{buildPopulation}}, \code{\link{buildRegion}}
 }
