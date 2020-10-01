@@ -124,7 +124,6 @@ ExportToNumpy <- function(...,
   size = na.omit(as.integer(size[1:2]))
   assert(size, len=2, typ="integer")
   force_width = as.logical(force_width); assert(force_width, len = 1, alw = c(TRUE,FALSE)) 
-  if(force_width) size = c(size[1], as.integer(info$channelwidth))
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE,FALSE))
   overwrite = as.logical(overwrite); assert(overwrite, len = 1, alw = c(TRUE,FALSE))
   assert(python, len = 1, typ = "character")
