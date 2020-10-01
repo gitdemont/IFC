@@ -87,11 +87,13 @@ data_rm_regions <- function(obj, regions, list_only = TRUE, ...) {
   for(i in 1:length(obj$pops)) {
     if((obj$pops[[i]]$type == "G") && any(to_remove_regions %in% obj$pops[[i]]$region)) to_remove_pops = c(to_remove_pops, obj$pops[[i]]$name)
   }
+  to_remove_pops = unique(to_remove_pops)
   
   # search for pops that depend on previous pops
   for(i in 1:length(obj$pops)) {
     if(any(to_remove_pops %in% c(obj$pops[[i]]$base, obj$pops[[i]]$names))) to_remove_pops = c(to_remove_pops, obj$pops[[i]]$name)
   }
+  to_remove_pops = unique(to_remove_pops)
   
   # search graphs that depend on input pops
   to_remove_graphs = integer()
@@ -105,6 +107,7 @@ data_rm_regions <- function(obj, regions, list_only = TRUE, ...) {
       to_remove_graphs = c(to_remove_graphs, i)
     }
   }
+  to_remove_graphs = unique(to_remove_graphs)
   
   # create list
   if(list_only) {
@@ -124,10 +127,10 @@ data_rm_regions <- function(obj, regions, list_only = TRUE, ...) {
       obj$regions = structure(list(), class = class(obj$regions))
     }
   }
-  if(length(to_remove_graphs) != 0) {
-    obj$graphs = structure(obj$graphs[-to_remove_graphs], class = class(obj$graphs))
+  if(length(to_remove_graphs) == length(obj$graphs)) {
+    obj$graphs = structure(list(), class = class(obj$graphs))
   } else {
-    obj$graphs = structure(list, class = class(obj$graphs))
+    obj$graphs = structure(obj$graphs[-to_remove_graphs], class = class(obj$graphs))
   }
   pops_back = obj$pops
   obj$pops = list()
