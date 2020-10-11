@@ -21,7 +21,7 @@ buildRegion(
 )
 }
 \arguments{
-\item{type}{Region's type. Either "line", "rect" or "poly".}
+\item{type}{Region's type. Either "line", "rect", "poly" or "oval".}
 
 \item{label}{label of the region.}
 

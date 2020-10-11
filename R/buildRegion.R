@@ -30,7 +30,7 @@
 #' @title IFC Region Coercion
 #' @description
 #' Helper to build a list to allow region export.
-#' @param type Region's type. Either "line", "rect" or "poly".
+#' @param type Region's type. Either "line", "rect", "poly" or "oval".
 #' @param label label of the region.
 #' @param cx x label's position. If not provided x center will be used.
 #' @param cy y label's position. If not provided y center will be used.
