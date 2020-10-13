@@ -62,71 +62,71 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
     on.exit(endPB(pb))
   }
   for(i in 1:L) {
-    fx.pos = NULL
-    fy.pos = NULL
+    fx_pos = NULL
+    fy_pos = NULL
     pop=pops[[i]]
     switch(pop$type,
            "B" = { 
-             pop$obj=rep(TRUE,obj_number)
+             pop[[i]]$obj=rep(TRUE,obj_number)
            }, 
            "G" = {
-             pop.pos=which(names(regions)==pop$region)
-             fx.pos=which(names(features)==pop$fx)
-             x=features[,fx.pos]
-             x.lim=as.numeric(regions[[pop.pos]]$x)
-             if(regions[[pop.pos]]$type == "line") {
-               x.lim=range(x.lim)
-               pop$obj=pops[[which(names(pops)==pop$base)]]$obj & x>=x.lim[1] & x<=x.lim[2]
+             pop_pos=which(names(regions)==pop$region)
+             fx_pos=which(names(features)==pop$fx)
+             x=features[,fx_pos]
+             xlim=as.numeric(regions[[pop_pos]]$x)
+             if(regions[[pop_pos]]$type == "line") {
+               xlim=range(xlim)
+               pop[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & x>=xlim[1] & x<=xlim[2]
              } else {
-               fy.pos=which(names(features)==pop$fy)
-               y=features[,fy.pos]
-               y.lim=as.numeric(regions[[pop.pos]]$y)
-               if(regions[[pop.pos]]$xlogrange != "P") {
-                 x = smoothLinLog(x, hyper = as.numeric(regions[[pop.pos]]$xlogrange), base = 10)
-                 x.lim = smoothLinLog(x.lim, hyper = as.numeric(regions[[pop.pos]]$xlogrange), base = 10)
+               fy_pos=which(names(features)==pop$fy)
+               y=features[,fy_pos]
+               ylim=as.numeric(regions[[pop_pos]]$y)
+               if(regions[[pop_pos]]$xlogrange != "P") {
+                 x = smoothLinLog(x, hyper = as.numeric(regions[[pop_pos]]$xlogrange), base = 10)
+                 xlim = smoothLinLog(xlim, hyper = as.numeric(regions[[pop_pos]]$xlogrange), base = 10)
                }
-               if(regions[[pop.pos]]$ylogrange != "P") {
-                 y = smoothLinLog(y, hyper = as.numeric(regions[[pop.pos]]$ylogrange), base = 10)
-                 y.lim = smoothLinLog(y.lim, hyper = as.numeric(regions[[pop.pos]]$ylogrange), base = 10)
+               if(regions[[pop_pos]]$ylogrange != "P") {
+                 y = smoothLinLog(y, hyper = as.numeric(regions[[pop_pos]]$ylogrange), base = 10)
+                 ylim = smoothLinLog(ylim, hyper = as.numeric(regions[[pop_pos]]$ylogrange), base = 10)
                }
-               switch(regions[[pop.pos]]$type, 
+               switch(regions[[pop_pos]]$type, 
                       "oval" = {
-                        pop$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(x.lim,y.lim), algorithm = 3)
+                        pop[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(xlim,ylim), algorithm = 3)
                       },
                       "poly" = {
-                        pop$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(x.lim,y.lim), algorithm = pnt_in_poly_algorithm, epsilon = pnt_in_poly_epsilon)
+                        pop[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(xlim,ylim), algorithm = pnt_in_poly_algorithm, epsilon = pnt_in_poly_epsilon)
                       },
                       "rect" = {
-                        pop$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(x.lim,y.lim), algorithm = 2)
+                        pop[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(xlim,ylim), algorithm = 2)
                       })
              }
            }, 
            "C" = {
-             pop.def.tmp=gsub("^And$","&",pop$split)
-             pop.def.tmp=gsub("^Or$","|",pop.def.tmp)
-             pop.def.tmp=gsub("^Not$","!", pop.def.tmp)
-             for(i.popn in which(pop.def.tmp%in%pop$names)) {pop.def.tmp[i.popn]=paste0("`",pop.def.tmp[i.popn],"`")}
-             comb.tmp=sapply(pops[pop$names], FUN=function(i.pop) i.pop$obj)
+             pop_def_tmp=gsub("^And$","&",pop$split)
+             pop_def_tmp=gsub("^Or$","|",pop_def_tmp)
+             pop_def_tmp=gsub("^Not$","!", pop_def_tmp)
+             for(i_popn in which(pop_def_tmp%in%pop$names)) {pop_def_tmp[i_popn]=paste0("`",pop_def_tmp[i_popn],"`")}
+             comb_tmp=sapply(pops[pop$names], FUN=function(i_pop) i_pop$obj)
              if(obj_number == 1) {
-               comb.tmp=all(comb.tmp)
+               comb_tmp=all(comb_tmp)
              } else {
-               comb.tmp=eval(parse(text=paste0(pop.def.tmp,collapse=" ")), as.data.frame(comb.tmp, stringsAsFactors = FALSE))
+               comb_tmp=eval(parse(text=paste0(pop_def_tmp,collapse=" ")), as.data.frame(comb_tmp, stringsAsFactors = FALSE))
              }
-             pop$obj=pops[[which(names(pops)==pop$base)]]$obj & comb.tmp
+             pop[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & comb_tmp
            }, 
            "T" = {
              if(length(pop$obj) != obj_number) {
                Kp = class(pop$obj)
                if(Kp%in%"numeric" | Kp%in%"integer") {
                  if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
-                 pop$obj=rep(FALSE,obj_number)
-                 pop$obj[pop$obj+1]=TRUE
+                 pop[[i]]$obj=rep(FALSE,obj_number)
+                 pop[[i]]$obj[pop$obj+1]=TRUE
                } else {
                  if(!Kp%in%"logical") stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
                }
              }
-             if(sum(pop$obj)==0) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
-             if(obj_number != length(pop$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+             if(sum(pop[[i]]$obj)==0) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+             if(obj_number != length(pop[[i]]$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
            })
     if(display_progress) {
       setPB(pb, value = i, title = title_progress, label = "extacting populations")
