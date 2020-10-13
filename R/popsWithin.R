@@ -67,7 +67,7 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
     pop=pops[[i]]
     switch(pop$type,
            "B" = { 
-             pop[[i]]$obj=rep(TRUE,obj_number)
+             pops[[i]]$obj=rep(TRUE,obj_number)
            }, 
            "G" = {
              pop_pos=which(names(regions)==pop$region)
@@ -76,7 +76,7 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
              xlim=as.numeric(regions[[pop_pos]]$x)
              if(regions[[pop_pos]]$type == "line") {
                xlim=range(xlim)
-               pop[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & x>=xlim[1] & x<=xlim[2]
+               pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & x>=xlim[1] & x<=xlim[2]
              } else {
                fy_pos=which(names(features)==pop$fy)
                y=features[,fy_pos]
@@ -91,13 +91,13 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
                }
                switch(regions[[pop_pos]]$type, 
                       "oval" = {
-                        pop[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(xlim,ylim), algorithm = 3)
+                        pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(xlim,ylim), algorithm = 3)
                       },
                       "poly" = {
-                        pop[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(xlim,ylim), algorithm = pnt_in_poly_algorithm, epsilon = pnt_in_poly_epsilon)
+                        pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(xlim,ylim), algorithm = pnt_in_poly_algorithm, epsilon = pnt_in_poly_epsilon)
                       },
                       "rect" = {
-                        pop[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(xlim,ylim), algorithm = 2)
+                        pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(xlim,ylim), algorithm = 2)
                       })
              }
            }, 
@@ -112,21 +112,21 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
              } else {
                comb_tmp=eval(parse(text=paste0(pop_def_tmp,collapse=" ")), as.data.frame(comb_tmp, stringsAsFactors = FALSE))
              }
-             pop[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & comb_tmp
+             pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & comb_tmp
            }, 
            "T" = {
              if(length(pop$obj) != obj_number) {
                Kp = class(pop$obj)
                if(Kp%in%"numeric" | Kp%in%"integer") {
                  if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
-                 pop[[i]]$obj=rep(FALSE,obj_number)
-                 pop[[i]]$obj[pop$obj+1]=TRUE
+                 pops[[i]]$obj=rep(FALSE,obj_number)
+                 pops[[i]]$obj[pop$obj+1]=TRUE
                } else {
                  if(!Kp%in%"logical") stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
                }
              }
-             if(sum(pop[[i]]$obj)==0) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
-             if(obj_number != length(pop[[i]]$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+             if(sum(pops[[i]]$obj)==0) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+             if(obj_number != length(pops[[i]]$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
            })
     if(display_progress) {
       setPB(pb, value = i, title = title_progress, label = "extacting populations")
