@@ -306,8 +306,9 @@ base_axis_constr = function(lim, hyper = "P", nint = 10) {
   ticks_at = ticks_at[!dup & keep]
   ticks_lab = ticks_lab[!dup & keep]
   if(length(ticks_at) < 2) {
-    ticks_at = signif(smoothLinLog(seq(from = lim[1], to = lim[2], length.out = nint), hyper = hyper), 3)
-    ticks_lab = ticks_at
+    at = signif(seq(from = lim[1], to = lim[2], length.out = nint), 3)
+    ticks_at = smoothLinLog(at, hyper = hyper)
+    ticks_lab = at
   }
   ord = order(ticks_at)
   return(list("at" = ticks_at[ord], "label" = ticks_lab[ord]))
