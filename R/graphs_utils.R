@@ -301,11 +301,14 @@ base_axis_constr = function(lim, hyper = "P", nint = 10) {
     ticks_at = c(ticks_at, at_scaled)
     ticks_lab = c(ticks_lab, at_lab)
   }
-  # keep = (ticks_at >= lim[1]) & (ticks_at <= lim[2])
-  keep = rep(TRUE, length(ticks_at))
+  keep = (ticks_at >= lim[1]) & (ticks_at <= lim[2])
   dup = duplicated(ticks_at)
   ticks_at = ticks_at[!dup & keep]
   ticks_lab = ticks_lab[!dup & keep]
+  if(length(ticks_at) < 2) {
+    ticks_at = signif(smoothLinLog(seq(from = lim[1], to = lim[2], length.out = nint), hyper = hyper), 3)
+    ticks_lab = ticks_at
+  }
   ord = order(ticks_at)
   return(list("at" = ticks_at[ord], "label" = ticks_lab[ord]))
 }
