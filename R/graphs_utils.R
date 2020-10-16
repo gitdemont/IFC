@@ -301,7 +301,8 @@ base_axis_constr = function(lim, hyper = "P", nint = 10) {
     ticks_at = c(ticks_at, at_scaled)
     ticks_lab = c(ticks_lab, at_lab)
   }
-  keep = (ticks_at >= lim[1]) & (ticks_at <= lim[2])
+  # keep = (ticks_at >= lim[1]) & (ticks_at <= lim[2])
+  keep = rep(TRUE, length(ticks_at))
   dup = duplicated(ticks_at)
   ticks_at = ticks_at[!dup & keep]
   ticks_lab = ticks_lab[!dup & keep]
