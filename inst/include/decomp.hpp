@@ -284,7 +284,7 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
           Rcout << "Extracting " << nbytes << " Bytes GreyScale image [30817] @offset:" << offset << std::endl;
         }
         if(offset > (filesize - nbytes)) {
-          // Rcpp::Rcerr << "hpp_gray_Decomp: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
+          Rcpp::Rcerr << "hpp_gray_Decomp: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
           Rcpp::stop("hpp_gray_Decomp: GrayScale image offset is higher than file size");
         }
         fi.seekg(offset, std::ios::beg);
