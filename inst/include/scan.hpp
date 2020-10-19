@@ -61,7 +61,6 @@ std::size_t hpp_scanFirst(const std::string fname,
                           const uint8_t buf_size = 64) {
   uint16_t L = target.length();
   if(L < 1) {
-    Rcpp::Rcerr <<  "cpp_scanFirst: target should be at least 1 character";
     Rcpp::stop("cpp_scanFirst: target should be at least 1 character");
   }
   if(L > 1024) {
@@ -111,7 +110,6 @@ std::size_t hpp_scanFirst(const std::string fname,
     }
   }
   else {
-    Rcpp::Rcerr << "cpp_scanFirst: Unable to open " << fname << std::endl;
     Rcpp::stop("cpp_scanFirst: Unable to open file");
   }
   return 0;

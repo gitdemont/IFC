@@ -164,13 +164,11 @@ Rcpp::RawVector hpp_writeBMP (const Rcpp::NumericVector image) {
     if(iNotisNULL(d)) {
       bool rgb = false;
       if(!(d.size() == 2 || d.size() == 3)) {
-        Rcpp::Rcerr << "hpp_writeBMP: image should be a matrix or a 3D array" << std::endl;
         Rcpp::stop("hpp_writeBMP: image should be a matrix or a 3D array");
       } else {
         if(d.size() == 3) {
           if(d[2] == 3) rgb = true;
           if(!(d[2] == 1 || rgb)) {
-            Rcpp::Rcerr << "hpp_writeBMP: when 3D array is provided, 3rd dim should be 1 or 3" << std::endl;
             Rcpp::stop("hpp_writeBMP: when 3D array is provided, 3rd dim should be 1 or 3");
           }
         }
@@ -262,7 +260,6 @@ Rcpp::RawVector hpp_writeBMP (const Rcpp::NumericVector image) {
       }
       return out;
     } else {
-      Rcpp::Rcerr << "hpp_writeBMP: image should be a matrix or a 3D array" << std::endl;
       Rcpp::stop("hpp_writeBMP: image should be a matrix or a 3D array");
     }
   }

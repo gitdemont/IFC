@@ -125,7 +125,6 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           uint32_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
-            Rcpp::Rcerr << "hpp_rle_Decomp: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
           }
           for(uint32_t j = off; j < runLength; j++) img[j] = value;
@@ -139,7 +138,6 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           uint32_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
-            Rcpp::Rcerr << "hpp_rle_Decomp: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
           }
           for(uint32_t j = off; j < runLength; j++) img[j] = value;
@@ -153,7 +151,6 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           uint32_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
-            Rcpp::Rcerr << "hpp_rle_Decomp: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
           }
           for(uint32_t j = off; j < runLength; j++) img[j] = value;
@@ -167,7 +164,6 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           uint32_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
-            Rcpp::Rcerr << "hpp_rle_Decomp: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
           }
           for(uint32_t j = off; j < runLength; j++) img[j] = value;
@@ -181,7 +177,6 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           uint32_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
-            Rcpp::Rcerr << "hpp_rle_Decomp: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
           }
           for(uint32_t j = off; j < runLength; j++) img[j] = value;
@@ -194,7 +189,6 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           uint32_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
-            Rcpp::Rcerr << "hpp_rle_Decomp: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
           }
           for(uint32_t j = off; j < runLength; j++) img[j] = value;
@@ -218,11 +212,9 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
       }
     }
     else {
-      Rcpp::Rcerr << "hpp_rle_Decomp: Unable to open " << fname << std::endl;
       Rcpp::stop("hpp_rle_Decomp: Unable to open file");
     }
   } else {
-    Rcpp::Rcerr << "hpp_rle_Decomp: imgWidth, imgHeight and nb_channels should be >0" << std::endl;
     Rcpp::stop("hpp_rle_Decomp: imgWidth, imgHeight and nb_channels should be >0");    
   }
   return R_NilValue;
@@ -292,7 +284,7 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
           Rcout << "Extracting " << nbytes << " Bytes GreyScale image [30817] @offset:" << offset << std::endl;
         }
         if(offset > (filesize - nbytes)) {
-          Rcpp::Rcerr << "hpp_gray_Decomp: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
+          // Rcpp::Rcerr << "hpp_gray_Decomp: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
           Rcpp::stop("hpp_gray_Decomp: GrayScale image offset is higher than file size");
         }
         fi.seekg(offset, std::ios::beg);
@@ -336,11 +328,9 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
       }
     }
     else {
-      Rcpp::Rcerr << "hpp_gray_Decomp: Unable to open " << fname << std::endl;
       Rcpp::stop("hpp_gray_Decomp: Unable to open file");
     }
   } else {
-    Rcpp::Rcerr << "hpp_gray_Decomp: imgWidth, imgHeight and nb_channels should be >0" << std::endl;
     Rcpp::stop("hpp_gray_Decomp: imgWidth, imgHeight and nb_channels should be >0");    
   }
   return R_NilValue;

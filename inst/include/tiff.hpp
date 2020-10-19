@@ -82,13 +82,11 @@ std::string hpp_checkTIFF (const std::string fname) {
       if(magic == 18761) out = "little"; // 49,49
       if(magic == 19789) out = "big"; // 4D,4D
       if(out == "") {
-        Rcpp::Rcerr <<  "hpp_checkTIFF: " << fname << "\nis not a XIF file: No magic bytes 0-1" << std::endl;
         Rcpp::stop("hpp_checkTIFF: File is not a XIF file: No magic bytes 0-1");
       }
       fi.read((char *)&magic,sizeof(magic));
       if(out == "big") magic = bytes_swap(magic);
       if(magic != 42) {
-        Rcpp::Rcerr <<  "hpp_checkTIFF: " << fname << "\nis not a XIF file: No magic bytes 2-3" << std::endl;
         Rcpp::stop("hpp_checkTIFF: File is not a XIF file: No magic bytes 2-3");
       }
       fi.close();
@@ -103,7 +101,6 @@ std::string hpp_checkTIFF (const std::string fname) {
     }
   }
   else {
-    Rcpp::Rcerr << "hpp_checkTIFF: Unable to open " << fname << std::endl;
     Rcpp::stop("hpp_checkTIFF: Unable to open file");
   }
   return "";
@@ -154,7 +151,6 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
       if(swap) {
         offset = bytes_swap(offset);
         if(!offset) {
-          Rcpp::Rcerr << "hpp_getoffsets_noid: No IFD offsets found in\n" << fname << std::endl;
           Rcpp::stop("hpp_getoffsets_noid: No IFD offsets found");
         }
         while(offset) {
@@ -166,7 +162,6 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
           entries = bytes_swap(entries);
           pos = 2 + offset + 12 * entries;
           if((pos > filesize) || (pos >= 0xffffffff)) { // can't read to more than 4,294,967,295
-            Rcpp::Rcerr << "hpp_getoffsets_noid: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("hpp_getoffsets_noid: Buffer overrun");
           }
           fi.seekg(pos, std::ios::beg);
@@ -175,13 +170,11 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
           offset = bytes_swap(offset);
           if(Progress::check_abort()) {
             p.cleanup();
-            Rcpp::Rcerr << "hpp_getoffsets_noid: Interrupted by user" << std::endl;
             Rcpp::stop("hpp_getoffsets_noid: Interrupted by user");
           }
         }
       } else {
         if(!offset) {
-          Rcpp::Rcerr << "hpp_getoffsets_noid: No IFD offsets found in\n" << fname << std::endl;
           Rcpp::stop("hpp_getoffsets_noid: No IFD offsets found");
         }
         while(offset) {
@@ -192,7 +185,6 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
           std::memcpy(&entries, buf_entries, sizeof(entries));
           pos = 2 + offset + 12 * entries;
           if((pos > filesize) || (pos >= 0xffffffff)) { // can't read to more than 4,294,967,295
-            Rcpp::Rcerr << "hpp_getoffsets_noid: Buffer overrun in\n" << fname << std::endl;
             Rcpp::stop("hpp_getoffsets_noid: Buffer overrun");
           }
           fi.seekg(pos, std::ios::beg);
@@ -200,7 +192,6 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
           std::memcpy(&offset, buf_offset, sizeof(offset));
           if(Progress::check_abort()) {
             p.cleanup();
-            Rcpp::Rcerr << "hpp_getoffsets_noid: Interrupted by user" << std::endl;
             Rcpp::stop("hpp_getoffsets_noid: Interrupted by user");
           }
         }
@@ -217,7 +208,6 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
     }
   }
   else {
-    Rcpp::Rcerr << "hpp_getoffsets_noid: Unable to open " << fname << std::endl;
     Rcpp::stop("hpp_getoffsets_noid: Unable to open file");
   }
   return Rcpp::IntegerVector::create(0);
@@ -314,7 +304,6 @@ Rcpp::List hpp_getTAGS (const std::string fname,
           std::memcpy(&IFD_type, buf_dir_entry + 2, sizeof(IFD_type));
           IFD_type = bytes_swap(IFD_type);
           if((IFD_type > 12) || (IFD_type < 1)) {
-            Rcpp::Rcerr << "hpp_getTAGS: " << fname << std::endl;
             Rcpp::Rcerr << "hpp_getTAGS: in IFD: " << k << " IFD_type=" << IFD_type << " is not allowed" << std::endl;
             Rcpp::stop("hpp_getTAGS: Value not allowed for IFD type");
           }
@@ -527,7 +516,6 @@ Rcpp::List hpp_getTAGS (const std::string fname,
           std::memcpy(&IFD_tag, buf_dir_entry, sizeof(IFD_tag));
           std::memcpy(&IFD_type, buf_dir_entry + 2, sizeof(IFD_type));
           if((IFD_type > 12) || (IFD_type < 1)) {
-            Rcpp::Rcerr << "hpp_getTAGS: " << fname << std::endl;
             Rcpp::Rcerr << "hpp_getTAGS: in IFD: " << k << " IFD_type=" << IFD_type << " is not allowed" << std::endl;
             Rcpp::stop("hpp_getTAGS: Value not allowed for IFD type");
           }
@@ -767,7 +755,6 @@ Rcpp::List hpp_getTAGS (const std::string fname,
     }
   }
   else {
-    Rcpp::Rcerr << "hpp_getTAGS: Unable to open " << fname << std::endl;
     Rcpp::stop("hpp_getTAGS: Unable to open file");
   }
   return Rcpp::List::create(_["tags"] = NA_REAL,
@@ -828,7 +815,6 @@ Rcpp::List hpp_getoffsets_wid(const std::string fname,
       std::memcpy(&offset, buf_offset, sizeof(offset));
       if(swap) offset = bytes_swap(offset);
       if(!offset) {
-        Rcpp::Rcerr << "hpp_getoffsets_wid: No IFD offsets found in\n" << fname << std::endl;
         Rcpp::stop("hpp_getoffsets_wid: No IFD offsets found");
       }
       
@@ -864,7 +850,6 @@ Rcpp::List hpp_getoffsets_wid(const std::string fname,
         
         if(Progress::check_abort()) {
           p.cleanup();
-          Rcpp::Rcerr << "hpp_getoffsets_wid: Interrupted by user" << std::endl;
           Rcpp::stop("hpp_getoffsets_wid: Interrupted by user");
         }
       }
@@ -883,7 +868,6 @@ Rcpp::List hpp_getoffsets_wid(const std::string fname,
     }
   }
   else {
-    Rcpp::Rcerr << "hpp_getoffsets_wid: Unable to open " << fname << std::endl;
     Rcpp::stop("hpp_getoffsets_wid: Unable to open file");
   }
   return Rcpp::List::create(Rcpp::List::create(_["OBJECT_ID"] = NA_INTEGER,
@@ -922,7 +906,6 @@ std::size_t hpp_checksum(const std::string fname) {
       std::memcpy(&offset, buf_offset, sizeof(offset));
       if(swap) offset = bytes_swap(offset);
       if(!offset) {
-        Rcpp::Rcerr << "hpp_checksum: No IFD offsets found in\n" << fname << std::endl;
         Rcpp::stop("hpp_checksum: No IFD offsets found");
       }
       bool warn = true;
@@ -964,7 +947,6 @@ std::size_t hpp_checksum(const std::string fname) {
     }
   }
   else {
-    Rcpp::Rcerr << "hpp_checksum: Unable to open " << fname << std::endl;
     Rcpp::stop("hpp_checksum: Unable to open file");
   }
   return 0;
