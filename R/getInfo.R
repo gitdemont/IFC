@@ -212,8 +212,9 @@ getInfo <- function(fileName,
                               "power" = lasers_power, 
                               "min" = lasers_minpow, 
                               "max" = lasers_maxpow, stringsAsFactors = FALSE)
-  }, finally = {
-    illumination = data.frame()
+  }, error = function(e) {
+    illumination = data.frame(matrix(NA, ncol = 6, nrow = 0))
+    colnames(illumination) = c("installed","wavelength", "powered" ,"power" ,"min","max")
   })
 
   infos$channelwidth = channelwidth1
