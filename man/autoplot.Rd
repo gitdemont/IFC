@@ -37,7 +37,7 @@ Order of this overlay is given by order of 'shown_pops'.\cr
 Finally, changing any of the following arguments (x, x_trans, y, y_trans, type)
 to something else than the one detected from 'shown_pops' will prevent from displaying region(s) and
 'shown_pops' populations will be displayed as overlay.\cr
-However, please concider that if original type is 'histogram' changing x_trans transformation will have no impact on this.}
+However, please consider that if original type is 'histogram' changing x_trans transformation will have no impact on this.}
 
 \item{subset}{a population present in 'obj'. Default is NULL.
 Background population that will be used to generate graph.
