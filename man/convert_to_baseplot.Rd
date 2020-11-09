@@ -10,6 +10,6 @@ convert_to_baseplot(obj)
 \item{obj}{an object of class `IFC_plot` as created by \code{\link{plotGraph}}.}
 }
 \description{
-Helper convert `IFC_plot` to 'base' plot.
+Helper to convert `IFC_plot` to 'base' plot.
 }
 \keyword{internal}
