@@ -365,7 +365,7 @@ base_hist_constr = function(x, type, br, normalize, fill, smooth, lwd, lty, col,
 
 #' @title IFC Graph Conversion to 'base' Plot
 #' @name convert_to_baseplot
-#' @description Helper convert `IFC_plot` to 'base' plot.
+#' @description Helper to convert `IFC_plot` to 'base' plot.
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
 #' @keywords internal
 convert_to_baseplot = function(obj) {
@@ -382,7 +382,7 @@ convert_to_baseplot = function(obj) {
   basepop = obj$input$base
   Xlim = obj$input$xlim
   Ylim = obj$input$ylim
-  
+  disp_n = names(displayed)
   # draw plot
   if(obj$input$type %in% c("percent", "count")) {
     # 1D
@@ -395,7 +395,7 @@ convert_to_baseplot = function(obj) {
            col = "transparent", border = "transparent", freq = obj$input$type == "count",
            breaks = br, axes = FALSE)
       if(length(displayed) > 0) {
-        for(disp in names(displayed)) {
+        for(disp in disp_n) {
           if(any(D[,disp]))
             base_hist_constr( D[D[,disp], "x2"], br = br, type = obj$input$type, 
                               normalize = obj$input$normalize, 
@@ -427,33 +427,27 @@ convert_to_baseplot = function(obj) {
            axes = FALSE)
     } else {
       if(obj$input$precision == "full") {
-        disp = names(displayed)[1]
-        plot(x = obj$input$data$x2, y = obj$input$data$y2,
+        disp = disp_n[length(displayed)]
+        plot(x = obj$input$data[obj$input$data[,disp], "x2"], y = obj$input$data[obj$input$data[,disp], "y2"],
              xlim = Xlim , ylim = Ylim ,
              main = obj$input$title,
              xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
              ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
              pch = displayed[[disp]]$style, 
              col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
-             axis = FALSE)
+             axes = FALSE)
         if(length(displayed) > 1) {
-          for(disp in names(displayed)[-1]) {
-            plot(x = obj$input$data$x2, y = obj$input$data$y2,
-                 xlim = Xlim , ylim = Ylim ,
-                 main = obj$input$title,
-                 xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
-                 ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+          for(disp in rev(disp_n)[-1]) {
+            points(x = obj$input$data[obj$input$data[,disp], "x2"], y = obj$input$data[obj$input$data[,disp], "y2"],
                  pch = displayed[[disp]]$style, 
-                 col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
-                 axes = FALSE, 
-                 add=TRUE)
+                 col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
           }
         }
       } else {
-        groups = apply(as.data.frame(D[,names(displayed)]), 1, FUN=function(x) {
+        groups = apply(as.data.frame(D[,disp_n]), 1, FUN=function(x) {
           tmp = which(x)[1]
           if(is.na(tmp)) return(NA)
-          return(names(displayed)[which(x)[1]])
+          return(disp_n[tmp])
         })
         pch = sapply(groups, FUN = function(disp) displayed[[disp]]$style)
         col = sapply(groups, FUN = function(disp) displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
@@ -527,13 +521,65 @@ convert_to_baseplot = function(obj) {
   # key
   if(obj$input$type %in% c("percent", "count")) {
     legend("topleft", inset = 0.025, 
-           lty = sapply(names(displayed), FUN=function(p) c(1,2,3,4,6)[match(basepop[[obj$input$order[p]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))]),
+           lty = sapply(disp_n, FUN=function(p) c(1,2,3,4,6)[match(basepop[[obj$input$order[p]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))]),
            col = sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
-           legend = names(displayed), cex = 0.5, bg = "#ADADAD99", pt.cex = 1, bty ="o", box.lty = 0)
+           legend = disp_n, cex = 0.5, bg = "#ADADAD99", pt.cex = 1, bty ="o", box.lty = 0)
   } else {
     legend("topleft", inset = 0.025, 
            pch = sapply(displayed, FUN=function(p) p$style),
            col = sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
-           legend = names(displayed), cex = 0.5, bg = "#ADADAD99", pt.cex = 1, bty ="o", box.lty = 0)
+           legend = disp_n, cex = 0.5, bg = "#ADADAD99", pt.cex = 1, bty ="o", box.lty = 0)
+  }
+}
+
+#' @title IFC Graph Adjustment
+#' @name adjustGraph
+#' @description Helper to readjust `IFC_data` graphs in case of missing feature, region, population.
+#' @param obj an object of class `IFC_data` extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
+#' @param selection when provided, indices of desired graphs.\cr
+#' Note that indices are read from left to right, from top to bottom. 
+#' @param ... other arguments to be passed.
+#' @keywords internal
+adjustGraph = function(obj, selection, ...) {
+  dots = list(...)
+  assert(obj, cla = "IFC_data")
+  G = obj$graphs
+  N = names(G)
+  if(length(G) > 0) {
+    if(missing(selection)) {
+      selection = 1:length(G)
+    } else {
+      if(!all(selection%in%(1:length(G)))) stop("'selection' refers to graph absent from 'obj'")
+    }
+    foo = lapply(1:length(G), FUN = function(i_graph) {
+      g = G[[i_graph]]
+      if(i_graph %in% selection) {
+        # check if x axis is present in obj
+        if(!(g$f1 %in% names(obj$features))) return(NULL)
+        # check if y axis is present in obj
+        if(g$type != "histogram") if(!(g$f2 %in% names(obj$features))) return(NULL)
+        # check that at least one base pop will be plot
+        base_found = sapply(g$BasePop, FUN = function(p) p$name %in% names(obj$pops))
+        if(!any(base_found)) return(NULL)
+        # remove BasePop not present in obj
+        g$BasePop = g$BasePop[base_found]
+        # remove GraphRegion not found in obj
+        if(length(g$GraphRegion)) g$GraphRegion = g$GraphRegion[sapply(g$GraphRegion, FUN = function(r) r$name %in% names(obj$regions))]
+        # remove ShownPop not found in obj
+        if(length(g$ShownPop)) g$ShownPop = g$ShownPop[sapply(g$ShownPop, FUN = function(p) p$name %in% names(obj$pops))]
+        # rebuild Graph, mainly to recompute order
+        return(do.call(what = buildGraph, args = g[!grepl("order", names(g))]))
+      } else {
+        return(g)
+      }
+    })
+    names(foo) = N
+    bar = foo[sapply(foo, FUN = function(x) length(x) > 0)]
+    class(bar) = class(obj$graphs)
+    obj$graphs = bar
+    return(obj)
+  } else {
+    if(length(selection) != 0) stop("'selection' refers to graph absent from 'obj'")
+    return(obj)
   }
 }
