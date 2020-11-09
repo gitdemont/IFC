@@ -43,7 +43,7 @@
 #' Finally, changing any of the following arguments (x, x_trans, y, y_trans, type)
 #' to something else than the one detected from 'shown_pops' will prevent from displaying region(s) and
 #' 'shown_pops' populations will be displayed as overlay.\cr
-#' However, please concider that if original type is 'histogram' changing x_trans transformation will have no impact on this.
+#' However, please consider that if original type is 'histogram' changing x_trans transformation will have no impact on this.
 #' @param subset a population present in 'obj'. Default is NULL.
 #' Background population that will be used to generate graph.
 #' This argument will not be used when graph is an histogram.
@@ -195,13 +195,12 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
   foo = list()
   original = FALSE
   keep_region = FALSE
-  siblings = list()
+  siblings = c()
   if(length(shown_pops)!=0) siblings = popsGetSiblings(obj, shown_pops)
-  are_siblings = all(unlist(sapply(siblings, FUN=function(s) s == siblings[[1]])))
 
   # if 'shown_pops' is given and is/are siblings then
   # if 1st shown_pops is of type graphical original graph can be retrieved
-  if(are_siblings) if(length(shown_pops)!=0) if(obj$pops[[shown_pops[1]]]$type == "G") {
+  if(length(siblings) != 0) if(length(shown_pops)!=0) if(obj$pops[[shown_pops[1]]]$type == "G") {
     foo = popsRetrieveGraph(obj, shown_pops, all_siblings = FALSE)
     original = TRUE
   }

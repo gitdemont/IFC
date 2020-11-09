@@ -46,53 +46,85 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
   all_siblings = as.logical(all_siblings); assert(all_siblings, len = 1, alw =c(TRUE, FALSE))
   
   siblings = popsGetSiblings(obj, pops)
-  are_siblings = all(sapply(siblings, FUN=function(s) s == siblings[[1]]))
-  if(!are_siblings) stop("'pops' should be siblings")
+  if(length(siblings) == 0) stop("'pops' should be siblings")
   
   # initializes variables
   if(all_siblings) {
-    pops = siblings[[1]]
+    pops = siblings
   } else {
     pops = pops
   }
+  sib1 = popsGetSiblings1(obj, pops)
+  sib2 = popsGetSiblings2(obj, pops)
+  parent1 = lapply(obj$pops[names(sib1)], FUN = function(p) p$base)
+  parent1 = unique(unlist(parent1))
+  parent2 = lapply(obj$pops[names(sib2)], FUN = function(p) p$base)
+  parent2 = unique(unlist(parent2))
+
   P = obj$pops[pops]
-  SUB = obj$pops[[obj$pops[[pops[1]]]$base]]$obj
+  SUB = apply(do.call("rbind", lapply(obj$pops[unique(c(parent1, parent2))], FUN = function(p) p$obj)), 2, any)
   R = sapply(P, simplify = F, FUN=function(p) obj$regions[[p$region]])
   foo = list()
-  
   # start rebuilding original graph
   foo$f1 = P[[1]]$fx
   foo$xlogrange = R[[1]]$xlogrange
-  xran = range(obj$features[SUB, foo$f1], unlist(lapply(R, FUN=function(r) c(r$x, r$cx))), na.rm = TRUE)
-  if(foo$xlogrange == "P") {
-    xran = xran + diff(xran) * c(-0.1,0.1)
-  } else {
-    xran = smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
-    xran = xran + diff(xran) * c(-0.1,0.1)
-    xran = inv_smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
-  }
-  foo$xmin = xran[1]
-  foo$xmax = xran[2]
   foo$ShownPop = list()
-  foo$title = P[[1]]$base
+  foo$title = paste0(unique(c(parent1, parent2)), collapse = ", ")
   if(length(P[[1]]$fy) == 0) {
+    xran = range(c(obj$features[SUB, foo$f1], unlist(lapply(R, FUN=function(r) c(r$x, r$cx)))), na.rm = TRUE)
+    if(foo$xlogrange == "P") {
+      xran = xran + diff(xran) * c(-0.07,0.07)
+    } else {
+      xran = smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
+      xran = xran + diff(xran) * c(-0.07,0.07)
+    }
+    foo$xmin = xran[1]
+    foo$xmax = xran[2]
     foo$type = "histogram"
+    foo$bincount = 0
+    foo$freq = "T"
+    br = do.breaks(xran, 520)
+    yran = c(0,max(sapply(obj$pops[unique(c(parent1, parent2))], FUN=function(p) {
+      x = obj$features[p$obj, foo$f1]
+      if(foo$xlogrange != "P") x = smoothLinLog(x, hyper = as.numeric(foo$xlogrange))
+      get_ylim(x=x, type="percent", br=br) * 1.07
+    })))
+    if(yran[1] == yran[2]) yran = yran[1] + c(0,0.07)
   } else {
+    xran = range(c(obj$features[SUB, foo$f1], unlist(lapply(R, FUN=function(r) c(r$x, r$cx)))), na.rm = TRUE)
+    if(foo$xlogrange == "P") {
+      xran = xran + diff(xran) * c(-0.07,0.07)
+    } else {
+      xran = smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
+      xran = xran + diff(xran) * c(-0.07,0.07)
+    }
     foo$f2 = P[[1]]$fy
     foo$ylogrange = R[[1]]$ylogrange
-    yran = range(obj$features[SUB, foo$f2], unlist(lapply(R, FUN=function(r) c(r$y,r$cy))), na.rm = TRUE)
+    yran = range(c(obj$features[SUB, foo$f2], unlist(lapply(R, FUN=function(r) c(r$y,r$cy)))), na.rm = TRUE)
     if(foo$ylogrange == "P") {
-      yran = yran + diff(yran) * c(-0.1,0.1)
+      yran = yran + diff(yran) * c(-0.07,0.07)
     } else {
       yran = smoothLinLog(yran, hyper = as.numeric(foo$ylogrange))
-      yran = yran + diff(yran) * c(-0.1,0.1)
+      yran = yran + diff(yran) * c(-0.07,0.07)
       yran = inv_smoothLinLog(yran, hyper = as.numeric(foo$ylogrange))
     }
-    foo$ymin = yran[1]
-    foo$ymax = yran[2]
     foo$type = vis2D
   }
-  foo$BasePop = list(list(name = P[[1]]$base))
-  foo$GraphRegion = lapply(1:length(R), FUN=function(i_reg) list("name" = R[[i_reg]]$label, def = names(R)[i_reg]))
+  if(foo$xlogrange != "P") xran = inv_smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
+  foo$xmin = xran[1]
+  foo$xmax = xran[2]
+  foo$ymin = yran[1]
+  foo$ymax = yran[2]
+  foo$BasePop = lapply(unique(c(parent1, parent2)), FUN = function(p) list(name = p, linestyle = "Solid", fill = "true"))
+  foo$GraphRegion = list()
+  if(length(R) > 0) foo$GraphRegion = list(list("name" = R[[1]]$label, def = c(R[[1]]$def, names(R)[1])))
+  if(length(R) > 1) for(i_reg in 2:length(R)) {
+    defined = sapply(foo$GraphRegion, FUN = function(r) r$name) %in% R[[i_reg]]$label
+    if(any(defined)) {
+      foo$GraphRegion[[defined]] = list("name" = R[[i_reg]]$label, def = c(foo$GraphRegion[[defined]]$def, names(R)[i_reg]))
+    } else {
+      foo$GraphRegion = c(foo$GraphRegion, list(list("name" = R[[i_reg]]$label, def = names(R)[i_reg])))
+    }
+  }
   return(foo)
 }
