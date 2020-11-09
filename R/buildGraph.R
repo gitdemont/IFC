@@ -40,7 +40,7 @@
 #' @param xmax Double. Graph's xmax. Default 1.
 #' @param ymin Double. Graph's xmin. Default 0.
 #' @param ymax Double. Graph's xmax. Default 1.
-#' @param title Character. Graph title label. Default wil use names of BasePop followed by names of ShownPop collapse with ', '.
+#' @param title Character. Graph title label. Default will use names of BasePop collapse with ', '.
 #' @param xlabel Character. Graph x axis label.
 #' @param ylabel Character. Graph y axis label.
 #' @param axislabelsfontsize Integer. Axis label font size. Default is 10. Allowed are: 8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28.\cr
@@ -105,7 +105,7 @@
 buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, ylocation=0,
                       f1="Object Number", f2="Object Number", scaletype=1, 
                       xmin=-1, xmax=1, ymin=0, ymax=1,
-                      title=paste0(c(unlist(lapply(BasePop, FUN=function(x) x$name)),unlist(lapply(GraphRegion, FUN=function(x) x$name))),collapse=", "),
+                      title=paste0(unlist(lapply(BasePop, FUN=function(x) x$name)),collapse=", "),
                       xlabel=f1, ylabel=f2, 
                       axislabelsfontsize=10, axistickmarklabelsfontsize=10, graphtitlefontsize=12, regionlabelsfontsize=10,
                       bincount=0, freq=c("T","F")[1], histogramsmoothingfactor=0,

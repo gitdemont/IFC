@@ -15,8 +15,7 @@ buildGraph(
   xmax = 1,
   ymin = 0,
   ymax = 1,
-  title = paste0(c(unlist(lapply(BasePop, FUN = function(x) x$name)),
-    unlist(lapply(GraphRegion, FUN = function(x) x$name))), collapse = ", "),
+  title = paste0(unlist(lapply(BasePop, FUN = function(x) x$name)), collapse = ", "),
   xlabel = f1,
   ylabel = f2,
   axislabelsfontsize = 10,
@@ -64,7 +63,7 @@ buildGraph(
 
 \item{ymax}{Double. Graph's xmax. Default 1.}
 
-\item{title}{Character. Graph title label. Default wil use names of BasePop followed by names of ShownPop collapse with ', '.}
+\item{title}{Character. Graph title label. Default will use names of BasePop collapse with ', '.}
 
 \item{xlabel}{Character. Graph x axis label.}
 

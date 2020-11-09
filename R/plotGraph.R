@@ -58,8 +58,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                      color_mode = c("white","black")[1], add_key = "panel", precision = c("light","full")[1],
                      trunc_labels = 38, trans = asinh, bin, viewport = "ideas", ...) {
   dots = list(...)
-  dv <- dev.cur()
   # backup last state of graphic device
+  dv <- dev.cur()
   tryCatch({
   # old_ask <- devAskNewPage(ask = FALSE)
   # on.exit(devAskNewPage(ask = old_ask), add = TRUE)
@@ -133,7 +133,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   graph_n = unlist(lapply(g$GraphRegion, FUN=function(x) x$def))
   
   operators = c("And","Or","Not","(",")")
-  displayed_n = splitn(definition = g$order, all_names = c(base_n, graph_n, shown_n, "Selected Bin"), operators = operators)
+  displayed_n = unique(splitn(definition = g$order, all_names = c(base_n, graph_n, shown_n, "Selected Bin"), operators = operators))
   displayed_n = setdiff(displayed_n, "Selected Bin")
   displayed_r = rev(displayed_n)
   tmp = displayed_n %in% names(P)
@@ -190,7 +190,9 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       }))
     })
     stats = do.call(what=rbind, args=c(base_s, kids_s, kids_r))
-    rownames(stats) = c(base_n, sapply(shown_n, FUN = function(s) paste(base_n, s, sep = " & ")), graph_n)
+    rnames = base_n
+    if(length(reg_n) > 0) rnames = c(rnames, unlist(t(sapply(base_n, FUN = function(b) {if(b == "All") {graph_n} else {paste(reg_n, b, sep = " & ") }}))))
+    rownames(stats) = rnames
     colnames(stats) = c(colnames(stats)[1:2], paste0("x-",colnames(stats)[3:8]))
     
     smooth = (g$histogramsmoothingfactor != 0)
@@ -338,8 +340,11 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])), summary(na.omit(D[isin,"y1"])))
       }))
     })
-    stats = do.call(what=rbind, args=c(base_s, kids_s, kids_r))
-    rownames(stats) = c(base_n, sapply(shown_n, FUN = function(s) paste(base_n, s, sep = " & ")), graph_n)
+    stats = do.call(what=rbind, args=c(base_s, kids_r, kids_s))
+    rnames = base_n
+    if(length(reg_n) > 0) rnames = c(rnames, unlist(t(sapply(base_n, FUN = function(b) {if(b == "All") {reg_n} else {paste(reg_n, b, sep = " & ") }}))))
+    if(length(shown_n) > 0) rnames = c(rnames, unlist(sapply(shown_n, FUN = function(s) paste(base_n, s, sep = " & "))))
+    rownames(stats) = rnames
     colnames(stats) = c(colnames(stats)[1:2], paste0("x-",colnames(stats)[3:8]), paste0("y-",colnames(stats)[9:14]))
     groups = NULL
 
