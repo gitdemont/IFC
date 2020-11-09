@@ -31,8 +31,8 @@
 #' @description
 #' Generates report from `IFC_data` object.
 #' @param obj an `IFC_data` object extracted with features extracted.
-#' @param selection when provided, indices of desired graphs.
-#' In such case onepage parameter is set to FALSE.
+#' @param selection when provided, indices of desired graphs.\cr
+#' In such case onepage parameter is set to FALSE.\cr
 #' Note that indices are read from left to right, from top to bottom. 
 #' @param write_to pattern used to export file(s).
 #' Placeholders, like c("\%d/\%s_fromR.pdf", "\%d/\%s_fromR.csv"), will be substituted:\cr

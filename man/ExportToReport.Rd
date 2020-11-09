@@ -24,8 +24,8 @@ ExportToReport(
 \arguments{
 \item{obj}{an `IFC_data` object extracted with features extracted.}
 
-\item{selection}{when provided, indices of desired graphs.
-In such case onepage parameter is set to FALSE.
+\item{selection}{when provided, indices of desired graphs.\cr
+In such case onepage parameter is set to FALSE.\cr
 Note that indices are read from left to right, from top to bottom.}
 
 \item{write_to}{pattern used to export file(s).
