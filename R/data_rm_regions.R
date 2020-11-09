@@ -127,13 +127,9 @@ data_rm_regions <- function(obj, regions, list_only = TRUE, ...) {
       obj$regions = structure(list(), class = class(obj$regions))
     }
   }
-  if(length(to_remove_graphs) == length(obj$graphs)) {
-    obj$graphs = structure(list(), class = class(obj$graphs))
-  } else {
-    obj$graphs = structure(obj$graphs[-to_remove_graphs], class = class(obj$graphs))
-  }
   pops_back = obj$pops
   obj$pops = list()
-  obj = data_add_pops(obj, pops = pops_back[!(names(pops_back) %in% to_remove_pops)])
+  obj = data_add_pops(obj, pops = pops_back[!(names(pops_back) %in% to_remove_pops)], ...)
+  if(length(to_remove_graphs) != 0) return(adjustGraph(obj = obj, selection = to_remove_graphs))
   return(obj)
 }
