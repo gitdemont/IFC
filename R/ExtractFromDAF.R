@@ -95,50 +95,67 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
   if(toskip == 0) stop(paste0(fileName, "\ndoes not seem to be well formatted: </Assay> not found")) 
   toskip = toskip + nchar("</Assay>") - 1
   tmp=read_xml(readBin(con = fileName, what = "raw", n = toskip), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  checksum=NULL
 
   ##### extracts description
   description=list("Assay"=xml_attrs(xml_find_all(tmp, "//Assay")),
-                   "ID"=xml_attrs(xml_find_all(tmp, "//SOD")),
+                   "FCS"=xml_attrs(xml_find_all(tmp, "//FCS")),
+                   "SOD"=xml_attrs(xml_find_all(tmp, "//SOD")),
                    "Images"=xml_attrs(xml_find_all(tmp, "//image")),
                    "masks"=xml_attrs(xml_find_all(tmp, "//mask")))
-  
   description=lapply(description, FUN=function(x) {as.data.frame(do.call(what="rbind", x), stringsAsFactors=FALSE)})
-  description$Images = description$Images[order(description$Images$physicalChannel),]
-  class(description$masks) <- c(class(description$masks), "IFC_masks")
-  obj_count = as.integer(description$ID$objcount)
-  description$ID$objcount = obj_count
-  checksum = checksumDAF(fileName)
-  # chan_number = nrow(description$Images) # when from daf only available channels are imported
-  chan_number = as.integer(xml_attr(xml_find_first(tmp, "//ChannelPresets"), attr = "count"))
-
-  fileName_image = paste(dirname(fileName),description$ID$file,sep="/")
-  if(file.exists(fileName_image) && (checksum == checksumXIF(fileName_image))) {
-    fileName_image = normalizePath(fileName_image, winslash = "/")
+  str(description)
+  if(length(description$FCS)==0) {
+    description$ID = description$SOD
+    is_fcs = FALSE
   } else {
-    fileName_image = description$ID$file
+    description$ID = description$FCS
+    is_fcs = TRUE
   }
+  obj_count = as.integer(description$ID$objcount)
+  class(description$masks) <- c(class(description$masks), "IFC_masks")
+  description$ID$objcount = obj_count
+  chan_number = as.integer(xml_attr(xml_find_first(tmp, "//ChannelPresets"), attr = "count"))
   
-  for(i in c("physicalChannel","xmin","xmax","xmid","ymid","scalemin","scalemax")) description$Images[, i] = as.numeric(description$Images[, i])
-  description$Images$physicalChannel = description$Images$physicalChannel + 1
-  col = description$Images[,"color"]
-  col[col=="Teal"] <- "Cyan4"
-  col[col=="Green"] <- "Green4"
-  col[col=="Lime"] <- "Chartreuse"
-  description$Images[,"color"] <- col
-  if("saturation"%in%names(description$Images)) {
-    col = description$Images[,"saturation"]
+  if(!is_fcs) {
+    description$Images = description$Images[order(description$Images$physicalChannel),]
+    checksum = checksumDAF(fileName)
+    # chan_number = nrow(description$Images) # when from daf only available channels are imported
+
+    for(i in c("physicalChannel","xmin","xmax","xmid","ymid","scalemin","scalemax")) description$Images[, i] = as.numeric(description$Images[, i])
+    description$Images$physicalChannel = description$Images$physicalChannel + 1
+    col = description$Images[,"color"]
     col[col=="Teal"] <- "Cyan4"
     col[col=="Green"] <- "Green4"
     col[col=="Lime"] <- "Chartreuse"
-    description$Images[,"saturation"] <- col
+    description$Images[,"color"] <- col
+    if("saturation"%in%names(description$Images)) {
+      col = description$Images[,"saturation"]
+      col[col=="Teal"] <- "Cyan4"
+      col[col=="Green"] <- "Green4"
+      col[col=="Lime"] <- "Chartreuse"
+      description$Images[,"saturation"] <- col
+    }
+    if(extract_stats & !extract_features) {
+      extract_features = TRUE
+      message("'extract_features' has been forced to TRUE to extract statistics.")
+    }
+    
+    fileName_image = paste(dirname(fileName),description$ID$file,sep="/")
+    if(file.exists(fileName_image) && (checksum == checksumXIF(fileName_image))) {
+      fileName_image = normalizePath(fileName_image, winslash = "/")
+    } else {
+      fileName_image = description$ID$file
+    }
+  } else {
+    description$Images = as.data.frame(matrix(NA, nrow=0, ncol=12, 
+                                              dimnames = list(c(), c("name","color","physicalChannel","xmin","xmax","xmid","ymid","scalemin","scalemax","tokens","baseimage","function"))))
+    if(extract_offsets) {
+      extract_offsets = FALSE
+      message("'extract_offsets' has been forced to FALSE because no offsets can be found in .daf originated from .fcs.")
+    }
+    fileName_image = description$ID$file
   }
-  if(extract_stats & !extract_features) {
-    extract_features = TRUE
-    message("extract_features has been forced to TRUE to extract statistics.")
-  }
-  
-  toread=file(description = fileName, open = "rb")
-  on.exit(close(toread), add = TRUE)
 
   offsets = NULL
   if(extract_offsets & !extract_images) { 
@@ -146,10 +163,14 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     message("'extract_images' has been forced to TRUE to extract offsets.")
   }
   
+  toread=file(description = fileName, open = "rb")
+  on.exit(close(toread), add = TRUE)
+  
   ##### checks how features and images are stored
   if(extract_features | extract_images) {
     is_binary=as.logical(na.omit(xml_attr(xml_find_first(tmp, "//Assay"), attr = "binaryfeatures")))
     if(length(is_binary)==0) {is_binary=FALSE}
+    if(is_fcs) is_binary=FALSE
     if(is_binary) {
       seek(toread,toskip+3)
       ##### extracts important values
@@ -159,7 +180,6 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       if(obj_count != obj_number) stop("mismatch between expected object count and features values stored")
     }
   }
-  
   images = data.frame()
   ##### extracts images
   if(extract_images) {
@@ -242,7 +262,8 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       if(ncol(images) != obj_count) stop("mismatch between expected object count and images numbers stored")
       img_tmp_tomodify=c("bgstd","bgmean","satcount","satpercent")
       img_tmp_tokeep=grep(paste0(img_tmp_tomodify, collapse="|"), dimnames(images)[[1]], invert = TRUE)
-      img_tmp_new=lapply(img_tmp_tomodify, FUN=function(k) do.call("cbind", strsplit(images[k,],"|", useBytes = TRUE, fixed=TRUE)))
+      img_tmp_new=list()
+      if(!is_fcs) img_tmp_new=lapply(img_tmp_tomodify, FUN=function(k) do.call("cbind", strsplit(images[k,],"|", useBytes = TRUE, fixed=TRUE)))
       tryCatch({
         images=rbind(images[img_tmp_tokeep,],do.call("rbind",img_tmp_new))
       }, error = function(e) {
@@ -251,11 +272,13 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       images=apply(images,1,as.numeric)
       rm(list=ls()[grep("img_tmp_",ls())])
       images=as.data.frame(images, stringsAsFactors = FALSE)
-      names(images)=c("id","imgIFD","mskIFD","spIFD","w","l","fs","cl","ct","objCenterX","objCenterY",
-                      paste0("bgstd",(1:chan_number)),
-                      paste0("bgmean",(1:chan_number)),
-                      paste0("satcount",(1:chan_number)),
-                      paste0("satpercent",(1:chan_number)))
+      if(!is_fcs) {
+        names(images)=c("id","imgIFD","mskIFD","spIFD","w","l","fs","cl","ct","objCenterX","objCenterY",
+                        paste0("bgstd",(1:chan_number)),
+                        paste0("bgmean",(1:chan_number)),
+                        paste0("satcount",(1:chan_number)),
+                        paste0("satpercent",(1:chan_number)))
+      }
     }
     class(images) <- c(class(images), "IFC_images")
     
@@ -288,7 +311,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
   plots = list()
   regions = list()
   stats = data.frame()
-  
+
   if(extract_features) {
     ##### extracts features definition
     features_def=lapply(xml_attrs(xml_find_all(tmp, "//UDF")), FUN=function(x) as.list(x))

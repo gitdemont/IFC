@@ -47,7 +47,8 @@
 #' @param binary whether to write object to file in binary mode or not. Default is TRUE.\cr
 #' Note that it can represent a convenient way to make file written in binary mode back-compatible with former version of IDEAS software.\cr
 #' /!\ However unexpected behaviour may happen if features, regions, pops, ... are depending on masks (e.g. AdaptiveErode, Component, LevelSet, Watershed) introduced in newer version of IDEAS software.\cr
-#' /!\ Important please note that conversion from binary to non-binary and back to binary may create some rounding adjustment resulting in some features/image values changes
+#' /!\ Important please note that conversion from binary to non-binary and back to binary may create some rounding adjustment resulting in some features/image values changes.\cr
+#' Finally, if data originate from FCS, 'binary'will be forced to FALSE. 
 #' @param endianness The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
 #' Endianness describes the bytes order of data stored within the files. This parameter may not be modified.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
@@ -92,7 +93,6 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
   # check mandatory param
   assert(obj, cla = "IFC_data")
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
-  if(length(obj$images)==0) stop("please use argument 'extract_images' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that images were correctly extracted")
   if(missing(write_to)) stop("'write_to' can't be missing")
   assert(write_to, len = 1, typ = "character")
   assert(overwrite, len = 1, alw = c(TRUE, FALSE))
@@ -149,76 +149,85 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
   now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
   pkg_ver = paste0(unlist(packageVersion("IFC")), collapse = ".")
   channels = obj$description$Images
-  # changes to DAF compatible colors
-  if(any(channels$color=="Cyan4")) channels$color[channels$color=="Cyan4"] <- "Teal"
-  if(any(channels$color=="Green4")) channels$color[channels$color=="Green4"] <- "Green"
-  if(any(channels$color=="Chartreuse")) channels$color[channels$color=="Chartreuse"] <- "Lime"
-  # removes gamma
-  channels = channels[, !grepl("gamma", names(channels))]
-  channels[, "physicalChannel"] = channels[, "physicalChannel"] - 1
-  bgm = grep("^bgmean", names(obj$images))
-  bgs = grep("^bgstd", names(obj$images))
-  satc = grep("^satcount", names(obj$images))
-  satp = grep("^satpercent", names(obj$images))
-  tmp_style = c(20, 4, 3, 1, 5, 0, 2, 18, 15, 17)
-  names(tmp_style)=c("Simple Dot","Cross","Plus","Empty Circle","Empty Diamond","Empty Square","Empty Triangle","Solid Diamond","Solid Square","Solid Triangle")
+  is_fcs = length(obj$description$FCS)!=0
   
-  if(fullname) {
-    found = FALSE
-    checksum = attr(obj$offsets, "checksum")
+  if(!is_fcs) {
+    if(length(obj$images)==0) stop("please use argument 'extract_images' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that images were correctly extracted")
+    # changes to DAF compatible colors
+    if(any(channels$color=="Cyan4")) channels$color[channels$color=="Cyan4"] <- "Teal"
+    if(any(channels$color=="Green4")) channels$color[channels$color=="Green4"] <- "Green"
+    if(any(channels$color=="Chartreuse")) channels$color[channels$color=="Chartreuse"] <- "Lime"
+    # removes gamma
+    channels = channels[, !grepl("gamma", names(channels))]
+    channels[, "physicalChannel"] = channels[, "physicalChannel"] - 1
+    bgm = grep("^bgmean", names(obj$images))
+    bgs = grep("^bgstd", names(obj$images))
+    satc = grep("^satcount", names(obj$images))
+    satp = grep("^satpercent", names(obj$images))
     
-    fileName_image = file.path(cifdir, basename(obj$description$ID$file)) # look in cifdir 1st
-    if(file.exists(fileName_image)) {
-      if(checksumXIF(fileName_image) == checksum) found = TRUE
+    if(fullname) {
+      found = FALSE
+      checksum = attr(obj$offsets, "checksum")
+      
+      fileName_image = file.path(cifdir, basename(obj$description$ID$file)) # look in cifdir 1st
+      if(file.exists(fileName_image)) {
+        if(checksumXIF(fileName_image) == checksum) found = TRUE
+      } else {
+        fileName_image = obj$description$ID$file
+      }
+      if((!found)&& file.exists(fileName_image)) {
+        if(checksumXIF(fileName_image) == checksum) found = TRUE
+      }
+      
+      while((interactive() && (ntry > 0) && (!found))) {
+        ntry = ntry - 1
+        if(file.exists(fileName_image)) if(getFileExt(fileName_image)=="cif") if(checksumXIF(fileName_image) == checksum) {
+          found = TRUE
+          break;
+        } 
+        message(paste0("daf file does not refer to: ", fileName_image))
+        old_wd = getwd()
+        on.exit(setwd(old_wd), add= TRUE)
+        setwd(dirname(obj$fileName))
+        if(.Platform$OS.type == "windows") {
+          fileName_image = choose.files(caption = paste0("Looking for: ", basename(obj$description$ID$file)), multi = FALSE, filters = cbind("Compensated Image File (*.cif)", "*.cif"))
+        } else {
+          fileName_image = file.choose()
+        }
+      }
+      fileName_image = normalizePath(fileName_image, winslash = "/", mustWork = FALSE) # /!\ ask AMNIS using full path produces error while trying to retrieve compensation
     } else {
       fileName_image = obj$description$ID$file
-    }
-    if((!found)&& file.exists(fileName_image)) {
-      if(checksumXIF(fileName_image) == checksum) found = TRUE
-    }
-    
-    while((interactive() && (ntry > 0) && (!found))) {
-      ntry = ntry - 1
-      if(file.exists(fileName_image)) if(getFileExt(fileName_image)=="cif") if(checksumXIF(fileName_image) == checksum) {
-        found = TRUE
-        break;
-      } 
-      message(paste0("daf file does not refer to: ", fileName_image))
-      old_wd = getwd()
-      on.exit(setwd(old_wd), add= TRUE)
-      setwd(dirname(obj$fileName))
-      if(.Platform$OS.type == "windows") {
-        fileName_image = choose.files(caption = paste0("Looking for: ", basename(obj$description$ID$file)), multi = FALSE, filters = cbind("Compensated Image File (*.cif)", "*.cif"))
-      } else {
-        fileName_image = file.choose()
-      }
-    }
-    fileName_image = normalizePath(fileName_image, winslash = "/", mustWork = FALSE) # /!\ ask AMNIS using full path produces error while trying to retrieve compensation
+    } 
+    obj$description$ID$file <- fileName_image
   } else {
-    fileName_image = obj$description$ID$file
-  } 
-  obj$description$ID$file <- fileName_image
+    if(binary) {
+      binary = FALSE
+      message("'binary' has been forced to FALSE because .daf originates from .fcs file.")
+    }
+  }
 
   # creates shared nodes
-  sub_nodes = list(xml_new_node(name = "ChannelPresets",
-                                attrs = list(count = nrow(channels), bits = "12"),
-                                .children = xml_new_node(name = "gallery",
-                                                         attrs = list(viewmode="All Channels",
-                                                                      orderByFeature="Object Number",
-                                                                      ascendingOrder="true",
-                                                                      population=ifelse(viewing_pop %in% names(obj$pops), viewing_pop, "All"),
-                                                                      showMasks="false",
-                                                                      showColor="true",
-                                                                      showSaturationColor="false"))),
-                   xml_new_node(name = "Images", .children = lapply(1:nrow(channels), FUN=function(i) {
-                     xml_new_node(name = "image", attrs = channels[i, ])
-                   })),
-                   toXML2_masks(obj$description$masks, verbose = verbose),
-                   toXML2_features_def(obj$features_def, verbose = verbose),
-                   toXML2_regions(obj$regions, verbose = verbose),
-                   toXML2_pops(obj$pops, verbose = verbose, display_progress = display_progress, title_progress = title_progress, ...))
+  sub_nodes = list()
+  if(!is_fcs) sub_nodes = c(sub_nodes,
+                            list(xml_new_node(name = "ChannelPresets",
+                                              attrs = list(count = nrow(channels), bits = "12"),
+                                              .children = xml_new_node(name = "gallery",
+                                                                       attrs = list(viewmode="All Channels",
+                                                                                    orderByFeature="Object Number",
+                                                                                    ascendingOrder="true",
+                                                                                    population=ifelse(viewing_pop %in% names(obj$pops), viewing_pop, "All"),
+                                                                                    showMasks="false",
+                                                                                    showColor="true",
+                                                                                    showSaturationColor="false"))),
+                                 xml_new_node(name = "Images", .children = lapply(1:nrow(channels), FUN=function(i) {
+                                   xml_new_node(name = "image", attrs = channels[i, ])
+                                 })),
+                                 toXML2_masks(obj$description$masks, verbose = verbose)))
   
-  
+  sub_nodes = c(sub_nodes, list(toXML2_features_def(obj$features_def, verbose = verbose),
+                                toXML2_regions(obj$regions, verbose = verbose),
+                                toXML2_pops(obj$pops, verbose = verbose, display_progress = display_progress, title_progress = title_progress, ...)))
   
   # defines root node "Assay"
   root <- xml_new_root("Assay")
@@ -235,7 +244,11 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
   xml_add_child(root, .value = xml_new_node(name = "SampleName", text = splitf_obj["short"]))
   xml_add_child(root, .value = xml_new_node(name = "ShowSampleName", text = "False"))
   # adds shared children subnodes
-  xml_add_child(root, .value = xml_new_node(name = "SOD", attrs = obj$description$ID, .children = sub_nodes))
+  if(is_fcs) {
+    xml_add_child(root, .value = xml_new_node(name = "FCS", attrs = obj$description$ID, .children = sub_nodes))
+  } else {
+    xml_add_child(root, .value = xml_new_node(name = "SOD", attrs = obj$description$ID, .children = sub_nodes))
+  }
   xml_add_child(root, .value = toXML2_graphs(obj$graphs, verbose = verbose))
   
   tryCatch({
@@ -459,52 +472,73 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
       # writes images nodes
       if(verbose) message("writing images nodes")
       L = nrow(obj$images)
-      if(display_progress) {
-        pb_imn = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
-        tryCatch({
-        lapply(1:L, FUN=function(i_img) {
-          setPB(pb_imn, value = i_img, title = title_progress, label = "writing images values (xml)")
-          cat(indent2, file = file_w, append = TRUE, sep = "",
-              sprintf('<SO id="%s" imgIFD="%s" mskIFD="%s" spIFD="%s" w="%s" l="%s" fs="%s" cl="%s" ct="%s" objCenterX="%s" objCenterY="%s" bgmean="%s" bgstd="%s" satcount="%s" satpercent="%s" />\n',
-                      num_to_string(obj$images[i_img, 'id']),
-                      num_to_string(obj$images[i_img, 'imgIFD']),
-                      num_to_string(obj$images[i_img, 'mskIFD']),
-                      num_to_string(obj$images[i_img, 'spIFD']),
-                      num_to_string(obj$images[i_img, 'w']),
-                      num_to_string(obj$images[i_img, 'l']),
-                      num_to_string(obj$images[i_img, 'fs']),
-                      num_to_string(obj$images[i_img, 'cl']),
-                      num_to_string(obj$images[i_img, 'ct']),
-                      num_to_string(obj$images[i_img, 'objCenterX']),
-                      num_to_string(obj$images[i_img, 'objCenterY']),
-                      paste0(num_to_string(unlist(obj$images[i_img, bgm])), collapse = "|"),
-                      paste0(num_to_string(unlist(obj$images[i_img, bgs])), collapse = "|"),
-                      paste0(num_to_string(unlist(obj$images[i_img, satc])), collapse = "|"),
-                      paste0(num_to_string(unlist(obj$images[i_img, satp])), collapse = "|")))   
-        })
-      }, error = function(e) {
-        stop(e$message)
-      }, finally = endPB(pb_imn))
+      if(is_fcs) {
+        L = as.integer(obj$description$ID$objcount)
+        if(display_progress) {
+          pb_imn = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+          tryCatch({
+            lapply(0:(L-1), FUN=function(i_img) {
+              setPB(pb_imn, value = i_img, title = title_progress, label = "writing images values (xml)")
+              cat(indent2, file = file_w, append = TRUE, sep = "",
+                  sprintf('<SO id="%i" imgIFD="-1" mskIFD="-1" spIFD="-1" w="0" l="0" fs="0" cl="0" ct="0" objCenterX="0" objCenterY="0" />\n',i_img))
+            })
+          }, error = function(e) {
+            stop(e$message)
+          }, finally = endPB(pb_imn))
+        } else {
+          lapply(0:(L-1), FUN=function(i_img) {
+            cat(indent2, file = file_w, append = TRUE, sep = "",
+                sprintf('<SO id="%i" imgIFD="-1" mskIFD="-1" spIFD="-1" w="0" l="0" fs="0" cl="0" ct="0" objCenterX="0" objCenterY="0" />\n',i_img))
+          })
+        }
       } else {
-        lapply(1:L, FUN=function(i_img) {
-          cat(indent2, file = file_w, append = TRUE, sep = "",
-              sprintf('<SO id="%s" imgIFD="%s" mskIFD="%s" spIFD="%s" w="%s" l="%s" fs="%s" cl="%s" ct="%s" objCenterX="%s" objCenterY="%s" bgmean="%s" bgstd="%s" satcount="%s" satpercent="%s" />\n',
-                      num_to_string(obj$images[i_img, 'id']),
-                      num_to_string(obj$images[i_img, 'imgIFD']),
-                      num_to_string(obj$images[i_img, 'mskIFD']),
-                      num_to_string(obj$images[i_img, 'spIFD']),
-                      num_to_string(obj$images[i_img, 'w']),
-                      num_to_string(obj$images[i_img, 'l']),
-                      num_to_string(obj$images[i_img, 'fs']),
-                      num_to_string(obj$images[i_img, 'cl']),
-                      num_to_string(obj$images[i_img, 'ct']),
-                      num_to_string(obj$images[i_img, 'objCenterX']),
-                      num_to_string(obj$images[i_img, 'objCenterY']),
-                      paste0(num_to_string(unlist(obj$images[i_img, bgm])), collapse = "|"),
-                      paste0(num_to_string(unlist(obj$images[i_img, bgs])), collapse = "|"),
-                      paste0(num_to_string(unlist(obj$images[i_img, satc])), collapse = "|"),
-                      paste0(num_to_string(unlist(obj$images[i_img, satp])), collapse = "|")))
-        })
+        if(display_progress) {
+          pb_imn = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+          tryCatch({
+            lapply(1:L, FUN=function(i_img) {
+              setPB(pb_imn, value = i_img, title = title_progress, label = "writing images values (xml)")
+              cat(indent2, file = file_w, append = TRUE, sep = "",
+                  sprintf('<SO id="%s" imgIFD="%s" mskIFD="%s" spIFD="%s" w="%s" l="%s" fs="%s" cl="%s" ct="%s" objCenterX="%s" objCenterY="%s" bgmean="%s" bgstd="%s" satcount="%s" satpercent="%s" />\n',
+                          num_to_string(obj$images[i_img, 'id']),
+                          num_to_string(obj$images[i_img, 'imgIFD']),
+                          num_to_string(obj$images[i_img, 'mskIFD']),
+                          num_to_string(obj$images[i_img, 'spIFD']),
+                          num_to_string(obj$images[i_img, 'w']),
+                          num_to_string(obj$images[i_img, 'l']),
+                          num_to_string(obj$images[i_img, 'fs']),
+                          num_to_string(obj$images[i_img, 'cl']),
+                          num_to_string(obj$images[i_img, 'ct']),
+                          num_to_string(obj$images[i_img, 'objCenterX']),
+                          num_to_string(obj$images[i_img, 'objCenterY']),
+                          paste0(num_to_string(unlist(obj$images[i_img, bgm])), collapse = "|"),
+                          paste0(num_to_string(unlist(obj$images[i_img, bgs])), collapse = "|"),
+                          paste0(num_to_string(unlist(obj$images[i_img, satc])), collapse = "|"),
+                          paste0(num_to_string(unlist(obj$images[i_img, satp])), collapse = "|")))   
+            })
+          }, error = function(e) {
+            stop(e$message)
+          }, finally = endPB(pb_imn))
+        } else {
+          lapply(1:L, FUN=function(i_img) {
+            cat(indent2, file = file_w, append = TRUE, sep = "",
+                sprintf('<SO id="%s" imgIFD="%s" mskIFD="%s" spIFD="%s" w="%s" l="%s" fs="%s" cl="%s" ct="%s" objCenterX="%s" objCenterY="%s" bgmean="%s" bgstd="%s" satcount="%s" satpercent="%s" />\n',
+                        num_to_string(obj$images[i_img, 'id']),
+                        num_to_string(obj$images[i_img, 'imgIFD']),
+                        num_to_string(obj$images[i_img, 'mskIFD']),
+                        num_to_string(obj$images[i_img, 'spIFD']),
+                        num_to_string(obj$images[i_img, 'w']),
+                        num_to_string(obj$images[i_img, 'l']),
+                        num_to_string(obj$images[i_img, 'fs']),
+                        num_to_string(obj$images[i_img, 'cl']),
+                        num_to_string(obj$images[i_img, 'ct']),
+                        num_to_string(obj$images[i_img, 'objCenterX']),
+                        num_to_string(obj$images[i_img, 'objCenterY']),
+                        paste0(num_to_string(unlist(obj$images[i_img, bgm])), collapse = "|"),
+                        paste0(num_to_string(unlist(obj$images[i_img, bgs])), collapse = "|"),
+                        paste0(num_to_string(unlist(obj$images[i_img, satc])), collapse = "|"),
+                        paste0(num_to_string(unlist(obj$images[i_img, satp])), collapse = "|")))
+          })
+        }
       }
       # finalizes temporary file by adding remaining shared nodes from .tempXMLOutput
       lapply(.tempXMLOutput[(pos1+1):length(.tempXMLOutput)], FUN=function(i_text) cat(i_text, file = file_w, append = TRUE, "\n", sep=""))

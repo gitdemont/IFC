@@ -114,6 +114,8 @@ getInfo <- function(fileName,
     toskip = toskip + nchar("</Assay>") - 1
     tmp_daf = read_xml(readBin(con = fileName, what = "raw", n = toskip), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
     cname = xml_attr(xml_find_first(tmp_daf, "//SOD"), attr = "file")
+    fcs = xml_attr(xml_find_first(tmp_daf, "//FCS"), attr = "file")
+    if(!is.na(fcs)) stop("can't extract information from .daf generated from .fcs")
     found = FALSE
     checksum = checksumDAF(fileName)
     fileName_image = file.path(cifdir, paste0(splitf(cname)[c("short","ext")], collapse = ".")) # look in cifdir 1st
