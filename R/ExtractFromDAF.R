@@ -104,7 +104,6 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
                    "Images"=xml_attrs(xml_find_all(tmp, "//image")),
                    "masks"=xml_attrs(xml_find_all(tmp, "//mask")))
   description=lapply(description, FUN=function(x) {as.data.frame(do.call(what="rbind", x), stringsAsFactors=FALSE)})
-  str(description)
   if(length(description$FCS)==0) {
     description$ID = description$SOD
     is_fcs = FALSE
