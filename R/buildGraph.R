@@ -76,7 +76,7 @@
 #' Otherwise, it will use each of 'GraphRegion', 'BasePop' and 'ShownPop' names, collapse with '|'.
 #' @param xstatsorder Character. Order of stat rows.
 #' It will use each of 'GraphRegion' names & each of 'BasePop' names, reverted and collapse with '|'.
-#' @param Legend Default is list(onoff='false',x='0',y='0',witdh='96',height='128').
+#' @param Legend Default is list(list(onoff='false',x='0',y='0',witdh='96',height='128')).
 #' Not yet implemented.
 #' @param BasePop Default is list(list()). See details.
 #' @param GraphRegion Default is list(list()). Only allowed member are sub-list(s) with only one character component named 'name'.
@@ -124,7 +124,7 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   assert(ylocation, typ="integer", len=1)
   assert(f1, len=1, typ="character")
   assert(stats, len=1, alw=c("true","false"))
-  if(missing(Legend)) Legend=list(onoff="false",x="0",y="0",witdh="96",height="128")
+  if(missing(Legend)) Legend=list(list(onoff="false",x="0",y="0",witdh="96",height="128"))
   ###### Removed since xsize and ysize can be freely defined
   # assert(xsize, len=1, alw=c(320,480,640))
   # assert(splitterdistance, len=1, alw=120)

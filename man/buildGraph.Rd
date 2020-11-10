@@ -119,7 +119,7 @@ Otherwise, it will use each of 'GraphRegion', 'BasePop' and 'ShownPop' names, co
 \item{xstatsorder}{Character. Order of stat rows.
 It will use each of 'GraphRegion' names & each of 'BasePop' names, reverted and collapse with '|'.}
 
-\item{Legend}{Default is list(onoff='false',x='0',y='0',witdh='96',height='128').
+\item{Legend}{Default is list(list(onoff='false',x='0',y='0',witdh='96',height='128')).
 Not yet implemented.}
 
 \item{BasePop}{Default is list(list()). See details.}
