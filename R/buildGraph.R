@@ -200,16 +200,20 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
     if(type=="density") {
       if(length(BasePop)>1) {
         BasePop = BasePop[1]
-        warning("Density graphs can only display one BasePop population", call. = FALSE, immediate. = TRUE)
+        warning("Density graphs can only display one BasePop population", call.=FALSE, immediate.=TRUE)
         # stop("Density graphs can only display one BasePop population", call.=FALSE)
       }
       if(length(ShownPop)!=0) if(length(ShownPop[[1]])>0) {
         ShownPop = list(list())
-        warning("Density graphs can't display ShownPop population", call.=FALSE, immediate. = TRUE)
+        warning("Density graphs can't display ShownPop population", call.=FALSE, immediate.=TRUE)
         # stop("Density graphs can't display ShownPop population", call.=FALSE)
       }
     } else {
-      if(type=="histogram") if(length(ShownPop)!=0) if(length(ShownPop[[1]])>0) stop("Histogram graphs can't display ShownPop population", call.=FALSE)
+      if(type=="histogram") if(length(ShownPop)!=0) if(length(ShownPop[[1]])>0) {
+        ShownPop = list(list())
+        warning("Histogram graphs can't display ShownPop population", call.=FALSE, immediate.=TRUE)
+        # stop("Histogram graphs can't display ShownPop population", call.=FALSE)
+      }
       BasePop_name_alw = BasePop_name_alw[1:3]
     }
     assert(f2, len=1, typ="character")
