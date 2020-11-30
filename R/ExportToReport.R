@@ -224,14 +224,29 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
           setPB(pb = pb_gr, value = i, title = title_progress, label = paste0("computing ",ifelse(create_pdf,"graphs and ",""),"stats"))
         }
         if(length(bin) == 0) {
-          g = plotGraph(obj, G[[i]], draw=FALSE, color_mode=color_mode, add_key=add_key,
-                        precision=precision, trunc_labels=trunc_labels, trans=trans, viewport=viewport)
+          g = try(plotGraph(obj, G[[i]], draw=FALSE, color_mode=color_mode, add_key=add_key,
+                        precision=precision, trunc_labels=trunc_labels, trans=trans, viewport=viewport), silent = TRUE)
         } else {
-          g = plotGraph(obj, G[[i]], draw=FALSE, color_mode=color_mode, add_key=add_key,
-                        precision=precision, trunc_labels=trunc_labels, trans=trans, viewport=viewport, bin=bin)
+          g = try(plotGraph(obj, G[[i]], draw=FALSE, color_mode=color_mode, add_key=add_key,
+                        precision=precision, trunc_labels=trunc_labels, trans=trans, viewport=viewport, bin=bin), silent = TRUE)
         }
-        foo = g$plot
-        stats = g$stats
+        if(inherits(x = g, what = "try-error")) {
+          foo = grid.rect(gp=gpar(col="white"))
+          if(G[[i]]$type=="histogram") {
+            stats = matrix(NA, nrow = 1, ncol = 8)
+            colnames(stats) = c("count","perc",
+                                "x-Min.","x-1st Qu.","x-Median","x-Mean","x-3rd Qu.","x-Max.")
+          } else {
+            stats = matrix(NA, nrow = 1, ncol = 14)
+            colnames(stats) = c("count","perc",
+                                "x-Min.","x-1st Qu.","x-Median","x-Mean","x-3rd Qu.","x-Max.",
+                                "y-Min.","y-1st Qu.","y-Median","y-Mean","y-3rd Qu.","y-Max.")
+          }
+          rownames(stats) = paste0("Error: ", G[[i]]$title)
+        } else {
+          foo = g$plot
+          stats = g$stats
+        }
         if(create_csv) {
           write.table(x=rbind(c(G[[i]]$f1,"x")), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
           if(G[[i]]$type!="histogram") write.table(x=rbind(c(G[[i]]$f2,"y")), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
