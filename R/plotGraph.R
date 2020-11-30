@@ -166,13 +166,17 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     
     base_s = lapply(base_n, FUN=function(d) {
       np = sum(D[,d])
+      if(np == 0) return(structure(rep(NA, 8), names = c("count","perc",
+                                                          "Min.","1st Qu.","Median","Mean", "3rd Qu.","Max.")))
       p = c("count"=np, "perc"=100, summary(na.omit(D[D[,d],"x1"])))
     })
     kids_s = lapply(shown_n, FUN=function(s) {
       do.call(what = "rbind", args = lapply(base_n, FUN=function(d) {
+        np = sum(D[,d])
+        if(np == 0) return(structure(rep(NA, 8), names = c("count","perc",
+                                                           "Min.","1st Qu.","Median","Mean", "3rd Qu.","Max.")))
         isin = D[,d] & D[,s]
         n = sum(isin)
-        np = sum(D[,d])
         c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])))
       }))
     })
@@ -182,10 +186,12 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         reg = R[[r]]
         coords = reg["x"]
         if(trans_x!="P") coords$x = smoothLinLog(coords$x, hyper=trans_x, base=10)
+        np = sum(D[,d])
+        if(np == 0) return(structure(rep(NA, 8), names = c("count","perc",
+                                                           "Min.","1st Qu.","Median","Mean", "3rd Qu.","Max.")))
         isin = D[D[,d],"x2"]
         isin = (isin >= min(coords$x)) & (isin <= max(coords$x))
         n = sum(isin)
-        np = sum(D[,d])
         c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])))
       }))
     })
