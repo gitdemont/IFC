@@ -118,9 +118,9 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
                       ShownPop=list(list()), ...) {
   dots = list(...)
   assert(type, len=1, alw=c("histogram","scatter","density"))
-  xlocation = na.omit(as.integer(xlocation)); xlocation = xlocation[xlocation>=0]
+  xlocation = na.omit(as.integer(xlocation));# xlocation = xlocation[xlocation>=0]
   assert(xlocation, typ="integer", len=1)
-  ylocation = na.omit(as.integer(ylocation)); ylocation = ylocation[ylocation>=0] 
+  ylocation = na.omit(as.integer(ylocation));# ylocation = ylocation[ylocation>=0] 
   assert(ylocation, typ="integer", len=1)
   assert(f1, len=1, typ="character")
   assert(stats, len=1, alw=c("true","false"))
@@ -198,8 +198,16 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
     BasePop_style_alw = "Solid" # forced for non histogram
     BasePop_fill_alw = "true" # forced for non histogram
     if(type=="density") {
-      if(length(BasePop)>1) stop("Density graphs can only display one BasePop population", call.=FALSE)
-      if(length(ShownPop)!=0) if(length(ShownPop[[1]])>0) stop("Density graphs can't display ShownPop population", call.=FALSE)
+      if(length(BasePop)>1) {
+        BasePop = BasePop[1]
+        warning("Density graphs can only display one BasePop population", call. = FALSE, immediate. = TRUE)
+        # stop("Density graphs can only display one BasePop population", call.=FALSE)
+      }
+      if(length(ShownPop)!=0) if(length(ShownPop[[1]])>0) {
+        ShownPop = list(list())
+        warning("Density graphs can't display ShownPop population", call.=FALSE, immediate. = TRUE)
+        # stop("Density graphs can't display ShownPop population", call.=FALSE)
+      }
     } else {
       if(type=="histogram") if(length(ShownPop)!=0) if(length(ShownPop[[1]])>0) stop("Histogram graphs can't display ShownPop population", call.=FALSE)
       BasePop_name_alw = BasePop_name_alw[1:3]
