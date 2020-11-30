@@ -315,13 +315,19 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     }
     base_s = lapply(base_n, FUN=function(d) {
       np = sum(D[,d])
+      if(np == 0) return(structure(rep(NA, 14), names = c("count","perc",
+                                                         "Min.","1st Qu.","Median","Mean", "3rd Qu.","Max.",
+                                                         "Min.","1st Qu.","Median","Mean", "3rd Qu.","Max.")))
       p = c("count"=np, "perc"=100, summary(na.omit(D[D[,d],"x1"])), summary(na.omit(D[D[,d],"y1"])))
     })
     kids_s = lapply(shown_n, FUN=function(s) {
       do.call(what = "rbind", args = lapply(base_n, FUN=function(d) {
+        np = sum(D[,d])
+        if(np == 0) return(structure(rep(NA, 14), names = c("count","perc",
+                                                           "Min.","1st Qu.","Median","Mean","3rd Qu.","Max.",
+                                                           "Min.","1st Qu.","Median","Mean", "3rd Qu.","Max.")))
         isin = D[,d] & D[,s]
         n = sum(isin)
-        np = sum(D[,d])
         c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])), summary(na.omit(D[isin,"y1"])))
       }))
     })
@@ -334,9 +340,12 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       if(reg$type=="oval") alg = 3
       if(reg$type=="rect") alg = 2
       do.call(what = "rbind", args = lapply(base_n, FUN=function(d) {
+        np = sum(D[,d])
+        if(np == 0) return(structure(rep(NA, 14), names = c("count","perc",
+                                                           "Min.","1st Qu.","Median","Mean","3rd Qu.","Max.",
+                                                           "Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")))
         isin = cpp_pnt_in_gate(pnts = cbind(D[D[,d],"x2"],D[D[,d],"y2"]), gate = cbind(coords$x,coords$y), algorithm = alg)
         n = sum(isin)
-        np = sum(D[,d])
         c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])), summary(na.omit(D[isin,"y1"])))
       }))
     })
