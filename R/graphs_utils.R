@@ -386,27 +386,25 @@ convert_to_baseplot = function(obj) {
   # draw plot
   if(obj$input$type %in% c("percent", "count")) {
     # 1D
-    if(nrow(D) > 0) {
-      br = do.breaks(Xlim, obj$input$bin)
-      hist(D[, "x2"], xlim = Xlim, ylim = Ylim, 
-           main = trunc_string(obj$input$title, obj$input$trunc_labels), 
-           xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
-           ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
-           col = "transparent", border = "transparent", freq = obj$input$type == "count",
-           breaks = br, axes = FALSE)
-      if(length(displayed) > 0) {
-        for(disp in disp_n) {
-          if(any(D[,disp]))
-            base_hist_constr( D[D[,disp], "x2"], br = br, type = obj$input$type, 
-                              normalize = obj$input$normalize, 
-                              smooth = obj$input$histogramsmoothingfactor,
-                              fill = basepop[[obj$input$order[disp]]]$fill=="true",
-                              alpha = 0.8, lwd=1,
-                              col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
-                              border = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
-                              lty = c(1,2,3,4,6)[match(basepop[[obj$input$order[disp]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])
-          
-        }
+    br = do.breaks(Xlim, obj$input$bin)
+    hist(D[, "x2"], xlim = Xlim, ylim = Ylim, 
+         main = trunc_string(obj$input$title, obj$input$trunc_labels), 
+         xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
+         ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+         col = "transparent", border = "transparent", freq = obj$input$type == "count",
+         breaks = br, axes = FALSE)
+    if(length(displayed) > 0) {
+      for(disp in disp_n) {
+        if(any(D[,disp]))
+          base_hist_constr( D[D[,disp], "x2"], br = br, type = obj$input$type, 
+                            normalize = obj$input$normalize, 
+                            smooth = obj$input$histogramsmoothingfactor,
+                            fill = basepop[[obj$input$order[disp]]]$fill=="true",
+                            alpha = 0.8, lwd=1,
+                            col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
+                            border = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
+                            lty = c(1,2,3,4,6)[match(basepop[[obj$input$order[disp]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])
+        
       }
     }
   } else {
@@ -415,10 +413,10 @@ convert_to_baseplot = function(obj) {
       pch=16
       col = "white"
       if(nrow(obj$input$data) > 0)
-      col=densCols(x = obj$input$data$x2, y = obj$input$data$y2,
-                   colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[obj$input$mode]])),
-                   nbin=obj$input$bin,
-                   transformation=obj$input$trans)
+        col=densCols(x = obj$input$data$x2, y = obj$input$data$y2,
+                     colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[obj$input$mode]])),
+                     nbin=obj$input$bin,
+                     transformation=obj$input$trans)
       
       plot(x = obj$input$data$x2, y = obj$input$data$y2,
            xlim = Xlim , ylim = Ylim ,
@@ -441,8 +439,8 @@ convert_to_baseplot = function(obj) {
         if(length(displayed) > 1) {
           for(disp in rev(disp_n)[-1]) {
             points(x = obj$input$data[obj$input$data[,disp], "x2"], y = obj$input$data[obj$input$data[,disp], "y2"],
-                 pch = displayed[[disp]]$style, 
-                 col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
+                   pch = displayed[[disp]]$style, 
+                   col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
           }
         }
       } else {
