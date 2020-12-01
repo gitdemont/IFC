@@ -231,7 +231,8 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
                         precision=precision, trunc_labels=trunc_labels, trans=trans, viewport=viewport, bin=bin), silent = TRUE)
         }
         if(inherits(x = g, what = "try-error")) {
-          foo = grid.rect(gp=gpar(col="white"))
+          foo = arrangeGrob(grid.text(label = paste0("Error: ", attr(x = g, which = "condition")$message), gp=gpar(col="red"), draw = FALSE),
+                            top = textGrob(paste0("\n",G[[i]]$title), gp = gpar(fontsize = 8, font=2, lineheight=0.5)))
           if(G[[i]]$type=="histogram") {
             stats = matrix(NA, nrow = 1, ncol = 8)
             colnames(stats) = c("count","perc",
