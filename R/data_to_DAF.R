@@ -180,11 +180,6 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
       }
       
       while((interactive() && (ntry > 0) && (!found))) {
-        ntry = ntry - 1
-        if(file.exists(fileName_image)) if(getFileExt(fileName_image)=="cif") if(checksumXIF(fileName_image) == checksum) {
-          found = TRUE
-          break;
-        } 
         message(paste0("daf file does not refer to: ", fileName_image))
         old_wd = getwd()
         on.exit(setwd(old_wd), add= TRUE)
@@ -194,6 +189,11 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
         } else {
           fileName_image = file.choose()
         }
+        if(file.exists(fileName_image)) if(getFileExt(fileName_image)=="cif") if(checksumXIF(fileName_image) == checksum) {
+          found = TRUE
+          break;
+        } 
+        ntry = ntry - 1
       }
       fileName_image = normalizePath(fileName_image, winslash = "/", mustWork = FALSE) # /!\ ask AMNIS using full path produces error while trying to retrieve compensation
     } else {

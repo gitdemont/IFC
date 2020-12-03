@@ -428,11 +428,6 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
       }
       
       while((interactive() && (ntry > 0) && (!found))) {
-        ntry = ntry - 1
-        if(file.exists(cif_name)) if(getFileExt(cif_name)=="cif") if(checksumXIF(cif_name) == checksum) {
-          found = TRUE
-          break;
-        } 
         message(paste0("daf file does not refer to: ", cif_name))
         old_wd = getwd()
         on.exit(setwd(old_wd), add= TRUE)
@@ -442,6 +437,11 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
         } else {
           cif_name = file.choose()
         }
+        if(file.exists(cif_name)) if(getFileExt(cif_name)=="cif") if(checksumXIF(cif_name) == checksum) {
+          found = TRUE
+          break;
+        }
+        ntry = ntry - 1
       }
       cif_name = normalizePath(cif_name, winslash = "/", mustWork = FALSE) # /!\ ask AMNIS using full path produces error while trying to retrieve compensation
     } else {
