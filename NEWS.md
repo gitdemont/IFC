@@ -13,6 +13,10 @@
 
 - add functions family to remove features, regions and / or populations from IFC_data object
 
+- allow to produce graph report even if one graph produce an error
+also allow to produce graph with base population with no event
+also allow to produce density graph with aberrant shown pop filled
+
 ## 0.0.9
 - allow graph conversion from lattice to base
 

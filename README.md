@@ -1,3 +1,7 @@
+<!-- badges: start -->
+[![R build status](https://github.com/gitdemont/IFC/workflows/R-CMD-check/badge.svg)](https://github.com/gitdemont/IFC/actions)
+<!-- badges: end -->
+
 # Tools for Imaging Flow Cytometry (IFC)
 
 ## INSTALLATION
