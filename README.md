@@ -1,8 +1,8 @@
 <!-- badges: start -->
 [![R build status](https://github.com/gitdemont/IFC/workflows/R-CMD-check/badge.svg)](https://github.com/gitdemont/IFC/actions)
+[![](https://img.shields.io/github/last-commit/gitdemont/IFC.svg)](https://github.com/gitdemont/IFC/commits/master)
 [![Dependencies](https://tinyverse.netlify.com/badge/IFC)](https://cran.r-project.org/package=IFC)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
-[![](https://img.shields.io/github/last-commit/gitdemont/IFC.svg)](https://github.com/gitdemont/IFC/commits/master)
 
 [![](https://img.shields.io/github/languages/code-size/gitdemont/IFC.svg)](https://github.com/gitdemont/IFC)
 [![](http://cranlogs.r-pkg.org/badges/grand-total/IFC?color=blue)](https://cran.r-project.org/package=IFC)
