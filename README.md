@@ -1,5 +1,13 @@
 <!-- badges: start -->
+[![CRAN checks](https://cranchecks.info/badges/summary/IFC)](https://cran.r-project.org/web/checks/check_results_IFC.html)
+[![Dependencies](https://tinyverse.netlify.com/badge/IFC)](https://cran.r-project.org/package=IFC)
 [![R build status](https://github.com/gitdemont/IFC/workflows/R-CMD-check/badge.svg)](https://github.com/gitdemont/IFC/actions)
+[![](https://img.shields.io/github/languages/code-size/gitdemont/IFC.svg)](https://github.com/gitdemont/IFC)
+[![](https://img.shields.io/github/last-commit/gitdemont/IFC.svg)](https://github.com/gitdemont/IFC/commits/master)
+[![](http://cranlogs.r-pkg.org/badges/grand-total/IFC?color=blue)](https://cran.r-project.org/package=IFC)
+[![](http://cranlogs.r-pkg.org/badges/last-month/IFC?color=green)](https://cran.r-project.org/package=IFC)
+[![](http://cranlogs.r-pkg.org/badges/last-week/IFC?color=yellow)](https://cran.r-project.org/package=IFC)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 <!-- badges: end -->
 
 # Tools for Imaging Flow Cytometry (IFC)
