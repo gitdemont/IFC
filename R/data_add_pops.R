@@ -40,7 +40,7 @@
 #' In such a case this population will not be added to 'obj'.\cr
 #' If any input population is not well defined and can't be created then an error will occur.
 #' @param ... Other arguments to be passed.
-#' @source For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
+#' @source For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{https://github.com/jjvanderwal/SDMTools}
 #' @examples
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a daf file

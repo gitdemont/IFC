@@ -67,7 +67,7 @@ Rcpp::NumericMatrix close_polygon (const Rcpp::NumericMatrix M) {
 //' @param poly NumericMatrix, a 2-column matrix defining the locations (x and y) of vertices of the polygon of interest.
 //' @param epsilon double, threshold value.  Default is 0.000000000001
 //' @author Jeremy VanDerWal, Lorena Falconi, Stephanie Januchowski, Luke Shoo and Collin Storlie \email{jjvanderwal@@gmail.com}.
-//' @source \url{http://github.com/jjvanderwal/SDMTools}
+//' @source \url{https://github.com/jjvanderwal/SDMTools}
 //' @keywords internal
 bool trigo_pnt_in_poly (const Rcpp::NumericVector pnt,
                         const Rcpp::NumericMatrix poly,

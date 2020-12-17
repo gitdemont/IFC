@@ -168,6 +168,6 @@ along with this program; if not, a copy is available at
 https://www.R-project.org/Licenses/
 
 --------------------------------------------------------------------------------
-trigo_pnt_in_poly in gate.hpp is an adaptation of File src/ pointinpolygon.c
+trigo_pnt_in_poly in gate.hpp is an adaptation of File src/pointinpolygon.c
 from SDMTools R package authored by Jeremy VanDerWal, Lorena Falconi, Stephanie
 Januchowski, Luke Shoo and Collin Storlie under GPL (>= 2)

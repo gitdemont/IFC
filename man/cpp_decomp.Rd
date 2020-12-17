@@ -4,8 +4,8 @@
 \alias{cpp_decomp}
 \title{IFC_object Decompression}
 \source{
-For image decompression, Lee Kamentsky's code porting from \url{http://github.com/openmicroscopy/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
-cited in \url{http://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
+cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
 }
 \arguments{
 \item{fname}{string, path to file.}

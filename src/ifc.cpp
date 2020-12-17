@@ -460,8 +460,8 @@ Rcpp::NumericMatrix cpp_resize (const Rcpp::NumericMatrix mat,
 //' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 //' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //' POSSIBILITY OF SUCH DAMAGE.
-//' @source For image decompression, Lee Kamentsky's code porting from \url{http://github.com/openmicroscopy/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
-//' cited in \url{http://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
+//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]

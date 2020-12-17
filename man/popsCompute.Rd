@@ -4,7 +4,7 @@
 \alias{popsCompute}
 \title{IFC_pops Computation}
 \source{
-For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
+For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{https://github.com/jjvanderwal/SDMTools}
 }
 \usage{
 popsCompute(

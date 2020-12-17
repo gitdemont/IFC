@@ -213,7 +213,7 @@ Rcpp::NumericMatrix hpp_mark (const Rcpp::NumericMatrix A,
 //' @param force_range bool, only apply when mode is not "raw", if force_range is TRUE, then 'input_range' will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
 //' Note that this parameter takes the precedence over 'input_range' and 'full_range'.
 //' @param gamma correction. Default is 1, for no correction.
-//' @details When add_noise is false, backgound will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
+//' @details When add_noise is false, background will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
 //' when a mask is detected, add_noise, full_range and force_range are set to false, background mean and sd to 0, and input_range to [0,3].\cr
 //' @keywords internal
 ////' @export

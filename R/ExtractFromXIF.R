@@ -51,7 +51,7 @@
 #' if extract_images is TRUE, a warning will be sent if an object is found at an unexpected order.
 #' @param recursive whether to recursively apply \code{\link{ExtractFromXIF}} on files defining input fileName when it is a merged. Default is FALSE.
 #' @param ... Other arguments to be passed.
-#' @source For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
+#' @source For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{https://github.com/jjvanderwal/SDMTools}
 #' @details If extract_stats is TRUE, extract_features will be automatically forced to TRUE.\cr
 #' If extract_images is TRUE, extract_offsets will be automatically forced to TRUE.\cr
 #' If extract_offsets is TRUE, offsets of images and masks IFDs will be extracted.\cr

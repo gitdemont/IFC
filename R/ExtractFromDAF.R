@@ -48,7 +48,7 @@
 #' If extract_stats is TRUE, extract_features will be automatically forced to TRUE.\cr
 #' If extract_offsets is TRUE, extract_images will be automatically forced to TRUE.\cr
 #' If extract_images is TRUE, information about images will be extracted.
-#' @source For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{http://github.com/jjvanderwal/SDMTools}
+#' @source For pnt_in_poly_algorithm, Trigonometry, is an adaptation of Jeremy VanDerWal's code \url{https://github.com/jjvanderwal/SDMTools}
 #' @examples
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a daf file
