@@ -68,11 +68,15 @@ newPB <- function(session,
     }
     fun = shiny::Progress$new
     bar = do.call(what = fun, args = args)
+    args = list()
+    if(!missing(title)) args = c(args, list(message = title))
+    if(!missing(label)) args = c(args, list(detail = label))
     if(is.finite(initial) && initial < max) {
-      bar$set(value = initial)
+      args = c(args, list(value = initial))
     } else {
-      bar$set(value = min)
+      args = c(args, list(value = min))
     }
+    do.call(what = bar$set, args = args)
     typ = 3
   } else {
     if(.Platform$OS.type == "windows") {
