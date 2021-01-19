@@ -92,7 +92,43 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   tmp = c(g$f1, g$f2) %in% names(obj$features)
   if(!all(tmp)) stop(paste0("trying to plot a features not found in obj$features: ",  paste0(c(g$f1, g$f2)[!tmp], collapse=", ")))
 
-  # defines binning (for histogram and density)
+  # define text/points size
+  lt <- custom.theme(bg=c("black","white")[color_mode], fg=c("white","black")[color_mode])
+  lt$grid.pars <- get.gpar()
+  lt$grid.pars$fontfamily <- "serif"
+  lt$fontsize$text <- lt$grid.pars$fontsize
+  lt$fontsize$points <- 4
+  lt <- sapply(names(lt), simplify = FALSE, FUN=function(i) {
+    switch(i, 
+           "par.xlab.text" = {
+             lt[[i]]$fontfamily <- "serif"
+             lt[[i]]$cex = g$axislabelsfontsize/lt$grid.pars$fontsize
+           },
+           "par.ylab.text" = {
+             lt[[i]]$fontfamily <- "serif"
+             lt[[i]]$cex = g$axislabelsfontsize/lt$grid.pars$fontsize
+           },
+           "par.zlab.text" = {
+             lt[[i]]$fontfamily <- "serif"
+             lt[[i]]$cex = g$axislabelsfontsize/lt$grid.pars$fontsize
+           },
+           "par.main.text" = {
+             lt[[i]]$fontfamily <- "serif"
+             lt[[i]]$cex = g$graphtitlefontsize/lt$grid.pars$fontsize
+           },
+           # "par.sub.text" = {lt[[i]]$cex = g$graphtitlefontsize/lt$grid.pars$fontsize}, ???
+           "axis.text" = {
+             lt[[i]]$fontfamily <- "serif"
+             lt[[i]]$cex = g$axistickmarklabelsfontsize/lt$grid.pars$fontsize
+           },
+           "add.text" = {
+             lt[[i]]$fontfamily <- "serif"
+             lt[[i]]$cex = g$regionlabelsfontsize/lt$grid.pars$fontsize
+           })
+    return(lt[[i]])
+  })
+
+    # defines binning (for histogram and density)
   if(missing(bin)) {
     if(g$type=="histogram") {
       nbin = g$bincount
@@ -161,6 +197,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
 
   if(g$type=="histogram") {
     KEY = list("text"=list(displayed_n),
+               "cex"=lt$add.text$cex * 0.5,
                "lines"=list(col = sapply(displayed_n, FUN=function(p) P[[p]][c("color","lightModeColor")][[color_mode]]),
                             lty = sapply(displayed_n, FUN=function(r) c(1,2,3,4,6)[match(g$BasePop[[displayed_o[r]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])))
     
@@ -310,6 +347,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     }
   } else {
     KEY = list("text"=list(displayed_r),
+               "cex"=lt$add.text$cex * 0.5,
                "points"=list(col = sapply(P[displayed_r], FUN=function(p) p[c("color","lightModeColor")][[color_mode]]),
                              pch = sapply(P[displayed_r], FUN=function(p) p$style)))
     if(trans_y!="P") {
@@ -462,21 +500,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       }
     }
   }
-  lt <- custom.theme(bg=c("black","white")[color_mode], fg=c("white","black")[color_mode])
-  lapply(names(lt), FUN=function(i) {
-    if(i %in% c("add.text","axis.text","par.xlab.text","par.ylab.text","par.zlab.text","par.main.text","par.sub.text")) {
-      lt[[i]]$font <- 2
-      lt[[i]]$cex <- 1
-      lt[[i]]$fontfamily <- "serif"
-    }
-    return(lt[[i]])
-  })
-  lt$fontsize$text <- 6
-  lt$fontsize$points <- 4
-  lt$grid.pars <- get.gpar()
-  lt$grid.pars$fontfamily <- "serif"
-  foo = update(foo, par.settings = lt)
   if(any(c("global","both")%in%add_key)) foo = update(foo, key=KEY)
+  foo = update(foo, par.settings = lt)
   if(draw) {
     plot(foo)
     dv = dev.cur()

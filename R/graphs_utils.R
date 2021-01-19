@@ -391,6 +391,9 @@ convert_to_baseplot = function(obj) {
          main = trunc_string(obj$input$title, obj$input$trunc_labels), 
          xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
          ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+         cex.lab = obj$plot$par.settings$par.xlab.text$cex,
+         cex.main = obj$plot$par.settings$par.main.text$cex,
+         cex.axis = obj$plot$par.settings$axis.text$cex,
          col = "transparent", border = "transparent", freq = obj$input$type == "count",
          breaks = br, axes = FALSE)
     if(length(displayed) > 0) {
@@ -423,6 +426,9 @@ convert_to_baseplot = function(obj) {
            main = obj$input$title,
            xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
            ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+           cex.lab = obj$plot$par.settings$par.xlab.text$cex,
+           cex.main = obj$plot$par.settings$par.main.text$cex,
+           cex.axis = obj$plot$par.settings$axis.text$cex,
            pch = pch, col = col, 
            axes = FALSE)
     } else {
@@ -433,6 +439,9 @@ convert_to_baseplot = function(obj) {
              main = obj$input$title,
              xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
              ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+             cex.lab = obj$plot$par.settings$par.xlab.text$cex,
+             cex.main = obj$plot$par.settings$par.main.text$cex,
+             cex.axis = obj$plot$par.settings$axis.text$cex,
              pch = displayed[[disp]]$style, 
              col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
              axes = FALSE)
@@ -452,10 +461,13 @@ convert_to_baseplot = function(obj) {
         pch = sapply(groups, FUN = function(disp) displayed[[disp]]$style)
         col = sapply(groups, FUN = function(disp) displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
         plot(x = obj$input$data$x2, y = obj$input$data$y2,
-             xlim = Xlim, ylim = Ylim ,
+             xlim = Xlim, ylim = Ylim,
              main = obj$input$title,
              xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
              ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+             cex.lab = obj$plot$par.settings$par.xlab.text$cex,
+             cex.main = obj$plot$par.settings$par.main.text$cex,
+             cex.axis = obj$plot$par.settings$axis.text$cex,
              pch = pch, col = col,
              axes = FALSE)
       }
@@ -466,9 +478,9 @@ convert_to_baseplot = function(obj) {
   if(pkg == "base") {
     x_ticks = base_axis_constr(lim = Xlim, hyper = obj$input$trans_x, nint = n_ticks)
     y_ticks = base_axis_constr(lim = Ylim, hyper = obj$input$trans_y, nint = n_ticks)
-    x_axis = axis(side = 1, at = x_ticks$at, labels = FALSE, cex.axis = 0.8)
-    text(x_axis, Ylim[1] - diff(Ylim) * 0.07, x_ticks$label, srt=45, xpd=TRUE, pos = 1, cex = 0.8)
-    axis(side = 2, at = y_ticks$at, labels = y_ticks$label, las = 2, cex.axis = 0.8) 
+    x_axis = axis(side = 1, at = x_ticks$at, labels = FALSE, cex.lab = obj$plot$par.settings$par.xlab.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex)
+    text(x_axis, Ylim[1] - diff(Ylim) * 0.07, x_ticks$label, srt=45, xpd=TRUE, pos = 1, cex = obj$plot$par.settings$axis.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex)
+    axis(side = 2, at = y_ticks$at, labels = y_ticks$label, las = 2, cex.lab = obj$plot$par.settings$par.xlab.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex)
     box()
   }
   
@@ -485,11 +497,11 @@ convert_to_baseplot = function(obj) {
       switch(pkg,
              "lattice" = {
                foo = foo +
-                 layer(panel.text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4)) +
+                 layer(panel.text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex)) +
                  layer(panel.lines(x=coords$x, y=coords$y*diff(Ylim),col=k))
              },
              "base" = {
-               text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4)
+               text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex)
                polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
              })
     } else {
@@ -507,11 +519,11 @@ convert_to_baseplot = function(obj) {
       switch(pkg,
              "lattice" = {
                foo = foo +
-                 layer(panel.text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4)) +
+                 layer(panel.text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex)) +
                  layer(panel.polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1))
              },
              "base" = {
-               text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4) 
+               text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex) 
                polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
              })
     }
@@ -523,12 +535,12 @@ convert_to_baseplot = function(obj) {
     legend("topleft", inset = 0.025, 
            lty = sapply(disp_n, FUN=function(p) c(1,2,3,4,6)[match(basepop[[obj$input$order[p]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))]),
            col = sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
-           legend = disp_n, cex = 0.5, bg = "#ADADAD99", pt.cex = 1, bty ="o", box.lty = 0)
+           legend = disp_n, cex = obj$plot$par.settings$add.text$cex * 0.5, bg = "#ADADAD99", pt.cex = 1, bty ="o", box.lty = 0)
   } else {
     legend("topleft", inset = 0.025, 
            pch = sapply(displayed, FUN=function(p) p$style),
            col = sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
-           legend = disp_n, cex = 0.5, bg = "#ADADAD99", pt.cex = 1, bty ="o", box.lty = 0)
+           legend = disp_n, cex = obj$plot$par.settings$add.text$cex * 0.5, bg = "#ADADAD99", pt.cex = 1, bty ="o", box.lty = 0)
   }
 }
 
