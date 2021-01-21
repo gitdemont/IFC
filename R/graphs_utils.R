@@ -580,10 +580,12 @@ adjustGraph = function(obj, selection, ...) {
         # remove ShownPop not found in obj
         if(length(g$ShownPop)) g$ShownPop = g$ShownPop[sapply(g$ShownPop, FUN = function(p) p$name %in% names(obj$pops))]
         # rebuild Graph, mainly to recompute order
-        return(do.call(what = buildGraph, args = g[!grepl("order", names(g))]))
-      } else {
-        return(g)
+        g = do.call(what = buildGraph, args = g[!grepl("order", names(g))])
+        # try to draw the graph
+        drawable = try(plotGraph(obj = obj, graph = g, draw = FALSE, stats_print = FALSE), silent = TRUE)
+        if(inherits(x = drawable, what = "try-error")) return(NULL)
       }
+      return(g)
     })
     names(foo) = N
     bar = foo[sapply(foo, FUN = function(x) length(x) > 0)]
