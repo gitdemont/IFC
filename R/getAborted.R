@@ -39,8 +39,9 @@
 #' This argument takes precedence over 'config_file' and filling 'default_batch_dir' prevents the use of 'config_file' argument.
 #' @param config_file path to IDEAS(R) config file.\cr
 #' It may depends on IDEAS(R) software installation but one may use "C:/Users/\%USER\%/AppData/Roaming/Amnis Corporation/userconfig.xml".
-#' @return a list of 3 elements:\cr
+#' @return a list of 4 elements:\cr
 #' -not_existing: a list of files paths that caused failure because they were not found during batch,\cr
+#' -not_handled: a list of failed files and the retrieved error message.\cr
 #' -failed_found: a list of failed files and their unique corresponding paths,\cr
 #' -failed_match: a list of failed files and their all paths that could match.
 #' @export
@@ -111,6 +112,8 @@ getAborted <- function(aborted, default_batch_dir, config_file) {
   # it shows the basename of the input file
   # -"File processing was unexpectantly stopped", it seems to happen when creating cif
   # it shows the basename of the future cif file i.e. appended with suffix
+  # - "There are no objects", when file is has noBF ?
+  # it shows the basename of the future cif file i.e. appended with suffix
   # Others ?
   aborted_batch_reason = ifelse(pos > -1, substring(tmp_aborted_errors, pos + 2), "")
   aborted_batch_reason = gsub("\\'.*", "",  aborted_batch_reason)
@@ -118,7 +121,7 @@ getAborted <- function(aborted, default_batch_dir, config_file) {
 
   # retrieve files that were not found during batch
   # aborted_batch_reason == "Could not find file"
-  tmp = aborted_batch_reason %in% "Could not find file"
+  tmp = aborted_batch_reason %in% c("Could not find file")
   if(any(tmp)) {
     not_found = lapply(1:sum(tmp), FUN=function(i) {
       normalizePath(gsub("^.*\'(.*)\'.*$", "\\1", tmp_aborted_errors[which(tmp)[i]]), winslash = "/", mustWork = FALSE)
@@ -156,11 +159,21 @@ getAborted <- function(aborted, default_batch_dir, config_file) {
       # retrieve indices of potential matches between input / export
       potential = lapply(1:L, FUN=function(i) {
         foo = gsub("\\.[[:alnum:]]+$", 
-                   ifelse(aborted_batch_reason[i] == "File processing was unexpectantly stopped", "", batch_suffix),
+                   ifelse(aborted_batch_reason[i] %in% c("File processing was unexpectantly stopped", "There are no objects"), "", batch_suffix),
                    aborted_batch_files[i]) == base_batch_files_no_ext
         return(which(foo))
       })
       names(potential) <- aborted_batch_files
+      
+      # identify files that were aborted for unhandled aborted_reason 
+      unk = sapply(potential, length) == 0
+      if(length(unk) == 0) {
+        not_handled = list()
+      } else {
+        not_handled = as.list(aborted_batch_reason[unk])
+        names(not_handled) = names(potential[!unk])
+        potential = potential[!unk] 
+      }
       
       # identify failed files that match with only one possible final file
       sure = sapply(potential, length) == 1
@@ -212,10 +225,11 @@ getAborted <- function(aborted, default_batch_dir, config_file) {
         }
       }
       return(list(not_existing = not_found,
+                  not_handled = not_handled,
                   failed_found = sapply(found_failed, simplify = FALSE, FUN=function(i) batch_files[i]),
                   failed_match = sapply(potential, simplify = FALSE, FUN=function(i) batch_files[i])))
     } else {
-      stop("can't find 'batch.xml' file that correspond to 'Aborted.txt'")
+      stop("can't find 'batch.xml' file that corresponds to 'Aborted.txt'")
     }
   }
   return(list(NULL))

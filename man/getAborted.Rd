@@ -20,8 +20,9 @@ This argument takes precedence over 'config_file' and filling 'default_batch_dir
 It may depends on IDEAS(R) software installation but one may use "C:/Users/\%USER\%/AppData/Roaming/Amnis Corporation/userconfig.xml".}
 }
 \value{
-a list of 3 elements:\cr
+a list of 4 elements:\cr
 -not_existing: a list of files paths that caused failure because they were not found during batch,\cr
+-not_handled: a list of failed files and the retrieved error message.\cr
 -failed_found: a list of failed files and their unique corresponding paths,\cr
 -failed_match: a list of failed files and their all paths that could match.
 }
