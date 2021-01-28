@@ -111,12 +111,12 @@ data_rm_pops <- function(obj, pops, list_only = TRUE, ...) {
                             features = character(),
                             regions = character(),
                             pops = to_remove_pops,
-                            graphs = to_remove_graphs))
+                            graphs = adjustGraph(obj = obj, selection = to_remove_graphs, list.only = TRUE)))
   
   pops_back = obj$pops
   obj$pops = list()
   obj = data_add_pops(obj, pops = pops_back[!(names(pops_back) %in% to_remove_pops)], ...)
   # remove pops and their dep
-  if(length(to_remove_graphs) != 0) return(adjustGraph(obj = obj, selection = to_remove_graphs))
+  if(length(to_remove_graphs) != 0) return(adjustGraph(obj = obj, selection = to_remove_graphs, list.only = FALSE))
   return(obj)
 }

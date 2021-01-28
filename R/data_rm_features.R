@@ -140,7 +140,7 @@ data_rm_features <- function(obj, features, list_only = TRUE, ...) {
                 features = to_remove_features,
                 regions = to_remove_regions,
                 pops = to_remove_pops,
-                graphs = to_remove_graphs))
+                graphs = adjustGraph(obj = obj, selection = to_remove_graphs, list.only = TRUE)))
   }
   
   # remove regions and their dep
@@ -171,6 +171,6 @@ data_rm_features <- function(obj, features, list_only = TRUE, ...) {
   pops_back = obj$pops
   obj$pops = list()
   obj = data_add_pops(obj, pops = pops_back[!(names(pops_back) %in% to_remove_pops)], ...)
-  if(length(to_remove_graphs) != 0) return(adjustGraph(obj = obj, selection = to_remove_graphs))
+  if(length(to_remove_graphs) != 0) return(adjustGraph(obj = obj, selection = to_remove_graphs, list.only = FALSE))
   return(obj)
 }

@@ -550,9 +550,11 @@ convert_to_baseplot = function(obj) {
 #' @param obj an object of class `IFC_data` extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
 #' @param selection when provided, indices of desired graphs.\cr
 #' Note that indices are read from left to right, from top to bottom. 
+#' @param list_only whether to return a vector of elements that will be impacted by the removal. Default is TRUE.
+#' If FALSE then modified object will be returned
 #' @param ... other arguments to be passed.
 #' @keywords internal
-adjustGraph = function(obj, selection, ...) {
+adjustGraph = function(obj, selection, list.only = TRUE, ...) {
   dots = list(...)
   assert(obj, cla = "IFC_data")
   G = obj$graphs
@@ -566,27 +568,30 @@ adjustGraph = function(obj, selection, ...) {
     foo = lapply(1:length(G), FUN = function(i_graph) {
       g = G[[i_graph]]
       if(i_graph %in% selection) {
-        # check if x axis is present in obj
-        if(!(g$f1 %in% names(obj$features))) return(NULL)
-        # check if y axis is present in obj
-        if(g$type != "histogram") if(!(g$f2 %in% names(obj$features))) return(NULL)
-        # check that at least one base pop will be plot
-        base_found = sapply(g$BasePop, FUN = function(p) p$name %in% names(obj$pops))
-        if(!any(base_found)) return(NULL)
-        # remove BasePop not present in obj
-        g$BasePop = g$BasePop[base_found]
-        # remove GraphRegion not found in obj
-        if(length(g$GraphRegion)) g$GraphRegion = g$GraphRegion[sapply(g$GraphRegion, FUN = function(r) r$name %in% names(obj$regions))]
-        # remove ShownPop not found in obj
-        if(length(g$ShownPop)) g$ShownPop = g$ShownPop[sapply(g$ShownPop, FUN = function(p) p$name %in% names(obj$pops))]
-        # rebuild Graph, mainly to recompute order
-        g = do.call(what = buildGraph, args = g[!grepl("order", names(g))])
-        # try to draw the graph
-        drawable = try(plotGraph(obj = obj, graph = g, draw = FALSE, stats_print = FALSE), silent = TRUE)
-        if(inherits(x = drawable, what = "try-error")) return(NULL)
+        tryCatch({
+          # check if x axis is present in obj
+          if(!(g$f1 %in% names(obj$features))) return(NULL)
+          # check if y axis is present in obj
+          if(g$type != "histogram") if(!(g$f2 %in% names(obj$features))) return(NULL)
+          # check that at least one base pop will be plot
+          base_found = sapply(g$BasePop, FUN = function(p) p$name %in% names(obj$pops))
+          if(!any(base_found)) return(NULL)
+          # remove BasePop not present in obj
+          g$BasePop = g$BasePop[base_found]
+          # remove GraphRegion not found in obj
+          if(length(g$GraphRegion) !=0 && length(g$GraphRegion[[1]]) != 0) g$GraphRegion = g$GraphRegion[sapply(g$GraphRegion, FUN = function(r) r$name %in% names(obj$regions))]
+          # remove ShownPop not found in obj
+          if(length(g$ShownPop) != 0 && length(g$ShownPop[[1]]) != 0) g$ShownPop = g$ShownPop[sapply(g$ShownPop, FUN = function(p) p$name %in% names(obj$pops))]
+          # rebuild Graph, mainly to recompute order
+          g = do.call(what = buildGraph, args = g[!grepl("order", names(g))])
+          # try to draw the graph
+          drawable = plotGraph(obj = obj, graph = g, draw = FALSE, stats_print = FALSE)
+          return(g)
+        }, error = function(e) return(NULL))
       }
       return(g)
     })
+    if(list.only) return(sapply(foo, FUN = function(x) length(x) == 0))
     names(foo) = N
     bar = foo[sapply(foo, FUN = function(x) length(x) > 0)]
     class(bar) = class(obj$graphs)
