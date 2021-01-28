@@ -591,7 +591,7 @@ adjustGraph = function(obj, selection, list.only = TRUE, ...) {
       }
       return(g)
     })
-    if(list.only) return(sapply(foo, FUN = function(x) length(x) == 0))
+    if(list.only) return(which(sapply(foo, FUN = function(x) length(x) == 0)))
     names(foo) = N
     bar = foo[sapply(foo, FUN = function(x) length(x) > 0)]
     class(bar) = class(obj$graphs)
