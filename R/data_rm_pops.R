@@ -33,16 +33,18 @@
 #' @param obj an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
 #' @param pops a character vector of population names to remove within 'obj'. Note that "All" and "" are not allowed and will be excluded from 'pops' if present.
 #' @param list_only whether to return a list of elements that will be impacted by the removal. Default is TRUE.
-#' If FALSE then modified object will be returned
+#' If FALSE then modified object will be returned.
+#' @param adjust_graph whether to try to adjust graph when possible. Default is TRUE.
 #' @param ... Other arguments to be passed.
 #' @return an `IFC_data` object or a list of elements impacted by removal depending on 'list_only' parameter.
 #' @export
-data_rm_pops <- function(obj, pops, list_only = TRUE, ...) {
+data_rm_pops <- function(obj, pops, list_only = TRUE, adjust_graph = TRUE, ...) {
   dots = list(...)
   assert(obj, cla = "IFC_data")
   assert(list_only, len = 1, alw = c(TRUE,FALSE))
-  assert(pops, typ = "character")
-  to_remove_pops = pops
+  assert(adjust_graph, len = 1, alw = c(TRUE,FALSE))
+  to_remove_pops = as.character(pops)
+  assert(to_remove_pops, typ = "character")
   if(length(obj$pops) == 0) {
     warning("'obj' contains no population", immediate. = TRUE, call. = FALSE)
     if(list_only) {
@@ -111,12 +113,12 @@ data_rm_pops <- function(obj, pops, list_only = TRUE, ...) {
                             features = character(),
                             regions = character(),
                             pops = to_remove_pops,
-                            graphs = adjustGraph(obj = obj, selection = to_remove_graphs, list.only = TRUE)))
+                            graphs = to_remove_graphs))
   
   pops_back = obj$pops
   obj$pops = list()
   obj = data_add_pops(obj, pops = pops_back[!(names(pops_back) %in% to_remove_pops)], ...)
   # remove pops and their dep
-  if(length(to_remove_graphs) != 0) return(adjustGraph(obj = obj, selection = to_remove_graphs, list.only = FALSE))
+  if(length(to_remove_graphs) != 0) return(adjustGraph(obj = obj, selection = to_remove_graphs, adjust_graph = adjust_graph))
   return(obj)
 }

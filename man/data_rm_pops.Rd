@@ -4,7 +4,7 @@
 \alias{data_rm_pops}
 \title{Remove Population from an IFC_data Object}
 \usage{
-data_rm_pops(obj, pops, list_only = TRUE, ...)
+data_rm_pops(obj, pops, list_only = TRUE, adjust_graph = TRUE, ...)
 }
 \arguments{
 \item{obj}{an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}
@@ -12,7 +12,9 @@ data_rm_pops(obj, pops, list_only = TRUE, ...)
 \item{pops}{a character vector of population names to remove within 'obj'. Note that "All" and "" are not allowed and will be excluded from 'pops' if present.}
 
 \item{list_only}{whether to return a list of elements that will be impacted by the removal. Default is TRUE.
-If FALSE then modified object will be returned}
+If FALSE then modified object will be returned.}
+
+\item{adjust_graph}{whether to try to adjust graph when possible. Default is TRUE.}
 
 \item{...}{Other arguments to be passed.}
 }

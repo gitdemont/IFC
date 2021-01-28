@@ -4,7 +4,7 @@
 \alias{adjustGraph}
 \title{IFC Graph Adjustment}
 \usage{
-adjustGraph(obj, selection, list.only = TRUE, ...)
+adjustGraph(obj, selection, adjust_graph = TRUE, ...)
 }
 \arguments{
 \item{obj}{an object of class `IFC_data` extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}
@@ -12,10 +12,9 @@ adjustGraph(obj, selection, list.only = TRUE, ...)
 \item{selection}{when provided, indices of desired graphs.\cr
 Note that indices are read from left to right, from top to bottom.}
 
-\item{...}{other arguments to be passed.}
+\item{adjust_graph}{whether to try to adjust graph when possible. Default is TRUE.}
 
-\item{list_only}{whether to return a vector of elements that will be impacted by the removal. Default is TRUE.
-If FALSE then modified object will be returned}
+\item{...}{other arguments to be passed.}
 }
 \description{
 Helper to readjust `IFC_data` graphs in case of missing feature, region, population.
