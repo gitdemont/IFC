@@ -30,7 +30,7 @@
 #' @title Gating Strategy File Reader
 #' @description
 #' Extracts Gating Strategy from Files.
-#' @param fileName path to file.
+#' @param fileName path to file. It should be a .ast, .cif, .daf, .ist, .rif or .xml file.
 #' @return A named list of class `IFC_gating`, whose members are:\cr
 #' -description, a list of descriptive information,\cr
 #' -pops, a list describing populations found,\cr
@@ -41,23 +41,36 @@ readGatingStrategy <- function(fileName, ...) {
   dots=list(...)
   if(missing(fileName)) stop("'fileName' can't be missing")
   file_extension = getFileExt(fileName)
-  assert(file_extension, len = 1, alw = c("daf","cif","rif","xml"))
+  assert(file_extension, len = 1, alw = c("daf","cif","rif","xml","ast","ist"))
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
   title_progress = basename(fileName)
   
   fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
-  assay = "/Network"
-  toskip=cpp_scanFirst(fname = fileName, target = "</Network>", start = 0, end = 0)
-  if(toskip == 0) {
-    assay = "/Assay"
-    toskip=cpp_scanFirst(fname = fileName, target = "</Assay>", start = 0, end = 0)
-    if(toskip == 0) stop(paste0(fileName, "\ndoes not seem to be well formatted: </Assay> or </Network> not found")) 
+  if(file_extension %in% c("daf", "ast", "xml")) {
+    assay = switch(file_extension,
+                   daf = "/Assay",
+                   xml = "/Network",
+                   ast = "/AssayTemplate")
+    toskip=cpp_scanFirst(fname = fileName, target = paste0("<",assay,">"), start = 0, end = 0)
+    if(toskip==0) stop(paste0(fileName, "\ndoes not seem to be well formatted: <",assay,"> not found"))
+    toskip = toskip + nchar(paste0("<",assay,">")) - 1
+    tmp=read_xml(readBin(con = fileName, what = "raw", n = toskip), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  } else {
+    if(file_extension %in% c("cif", "rif")) {
+      IFD = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE, verbosity = 0, bypass = TRUE)
+      tmp=read_xml(as_list(xml_find_first(read_xml(getFullTag(IFD = IFD, which = 1, "33027"),
+                                          options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN")), "//Imaging//DafFile"))[[1]],
+                   options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+    } else { # for ist
+      tmp=read_xml(as_list(xml_find_first(read_xml(fileName, 
+                                                   options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN")), "//Imaging//DafFile"))[[1]],
+                   options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+    }
+    assay = "/AssayTemplate"
   }
-  toskip = toskip + nchar(paste0("</",assay,">")) - 1
-  tmp=read_xml(readBin(con = fileName, what = "raw", n = toskip), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
-  assay_attr = xml_attrs(xml_find_all(tmp, paste0("/",assay)))
-  
+
   ##### extracts description
+  assay_attr = xml_attrs(xml_find_all(tmp, paste0("/",assay)))
   description=list("Assay" = assay_attr,
                    "FCS"=xml_attrs(xml_find_all(tmp, "//FCS")),
                    "SOD"=xml_attrs(xml_find_all(tmp, "//SOD")))

@@ -7,7 +7,7 @@
 readGatingStrategy(fileName, ...)
 }
 \arguments{
-\item{fileName}{path to file.}
+\item{fileName}{path to file. It should be a .ast, .cif, .daf, .ist, .rif or .xml file.}
 
 \item{...}{other arguments to be passed.}
 }
