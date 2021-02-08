@@ -56,6 +56,12 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   # check mandatory param
   assert(obj, cla = "IFC_data")
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
+  is_tagged = sapply(obj$pops, FUN = function(p) p$type == "T")
+  if(any(is_tagged)) {
+    warning(paste0("some 'pops' in 'obj$pops' are tagged population and can't be exported:\n", paste0(paste0("\t- ", names(obj$pops[is_tagged]), collapse = "\n"))), call. = FALSE, immediate. = TRUE)
+    obj = data_rm_pops(obj = obj, pops = names(obj$pops[is_tagged]), list_only = FALSE, adjust_graph = FALSE)
+  }
+
   if(missing(write_to)) stop("'write_to' can't be missing")
   assert(write_to, len = 1, typ = "character")
   assert(overwrite, len = 1, alw = c(TRUE, FALSE))
@@ -105,7 +111,6 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   # defines some variables
   now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
   pkg_ver = paste0(unlist(packageVersion("IFC")), collapse = ".")
-  channels = obj$description$Images
   is_fcs = length(obj$description$FCS)!=0
   
   now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
@@ -123,7 +128,6 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   }
   tryCatch({
     write_xml(root, file = file_w, encoding = "utf-8")
-    
   }, error = function(e) {
     stop(paste0("Can't create 'write_to' file.\n", write_to,
                 ifelse(overwritten,"\nFile was not modified.\n","\n"),
