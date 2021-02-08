@@ -19,11 +19,11 @@ popsCompute(
 )
 }
 \arguments{
-\item{pops}{list of populations.}
+\item{pops}{list of populations that will be coerced by \code{\link{buildPopulation}}.}
 
-\item{regions}{list of regions.}
+\item{regions}{an object of class `IFC_regions`, list of regions.}
 
-\item{features}{data.frame of features.}
+\item{features}{an object of class `IFC_features`, data.frame of features.}
 
 \item{pnt_in_poly_algorithm}{algorithm used to determine if object belongs to a polygon region or not. Default is 1.\cr
 Note that for the moment only 1(Trigonometry) is available.}
@@ -40,7 +40,6 @@ Note that for the moment only 1(Trigonometry) is available.}
 an object of class `IFC_pops`.
 }
 \description{
-Function used to compute `IFC_pops`\cr
+Function used to compute `IFC_pops` object\cr
 It requires pops, regions and features.
 }
-\keyword{internal}

@@ -1,0 +1,116 @@
+################################################################################
+# This file is released under the GNU General Public License, Version 3, GPL-3 #
+# Copyright (C) 2021 Yohann Demont                                             #
+#                                                                              #
+# It is part of IFC package, please cite:                                      #
+# -IFC: An R Package for Imaging Flow Cytometry                                #
+# -YEAR: 2020                                                                  #
+# -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,             #
+#                     Jean-Pierre Marolleau, Loïc Garçon,                      #
+#                     INSERM, UPD, CHU Amiens                                  #
+#                                                                              #
+# DISCLAIMER:                                                                  #
+# -You are using this package on your own risk!                                #
+# -We do not guarantee privacy nor confidentiality.                            #
+# -This program is distributed in the hope that it will be useful, but WITHOUT #
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        #
+# FITNESS FOR A PARTICULAR PURPOSE. In no event shall the copyright holders or #
+# contributors be liable for any direct, indirect, incidental, special,        #
+# exemplary, or consequential damages (including, but not limited to,          #
+# procurement of substitute goods or services; loss of use, data, or profits;  #
+# or business interruption) however caused and on any theory of liability,     #
+# whether in contract, strict liability, or tort (including negligence or      #
+# otherwise) arising in any way out of the use of this software, even if       #
+# advised of the possibility of such damage.                                   #
+#                                                                              #
+# You should have received a copy of the GNU General Public License            #
+# along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
+################################################################################
+
+#' @title Gating Strategy File Reader
+#' @description
+#' Extracts Gating Strategy from Files.
+#' @param fileName path to file.
+#' @return A named list of class `IFC_gating`, whose members are:\cr
+#' -description, a list of descriptive information,\cr
+#' -pops, a list describing populations found,\cr
+#' -regions, a list describing how regions are defined.
+#' @param ... other arguments to be passed.
+#' @export
+readGatingStrategy <- function(fileName, ...) {
+  dots=list(...)
+  if(missing(fileName)) stop("'fileName' can't be missing")
+  file_extension = getFileExt(fileName)
+  assert(file_extension, len = 1, alw = c("daf","cif","rif","xml"))
+  if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
+  title_progress = basename(fileName)
+  
+  fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
+  assay = "/Network"
+  toskip=cpp_scanFirst(fname = fileName, target = "</Network>", start = 0, end = 0)
+  if(toskip == 0) {
+    assay = "/Assay"
+    toskip=cpp_scanFirst(fname = fileName, target = "</Assay>", start = 0, end = 0)
+    if(toskip == 0) stop(paste0(fileName, "\ndoes not seem to be well formatted: </Assay> or </Network> not found")) 
+  }
+  toskip = toskip + nchar(paste0("</",assay,">")) - 1
+  tmp=read_xml(readBin(con = fileName, what = "raw", n = toskip), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  assay_attr = xml_attrs(xml_find_all(tmp, paste0("/",assay)))
+  
+  ##### extracts description
+  description=list("Assay" = assay_attr,
+                   "FCS"=xml_attrs(xml_find_all(tmp, "//FCS")),
+                   "SOD"=xml_attrs(xml_find_all(tmp, "//SOD")))
+  description=lapply(description, FUN=function(x) {as.data.frame(do.call(what="rbind", x), stringsAsFactors=FALSE)})
+  if(length(description$FCS)==0) {
+    description$ID = description$SOD
+    is_fcs = FALSE
+  } else {
+    description$ID = description$FCS
+    is_fcs = TRUE
+  }
+  obj_count = as.integer(description$ID$objcount)
+  
+  ##### extracts regions information
+  regions=lapply(xml_attrs(xml_find_all(tmp, "//Region")), FUN=function(x) as.list(x))
+  if(length(regions) != 0) {
+    names(regions)=lapply(regions, FUN=function(x) x$label)
+    # regions=mapply(regions, FUN=c, SIMPLIFY = FALSE)
+    regions_tmp=c("cx","cy")
+    regions=lapply(regions, FUN=function(x) {replace(x, regions_tmp, lapply(x[regions_tmp], as.numeric))})
+    regions_tmp=lapply(regions, FUN=function(i_region) {
+      pat=paste0("//Region[@label='",i_region$label,"']//axy")
+      axy=do.call(cbind, args = xml_attrs(xml_find_all(tmp, pat)))
+      list(x=as.numeric(axy["x",]), y=as.numeric(axy["y",]))
+    })
+    regions=mapply(FUN = append, regions, regions_tmp, SIMPLIFY = FALSE)
+    rm(regions_tmp)
+    ##### changes unknown color names in regions
+    for(i in 1:length(regions)) {
+      if(regions[[i]]$color=="Teal") {regions[[i]]$color="Cyan4"}
+      if(regions[[i]]$color=="Green") {regions[[i]]$color="Green4"}
+      if(regions[[i]]$color=="Lime") {regions[[i]]$color="Chartreuse"}
+      if(regions[[i]]$lightcolor=="Teal") {regions[[i]]$lightcolor="Cyan4"}
+      if(regions[[i]]$lightcolor=="Green") {regions[[i]]$lightcolor="Green4"}
+      if(regions[[i]]$lightcolor=="Lime") {regions[[i]]$lightcolor="Chartreuse"}
+    }
+  }
+  class(regions) <- "IFC_regions"
+  
+  ##### extracts populations information
+  pops=lapply(xml_attrs(xml_find_all(tmp, "//Pop")), FUN=function(x) as.list(x))
+  if(length(pops)>0) {
+    names(pops)=lapply(pops, FUN=function(x) x$name)
+    pops_=lapply(pops, FUN=function(i_pop) {
+      pat=paste0("//Pop[@name='",i_pop$name,"']//ob")
+      list(obj=as.numeric(unlist(xml_attrs(xml_find_all(tmp, pat)))))
+    })
+    pops=mapply(FUN = append, pops, pops_, SIMPLIFY = FALSE)
+    rm(pops_)
+  }
+  class(pops) <- "IFC_pops"
+  
+  ans = list("description"=description, "fileName"=fileName, "pops"=pops, "regions"=regions)
+  attr(ans, "class") <- c("IFC_gating")
+  return(ans)
+}
