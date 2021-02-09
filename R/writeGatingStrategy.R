@@ -126,6 +126,7 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   } else {
     xml_add_child(root, .value = xml_new_node(name = "SOD", attrs = obj$description$ID, .children = sub_nodes))
   }
+  xml_add_child(root, .value = toXML2_graphs(obj$graphs, verbose = verbose))
   tryCatch({
     write_xml(root, file = file_w, encoding = "utf-8")
   }, error = function(e) {

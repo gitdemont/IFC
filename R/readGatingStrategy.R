@@ -33,6 +33,7 @@
 #' @param fileName path to file. It should be a .ast, .cif, .daf, .ist, .rif or .xml file.
 #' @return A named list of class `IFC_gating`, whose members are:\cr
 #' -description, a list of descriptive information,\cr
+#' -graphs, a list of graphical elements found,\cr
 #' -pops, a list describing populations found,\cr
 #' -regions, a list describing how regions are defined.
 #' @param ... other arguments to be passed.
@@ -84,6 +85,27 @@ readGatingStrategy <- function(fileName, ...) {
   }
   obj_count = as.integer(description$ID$objcount)
   
+  ##### extracts graphs information
+  plots=lapply(xml_attrs(xml_find_all(tmp, "//Graph")), FUN=function(x) as.list(x))
+  if(length(plots)!=0) {
+    # plots=mapply(plots, FUN=c, SIMPLIFY = FALSE)
+    plots_tmp=lapply(plots, FUN=function(plot) {
+      pat=paste0("//Graph[@xlocation='",plot$xlocation,"'][@ylocation='",plot$ylocation,"']")
+      sapply(c("Legend","BasePop","GraphRegion","ShownPop"), FUN=function(i_subnode){
+        lapply(xml_attrs(xml_find_all(tmp, paste(pat,i_subnode,sep="//"))), FUN=function(x) as.list(x))
+      })
+    })
+    plots=mapply(plots, plots_tmp, FUN = append, SIMPLIFY = FALSE)
+    plots_tmp=c("xlocation","ylocation","scaletype","xmin","xmax","ymin","ymax","axislabelsfontsize","axistickmarklabelsfontsize",
+                "graphtitlefontsize","regionlabelsfontsize","bincount","histogramsmoothingfactor","xsize","ysize","splitterdistance")
+    plots=lapply(plots, FUN=function(x) {replace(x, plots_tmp, lapply(x[plots_tmp], as.numeric))})
+    plot_order=sapply(plots, FUN=function(i_plot) as.numeric(i_plot[c("xlocation", "ylocation")]))
+    plots=plots[order(plot_order[1,],plot_order[2,])]
+    plots=plots[order(plot_order[2,])]
+    rm(list=c("plots_tmp", "plot_order"))
+  }
+  class(plots) <- "IFC_graphs"
+  
   ##### extracts regions information
   regions=lapply(xml_attrs(xml_find_all(tmp, "//Region")), FUN=function(x) as.list(x))
   if(length(regions) != 0) {
@@ -123,7 +145,7 @@ readGatingStrategy <- function(fileName, ...) {
   }
   class(pops) <- "IFC_pops"
   
-  ans = list("description"=description, "fileName"=fileName, "pops"=pops, "regions"=regions)
+  ans = list("description"=description, "fileName"=fileName, "graphs"=plots, "pops"=pops, "regions"=regions)
   attr(ans, "class") <- c("IFC_gating")
   return(ans)
 }
