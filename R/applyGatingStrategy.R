@@ -74,7 +74,7 @@ applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = F
     }
     if(length(ans$graphs) != 0) {
       feat_for_graphs = lapply(ans$graphs, FUN = function(g) g[c("f1", "f2")])
-      tmp2 = which(!sapply(feat_for_graphs, FUN = function(g) all(g %in% names(ans$features))))
+      tmp2 = which(!sapply(feat_for_graphs, FUN = function(g) all(unlist(g) %in% names(ans$features))))
     }
     
     msg = NULL
