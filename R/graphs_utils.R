@@ -415,13 +415,13 @@ convert_to_baseplot = function(obj) {
     if(obj$input$type == "density") {
       pch=16
       col = "white"
-      if(nrow(obj$input$data) > 0)
-        col=densCols(x = obj$input$data$x2, y = obj$input$data$y2,
+      if((nrow(obj$input$data) > 0) && any(obj$input$subset)) if(nrow(obj$input$data[obj$input$subset,]) > 0) 
+        col=densCols(x = obj$input$data$x2[obj$input$subset], y = obj$input$data$y2[obj$input$subset],
                      colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[obj$input$mode]])),
                      nbin=obj$input$bin,
                      transformation=obj$input$trans)
-      
-      plot(x = obj$input$data$x2, y = obj$input$data$y2,
+      plot(x = obj$input$data$x2[obj$input$subset],
+           y = obj$input$data$y2[obj$input$subset],
            xlim = Xlim , ylim = Ylim ,
            main = obj$input$title,
            xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
@@ -434,7 +434,8 @@ convert_to_baseplot = function(obj) {
     } else {
       if(obj$input$precision == "full") {
         disp = disp_n[length(displayed)]
-        plot(x = obj$input$data[obj$input$data[,disp], "x2"], y = obj$input$data[obj$input$data[,disp], "y2"],
+        plot(x = obj$input$data[obj$input$data[,disp], "x2"][obj$input$subset],
+             y = obj$input$data[obj$input$data[,disp], "y2"][obj$input$subset],
              xlim = Xlim , ylim = Ylim ,
              main = obj$input$title,
              xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
@@ -447,20 +448,22 @@ convert_to_baseplot = function(obj) {
              axes = FALSE)
         if(length(displayed) > 1) {
           for(disp in rev(disp_n)[-1]) {
-            points(x = obj$input$data[obj$input$data[,disp], "x2"], y = obj$input$data[obj$input$data[,disp], "y2"],
+            points(x = obj$input$data[obj$input$data[,disp], "x2"][obj$input$subset],
+                   y = obj$input$data[obj$input$data[,disp], "y2"][obj$input$subset],
                    pch = displayed[[disp]]$style, 
                    col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
           }
         }
       } else {
-        groups = apply(as.data.frame(D[,disp_n]), 1, FUN=function(x) {
+        groups = apply(as.data.frame(D[obj$input$subset,disp_n]), 1, FUN=function(x) {
           tmp = which(x)[1]
           if(is.na(tmp)) return(NA)
           return(disp_n[tmp])
         })
         pch = sapply(groups, FUN = function(disp) displayed[[disp]]$style)
         col = sapply(groups, FUN = function(disp) displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
-        plot(x = obj$input$data$x2, y = obj$input$data$y2,
+        plot(x = obj$input$data$x2[obj$input$subset],
+             y = obj$input$data$y2[obj$input$subset],
              xlim = Xlim, ylim = Ylim,
              main = obj$input$title,
              xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),

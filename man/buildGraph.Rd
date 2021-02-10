@@ -27,10 +27,11 @@ buildGraph(
   histogramsmoothingfactor = 0,
   xlogrange = "P",
   ylogrange = "P",
-  splitterdistance = 120,
+  maxpoints = +Inf,
   stats = c("true", "false")[2],
   xsize = c(320, 480, 640)[1],
   ysize = xsize + ifelse(stats == "true", splitterdistance, 0),
+  splitterdistance = 120,
   xstats = "Count|\%Gated|Mean",
   ystats = xstats,
   order,
@@ -91,8 +92,10 @@ Checked but not yet implemented.}
 
 \item{ylogrange}{determines hyper parameter of smoothLinLog transformation for y-axis. Default is "P" for no transformation.}
 
-\item{splitterdistance}{Integer. Default is 120.
-Checked but not yet implemented.}
+\item{maxpoints}{determines the maximum number of points to display. Default is +Inf to display all points.\cr
+If provided, values from ]0,1] will be used as a proportion of the total number of points to show.\cr
+While values values superior to 1 will be interpreted as the maximal number of points to show.\cr
+It only applies to 2D graphs. When 'type' is "histogram", +Inf will be used whatever the value provided as input.}
 
 \item{stats}{Character. Either "true" or "false" to display stats. Default is "false".}
 
@@ -100,6 +103,9 @@ Checked but not yet implemented.}
 Checked but not yet implemented.}
 
 \item{ysize}{Integer. Graph's y size. Default is 'ysize' + 'splitterdistance' when 'stats' is set to "true".
+Checked but not yet implemented.}
+
+\item{splitterdistance}{Integer. Default is 120.
 Checked but not yet implemented.}
 
 \item{xstats}{Character. x stats to be computed. Default is 'Count|\%Gated|Mean'.

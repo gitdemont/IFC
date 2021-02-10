@@ -56,6 +56,10 @@
 #' @param histogramsmoothingfactor Integer. Histogram smoothing factor. Allowed are [0-20]. Only partly implemented, default is 0 for no smoothing other values will produce same smoothing. 
 #' @param xlogrange determines hyper parameter of smoothLinLog transformation for x-axis. Default is "P" for no transformation.
 #' @param ylogrange determines hyper parameter of smoothLinLog transformation for y-axis. Default is "P" for no transformation.
+#' @param maxpoints determines the maximum number of points to display. Default is +Inf to display all points.\cr
+#' If provided, values from ]0,1] will be used as a proportion of the total number of points to show.\cr
+#' While values values superior to 1 will be interpreted as the maximal number of points to show.\cr
+#' It only applies to 2D graphs. When 'type' is "histogram", +Inf will be used whatever the value provided as input.
 #' @param stats Character. Either "true" or "false" to display stats. Default is "false".
 #' @param xsize Integer. Graph's x size. Default is 320 for small. Regular are: 320 (small), 480 (medium), 640 (big).
 #' Checked but not yet implemented.
@@ -109,9 +113,9 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
                       xlabel=f1, ylabel=f2, 
                       axislabelsfontsize=10, axistickmarklabelsfontsize=10, graphtitlefontsize=12, regionlabelsfontsize=10,
                       bincount=0, freq=c("T","F")[1], histogramsmoothingfactor=0,
-                      xlogrange="P", ylogrange="P", splitterdistance=120,
+                      xlogrange="P", ylogrange="P", maxpoints=+Inf,
                       stats=c("true","false")[2], xsize=c(320,480,640)[1], ysize=xsize+ifelse(stats=="true",splitterdistance,0),
-                      xstats="Count|%Gated|Mean", ystats=xstats,
+                      splitterdistance=120, xstats="Count|%Gated|Mean", ystats=xstats,
                       order, xstatsorder, Legend,
                       BasePop=list(list()),
                       GraphRegion=list(list()),
@@ -261,7 +265,12 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   # })))
   xstatsorder_tmp = c(g_names, b_names)
   
-  if(type=="histogram") order_tmp = b_names
+  if(type=="histogram") {
+    order_tmp = b_names
+    maxpoints = +Inf
+  } else {
+    maxpoints = na.omit(maxpoints[maxpoints>0]); assert(maxpoints, len=1)
+  }
   if(type=="density") order_tmp = rep(b_names,5)
   if(type=="scatter") {
     # order_tmp = gsub(" & All","", unlist(lapply(rev(g_names), FUN=function(n) {
@@ -295,7 +304,7 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
                       title=title, xlabel=xlabel, ylabel=ylabel, 
                       axislabelsfontsize=axislabelsfontsize, axistickmarklabelsfontsize=axistickmarklabelsfontsize, graphtitlefontsize=graphtitlefontsize,
                       regionlabelsfontsize=regionlabelsfontsize, bincount=bincount,
-                      freq=freq, histogramsmoothingfactor=histogramsmoothingfactor, xlogrange=xlogrange, ylogrange=ylogrange, 
+                      freq=freq, histogramsmoothingfactor=histogramsmoothingfactor, xlogrange=xlogrange, ylogrange=ylogrange, maxpoints=maxpoints, 
                       stats=stats, xsize=xsize, ysize=ysize, splitterdistance=splitterdistance,
                       xstats=xstats, ystats=ystats, order=order, xstatsorder=xstatsorder,
                       Legend=Legend, BasePop=BasePop, GraphRegion=GraphRegion, ShownPop=ShownPop))

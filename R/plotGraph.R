@@ -39,7 +39,7 @@
 #' Accepted values are either: FALSE, "panel", "global", "both" or c("panel", "global").\cr
 #' Note that it only applies when display is seen as overlaying populations.
 #' @param precision when graphs is a 2D scatter with population overlay, this argument controls amount of information displayed. Default is "light".\cr
-#' -"light", the default, will only display points of same coordinates that are amoung the other layers.\cr
+#' -"light", the default, will only display points of same coordinates that are among the other layers.\cr
 #' -"full" will display all the layers.
 #' @param trunc_labels maximum number of characters to display for labels. Default is 38.
 #' @param trans transformation function for density graphs. Default is asinh.
@@ -51,7 +51,7 @@
 #' @param ... other arguments to be passed.
 #' @return it invisibly returns a list whose members are:\cr
 #' -plot, "trellis" object that can be displayed using plot,\cr
-#' -stats, a table of satistics computed for the graph,\cr
+#' -stats, a table of statistics computed for the graph,\cr
 #' -input, a list with input parameters.
 #' @export
 plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
@@ -194,7 +194,9 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   displayed_o = c(base_o, shown_o)
   D = cbind(D, displayed_d)
   D = D[sub, ]
-
+  xy_subset = rep(TRUE, nrow(D))
+  if(length(xy_subset) == 0) xy_subset = TRUE
+  
   if(g$type=="histogram") {
     KEY = list("text"=list(displayed_n),
                "cex"=lt$add.text$cex * 0.5,
@@ -451,18 +453,26 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       if(!all(is.finite(Ylim))) Ylim = c(-1, 1)
       if(Ylim[1] == Ylim[2]) Ylim = Ylim[1] + c(-0.07,0.07)
     }
-    
-    foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, main = trunc_string(g$title, trunc_labels), groups=groups,
+    if(nrow(D) > 0) {
+      xy_subset = rep(FALSE, nrow(D))
+      if(g$maxpoints <= 1) {
+        xy_subset[sample(x = nrow(D), size = g$maxpoints * nrow(D), replace = FALSE)] <- TRUE
+      } else {
+        xy_subset[sample(x = nrow(D), size = min(g$maxpoints,nrow(D)), replace = FALSE)] <- TRUE
+      }
+    }
+    foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, 
+                 main = trunc_string(g$title, trunc_labels), groups=groups, subset=xy_subset,
                  scales =  myScales(x=list(hyper=trans_x), y=list(hyper=trans_y)),
                  xlab =  trunc_string(g$xlabel, trunc_labels), ylab = trunc_string(g$ylabel, trunc_labels),
-                 panel = function(x, y, groups=NULL, ...) {
+                 panel = function(x, y, groups=NULL, subscripts, ...) {
                    if(any(c("panel","both")%in%add_key)) if(g$type=="scatter") pan_key(key=c(KEY,"background"="lightgrey","alpha.background"=0.8), x = 0.02)
                    if(g$type == "density") panel.xyplot(x=x, y=y, pch=".", col=densCols(x=x,y=y,colramp=colorRampPalette(colConv(g$BasePop[[base_o[1]]][c("densitycolorsdarkmode","densitycolorslightmode")][[color_mode]])),nbin=nbin, transformation=trans))
                    if(g$type == "scatter") {
-                     if(is.null(groups)) {
+                     if(is.null(groups[subscripts])) {
                        panel.xyplot(x=x[1], y=y[1], pch="", alpha=0)
                      } else {
-                       by(data.frame("x"=x,"y"=y,"g"=groups, stringsAsFactors=FALSE), groups, FUN=function(d) {
+                       by(data.frame("x"=x,"y"=y,"g"=groups[subscripts], stringsAsFactors=FALSE), groups[subscripts], FUN=function(d) {
                          disp = unique(d$g)
                          panel.xyplot(x=d$x, y=d$y, pch=P[[disp]]$style, col = P[[disp]][c("color","lightModeColor")][[color_mode]])
                        })
@@ -492,10 +502,10 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                      panel.polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
                    })
                  })
-    if(precision=="full") if(g$type == "scatter") for(l in L:1) {
+    if(nrow(D) > 0) if(precision=="full") if(g$type == "scatter") for(l in L:1) {
       disp = displayed_n[l]
-      if(any(D[,disp])) { # adds layer only if there is at least one point
-        tmp = xyplot(D[,"y2"] ~ D[,"x2"], pch = P[[disp]]$style, col = P[[disp]][c("color","lightModeColor")][[color_mode]], subset = D[,disp])
+      if(any(D[,disp] & xy_subset)) { # adds layer only if there is at least one point
+        tmp = xyplot(D[,"y2"] ~ D[,"x2"], pch = P[[disp]]$style, col = P[[disp]][c("color","lightModeColor")][[color_mode]], subset = D[,disp] & xy_subset)
         foo = foo + as.layer(tmp)
       }
     }
@@ -530,6 +540,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                             "histogramsmoothingfactor" = g$histogramsmoothingfactor,
                             "normalize" = normalize,
                             "precision" = precision,
+                            "subset" = xy_subset,
                             "mode" = color_mode))
   class(ret) <- "IFC_plot"
   return(invisible(ret))
