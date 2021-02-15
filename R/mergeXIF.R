@@ -157,7 +157,7 @@ mergeXIF <- function (fileName, write_to,
   # 33083 corresponds to Features values in merged or subset
   # 33090, 33091, 33092, 33093, 33094 corresponds to tags we add to track objects origin
   unwanted = c(33004, 33005, 33018, 33029, 33030, 33080, 33081, 33082, 33083, 33090, 33091, 33092, 33093, 33094)
-
+  
   # tags of StripOffsets (273) and TileOffsets (324)
   off_tags = c(273, 324)
   
@@ -187,33 +187,24 @@ mergeXIF <- function (fileName, write_to,
       # go to IFD start
       seek(toread, IFD_first[[1]]$curr_IFD_offset)
       # read number of directory entries
-      readBin(toread, what = "raw", n = 2, endian = r_endian)
-      ifd = sapply(IFD_first[[1]]$tags, simplify = FALSE, FUN=function(i_tag) {
-        add_content = raw()
-        # read entry
-        min_content = readBin(toread, what = "raw", n = 12, endian = r_endian)
-        # save current position in read
-        r_pos = seek(toread)
-        # remove unwanted tags
-        if(i_tag$tag %in% unwanted) return(list(min_content = raw(), add_content = raw()))
-        # extract extra content when value is an offset
-        if(i_tag$off) {
-          # go to this offset in read
-          seek(toread, i_tag$val)
-          # extra content
-          add_content = readBin(toread, what = "raw", n = i_tag$byt, endian = r_endian)
-          # go to former position in read
-          seek(toread, r_pos)
-        }
-        return(list(min_content = min_content, add_content = add_content))
-      })
-      # # extract raw content from 1st IFD
-      # ifd = do.call(what = "c",
-      #               args = c(lapply(1:length(N), FUN=function(i_tag) {
-      #                 if(as.integer(N[i_tag]) %in% unwanted) return(NULL)
-      #                 foo = getFullTag(IFD_first, which = 1, tag = i_tag)
-      #                 buildIFD(val = foo, typ = IFD_first[[1]]$tags[[i_tag]]$typ, tag = N[i_tag], endianness = r_endian)
-      #               }), list(ifd_obj, ifd_merged, ifd_version, ifd_checksum)))
+      ifd = lapply(1:readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian), FUN=function(i_tag) {
+                     add_content = raw()
+                     # go to entry
+                     seek(toread, IFD_first[[1]]$curr_IFD_offset + (i_tag - 1) * 12 + 2)
+                     # read entry
+                     min_content = readBin(toread, what = "raw", n = 12, endian = r_endian)
+                     # remove unwanted tags
+                     if(IFD_first[[1]]$tags[[i_tag]]$tag %in% unwanted) return(list(min_content = raw(), add_content = raw()))
+                     # extract extra content when value is an offset
+                     if(IFD_first[[1]]$tags[[i_tag]]$off) {
+                       # go to this offset in read
+                       seek(toread, IFD_first[[1]]$tags[[i_tag]]$val)
+                       # extra content
+                       add_content = readBin(toread, what = "raw", n = IFD_first[[1]]$tags[[i_tag]]$byt, endian = r_endian)
+                     }
+                     return(list(min_content = min_content, add_content = add_content))
+                   })
+      names(ifd) = names(IFD_first[[1]]$tags)
     }, error = function(e) {
       stop(paste0("can't create first IFD:\n", e$message), call. = FALSE) 
     }, finally = {
@@ -249,11 +240,11 @@ mergeXIF <- function (fileName, write_to,
                             typ = 2, tag = 33092, endianness = r_endian)
     
     # remove unwanted tags
-    ifd = ifd[sapply(ifd, FUN=function(i_tag) length(i_tag$min_content)!=0)]
+    ifd = ifd[sapply(1:length(ifd), FUN=function(i_tag) length(ifd[[i_tag]]$min_content)!=0)]
     
     # add extra ifd
     ifd = c(ifd, ifd_time, ifd_user, ifd_obj, ifd_merged, ifd_version, ifd_files, ifd_checksum)
-
+    
     # reorder ifd
     ifd = ifd[order(as.integer(names(ifd)))]
     
@@ -292,7 +283,7 @@ mergeXIF <- function (fileName, write_to,
     # write ifd
     writeBin(object = unlist(lapply(ifd, FUN=function(i_tag) i_tag$min_content)), con = towrite, endian = r_endian)
     pos = pos + l_min[length(l_min)] + 2
-
+    
     if(display_progress) {
       pb2 = newPB(session = dots$session, title = title_progress, label = " ", min = 0, max = final_obj * 2, initial = 0, style = 3)
       on.exit(endPB(pb2), add = TRUE)
@@ -305,7 +296,7 @@ mergeXIF <- function (fileName, write_to,
       IFD_first = getIFD(fileName = f, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE)
       obj_count = 2*getFullTag(IFD = IFD_first, which = 1, tag = "33018")
       IFD = IFD_first[[1]]
-
+      
       label_progress = basename(f)
       # open connections for reading
       toread = file(description = f, open = "rb")
@@ -318,54 +309,38 @@ mergeXIF <- function (fileName, write_to,
           IFD = cpp_getTAGS(fname = f, offset = IFD$next_IFD_offset, trunc_bytes = 8, force_trunc = FALSE, verbose = VER)
           cur_obj = IFD$infos
           if(cur_obj$TYPE == 2) OBJECT_ID = cur_obj$OBJECT_ID
-          # extract raw content from current IFD
-          # bar = list(IFD)
-          # class(bar) <- "IFC_ifd_list"
-          # attr(bar, "fileName_image") <- f
-          # ifd = do.call(what = "c",
-          #               args = c(lapply(names(IFD$tags), FUN=function(i_tag) {
-          #                 if(as.integer(i_tag) %in% unwanted) return(NULL)
-          #                 foo = getFullTag(IFD = bar, which = 1, tag = i_tag)
-          #                 res = buildIFD(val = foo, typ = IFD$tags[[i_tag]]$typ, tag = i_tag, endianness = r_endian)
-          #                 if(i_tag %in% off_tags) {
-          #                   seek(toread, where = IFD$tags[[i_tag]]$val, origin = "start")
-          #                   if(i_tag == "273") res[[1]]$add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
-          #                   if(i_tag == "324") res[[1]]$add_content = readBin(toread, what = "raw", n = IFD$tags[["325"]]$map, endian = r_endian)
-          #                 }
-          #                 res
-          #               })))
           
+          # extract raw content from current IFD
           # go to IFD start
           seek(toread, IFD$curr_IFD_offset)
           # read number of directory entries
-          readBin(toread, what = "raw", n = 2, endian = r_endian)
-          ifd = sapply(IFD$tags, simplify = FALSE, FUN=function(i_tag) {
+          # n_entries = readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian)
+          ifd = lapply(1:readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian), FUN=function(i_tag) {
             add_content = raw()
+            # go to entry
+            seek(toread, IFD$curr_IFD_offset + (i_tag - 1) * 12 + 2)
             # read entry
             min_content = readBin(toread, what = "raw", n = 12, endian = r_endian)
-            # save current position in read
-            r_pos = seek(toread)
             # remove unwanted tags
-            if(i_tag$tag %in% unwanted) return(list(min_content = raw(), add_content = raw()))
+            # if(IFD$tags[[i_tag]]$tag %in% unwanted) return(list(min_content = raw(), add_content = raw()))
             # extract extra content when value is an offset
-            if(i_tag$off || (i_tag$tag %in% off_tags)) {
+            if(IFD$tags[[i_tag]]$off || (IFD$tags[[i_tag]]$tag %in% off_tags)) {
               # go to this offset in read
-              seek(toread, i_tag$val)
+              seek(toread, IFD$tags[[i_tag]]$val)
               # extra content
-              if(i_tag$tag %in% off_tags) {
-                if(i_tag$tag == 273) add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
-                if(i_tag$tag == 324) add_content = readBin(toread, what = "raw", n = IFD$tags[["325"]]$map, endian = r_endian)
+              if(IFD$tags[[i_tag]]$tag %in% off_tags) {
+                if(IFD$tags[[i_tag]]$tag == 273) add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
+                if(IFD$tags[[i_tag]]$tag == 324) add_content = readBin(toread, what = "raw", n = IFD$tags[["325"]]$map, endian = r_endian)
               } else {
-                add_content = readBin(toread, what = "raw", n = i_tag$byt, endian = r_endian)
+                add_content = readBin(toread, what = "raw", n = IFD$tags[[i_tag]]$byt, endian = r_endian)
               }
-              # go to former position in read
-              seek(toread, r_pos)
             }
             return(list(min_content = min_content, add_content = add_content))
           })
+          names(ifd) = names(IFD$tags)
           
           # remove unwanted tags
-          ifd = ifd[sapply(ifd, FUN=function(i_tag) length(i_tag$min_content)!=0)]
+          # ifd = ifd[sapply(1:length(ifd), FUN=function(i_tag) length(ifd[[i_tag]]$min_content)!=0)]
           
           # register current object id in new tag to be able to track it
           ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33093")),
@@ -402,10 +377,10 @@ mergeXIF <- function (fileName, write_to,
           tmp = packBits(intToBits(pos + l_add[length(l_add)]), type="raw")
           if(endianness != r_endian) tmp = rev(tmp)
           writeBin(object = tmp, con = towrite, endian = r_endian)
-
+          
           # write all additional content
           writeBin(object = unlist(lapply(ifd, FUN=function(i_tag) i_tag$add_content)), con = towrite, endian = r_endian)
-
+          
           # modify number of directory entries
           n_entries = length(ifd)
           tmp = packBits(intToBits(n_entries),type="raw")

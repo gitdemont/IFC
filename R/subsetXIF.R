@@ -125,7 +125,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
     overwritten = TRUE
   }
   file_w = ifelse(overwritten, tmp_file, write_to)
-
+  
   # Extract important values
   IFDs = getIFD(fileName = fileName, offsets = "first", force_trunc = FALSE, trunc_bytes = 8, verbose = FALSE, bypass = FALSE)
   nobj = IFDs[[1]]$tags[["33018"]]$map
@@ -248,38 +248,37 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
       
       # go to file IFD offset
       seek(toread, offsets[i_off])
-      
-      # read number of directory entries
-      readBin(toread, what = "raw", n = 2, endian = r_endian)
       # TODO ask amnis if we can remove unecessary tags for masks ?
       # i.e. only keep: 254, 256, 257, 258, 259, 262, 273, 277, 278, 279, 306, 33002, 33016, 33017
       # IFD$tags = IFD$tags[c(254, 256, 257, 258, 259, 262, 273, 277, 278, 279, 306, 33002, 33016, 33017)]
-      ifd = sapply(IFD$tags, simplify = FALSE, FUN=function(i_tag) {
+
+      # read number of directory entries
+      ifd = lapply(1:readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian), FUN=function(i_tag) {
         add_content = raw()
+        # go to entry
+        seek(toread, IFD$curr_IFD_offset + (i_tag - 1) * 12 + 2)
         # read entry
         min_content = readBin(toread, what = "raw", n = 12, endian = r_endian)
-        # save current position in read
-        r_pos = seek(toread)
         # remove unwanted tags
-        if(i_tag$tag %in% unwanted) return(list(min_content = raw(), add_content = raw()))
+        if(IFD$tags[[i_tag]]$tag %in% unwanted) return(list(min_content = raw(), add_content = raw()))
         # extract extra content when value is an offset
-        if(i_tag$off || (i_tag$tag %in% off_tags)) {
+        if(IFD$tags[[i_tag]]$off || (IFD$tags[[i_tag]]$tag %in% off_tags)) {
           # go to this offset in read
-          seek(toread, i_tag$val)
+          seek(toread, IFD$tags[[i_tag]]$val)
           # extra content
-          if(i_tag$tag %in% off_tags) {
-            if(i_tag$tag == 273) add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
-            if(i_tag$tag == 324) add_content = readBin(toread, what = "raw", n = IFD$tags[["325"]]$map, endian = r_endian)
+          if(IFD$tags[[i_tag]]$tag %in% off_tags) {
+            if(IFD$tags[[i_tag]]$tag == 273) add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
+            if(IFD$tags[[i_tag]]$tag == 324) add_content = readBin(toread, what = "raw", n = IFD$tags[["325"]]$map, endian = r_endian)
           } else {
-            add_content = readBin(toread, what = "raw", n = i_tag$byt, endian = r_endian)
+            add_content = readBin(toread, what = "raw", n = IFD$tags[[i_tag]]$byt, endian = r_endian)
           }
-          # go to former position in read
-          seek(toread, r_pos)
         }
         return(list(min_content = min_content, add_content = add_content))
       })
+      names(ifd) = names(IFD$tags)
+      
       # remove unwanted tags
-      ifd = ifd[sapply(ifd, FUN=function(i_tag) length(i_tag$min_content)!=0)]
+      ifd = ifd[sapply(1:length(ifd), FUN=function(i_tag) length(ifd[[i_tag]]$min_content)!=0)]
       
       # extract features values in 1st IFD
       if(IFD$infos$TYPE == 1) {
@@ -301,7 +300,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
                   features = list()
                   stop(f, "\nCan't deal with non-binary features")
                 }
-
+                
                 feat_where = ifelse((length(V) == 0) && (length(IFD_f$tags[["33080"]]$map) != 0) && (IFD_f$tags[["33080"]]$val < file.size(fileName)),
                                     ifelse(length(IFD_f$tags[["33080"]]$map)==0, 
                                            stop("can't find pointer '33080' to extract features"), 
@@ -403,18 +402,20 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
                               typ = 2, tag = 33094, endianness = r_endian))
         
         # TODO if we remove mask tags it may be better to use offsets names as tracking object id
-
+        
         # modify object id
         tmp = packBits(intToBits(floor(obj_id/2)),type="raw")
         if(endianness!=r_endian) tmp = rev(tmp)
         
         # TODO ask amnis what to do with 33024
-        if(length(ifd[["33024"]])!=0) {
-          if(length(ifd[["33003"]])!=0) {
+        if(length(ifd[["33003"]])!=0) {
+          if(length(ifd[["33024"]])!=0) {
             ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
+          } else {
+            ifd = c(ifd, buildIFD(val = OBJECT_ID, typ = 4, tag = 33024, endianness = r_endian))
           }
+          ifd[["33003"]]$min_content[9:12] <- tmp
         }
-        if(length(ifd[["33003"]])!=0) ifd[["33003"]]$min_content[9:12] <- tmp
       }
       
       # reorder ifd
