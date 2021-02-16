@@ -186,7 +186,11 @@ mergeXIF <- function (fileName, write_to,
     tryCatch({
       # go to IFD start
       seek(toread, IFD_first[[1]]$curr_IFD_offset)
+      
       # read number of directory entries
+      # TODO what if n_entries != length(IFD_first[[1]]$tags) ?
+      # n_entries = readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian)
+      # ifd = lapply(1:length(IFD_first[[1]]) , FUN=function(i_tag) {
       ifd = lapply(1:readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian), FUN=function(i_tag) {
                      add_content = raw()
                      # go to entry
@@ -313,8 +317,11 @@ mergeXIF <- function (fileName, write_to,
           # extract raw content from current IFD
           # go to IFD start
           seek(toread, IFD$curr_IFD_offset)
+          
           # read number of directory entries
+          # TODO what if n_entries != length(IFD$tags) ?
           # n_entries = readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian)
+          # ifd = lapply(1:length(IFD$tags) , FUN=function(i_tag) {
           ifd = lapply(1:readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian), FUN=function(i_tag) {
             add_content = raw()
             # go to entry
@@ -358,11 +365,19 @@ mergeXIF <- function (fileName, write_to,
           if(endianness!=r_endian) tmp = rev(tmp)
           
           # TODO ask amnis what to do with 33024
-          if(length(ifd[["33024"]])!=0) {
-            if(length(ifd[["33003"]])!=0) {
-              ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
-            }
-          }
+          # if(length(ifd[["33024"]])!=0) {
+          #   if(length(ifd[["33003"]])!=0) {
+          #     ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
+          #   }
+          # }
+          # if(length(ifd[["33003"]])!=0) {
+          #   if(length(ifd[["33024"]])!=0) {
+          #     ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
+          #   } else {
+          #     ifd = c(ifd, buildIFD(val = OBJECT_ID, typ = 4, tag = 33024, endianness = r_endian))
+          #   }
+          #   ifd[["33003"]]$min_content[9:12] <- tmp
+          # }
           if(length(ifd[["33003"]])!=0) ifd[["33003"]]$min_content[9:12] <- tmp
           
           # reorder ifd

@@ -248,11 +248,15 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
       
       # go to file IFD offset
       seek(toread, offsets[i_off])
-      # TODO ask amnis if we can remove unecessary tags for masks ?
+      
+      # TODO ask amnis if we can remove unnecessary tags for masks ?
       # i.e. only keep: 254, 256, 257, 258, 259, 262, 273, 277, 278, 279, 306, 33002, 33016, 33017
       # IFD$tags = IFD$tags[c(254, 256, 257, 258, 259, 262, 273, 277, 278, 279, 306, 33002, 33016, 33017)]
 
       # read number of directory entries
+      # TODO what if n_entries != length(IFD$tags) ?
+      # n_entries = readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian)
+      # ifd = lapply(1:length(IFD$tags) , FUN=function(i_tag) {
       ifd = lapply(1:readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian), FUN=function(i_tag) {
         add_content = raw()
         # go to entry
@@ -408,14 +412,20 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
         if(endianness!=r_endian) tmp = rev(tmp)
         
         # TODO ask amnis what to do with 33024
-        if(length(ifd[["33003"]])!=0) {
-          if(length(ifd[["33024"]])!=0) {
-            ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
-          } else {
-            ifd = c(ifd, buildIFD(val = OBJECT_ID, typ = 4, tag = 33024, endianness = r_endian))
-          }
-          ifd[["33003"]]$min_content[9:12] <- tmp
-        }
+        # if(length(ifd[["33024"]])!=0) {
+        #   if(length(ifd[["33003"]])!=0) {
+        #     ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
+        #   }
+        # }
+        # if(length(ifd[["33003"]])!=0) {
+        #   if(length(ifd[["33024"]])!=0) {
+        #     ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
+        #   } else {
+        #     ifd = c(ifd, buildIFD(val = OBJECT_ID, typ = 4, tag = 33024, endianness = r_endian))
+        #   }
+        #   ifd[["33003"]]$min_content[9:12] <- tmp
+        # }
+        if(length(ifd[["33003"]])!=0) ifd[["33003"]]$min_content[9:12] <- tmp
       }
       
       # reorder ifd

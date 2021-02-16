@@ -6,24 +6,14 @@
 (association of regions / population and graphs)
 
 - better compute graph dependency in data_rm_ family functions
-<<<<<<< HEAD
-+ add adjust_graph parameter to control if graph should be removed or if it should be modified when a
-=======
-+ add adjut_graph parameter to control if graph should be removed or if it should be modyfied when a
->>>>>>> 6f2ab244ab15f3c9b43e7fc6d2cd1c5d4ebcd0a3
-removal of regions, pops and/or population affects its definition
+
+- add adjust_graph parameter to control if graph should be removed or if it should be modified when a
 
 - improve getAborted to retrieve file path of aborted elements in batch
 
 - fix bug in shiny progress bar which did not initialize with title / detail
 
-<<<<<<< HEAD
 - improve mergeXIF and subsetXIF functions (speed gain + no more dependency on seek for reading current position)
-
-=======
->>>>>>> 6f2ab244ab15f3c9b43e7fc6d2cd1c5d4ebcd0a3
-## 0.1.1
-- CRAN release
 
 ## 0.1.0
 - fix bug when using verbose in Extract Images/Masks + ExportTo/Display Gallery/Numpy family functions
