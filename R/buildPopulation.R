@@ -70,14 +70,12 @@ buildPopulation <- function(name, type, base="All", color, lightModeColor, style
     }
     if(name=="All") type="B"
   }
-  assert(type, len=1, alw=c("B","C","G","T"))
+  assert(type, len=1)
   if(name=="All" && type!="B") stop("when 'name' is \"All\", 'type' has to be \"B\"")
-  if(type=="B") {
-    return(list("name"="All","type"="B","base"="","color"="White","lightModeColor"="Black","style"="Simple Dot"))
-  }
   if(missing(color)) {
     if(missing(lightModeColor)) {
       tmp = sample(nrow(paletteIFC("")),1)
+      if(type == "B") color = "White"
     } else {
       assert(lightModeColor, len=1, alw=unlist(paletteIFC("")))
       tmp = which(paletteIFC("")%in%lightModeColor, arr.ind=TRUE)[1]
@@ -92,6 +90,7 @@ buildPopulation <- function(name, type, base="All", color, lightModeColor, style
   if(missing(lightModeColor)) {
     if(missing(color)) {
       tmp = sample(nrow(paletteIFC("")),1)
+      if(type == "B") lightModeColor = "Black"
     } else {
       assert(color, len=1, alw=unlist(paletteIFC("")))
       tmp = which(color==paletteIFC(""), arr.ind=TRUE)[1]
@@ -107,6 +106,7 @@ buildPopulation <- function(name, type, base="All", color, lightModeColor, style
   names(tmp_style)=c("Simple Dot","Cross","Plus","Empty Circle","Empty Diamond","Empty Square","Empty Triangle","Solid Diamond","Solid Square","Solid Triangle")
   if(missing(style)) {
     style = names(sample(tmp_style, 1))
+    if(type == "B") style = "Simple Dot"
   } else {
     if(style%in%tmp_style) style = names(tmp_style[which(style==tmp_style)][1])
     if(style%in%names(tmp_style)) {
@@ -116,25 +116,28 @@ buildPopulation <- function(name, type, base="All", color, lightModeColor, style
     }
   }
   assert(style, len=1, alw=names(tmp_style))
-  if(type=="T") {
-    if(missing(obj)) stop("'obj' can't be missing when type='T'")
-    if(length(obj)!=0) if(!any(class(obj)%in%c("logical","numeric","integer"))) stop("when type='T', 'obj' has to be a logical or a numeric/integer vector")
-    return(list("name"=name,"type"=type,"base"="All","color"=color,"lightModeColor"=lightModeColor,"style"=style,"obj"=obj))
-  }
-  if(type=="G") {
-    if(missing(region)) stop("'region' can't be missing when type='G'")
-    assert(region, len=1, typ="character")
-    if(missing(fx)) stop("'fx' can't be missing when type='G'")
-    assert(fx, len=1, typ="character")
-    ret = list("name"=name,"type"=type,"base"=base,"color"=color,"lightModeColor"=lightModeColor,"style"=style,"region"=region,"fx"=fx)
-    if(missing(fy)) return(ret)
-    if(length(fy)==0) return(ret)
-    assert(fy, len=1, typ="character")
-    return(c(ret, list("fy"=fy)))
-  }
-  if(type=="C") {
-    if(missing(definition)) stop("'definition' can't be missing when type='C'")
-    assert(definition, len=1, typ="character")
-    return(list("name"=name,"type"=type, "base"="All", "color"=color,"lightModeColor"=lightModeColor,"style"=style,"definition"=definition))
-  }
+  switch(type,
+         "B" = {
+           return(list("name"="All","type"="B","base"="","color"=color,"lightModeColor"=lightModeColor,"style"=style))
+         },
+         "T" = {
+           if(missing(obj)) stop("'obj' can't be missing when type='T'")
+           if(length(obj)!=0) if(!any(class(obj)%in%c("logical","numeric","integer"))) stop("when type='T', 'obj' has to be a logical or a numeric/integer vector")
+           return(list("name"=name,"type"=type,"base"="All","color"=color,"lightModeColor"=lightModeColor,"style"=style,"obj"=obj))
+         }, "G" = {
+           if(missing(region)) stop("'region' can't be missing when type='G'")
+           assert(region, len=1, typ="character")
+           if(missing(fx)) stop("'fx' can't be missing when type='G'")
+           assert(fx, len=1, typ="character")
+           ret = list("name"=name,"type"=type,"base"=base,"color"=color,"lightModeColor"=lightModeColor,"style"=style,"region"=region,"fx"=fx)
+           if(missing(fy)) return(ret)
+           if(length(fy)==0) return(ret)
+           assert(fy, len=1, typ="character")
+           return(c(ret, list("fy"=fy)))
+         }, "C" = {
+           if(missing(definition)) stop("'definition' can't be missing when type='C'")
+           assert(definition, len=1, typ="character")
+           return(list("name"=name,"type"=type, "base"="All", "color"=color,"lightModeColor"=lightModeColor,"style"=style,"definition"=definition))
+         },
+         stop("'type' is not valid. Allowed values are \"B\", \"C\", \"G\", \"T\""))
 }
