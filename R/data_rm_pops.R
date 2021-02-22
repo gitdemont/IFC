@@ -59,8 +59,10 @@ data_rm_pops <- function(obj, pops, list_only = TRUE, adjust_graph = TRUE, ...) 
   }
   
   # forbids removal of "All" and ""
-  if(any(c("All", "") %in% to_remove_pops)) warning("\"All\" and \"\" are mandatory and can not be removed", immediate. = TRUE, call. = FALSE)
-  to_remove_pops = setdiff(to_remove_pops, c("All", ""))
+  if(!list_only) {
+    if(any(c("All", "") %in% to_remove_pops)) warning("\"All\" and \"\" are mandatory and can not be removed", immediate. = TRUE, call. = FALSE)
+    to_remove_pops = setdiff(to_remove_pops, c("All", ""))
+  }
   
   # removes duplicated inputs
   tmp = duplicated(to_remove_pops)
