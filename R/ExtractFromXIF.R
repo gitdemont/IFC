@@ -240,12 +240,14 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   col[col=="Teal"] <- "Cyan4"
   col[col=="Green"] <- "Green4"
   col[col=="Lime"] <- "Chartreuse"
+  col[col=="Control"] <- "Gray81"
   description$Images[,"color"] <- col
   if("saturation"%in%names(description$Images)) {
     col = description$Images[,"saturation"]
     col[col=="Teal"] <- "Cyan4"
     col[col=="Green"] <- "Green4"
     col[col=="Lime"] <- "Chartreuse"
+    col[col=="Control"] <- "Gray81"
     description$Images[,"saturation"] <- col
   }
   
@@ -391,9 +393,11 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
           if(regions[[i]]$color=="Teal") {regions[[i]]$color="Cyan4"}
           if(regions[[i]]$color=="Green") {regions[[i]]$color="Green4"}
           if(regions[[i]]$color=="Lime") {regions[[i]]$color="Chartreuse"}
+          if(regions[[i]]$color=="Control") {regions[[i]]$color="Gray81"}
           if(regions[[i]]$lightcolor=="Teal") {regions[[i]]$lightcolor="Cyan4"}
           if(regions[[i]]$lightcolor=="Green") {regions[[i]]$lightcolor="Green4"}
           if(regions[[i]]$lightcolor=="Lime") {regions[[i]]$lightcolor="Chartreuse"}
+          if(regions[[i]]$lightcolor=="Control") {regions[[i]]$lightcolor="Gray81"}
         }
       }
       class(regions) <- "IFC_regions"

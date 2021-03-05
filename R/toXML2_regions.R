@@ -46,6 +46,8 @@ toXML2_regions = function(regions, verbose = FALSE) {
     if(i_reg$lightcolor=="Green4") i_reg$lightcolor <- "Green"
     if(i_reg$color=="Chartreuse") i_reg$color <- "Lime"
     if(i_reg$lightcolor=="Chartreuse") i_reg$lightcolor <- "Lime"
+    if(i_reg$color=="Gray81") i_reg$color <- "Control"
+    if(i_reg$lightcolor=="Gray81") i_reg$lightcolor <- "Control"
     xml_new_node(name = "Region",
                attrs = i_reg[!grepl("^x$|^y$", names(i_reg))],
                .children = lapply(1:length(i_reg[["x"]]), FUN = function(i_coord) {

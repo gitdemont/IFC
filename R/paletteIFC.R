@@ -42,21 +42,21 @@ paletteIFC <- function(x = c("","palette","palette_R","to_light","to_dark")[1], 
   Software_Colors=data.frame(matrix(c("White","LightSkyBlue","CornflowerBlue","MediumSlateBlue","Blue","Aquamarine","MediumSpringGreen","Cyan","DarkTurquoise",   
                                       "Teal","Yellow","Gold","DarkKhaki","Lime","Green","Lime","Wheat","SandyBrown","Orange",     
                                       "Tomato","Red","Pink","HotPink","Plum","Magenta","DarkOrchid","LightCoral","IndianRed",       
-                                      "LightGray","Gray","Black",
+                                      "LightGray","Control","Gray","Black",
                                       "Black","CornflowerBlue","CornflowerBlue","MediumSlateBlue","Blue","Aquamarine","MediumSpringGreen","Teal","DarkTurquoise",    
                                       "Teal","Gold","Gold","IndianRed","Green","Green", "Lime","DarkOrange","Tomato","DarkOrange",       
                                       "Tomato","Red","DeepPink","DeepPink","DarkOrchid","Magenta","DarkOrchid","IndianRed","IndianRed",        
-                                      "Black","Gray","White"), ncol=2, byrow = FALSE), stringsAsFactors = FALSE)
+                                      "Black","Control","Gray","White"), ncol=2, byrow = FALSE), stringsAsFactors = FALSE)
   names(Software_Colors) = c("color", "lightModeColor")
   # Software_Colors = Software_Colors[!(duplicated(Software_Colors[,1]) | duplicated(Software_Colors[,2])),]
-  Software_Colors$color_R = gsub("^Teal","Cyan4", Software_Colors$color)
-  Software_Colors$color_R = gsub("^Green","Green4", Software_Colors$color_R)
-  # Software_Colors$color_R = gsub("^Gray","Darkgray", Software_Colors$color_R)
-  Software_Colors$color_R = gsub("^Lime","Chartreuse", Software_Colors$color_R)
-  Software_Colors$lightModeColor_R = gsub("^Teal","Cyan4", Software_Colors$lightModeColor)
-  Software_Colors$lightModeColor_R = gsub("^Green","Green4", Software_Colors$lightModeColor_R)
-  # Software_Colors$lightModeColor_R = gsub("^Gray","Darkgray", Software_Colors$lightModeColor_R)
-  Software_Colors$lightModeColor_R = gsub("^Lime","Chartreuse", Software_Colors$lightModeColor_R)
+  Software_Colors$color_R = gsub("^Teal$","Cyan4", Software_Colors$color)
+  Software_Colors$color_R = gsub("^Green$","Green4", Software_Colors$color_R)
+  Software_Colors$color_R = gsub("^Control$","Gray81", Software_Colors$color_R)
+  Software_Colors$color_R = gsub("^Lime$","Chartreuse", Software_Colors$color_R)
+  Software_Colors$lightModeColor_R = gsub("^Teal$","Cyan4", Software_Colors$lightModeColor)
+  Software_Colors$lightModeColor_R = gsub("^Green$","Green4", Software_Colors$lightModeColor_R)
+  Software_Colors$lightModeColor_R = gsub("^Control$","Gray81", Software_Colors$lightModeColor_R)
+  Software_Colors$lightModeColor_R = gsub("^Lime$","Chartreuse", Software_Colors$lightModeColor_R)
   if(x == "palette") return(as.character(unique(c(Software_Colors[,1], Software_Colors[,2]))))
   if(x == "palette_R") return(tolower(as.character(unique(c(Software_Colors[,3], Software_Colors[,4])))))
   columns = c(0,0)

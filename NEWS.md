@@ -1,9 +1,13 @@
 # NEWS
 ## 0.1.2
+- add new color in allowed colors palette "Control" now matches "Gray81"
+
+- fix bug that disabled styling edition of population "All"
+
 - add maxpoints parameter in buildGraph to control the number of cells displayed in 2D graphs
 
 - create read/write/apply GatingStrategy family functions to save/retrieve gating strategy
-(association of regions / population and graphs)
+(association of regions / populations and graphs)
 
 - better compute graph dependency in data_rm_ family functions
 
@@ -14,6 +18,9 @@
 - fix bug in shiny progress bar which did not initialize with title / detail
 
 - improve mergeXIF and subsetXIF functions (speed gain + no more dependency on seek for reading current position)
+
+## 0.1.1
+- CRAN release
 
 ## 0.1.0
 - fix bug when using verbose in Extract Images/Masks + ExportTo/Display Gallery/Numpy family functions

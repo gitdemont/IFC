@@ -72,9 +72,11 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
     if(pop$color=="Teal") {pops[[i]]$color="Cyan4"}
     if(pop$color=="Green") {pops[[i]]$color="Green4"}
     if(pop$color=="Lime") {pops[[i]]$color="Chartreuse"}
+    if(pop$color=="Control") {pops[[i]]$color="Gray81"}
     if(pop$lightModeColor=="Teal") {pops[[i]]$lightModeColor="Cyan4"}
     if(pop$lightModeColor=="Green") {pops[[i]]$lightModeColor="Green4"}
     if(pop$lightModeColor=="Lime") {pops[[i]]$lightModeColor="Chartreuse"}
+    if(pop$lightModeColor=="Control") {pops[[i]]$lightModeColor="Gray81"}
     
     switch(pop$type,
            "B" = { 
