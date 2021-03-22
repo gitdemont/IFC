@@ -88,7 +88,6 @@ getInfo <- function(fileName,
                     ...) {
   dots = list(...)
   if(missing(fileName)) stop("'fileName' can't be missing")
-  if(missing(fileName)) stop("'fileName' can't be missing")
   tmp = duplicated(fileName)
   if(any(tmp)) {
     warning(paste0("duplicated files have been removed from 'fileName': ","\n-", paste0(fileName[tmp],collapse="\n-")))
