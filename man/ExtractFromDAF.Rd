@@ -63,7 +63,7 @@ A named list of class `IFC_data`, whose members are:\cr
 Extracts data from DAF Files.
 }
 \details{
-When extract_features is TRUE it allows eatures, graphs, pops, regions to be extracted.\cr
+When extract_features is TRUE it allows features, graphs, pops, regions to be extracted.\cr
 If extract_features is TRUE, extract_stats will be automatically forced to TRUE.\cr
 If extract_stats is TRUE, extract_features will be automatically forced to TRUE.\cr
 If extract_offsets is TRUE, extract_images will be automatically forced to TRUE.\cr

@@ -43,7 +43,7 @@
 #' @param pnt_in_poly_epsilon epsilon to determine if object belongs to a polygon region or not. It only applies when algorithm is 1. Default is 1e-12.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... Other arguments to be passed.
-#' @details When extract_features is TRUE it allows eatures, graphs, pops, regions to be extracted.\cr
+#' @details When extract_features is TRUE it allows features, graphs, pops, regions to be extracted.\cr
 #' If extract_features is TRUE, extract_stats will be automatically forced to TRUE.\cr
 #' If extract_stats is TRUE, extract_features will be automatically forced to TRUE.\cr
 #' If extract_offsets is TRUE, extract_images will be automatically forced to TRUE.\cr
