@@ -29,6 +29,7 @@
 */
 
 #include <Rcpp.h>
+#include "../inst/include/align.hpp"
 #include "../inst/include/assert.hpp"
 #include "../inst/include/gate.hpp"
 #include "../inst/include/utils.hpp"
@@ -40,6 +41,28 @@
 #include "../inst/include/extract.hpp"
 #include "../inst/include/resize.hpp"
 using namespace Rcpp;
+
+// FROM align
+//' @title Spatial Offsets Image Correction
+//' @name cpp_align
+//' @description
+//' This function applies bilinear interpolation to correct image using pre-computed spatial offsets
+//' @param mat, a NumericMatrix.
+//' @param dx, a double x spatial offset. It has to be within ]-1,+1[.
+//' @param dy, a double y spatial offset. It has to be within ]-1,+1[.
+//' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
+//' See William E. Ortyn et al. Sensitivity Measurement and Compensation in Spectral Imaging. Cytometry A 69 852-862 (2006).
+//' \url{https://onlinelibrary.wiley.com/doi/full/10.1002/cyto.a.20306}
+//' @return a NumericMatrix.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix cpp_align(const Rcpp::NumericMatrix mat,
+                              const double dx = 0.0,
+                              const double dy = 0.0) {
+  return hpp_align(mat, dx, dy);
+}
+// END align
 
 // FROM assert
 //' @title Input Parameters Assertive Tool

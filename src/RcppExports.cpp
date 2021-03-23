@@ -5,6 +5,19 @@
 
 using namespace Rcpp;
 
+// cpp_align
+Rcpp::NumericMatrix cpp_align(const Rcpp::NumericMatrix mat, const double dx, const double dy);
+RcppExport SEXP _IFC_cpp_align(SEXP matSEXP, SEXP dxSEXP, SEXP dySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< const double >::type dx(dxSEXP);
+    Rcpp::traits::input_parameter< const double >::type dy(dySEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_align(mat, dx, dy));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_assert
 Rcpp::LogicalVector cpp_assert(const RObject x, const Rcpp::Nullable<Rcpp::IntegerVector> len, const Rcpp::Nullable<Rcpp::CharacterVector> cla, const Rcpp::Nullable<Rcpp::CharacterVector> typ, const RObject alw, const Rcpp::CharacterVector fun);
 RcppExport SEXP _IFC_cpp_assert(SEXP xSEXP, SEXP lenSEXP, SEXP claSEXP, SEXP typSEXP, SEXP alwSEXP, SEXP funSEXP) {
@@ -393,6 +406,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_IFC_cpp_align", (DL_FUNC) &_IFC_cpp_align, 3},
     {"_IFC_cpp_assert", (DL_FUNC) &_IFC_cpp_assert, 6},
     {"_IFC_cpp_ell_coord", (DL_FUNC) &_IFC_cpp_ell_coord, 2},
     {"_IFC_cpp_pnt_in_gate", (DL_FUNC) &_IFC_cpp_pnt_in_gate, 4},
