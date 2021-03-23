@@ -342,7 +342,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
                                  }), 1, sum))
           unique_id = unlist(sapply(1:length(ids$lengths), FUN=function(i) rep(i-1, times = ids$lengths[i])))
           features[, "Raw Number"] = features[, "Object Number"]
-          features_def = c(features_def, "Raw Number" = list(name = "Raw Number", type = "single", userfeaturetype = "No Parameters", def = "Raw Number"))
+          features_def = c(features_def, "Raw Number" = list(list(name = "Raw Number", type = "single", userfeaturetype = "No Parameters", def = "Raw Number")))
           features[, "Object Number"] = unique_id
         }
       }
