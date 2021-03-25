@@ -278,7 +278,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_decomp
-Rcpp::List cpp_decomp(const std::string fname, const uint32_t offset, const uint32_t nbytes, const R_len_t imgWidth, const R_len_t imgHeight, const R_len_t nb_channels, const uint8_t removal, const uint32_t compression, const bool verbose);
+Rcpp::List cpp_decomp(const std::string fname, const uint32_t offset, const uint32_t nbytes, const uint32_t imgWidth, const uint32_t imgHeight, const uint32_t nb_channels, const uint8_t removal, const uint32_t compression, const bool verbose);
 RcppExport SEXP _IFC_cpp_decomp(SEXP fnameSEXP, SEXP offsetSEXP, SEXP nbytesSEXP, SEXP imgWidthSEXP, SEXP imgHeightSEXP, SEXP nb_channelsSEXP, SEXP removalSEXP, SEXP compressionSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -286,13 +286,32 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type nbytes(nbytesSEXP);
-    Rcpp::traits::input_parameter< const R_len_t >::type imgWidth(imgWidthSEXP);
-    Rcpp::traits::input_parameter< const R_len_t >::type imgHeight(imgHeightSEXP);
-    Rcpp::traits::input_parameter< const R_len_t >::type nb_channels(nb_channelsSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type imgWidth(imgWidthSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type imgHeight(imgHeightSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type nb_channels(nb_channelsSEXP);
     Rcpp::traits::input_parameter< const uint8_t >::type removal(removalSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type compression(compressionSEXP);
     Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_decomp(fname, offset, nbytes, imgWidth, imgHeight, nb_channels, removal, compression, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_rawdecomp
+Rcpp::RawVector cpp_rawdecomp(const std::string fname, const uint32_t offset, const uint32_t nbytes, const uint32_t imgWidth, const uint32_t imgHeight, const uint32_t compression, const uint8_t bits, const bool swap, const bool verbose);
+RcppExport SEXP _IFC_cpp_rawdecomp(SEXP fnameSEXP, SEXP offsetSEXP, SEXP nbytesSEXP, SEXP imgWidthSEXP, SEXP imgHeightSEXP, SEXP compressionSEXP, SEXP bitsSEXP, SEXP swapSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type nbytes(nbytesSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type imgWidth(imgWidthSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type imgHeight(imgHeightSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type compression(compressionSEXP);
+    Rcpp::traits::input_parameter< const uint8_t >::type bits(bitsSEXP);
+    Rcpp::traits::input_parameter< const bool >::type swap(swapSEXP);
+    Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_rawdecomp(fname, offset, nbytes, imgWidth, imgHeight, compression, bits, swap, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -428,6 +447,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_crop", (DL_FUNC) &_IFC_cpp_crop, 3},
     {"_IFC_cpp_resize", (DL_FUNC) &_IFC_cpp_resize, 6},
     {"_IFC_cpp_decomp", (DL_FUNC) &_IFC_cpp_decomp, 9},
+    {"_IFC_cpp_rawdecomp", (DL_FUNC) &_IFC_cpp_rawdecomp, 9},
     {"_IFC_cpp_normalize", (DL_FUNC) &_IFC_cpp_normalize, 5},
     {"_IFC_cpp_cleanse", (DL_FUNC) &_IFC_cpp_cleanse, 5},
     {"_IFC_cpp_mask", (DL_FUNC) &_IFC_cpp_mask, 3},

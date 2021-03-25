@@ -4,7 +4,7 @@
 #' @title Spatial Offsets Image Correction
 #' @name cpp_align
 #' @description
-#' This function applies bilinear interpolation to correct image using pre-computed spatial offsets
+#' This function uses bilinear interpolation to apply spatial offset correction on image
 #' @param mat, a NumericMatrix.
 #' @param dx, a double x spatial offset. It has to be within ]-1,+1[.
 #' @param dy, a double y spatial offset. It has to be within ]-1,+1[.
@@ -293,6 +293,52 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title IFC_object Decompression to RAW
+#' @name cpp_rawdecomp
+#' @description
+#' Operates decompression to raw of compressed image stored in TIFF file.
+#' @param fname string, path to file.
+#' @param offset uint32_t, position of the beginning of compressed image.
+#' @param nbytes uint32_t, number of bytes of compressed image.
+#' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
+#' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
+#' @param compression uint32_t, compression algorithm used. Default is 30818.
+#' @param bits uint8_t, bits depth. Default is 8.
+#' @param swap bool, whether to swap bytes or not. It only applies when bits is 16. Default is false.
+#' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
+#' @details
+#' BSD implementations of Bio-Formats readers and writers
+#' %%
+#' Copyright (C) 2005 - 2017 Open Microscopy Environment:
+#'   - Board of Regents of the University of Wisconsin-Madison
+#'   - Glencoe Software, Inc.
+#'   - University of Dundee
+#' %%
+#' Redistribution and use in source and binary forms, with or without
+#' modification, are permitted provided that the following conditions are met:
+#' 
+#' 1. Redistributions of source code must retain the above copyright notice,
+#'    this list of conditions and the following disclaimer.
+#' 2. Redistributions in binary form must reproduce the above copyright notice,
+#'    this list of conditions and the following disclaimer in the documentation
+#'    and/or other materials provided with the distribution.
+#' 
+#' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+#' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+#' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+#' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+#' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+#' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+#' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+#' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+#' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+#' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+#' POSSIBILITY OF SUCH DAMAGE.
+#' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
+#' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+#' @keywords internal
+NULL
+
 #' @title Matrix Normalization
 #' @name cpp_normalize
 #' @description
@@ -497,6 +543,10 @@ cpp_resize <- function(mat, new_height = 0L, new_width = 0L, add_noise = TRUE, b
 
 cpp_decomp <- function(fname, offset, nbytes, imgWidth = 1L, imgHeight = 1L, nb_channels = 1L, removal = 0L, compression = 30818L, verbose = FALSE) {
     .Call(`_IFC_cpp_decomp`, fname, offset, nbytes, imgWidth, imgHeight, nb_channels, removal, compression, verbose)
+}
+
+cpp_rawdecomp <- function(fname, offset, nbytes, imgWidth = 1L, imgHeight = 1L, compression = 30818L, bits = 8L, swap = FALSE, verbose = FALSE) {
+    .Call(`_IFC_cpp_rawdecomp`, fname, offset, nbytes, imgWidth, imgHeight, compression, bits, swap, verbose)
 }
 
 cpp_normalize <- function(mat, input_range = as.numeric( c(0.0,4095.0)), full_range = FALSE, force_range = FALSE, gamma = 1.0) {

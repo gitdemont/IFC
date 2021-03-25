@@ -43,9 +43,9 @@ using namespace Rcpp;
 //' @param fname string, path to file.
 //' @param offset uint32_t, position of the beginning of compressed image.
 //' @param nbytes uint32_t, number of bytes of compressed image.
-//' @param imgWidth R_len_t, Width of the decompressed image. Default is 1.
-//' @param imgHeight R_len_t, Height of the decompressed image. Default is 1.
-//' @param nb_channels R_len_t, number of channels of the decompressed image. Default is 1.
+//' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
+//' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
+//' @param nb_channels uint32_t, number of channels of the decompressed image. Default is 1.
 //' @param removal uint8_t, object removal method. Default is no removal. Otherwise, if\cr
 //' -1, for clipped removal: height OR width clipped pixels will be set to -1.\cr
 //' -2, height clipped removal: height clipped pixels will be set to -1.\cr
@@ -89,14 +89,14 @@ using namespace Rcpp;
 Rcpp::List hpp_rle_Decomp (const std::string fname, 
                            const uint32_t offset,
                            const uint32_t nbytes,
-                           const R_len_t imgWidth = 1,
-                           const R_len_t imgHeight = 1,
-                           const R_len_t nb_channels = 1,
+                           const uint32_t imgWidth = 1,
+                           const uint32_t imgHeight = 1,
+                           const uint32_t nb_channels = 1,
                            const uint8_t removal = 0,
                            const bool verbose = false) {
-  if((nb_channels * imgWidth * imgHeight) != 0) {
+  if((nb_channels * imgWidth * imgHeight * nbytes) != 0) {
     Rcpp::List out(nb_channels);
-    R_len_t tile_width = imgWidth / nb_channels;
+    uint32_t tile_width = imgWidth / nb_channels;
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (fi.is_open()) {
       try{
@@ -115,19 +115,19 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
         fi.read(buf_image.data(), nbytes);
         
         Rcpp::IntegerMatrix img(imgWidth,imgHeight);
-        uint32_t L = imgWidth * imgHeight, runLength = 0;
+        R_len_t L = imgWidth * imgHeight, runLength = 0;
         
         switch(removal) {
         case 1: { // clipped removal
           for(uint32_t k = 0; k < nbytes; k++) {
           int value = buf_image[k++];
           if(value > 1) value = -1;
-          uint32_t off = runLength;
+          R_len_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
             Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
           }
-          for(uint32_t j = off; j < runLength; j++) img[j] = value;
+          for(R_len_t j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
@@ -135,12 +135,12 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           for(uint32_t k = 0; k < nbytes; k++) {
           int value = buf_image[k++];
           if(value == 2) value = -1;
-          uint32_t off = runLength;
+          R_len_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
             Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
           }
-          for(uint32_t j = off; j < runLength; j++) img[j] = value;
+          for(R_len_t j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
@@ -148,12 +148,12 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           for(uint32_t k = 0; k < nbytes; k++) {
           int value = buf_image[k++];
           if(value == 3) value = -1;
-          uint32_t off = runLength;
+          R_len_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
             Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
           }
-          for(uint32_t j = off; j < runLength; j++) img[j] = value;
+          for(R_len_t j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
@@ -161,12 +161,12 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           for(uint32_t k = 0; k < nbytes; k++) {
           int value = buf_image[k++];
           value = (value == 0) ? 1:-1;
-          uint32_t off = runLength;
+          R_len_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
             Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
           }
-          for(uint32_t j = off; j < runLength; j++) img[j] = value;
+          for(R_len_t j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
@@ -174,31 +174,31 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           for(uint32_t k = 0; k < nbytes; k++) {
           int value = buf_image[k++];
           if(value != 1) value = -1;
-          uint32_t off = runLength;
+          R_len_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
             Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
           }
-          for(uint32_t j = off; j < runLength; j++) img[j] = value;
+          for(R_len_t j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
         default: { // no removal 
           for(uint32_t k = 0; k < nbytes; k++) {
           int value = buf_image[k++];
-          uint32_t off = runLength;
+          R_len_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
           if (runLength > L) {
             Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
           }
-          for(uint32_t j = off; j < runLength; j++) img[j] = value;
+          for(R_len_t j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
         }
         fi.close();
         Rcpp::IntegerMatrix timg = Rcpp::transpose(img);
-        for(R_len_t i = 0; i < nb_channels; i++) {
+        for(uint32_t i = 0; i < nb_channels; i++) {
           out[i] = timg(Rcpp::_, Rcpp::Range(tile_width * i, tile_width * (i+1) - 1));
         }
         return out;
@@ -215,7 +215,7 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
       Rcpp::stop("hpp_rle_Decomp: Unable to open file");
     }
   } else {
-    Rcpp::stop("hpp_rle_Decomp: imgWidth, imgHeight and nb_channels should be >0");    
+    Rcpp::stop("hpp_rle_Decomp: nbytes, imgWidth, imgHeight and nb_channels should be >0");    
   }
   return R_NilValue;
 }
@@ -227,9 +227,9 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
 //' @param fname string, path to file.
 //' @param offset uint32_t, position of the beginning of compressed image.
 //' @param nbytes uint32_t, number of bytes of compressed image.
-//' @param imgWidth R_len_t, Width of the decompressed image. Default is 1.
-//' @param imgHeight R_len_t, Height of the decompressed image. Default is 1.
-//' @param nb_channels R_len_t, number of channels of the decompressed image. Default is 1.
+//' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
+//' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
+//' @param nb_channels uint32_t, number of channels of the decompressed image. Default is 1.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
 //' @details
 //' BSD implementations of Bio-Formats readers and writers
@@ -267,13 +267,13 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
 Rcpp::List hpp_gray_Decomp (const std::string fname, 
                             const uint32_t offset, 
                             const uint32_t nbytes,
-                            const R_len_t imgWidth = 1, 
-                            const R_len_t imgHeight = 1, 
-                            const R_len_t nb_channels = 1,
+                            const uint32_t imgWidth = 1, 
+                            const uint32_t imgHeight = 1, 
+                            const uint32_t nb_channels = 1,
                             const bool verbose = false) {
-  if((nb_channels * imgWidth * imgHeight) != 0) {
+  if((nb_channels * imgWidth * imgHeight * nbytes) != 0) {
     Rcpp::List out(nb_channels);
-    R_len_t tile_width = imgWidth / nb_channels;
+    uint32_t tile_width = imgWidth / nb_channels;
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(fi.is_open()) {
       try {
@@ -287,6 +287,8 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
           Rcpp::Rcerr << "hpp_gray_Decomp: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
           Rcpp::stop("hpp_gray_Decomp: GrayScale image offset is higher than file size");
         }
+        if(imgWidth >= 0xffffffff) Rcpp::stop("hpp_gray_Decomp: image is too big");
+        
         fi.seekg(offset, std::ios::beg);
         std::vector<char> buf_image(nbytes);
         fi.read(buf_image.data(), nbytes);
@@ -295,13 +297,13 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
         Rcpp::IntegerMatrix img(imgHeight, imgWidth + 1);
         bool odd = false;
         
-        uint32_t k = nbytes; // ensure that k will stay within [0, nbytes-1]
-        for(R_len_t y = 0 ; y < imgHeight ; y++) {
-          for(R_len_t x = 1 ; x <= imgWidth ; x++) {
+        uint32_t kk, k = kk = nbytes - 1; // ensure that k will stay within [0, nbytes-1]
+        for(uint32_t y = 0 ; y < imgHeight ; y++) {
+          for(uint32_t x = 1 ; x <= imgWidth ; x++) {
             int value = 0;
             short shift = 0, nibble = -1;
             while((nibble & 0x8)) {
-              nibble = odd ? buf_image[nbytes - k--] >> 4 : buf_image[nbytes - k] & 0xf;
+              nibble = odd ? buf_image[kk - k--] >> 4 : buf_image[kk - k] & 0xf;
               odd = !odd;
               value += (nibble & 0x7) << shift;
               shift += 3;
@@ -314,7 +316,7 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
         }
         
         fi.close();
-        for(R_len_t i = 0; i < nb_channels; i++) {
+        for(uint32_t i = 0; i < nb_channels; i++) {
           out[i] = img(Rcpp::_, Rcpp::Range(1 + tile_width * i, tile_width * (i + 1)));
         }
         return out;
@@ -331,7 +333,7 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
       Rcpp::stop("hpp_gray_Decomp: Unable to open file");
     }
   } else {
-    Rcpp::stop("hpp_gray_Decomp: imgWidth, imgHeight and nb_channels should be >0");    
+    Rcpp::stop("hpp_gray_Decomp: nbytes, imgWidth, imgHeight and nb_channels should be >0");    
   }
   return R_NilValue;
 }
@@ -343,9 +345,9 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
 //' @param fname string, path to file.
 //' @param offset uint32_t, position of the beginning of compressed image.
 //' @param nbytes uint32_t, number of bytes of compressed image.
-//' @param imgWidth R_len_t, Width of the decompressed image. Default is 1.
-//' @param imgHeight R_len_t, Height of the decompressed image. Default is 1.
-//' @param nb_channels R_len_t, number of channels of the decompressed image. Default is 1.
+//' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
+//' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
+//' @param nb_channels uint32_t, number of channels of the decompressed image. Default is 1.
 //' @param removal uint8_t, object removal method. Only apply for 30818 compression. Default is 0.\cr
 //' -1, for clipped removal: height OR width clipped pixels will be set to -1.\cr
 //' -2, height clipped removal: height clipped pixels will be set to -1.\cr
@@ -390,9 +392,9 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
 Rcpp::List hpp_decomp (const std::string fname, 
                        const uint32_t offset, 
                        const uint32_t nbytes, 
-                       const R_len_t imgWidth = 1, 
-                       const R_len_t imgHeight = 1, 
-                       const R_len_t nb_channels = 1,
+                       const uint32_t imgWidth = 1, 
+                       const uint32_t imgHeight = 1, 
+                       const uint32_t nb_channels = 1,
                        const uint8_t removal = 0,
                        const uint32_t compression = 30818,
                        const bool verbose = false) {
@@ -402,6 +404,370 @@ Rcpp::List hpp_decomp (const std::string fname,
   }
   Rcpp::Rcerr << "hpp_decomp: can't deal with compression format:" << compression << std::endl;
   Rcpp::stop("hpp_decomp: can't deal with compression format");   
+  return R_NilValue;
+}
+
+//' @title GRAY Decompression to RAW
+//' @name cpp_gray_rawDecomp
+//' @description
+//' Operates GrayScale decompression to raw of compressed image stored in TIFF file.
+//' @param fname string, path to file.
+//' @param offset uint32_t, position of the beginning of compressed image.
+//' @param nbytes uint32_t, number of bytes of compressed image.
+//' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
+//' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
+//' @param bits uint8_t, bits depth. Default is 8.
+//' @param swap bool, whether to swap bytes or not. It only applies when bits is 16. Default is false.
+//' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
+//' @details
+//' BSD implementations of Bio-Formats readers and writers
+//' %%
+//' Copyright (C) 2005 - 2017 Open Microscopy Environment:
+//'   - Board of Regents of the University of Wisconsin-Madison
+//'   - Glencoe Software, Inc.
+//'   - University of Dundee
+//' %%
+//' Redistribution and use in source and binary forms, with or without
+//' modification, are permitted provided that the following conditions are met:
+//' 
+//' 1. Redistributions of source code must retain the above copyright notice,
+//'    this list of conditions and the following disclaimer.
+//' 2. Redistributions in binary form must reproduce the above copyright notice,
+//'    this list of conditions and the following disclaimer in the documentation
+//'    and/or other materials provided with the distribution.
+//' 
+//' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+//' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+//' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+//' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+//' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+//' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+//' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+//' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+//' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+//' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+//' POSSIBILITY OF SUCH DAMAGE.
+//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
+//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname, 
+                                    const uint32_t offset, 
+                                    const uint32_t nbytes,
+                                    const uint32_t imgWidth = 1,
+                                    const uint32_t imgHeight = 1,
+                                    const uint8_t bits = 8,
+                                    const bool swap = false,
+                                    const bool verbose = false) {
+  if((imgWidth * imgHeight * nbytes) != 0) {
+    if(!((bits == 8) || (bits == 16))) Rcpp::stop("hpp_gray_rawDecomp: bits should be 8 or 16");
+    Rcpp::RawVector out(imgWidth * imgHeight * bits / 8);
+    std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if(fi.is_open()) {
+      try {
+        fi.seekg(0, std::ios::end);
+        std::size_t filesize = fi.tellg();
+        if(verbose) {
+          Rcout << fname << std::endl;
+          Rcout << "Extracting " << nbytes << " Bytes GreyScale image [30817] @offset:" << offset << std::endl;
+        }
+        if(offset > (filesize - nbytes)) {
+          Rcpp::Rcerr << "hpp_gray_rawDecomp: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
+          Rcpp::stop("hpp_gray_rawDecomp: GrayScale image offset is higher than file size");
+        }
+        if(imgWidth >= 0xffffffff) Rcpp::stop("hpp_gray_rawDecomp: image is too big");
+        fi.seekg(offset, std::ios::beg);
+        std::vector<char> buf_image(nbytes);
+        fi.read(buf_image.data(), nbytes);
+        
+        Rcpp::IntegerVector lastRow(imgWidth + 1);
+        Rcpp::IntegerMatrix img(imgHeight, imgWidth + 1);
+        bool odd = false;
+        
+        uint32_t kk, k = kk = nbytes - 1; // ensure that k will stay within [0, nbytes-1]
+        R_len_t i = 0;
+        if(bits == 8) {
+          for(uint32_t y = 0; y < imgHeight ; y++) {
+            for(uint32_t x = 1 ; x <= imgWidth ; x++) {
+              int value = 0;
+              short shift = 0, nibble = -1;
+              while((nibble & 0x8)) {
+                nibble = odd ? buf_image[kk - k--] >> 4 : buf_image[kk - k] & 0xf;
+                odd = !odd;
+                value += (nibble & 0x7) << shift;
+                shift += 3;
+              }
+              if(nibble & 0x4) value |= - (1 << shift);
+              // img(y,x) = value;
+              lastRow[x] += value;
+              img(y,x) = img(y,x - 1) + lastRow[x];
+              // TODO: what if we have negative values ?
+              out[i++] = img(y,x) >> 4;
+            }
+          }
+        } else {
+          if(swap) {
+            for(uint32_t y = 0; y < imgHeight ; y++) {
+              for(uint32_t x = 1 ; x <= imgWidth ; x++) {
+                int value = 0;
+                short shift = 0, nibble = -1;
+                while((nibble & 0x8)) {
+                  nibble = odd ? buf_image[kk - k--] >> 4 : buf_image[kk - k] & 0xf;
+                  odd = !odd;
+                  value += (nibble & 0x7) << shift;
+                  shift += 3;
+                }
+                if(nibble & 0x4) value |= - (1 << shift);
+                // img(y,x) = value;
+                lastRow[x] += value;
+                img(y,x) = img(y,x - 1) + lastRow[x];
+                // TODO: what if we have negative values ?
+                out[i++] = (img(y,x) >> 4) & 0xff;
+                out[i++] = (img(y,x) << 4) & 0xff;
+              }
+            }
+          } else {
+            for(uint32_t y = 0; y < imgHeight ; y++) {
+              for(uint32_t x = 1 ; x <= imgWidth ; x++) {
+                int value = 0;
+                short shift = 0, nibble = -1;
+                while((nibble & 0x8)) {
+                  nibble = odd ? buf_image[kk - k--] >> 4 : buf_image[kk - k] & 0xf;
+                  odd = !odd;
+                  value += (nibble & 0x7) << shift;
+                  shift += 3;
+                }
+                if(nibble & 0x4) value |= - (1 << shift);
+                // img(y,x) = value;
+                lastRow[x] += value;
+                img(y,x) = img(y,x - 1) + lastRow[x];
+                // TODO: what if we have negative values ?
+                out[i++] = (img(y,x) << 4) & 0xff;
+                out[i++] = (img(y,x) >> 4) & 0xff;
+              }
+            }
+          }
+        }
+        return out;
+      }
+      catch(std::exception &ex) {	
+        fi.close();
+        forward_exception_to_r(ex);
+      }
+      catch(...) { 
+        Rcpp::stop("hpp_gray_rawDecomp: c++ exception (unknown reason)"); 
+      }
+      fi.close();
+    }
+    else {
+      Rcpp::stop("hpp_gray_rawDecomp: Unable to open file");
+    }
+  } else {
+    Rcpp::stop("hpp_gray_rawDecomp: nbytes, imgWidth and imgHeight should be >0");    
+  }
+  return R_NilValue;
+}
+
+//' @title RLE Decompression to RAW
+//' @name cpp_rle_rawDecomp
+//' @description
+//' Operates RLE decompression to raw of compressed image stored in TIFF file.
+//' @param fname string, path to file.
+//' @param offset uint32_t, position of the beginning of compressed image.
+//' @param nbytes uint32_t, number of bytes of compressed image.
+//' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
+//' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
+//' @param bits uint8_t, bits depth. Default is 8.
+//' @param swap bool, whether to swap bytes or not. It only applies when bits is 16. Default is false.
+//' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
+//' @details
+//' BSD implementations of Bio-Formats readers and writers
+//' %%
+//' Copyright (C) 2005 - 2017 Open Microscopy Environment:
+//'   - Board of Regents of the University of Wisconsin-Madison
+//'   - Glencoe Software, Inc.
+//'   - University of Dundee
+//' %%
+//' Redistribution and use in source and binary forms, with or without
+//' modification, are permitted provided that the following conditions are met:
+//' 
+//' 1. Redistributions of source code must retain the above copyright notice,
+//'    this list of conditions and the following disclaimer.
+//' 2. Redistributions in binary form must reproduce the above copyright notice,
+//'     this list of conditions and the following disclaimer in the documentation
+//'     and/or other materials provided with the distribution.
+//'  
+//' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+//' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+//' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+//' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+//' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+//' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+//' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+//' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+//' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+//' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+//' POSSIBILITY OF SUCH DAMAGE.
+//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
+//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+//' @keywords internal
+////' @export
+Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname, 
+                                   const uint32_t offset,
+                                   const uint32_t nbytes,
+                                   const uint32_t imgWidth = 1,
+                                   const uint32_t imgHeight = 1,
+                                   const uint8_t bits = 8,
+                                   const bool swap = false,
+                                   const bool verbose = false) {
+  R_len_t L = imgWidth * imgHeight, runLength = 0;
+  if(!((bits == 8) || (bits == 16))) Rcpp::stop("hpp_gray_rawDecomp: bits should be 8 or 16");
+  if(L * nbytes != 0) {
+    std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+    if (fi.is_open()) {
+      try{
+        fi.seekg(0, std::ios::end);
+        unsigned int filesize = fi.tellg();
+        if(verbose) {
+          Rcout << fname << std::endl;
+          Rcout << "Extracting " << nbytes << " Bytes BitMask image [30818] @offset:" << offset << std::endl;
+        }
+        if(offset > (filesize - nbytes)) {
+          Rcpp::Rcerr << "hpp_rle_rawDecomp: @offset:" << offset << " points to outside of\n" << fname << std::endl;
+          Rcpp::stop("hpp_rle_rawDecomp: RLE image offset is higher than file size");
+        }
+        fi.seekg(offset, std::ios::beg);
+        std::vector<char> buf_image(nbytes);
+        fi.read(buf_image.data(), nbytes);
+        
+        Rcpp::RawVector out(L * bits / 8);
+        if(bits == 8) {
+          for(uint32_t k = 0; k < nbytes; k++) {
+            int value = buf_image[k++];
+            R_len_t off = runLength;
+            runLength = off + (buf_image[k] & 0xff) + 1;
+            if(runLength > L) {
+              Rcpp::stop("hpp_rle_rawDecomp: Buffer overrun");
+            }
+            // value is of range [0,3] and is 6 bits shifted 
+            // TODO change here if range is different
+            for(R_len_t j = off; j < runLength; j++) out[j] = value << 6;
+          }
+        } else {
+          if(swap) {
+            for(uint32_t k = 0; k < nbytes; k++) {
+              int value = buf_image[k++];
+              R_len_t off = runLength;
+              runLength = off + (buf_image[k] & 0xff) + 1;
+              if(runLength > L) {
+                Rcpp::stop("hpp_rle_rawDecomp: Buffer overrun");
+              }
+              // value is of range [0,3] and is 6 bits shifted 
+              // TODO change here if range is different
+              for(R_len_t j = off; j < runLength; j++) {
+                out[j*2] = (value << 6) & 0xff;
+                out[j*2 + 1] = (value >> 2) & 0xff;
+              }
+            }
+          } else {
+            for(uint32_t k = 0; k < nbytes; k++) {
+              int value = buf_image[k++];
+              R_len_t off = runLength;
+              runLength = off + (buf_image[k] & 0xff) + 1;
+              if(runLength > L) {
+                Rcpp::stop("hpp_rle_rawDecomp: Buffer overrun");
+              }
+              // value is of range [0,3] and is 6 bits shifted 
+              // TODO change here if range is different
+              for(R_len_t j = off; j < runLength; j++) {
+                out[j*2] = (value >> 2) & 0xff;
+                out[j*2 + 1] = (value << 6) & 0xff;
+              }
+            }
+          }
+        }
+        return out;
+      }
+      catch(std::exception &ex) {	
+        fi.close();
+        forward_exception_to_r(ex);
+      }
+      catch(...) { 
+        Rcpp::stop("hpp_rle_rawDecomp: c++ exception (unknown reason)"); 
+      }
+      fi.close();
+    }
+    else {
+      Rcpp::stop("hpp_rle_rawDecomp: Unable to open file");
+    }
+  } else {
+    Rcpp::stop("hpp_rle_rawDecomp: nbytes, imgWidth and imgHeight should be >0");
+  }
+  return R_NilValue;
+}
+
+//' @title IFC_object Decompression to RAW
+//' @name cpp_rawdecomp
+//' @description
+//' Operates decompression to raw of compressed image stored in TIFF file.
+//' @param fname string, path to file.
+//' @param offset uint32_t, position of the beginning of compressed image.
+//' @param nbytes uint32_t, number of bytes of compressed image.
+//' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
+//' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
+//' @param compression uint32_t, compression algorithm used. Default is 30818.
+//' @param bits uint8_t, bits depth. Default is 8.
+//' @param swap bool, whether to swap bytes or not. It only applies when bits is 16. Default is false.
+//' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
+//' @details
+//' BSD implementations of Bio-Formats readers and writers
+//' %%
+//' Copyright (C) 2005 - 2017 Open Microscopy Environment:
+//'   - Board of Regents of the University of Wisconsin-Madison
+//'   - Glencoe Software, Inc.
+//'   - University of Dundee
+//' %%
+//' Redistribution and use in source and binary forms, with or without
+//' modification, are permitted provided that the following conditions are met:
+//' 
+//' 1. Redistributions of source code must retain the above copyright notice,
+//'    this list of conditions and the following disclaimer.
+//' 2. Redistributions in binary form must reproduce the above copyright notice,
+//'    this list of conditions and the following disclaimer in the documentation
+//'    and/or other materials provided with the distribution.
+//' 
+//' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+//' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+//' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+//' ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+//' LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+//' CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+//' SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+//' INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+//' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+//' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+//' POSSIBILITY OF SUCH DAMAGE.
+//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
+//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::RawVector hpp_rawdecomp (const std::string fname, 
+                               const uint32_t offset, 
+                               const uint32_t nbytes, 
+                               const uint32_t imgWidth = 1, 
+                               const uint32_t imgHeight = 1, 
+                               const uint32_t compression = 30818,
+                               const uint8_t bits = 8,
+                               const bool swap = false,
+                               const bool verbose = false) {
+  switch(compression) {
+  case 30817: return hpp_gray_rawDecomp(fname, offset, nbytes, imgWidth, imgHeight, bits, swap, verbose);
+  case 30818: return hpp_rle_rawDecomp(fname, offset, nbytes, imgWidth, imgHeight, bits, swap, verbose);
+  }
+  Rcpp::Rcerr << "hpp_rawdecomp: can't deal with compression format:" << compression << std::endl;
+  Rcpp::stop("hpp_rawdecomp: can't deal with compression format");   
   return R_NilValue;
 }
 
