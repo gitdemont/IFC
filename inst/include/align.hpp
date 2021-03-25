@@ -35,7 +35,7 @@ using namespace Rcpp;
 //' @title Spatial Offsets Image Correction
 //' @name cpp_align
 //' @description
-//' This function applies bilinear interpolation to correct image using pre-computed spatial offsets
+//' This function uses bilinear interpolation to apply spatial offset correction on image
 //' @param mat, a NumericMatrix.
 //' @param dx, a double x spatial offset. It has to be within ]-1,+1[.
 //' @param dy, a double y spatial offset. It has to be within ]-1,+1[.
