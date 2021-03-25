@@ -205,7 +205,8 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   unwanted = c(33004, 33005, 33018, 33080, 33081, 33082, 33083, 33090, 33091, 33092, 33093, 33094)
   
   # tags of StripOffsets (273) and TileOffsets (324)
-  off_tags = c(273, 324)
+  # off_tags = c(273, 324)
+  off_tags = 273
   
   # open connections for reading and writing
   toread = file(description = fileName, open = "rb")
@@ -270,9 +271,11 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
           # go to this offset in read
           seek(toread, IFD$tags[[i_tag]]$val)
           # extra content
-          if(IFD$tags[[i_tag]]$tag %in% off_tags) {
-            if(IFD$tags[[i_tag]]$tag == 273) add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
-            if(IFD$tags[[i_tag]]$tag == 324) add_content = readBin(toread, what = "raw", n = IFD$tags[["325"]]$map, endian = r_endian)
+          if(IFD$tags[[i_tag]]$tag == 273) {
+            add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
+          # if(IFD$tags[[i_tag]]$tag %in% off_tags) {
+            # if(IFD$tags[[i_tag]]$tag == 273) add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
+            # if(IFD$tags[[i_tag]]$tag == 324) add_content = readBin(toread, what = "raw", n = IFD$tags[["325"]]$map, endian = r_endian)
           } else {
             add_content = readBin(toread, what = "raw", n = IFD$tags[[i_tag]]$byt, endian = r_endian)
           }
