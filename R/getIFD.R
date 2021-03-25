@@ -120,7 +120,7 @@ getIFD <- function(fileName, offsets = "first", trunc_bytes = 12, force_trunc = 
   if(!("IFC_offset" %in% class(offsets))) stop("'offsets' should be either 'all', 'first' or an object of class `IFC_offset`")
   L = length(offsets)
   if(L > 0) {
-    if(L == obj_number*2) K = c("IFC_ifd_list", "IFC_full_ifd")
+    if((length(obj_number) == 1) && (L == obj_number*2)) K = c("IFC_ifd_list", "IFC_full_ifd")
     VER = ifelse(verbose & (verbosity==2), TRUE, FALSE)
     if(display_progress) { 
       pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
