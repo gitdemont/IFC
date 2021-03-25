@@ -1,5 +1,23 @@
 # NEWS
 ## 0.1.2
+- new function to convert XIF to TIFF (+ underlying hpp/cpp functions)
+
+- remove TILE support and only use STRIP in mergeXIF and susbsetXIF since it seems to never been used
+
+- remove hard dependency on object number retrieved from first IFD in getIFD
+allowing to get IFDs from other files than RIF / CIF (i.e. TIFF)
+
+- make decomp.hpp more robust to invalid nbytes, imgWidth, imgHeight, nb_channels input 
+fix potential off-by-one issue that could cause buffer overrun in code although it should never be reached 
+
+- new function to deal with compensation
+
+- new function to apply spatial offsets correction on images
+
+- new function to retrieve ASSIST tests values
+
+- fix bug in setting Raw Number features definition when using ExtractFromXIF
+
 - add new color in allowed colors palette "Control" now matches "Gray81"
 
 - fix bug that disabled styling edition of population "All"
