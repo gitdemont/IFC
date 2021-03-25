@@ -14,7 +14,7 @@
 a NumericMatrix.
 }
 \description{
-This function applies bilinear interpolation to correct image using pre-computed spatial offsets
+This function uses bilinear interpolation to apply spatial offset correction on image
 }
 \details{
 It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
