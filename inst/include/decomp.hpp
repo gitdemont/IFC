@@ -115,7 +115,7 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
         fi.read(buf_image.data(), nbytes);
         
         Rcpp::IntegerMatrix img(imgWidth,imgHeight);
-        R_len_t L = imgWidth * imgHeight, runLength = 0;
+        R_len_t L = imgWidth * imgHeight, runLength = 0, j = 0;
         
         switch(removal) {
         case 1: { // clipped removal
@@ -124,10 +124,8 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           if(value > 1) value = -1;
           R_len_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
-          if (runLength > L) {
-            Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
-          }
-          for(R_len_t j = off; j < runLength; j++) img[j] = value;
+          if (runLength > L) Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
+          for(j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
@@ -137,10 +135,8 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           if(value == 2) value = -1;
           R_len_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
-          if (runLength > L) {
-            Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
-          }
-          for(R_len_t j = off; j < runLength; j++) img[j] = value;
+          if (runLength > L) Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
+          for(j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
@@ -150,10 +146,8 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           if(value == 3) value = -1;
           R_len_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
-          if (runLength > L) {
-            Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
-          }
-          for(R_len_t j = off; j < runLength; j++) img[j] = value;
+          if (runLength > L) Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
+          for(j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
@@ -163,10 +157,8 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           value = (value == 0) ? 1:-1;
           R_len_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
-          if (runLength > L) {
-            Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
-          }
-          for(R_len_t j = off; j < runLength; j++) img[j] = value;
+          if (runLength > L) Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
+          for(j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
@@ -176,10 +168,8 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           if(value != 1) value = -1;
           R_len_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
-          if (runLength > L) {
-            Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
-          }
-          for(R_len_t j = off; j < runLength; j++) img[j] = value;
+          if (runLength > L) Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
+          for(j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
@@ -188,14 +178,13 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           int value = buf_image[k++];
           R_len_t off = runLength;
           runLength = off + (buf_image[k] & 0xff) + 1;
-          if (runLength > L) {
-            Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
-          }
-          for(R_len_t j = off; j < runLength; j++) img[j] = value;
+          if (runLength > L) Rcpp::stop("hpp_rle_Decomp: Buffer overrun");
+          for(j = off; j < runLength; j++) img[j] = value;
         }
           break;
         }
         }
+        if(L != j) Rcpp::stop("hpp_rle_Decomp: Bad decompression");
         fi.close();
         Rcpp::IntegerMatrix timg = Rcpp::transpose(img);
         for(uint32_t i = 0; i < nb_channels; i++) {
@@ -297,22 +286,31 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
         Rcpp::IntegerMatrix img(imgHeight, imgWidth + 1);
         bool odd = false;
         
-        uint32_t kk, k = kk = nbytes - 1; // ensure that k will stay within [0, nbytes-1]
+        uint32_t k = 0;
         for(uint32_t y = 0 ; y < imgHeight ; y++) {
           for(uint32_t x = 1 ; x <= imgWidth ; x++) {
             int value = 0;
             short shift = 0, nibble = -1;
             while((nibble & 0x8)) {
-              nibble = odd ? buf_image[kk - k--] >> 4 : buf_image[kk - k] & 0xf;
+              if(odd) {
+                nibble = buf_image[k++] >> 4;
+              } else {
+                if(k >= nbytes) Rcpp::stop("hpp_gray_Decomp: Buffer overrun");
+                nibble = buf_image[k] & 0xf;
+              }
               odd = !odd;
               value += (nibble & 0x7) << shift;
               shift += 3;
             }
             if(nibble & 0x4) value |= - (1 << shift);
-            // img(y,x) = value;
             lastRow[x] += value;
             img(y,x) = img(y,x - 1) + lastRow[x];
           }
+        }
+        if(odd) {
+          if(k) Rcpp::stop("hpp_gray_Decomp: Bad decompression");
+        } else {
+          if(k != 0xffffffff) Rcpp::stop("hpp_gray_Decomp: Bad decompression");
         }
         
         fi.close();
@@ -485,7 +483,7 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
         Rcpp::IntegerMatrix img(imgHeight, imgWidth + 1);
         bool odd = false;
         
-        uint32_t kk, k = kk = nbytes - 1; // ensure that k will stay within [0, nbytes-1]
+        uint32_t k = 0;
         R_len_t i = 0;
         if(bits == 8) {
           for(uint32_t y = 0; y < imgHeight ; y++) {
@@ -493,13 +491,17 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
               int value = 0;
               short shift = 0, nibble = -1;
               while((nibble & 0x8)) {
-                nibble = odd ? buf_image[kk - k--] >> 4 : buf_image[kk - k] & 0xf;
+                if(odd) {
+                  nibble = buf_image[k++] >> 4;
+                } else {
+                  if(k >= nbytes) Rcpp::stop("hpp_gray_rawDecomp: Buffer overrun");
+                  nibble = buf_image[k] & 0xf;
+                }
                 odd = !odd;
                 value += (nibble & 0x7) << shift;
                 shift += 3;
               }
               if(nibble & 0x4) value |= - (1 << shift);
-              // img(y,x) = value;
               lastRow[x] += value;
               img(y,x) = img(y,x - 1) + lastRow[x];
               // TODO: what if we have negative values ?
@@ -513,13 +515,17 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
                 int value = 0;
                 short shift = 0, nibble = -1;
                 while((nibble & 0x8)) {
-                  nibble = odd ? buf_image[kk - k--] >> 4 : buf_image[kk - k] & 0xf;
+                  if(odd) {
+                    nibble = buf_image[k++] >> 4;
+                  } else {
+                    if(k >= nbytes) Rcpp::stop("hpp_gray_rawDecomp: Buffer overrun");
+                    nibble = buf_image[k] & 0xf;
+                  }
                   odd = !odd;
                   value += (nibble & 0x7) << shift;
                   shift += 3;
                 }
                 if(nibble & 0x4) value |= - (1 << shift);
-                // img(y,x) = value;
                 lastRow[x] += value;
                 img(y,x) = img(y,x - 1) + lastRow[x];
                 // TODO: what if we have negative values ?
@@ -533,13 +539,17 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
                 int value = 0;
                 short shift = 0, nibble = -1;
                 while((nibble & 0x8)) {
-                  nibble = odd ? buf_image[kk - k--] >> 4 : buf_image[kk - k] & 0xf;
+                  if(odd) {
+                    nibble = buf_image[k++] >> 4;
+                  } else {
+                    if(k >= nbytes) Rcpp::stop("hpp_gray_rawDecomp: Buffer overrun");
+                    nibble = buf_image[k] & 0xf;
+                  }
                   odd = !odd;
                   value += (nibble & 0x7) << shift;
                   shift += 3;
                 }
                 if(nibble & 0x4) value |= - (1 << shift);
-                // img(y,x) = value;
                 lastRow[x] += value;
                 img(y,x) = img(y,x - 1) + lastRow[x];
                 // TODO: what if we have negative values ?
@@ -548,6 +558,11 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
               }
             }
           }
+        }
+        if(odd) {
+          if(k) Rcpp::stop("hpp_gray_rawDecomp: Bad decompression");
+        } else {
+          if(k != 0xffffffff) Rcpp::stop("hpp_gray_rawDecomp: Bad decompression");
         }
         return out;
       }
@@ -621,7 +636,7 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
                                    const uint8_t bits = 8,
                                    const bool swap = false,
                                    const bool verbose = false) {
-  R_len_t L = imgWidth * imgHeight, runLength = 0;
+  R_len_t L = imgWidth * imgHeight, runLength = 0, j = 0;
   if(!((bits == 8) || (bits == 16))) Rcpp::stop("hpp_gray_rawDecomp: bits should be 8 or 16");
   if(L * nbytes != 0) {
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -647,12 +662,10 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
             int value = buf_image[k++];
             R_len_t off = runLength;
             runLength = off + (buf_image[k] & 0xff) + 1;
-            if(runLength > L) {
-              Rcpp::stop("hpp_rle_rawDecomp: Buffer overrun");
-            }
+            if(runLength > L) Rcpp::stop("hpp_rle_rawDecomp: Buffer overrun");
             // value is of range [0,3] and is 6 bits shifted 
             // TODO change here if range is different
-            for(R_len_t j = off; j < runLength; j++) out[j] = value << 6;
+            for(j = off; j < runLength; j++) out[j] = value << 6;
           }
         } else {
           if(swap) {
@@ -660,12 +673,10 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
               int value = buf_image[k++];
               R_len_t off = runLength;
               runLength = off + (buf_image[k] & 0xff) + 1;
-              if(runLength > L) {
-                Rcpp::stop("hpp_rle_rawDecomp: Buffer overrun");
-              }
+              if(runLength > L) Rcpp::stop("hpp_rle_rawDecomp: Buffer overrun");
               // value is of range [0,3] and is 6 bits shifted 
               // TODO change here if range is different
-              for(R_len_t j = off; j < runLength; j++) {
+              for(j = off; j < runLength; j++) {
                 out[j*2] = (value << 6) & 0xff;
                 out[j*2 + 1] = (value >> 2) & 0xff;
               }
@@ -675,18 +686,17 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
               int value = buf_image[k++];
               R_len_t off = runLength;
               runLength = off + (buf_image[k] & 0xff) + 1;
-              if(runLength > L) {
-                Rcpp::stop("hpp_rle_rawDecomp: Buffer overrun");
-              }
+              if(runLength > L) Rcpp::stop("hpp_rle_rawDecomp: Buffer overrun");
               // value is of range [0,3] and is 6 bits shifted 
               // TODO change here if range is different
-              for(R_len_t j = off; j < runLength; j++) {
+              for(j = off; j < runLength; j++) {
                 out[j*2] = (value >> 2) & 0xff;
                 out[j*2 + 1] = (value << 6) & 0xff;
               }
             }
           }
         }
+        if(L != j) Rcpp::stop("hpp_rle_rawDecomp: Bad decompression");
         return out;
       }
       catch(std::exception &ex) {	
