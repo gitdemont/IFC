@@ -185,7 +185,6 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
         }
         }
         if(L != j) Rcpp::stop("hpp_rle_Decomp: Bad decompression");
-        fi.close();
         Rcpp::IntegerMatrix timg = Rcpp::transpose(img);
         for(uint32_t i = 0; i < nb_channels; i++) {
           out[i] = timg(Rcpp::_, Rcpp::Range(tile_width * i, tile_width * (i+1) - 1));
@@ -199,8 +198,8 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
       catch(...) { 
         Rcpp::stop("hpp_rle_Decomp: c++ exception (unknown reason)"); 
       }
-    }
-    else {
+      fi.close();
+    } else {
       Rcpp::stop("hpp_rle_Decomp: Unable to open file");
     }
   } else {
@@ -307,13 +306,7 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
             img(y,x) = img(y,x - 1) + lastRow[x];
           }
         }
-        if(odd) {
-          if(k) Rcpp::stop("hpp_gray_Decomp: Bad decompression");
-        } else {
-          if(k != 0xffffffff) Rcpp::stop("hpp_gray_Decomp: Bad decompression");
-        }
-        
-        fi.close();
+        if(k != nbytes - odd) Rcpp::stop("hpp_gray_Decomp: Bad decompression");
         for(uint32_t i = 0; i < nb_channels; i++) {
           out[i] = img(Rcpp::_, Rcpp::Range(1 + tile_width * i, tile_width * (i + 1)));
         }
@@ -326,8 +319,8 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
       catch(...) { 
         Rcpp::stop("hpp_gray_Decomp: c++ exception (unknown reason)"); 
       }
-    }
-    else {
+      fi.close();
+    } else {
       Rcpp::stop("hpp_gray_Decomp: Unable to open file");
     }
   } else {
@@ -559,11 +552,7 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
             }
           }
         }
-        if(odd) {
-          if(k) Rcpp::stop("hpp_gray_rawDecomp: Bad decompression");
-        } else {
-          if(k != 0xffffffff) Rcpp::stop("hpp_gray_rawDecomp: Bad decompression");
-        }
+        if(k != nbytes - odd) Rcpp::stop("hpp_gray_rawDecomp: Bad decompression");
         return out;
       }
       catch(std::exception &ex) {	
@@ -574,8 +563,7 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
         Rcpp::stop("hpp_gray_rawDecomp: c++ exception (unknown reason)"); 
       }
       fi.close();
-    }
-    else {
+    } else {
       Rcpp::stop("hpp_gray_rawDecomp: Unable to open file");
     }
   } else {
@@ -707,8 +695,7 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
         Rcpp::stop("hpp_rle_rawDecomp: c++ exception (unknown reason)"); 
       }
       fi.close();
-    }
-    else {
+    } else {
       Rcpp::stop("hpp_rle_rawDecomp: Unable to open file");
     }
   } else {
