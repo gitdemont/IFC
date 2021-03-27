@@ -1,5 +1,7 @@
 # NEWS
 ## 0.1.2
+- allow spatial correction directly from objectExtract thanks to the addition of spatial_correction parameter in objectParam
+
 - new function to convert XIF to TIFF (+ underlying hpp/cpp functions)
 
 - remove TILE support and only use STRIP in mergeXIF and susbsetXIF since it seems to never been used
