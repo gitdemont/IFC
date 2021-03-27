@@ -393,7 +393,7 @@ Rcpp::List hpp_decomp (const std::string fname,
   case 30817: return hpp_gray_Decomp(fname, offset, nbytes, imgWidth, imgHeight, nb_channels, verbose);
   case 30818: return hpp_rle_Decomp(fname, offset, nbytes, imgWidth, imgHeight, nb_channels, removal, verbose);
   }
-  Rcpp::Rcerr << "hpp_decomp: can't deal with compression format:" << compression << std::endl;
+  Rcpp::Rcerr << "hpp_decomp: can't deal with compression format: " << compression << std::endl;
   Rcpp::stop("hpp_decomp: can't deal with compression format");   
   return R_NilValue;
 }
@@ -763,7 +763,7 @@ Rcpp::RawVector hpp_rawdecomp (const std::string fname,
   case 30817: return hpp_gray_rawDecomp(fname, offset, nbytes, imgWidth, imgHeight, bits, swap, verbose);
   case 30818: return hpp_rle_rawDecomp(fname, offset, nbytes, imgWidth, imgHeight, bits, swap, verbose);
   }
-  Rcpp::Rcerr << "hpp_rawdecomp: can't deal with compression format:" << compression << std::endl;
+  Rcpp::Rcerr << "hpp_rawdecomp: can't deal with compression format: " << compression << std::endl;
   Rcpp::stop("hpp_rawdecomp: can't deal with compression format");   
   return R_NilValue;
 }
