@@ -415,6 +415,8 @@ NULL
 #' @param force_range bool, only apply when mode is not "raw", if force_range is TRUE, then 'input_range' will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
 #' Note that this parameter takes the precedence over 'input_range' and 'full_range'.
 #' @param gamma correction. Default is 1, for no correction.
+#' @param spatialX X offset correction. Default is 0.0 for no change.
+#' @param spatialY Y offset correction. Default is 0.0 for no change.
 #' @details When add_noise is false, backgound will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
 #' when a mask is detected, add_noise, full_range and force_range are set to false, background mean and sd to 0, and input_range to [0,3].\cr
 #' @keywords internal
@@ -431,6 +433,8 @@ NULL
 #' @param physicalChannel CharacterVector of indices for each channels
 #' @param xmin NumericVector of minimal values for each channels
 #' @param xmax NumericVector of maximal values for each channels
+#' @param spatialX NumericVector of X spatial offset correction for each channels
+#' @param spatialY NumericVector of Y spatial offset correction each channels 
 #' @param removal IntegerVector of removal method to be used for each channels
 #' @param add_noise LogicalVector of whether to add_noise for each channels
 #' @param full_range LogicalVector of whether to use full_range for each channels
@@ -565,11 +569,11 @@ cpp_mark <- function(A, B, mask, xoff = 0L, yoff = 0L, invert = FALSE) {
     .Call(`_IFC_cpp_mark`, A, B, mask, xoff, yoff, invert)
 }
 
-cpp_transform <- function(mat, color, msk, size = as.integer( c(0,0)), mode = "raw", type = 2L, input_range = as.numeric( c(0.0,4095.0)), add_noise = TRUE, bg = 0.0, sd = 0.0, full_range = FALSE, force_range = FALSE, gamma = 1.0) {
-    .Call(`_IFC_cpp_transform`, mat, color, msk, size, mode, type, input_range, add_noise, bg, sd, full_range, force_range, gamma)
+cpp_transform <- function(mat, color, msk, size = as.integer( c(0,0)), mode = "raw", type = 2L, input_range = as.numeric( c(0.0,4095.0)), add_noise = TRUE, bg = 0.0, sd = 0.0, full_range = FALSE, force_range = FALSE, gamma = 1.0, spatialX = 0.0, spatialY = 0.0) {
+    .Call(`_IFC_cpp_transform`, mat, color, msk, size, mode, type, input_range, add_noise, bg, sd, full_range, force_range, gamma, spatialX, spatialY)
 }
 
-cpp_extract <- function(fname, ifd, colors, physicalChannel, xmin, xmax, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk = 0L, mode = "raw", size = as.integer( c(0,0)), verbose = FALSE) {
-    .Call(`_IFC_cpp_extract`, fname, ifd, colors, physicalChannel, xmin, xmax, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk, mode, size, verbose)
+cpp_extract <- function(fname, ifd, colors, physicalChannel, xmin, xmax, spatialX, spatialY, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk = 0L, mode = "raw", size = as.integer( c(0,0)), verbose = FALSE) {
+    .Call(`_IFC_cpp_extract`, fname, ifd, colors, physicalChannel, xmin, xmax, spatialX, spatialY, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk, mode, size, verbose)
 }
 

@@ -33,6 +33,10 @@ values exceeding this range are clipped.}
 Note that this parameter takes the precedence over 'input_range' and 'full_range'.}
 
 \item{gamma}{correction. Default is 1, for no correction.}
+
+\item{spatialX}{X offset correction. Default is 0.0 for no change.}
+
+\item{spatialY}{Y offset correction. Default is 0.0 for no change.}
 }
 \description{
 Function to normalize, colorize and add background to images.

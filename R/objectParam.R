@@ -86,6 +86,7 @@
 #' @param force_range only apply when mode is not "raw", if force_range is TRUE, then range will be adjusted to object range in [-4095, +inf] resulting in normalization. Default is FALSE.\cr
 #' Note that this parameter takes the precedence over 'full_range'.\cr
 #' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.
+#' @param spatial_correction only apply on RIF file, whether to apply spatial correction. Default is FALSE.
 #' @details when a mask is detected, 'add_noise', 'full_range' and 'force_range' are set to FALSE.
 #' @return an object of class `IFC_param`. 
 #' @export
@@ -105,7 +106,8 @@ objectParam <- function(...,
                         removal = "none",
                         add_noise = TRUE, 
                         full_range = FALSE,
-                        force_range = FALSE) {
+                        force_range = FALSE,
+                        spatial_correction = FALSE) {
   dots=list(...)
   
   #### check input
@@ -117,6 +119,7 @@ objectParam <- function(...,
                                     "cifdir","ntry")
     info = do.call(what = "getInfo", args = dots[param_info])  
   }
+  
   # TODO add the folowing lines
   # provided = names(as.list(match.call())[-(unique(attr(input, "was"))+1)])
   # expected = setdiff(names(formals(objectParam)), c("...", "info",
@@ -141,13 +144,14 @@ objectParam <- function(...,
   add_noise = as.logical(add_noise); assert(add_noise, alw = c(TRUE,FALSE))
   full_range = as.logical(full_range); assert(full_range, alw = c(TRUE,FALSE))
   force_range = as.logical(force_range); assert(force_range, alw = c(TRUE,FALSE))
+  spatial_correction = as.logical(spatial_correction); assert(spatial_correction, alw = c(TRUE, FALSE))
   assert(export, len = 1, alw = c("file", "matrix", "base64")) 
   assert(mode, len = 1, alw = c("rgb", "gray", "raw")) 
   if(!missing(random_seed) && length(random_seed) != 0) { # allow to input NULL
     random_seed = na.omit(as.integer(random_seed[is.finite(random_seed)]))
     assert(random_seed, len = 1, typ = "integer")
   }
-  assert(overwrite, len = 1, alw = c(TRUE, FALSE))
+  overwrite = as.logical(overwrite); assert(overwrite, alw = c(TRUE, FALSE))
   
   ##### retrieve channels
   channels = info$Images[info$Images$physicalChannel %in% which(info$in_use), ]
@@ -213,6 +217,22 @@ objectParam <- function(...,
   # if modified gamma is reset to 1 to use linear visualization
   gamma[gamma != gamma_c] <- 1
   channels[,"gamma"] <- gamma
+  
+  # add spatial correction information
+  if(spatial_correction) {
+    if(getFileExt(info$fileName_image) == "rif") {
+      mag = switch(as.character(info$magnification), "20" = "20x", "40" = "", "60" = "60x")
+      ASSISTDb = getASSIST(info$fileName_image)
+      spa_off = sapply(c("X","Y"), FUN = function(off) {
+        as.numeric(strsplit(ASSISTDb[[paste0(off, "Offsets", mag, "_Gen2_0_11")]], split = " ", fixed = TRUE)[[1]])
+      })
+      channels[, "spatial_X"] <- spa_off[, "X"][chan_to_extract]
+      channels[, "spatial_Y"] <- spa_off[, "Y"][chan_to_extract]
+    } else {
+      warning("'spatial_correction' can only be applied on .rif file")
+    }
+  }
+  
   ##### build ans
   ans = list(mode = mode,
              export = export,
@@ -258,20 +278,23 @@ objectParam <- function(...,
       base64_att = na.omit(as.character(base64_att))
       assert(base64_att, len = 1, typ = "character")
       ans$base64_att = base64_att
-      # write_to is not mandatory for "base64"
-      if(missing(write_to)) write_to = "%o_%c.bmp"
     }
-    ans$write_to <- write_to
-    ans$splitp_obj = splitp(ans$write_to)
-    ans$dir_name <- dirname(formatn(splitp_obj = splitp(ans$write_to), splitf_obj = ans$splitf_obj))
-    type = getFileExt(ans$write_to)
-    switch(type,
-           "jpg" = {type <- "jpeg"},
-           "tif" = {type <- "tiff"})
-    ##### check type
-    assert(type, len = 1, alw = c("bmp", "jpeg", "png", "tiff"))
-    ans$type <- type
   }
+  if(missing(write_to)) {
+    ans$write_to = "%o_%c.bmp"
+  } else {
+    ans$write_to <- write_to
+  }
+  ans$splitp_obj = splitp(ans$write_to)
+  ans$dir_name <- dirname(formatn(splitp_obj = splitp(ans$write_to), splitf_obj = ans$splitf_obj))
+  type = getFileExt(ans$write_to)
+  switch(type,
+         "jpg" = {type <- "jpeg"},
+         "tif" = {type <- "tiff"})
+  ##### check type
+  assert(type, len = 1, alw = c("bmp", "jpeg", "png", "tiff"))
+  ans$type <- type
+  
   class(ans) <- "IFC_param"
   return(ans)
 }

@@ -21,7 +21,8 @@ objectParam(
   removal = "none",
   add_noise = TRUE,
   full_range = FALSE,
-  force_range = FALSE
+  force_range = FALSE,
+  spatial_correction = FALSE
 )
 }
 \arguments{
@@ -97,6 +98,8 @@ This parameter will be repeated with rep_len() from \pkg{base} for every physica
 \item{force_range}{only apply when mode is not "raw", if force_range is TRUE, then range will be adjusted to object range in [-4095, +inf] resulting in normalization. Default is FALSE.\cr
 Note that this parameter takes the precedence over 'full_range'.\cr
 This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.}
+
+\item{spatial_correction}{only apply on RIF file, whether to apply spatial correction. Default is FALSE.}
 }
 \value{
 an object of class `IFC_param`.

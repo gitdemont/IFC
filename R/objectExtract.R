@@ -154,20 +154,29 @@ objectExtract <- function(ifd,
     set.seed(param$random_seed)
     on.exit(set.seed(NULL))
   }
+  if(sum(names(param$channels) %in% c("spatial_X","spatial_Y")) == 2) {
+    spatialX = param$channels$spatial_X
+    spatialY = param$channels$spatial_Y
+  } else {
+    spatialX = rep(0, nrow(param$channels))
+    spatialY = spatialX
+  }
 
   # extract
   foo = lapply(1:l_ifd, FUN=function(i_ifd) {
     img = cpp_extract(fname = param$fileName_image, 
                       ifd = ifd[[i_ifd]], 
                       colors = param$colors,  
-                      physicalChannel = param$channels$physicalChannel,
-                      xmin = param$channels$xmin,
-                      xmax = param$channels$xmax,
-                      removal = param$channels$removal,
-                      add_noise = param$channels$add_noise,
-                      full_range = param$channels$full_range,
-                      force_range = param$channels$force_range,
-                      gamma = param$channels$gamma,
+                      physicalChannel = channels$physicalChannel,
+                      xmin = channels$xmin,
+                      xmax = channels$xmax,
+                      spatialX = spatialX,
+                      spatialY = spatialY,
+                      removal = channels$removal,
+                      add_noise = channels$add_noise,
+                      full_range = channels$full_range,
+                      force_range = channels$force_range,
+                      gamma = channels$gamma,
                       chan_to_extract = param$chan_to_extract - 1, # index start 0 in C, 1 in R, 
                       extract_msk = param$extract_msk, 
                       mode = param$mode, 

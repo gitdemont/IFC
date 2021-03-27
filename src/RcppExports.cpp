@@ -375,8 +375,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_transform
-Rcpp::NumericVector cpp_transform(const Rcpp::NumericMatrix mat, const Rcpp::NumericVector color, const Rcpp::IntegerMatrix msk, const Rcpp::IntegerVector size, const std::string mode, const uint16_t type, const Rcpp::NumericVector input_range, const bool add_noise, const double bg, const double sd, const bool full_range, const bool force_range, const double gamma);
-RcppExport SEXP _IFC_cpp_transform(SEXP matSEXP, SEXP colorSEXP, SEXP mskSEXP, SEXP sizeSEXP, SEXP modeSEXP, SEXP typeSEXP, SEXP input_rangeSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP, SEXP full_rangeSEXP, SEXP force_rangeSEXP, SEXP gammaSEXP) {
+Rcpp::NumericVector cpp_transform(const Rcpp::NumericMatrix mat, const Rcpp::NumericVector color, const Rcpp::IntegerMatrix msk, const Rcpp::IntegerVector size, const std::string mode, const uint16_t type, const Rcpp::NumericVector input_range, const bool add_noise, const double bg, const double sd, const bool full_range, const bool force_range, const double gamma, const double spatialX, const double spatialY);
+RcppExport SEXP _IFC_cpp_transform(SEXP matSEXP, SEXP colorSEXP, SEXP mskSEXP, SEXP sizeSEXP, SEXP modeSEXP, SEXP typeSEXP, SEXP input_rangeSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP, SEXP full_rangeSEXP, SEXP force_rangeSEXP, SEXP gammaSEXP, SEXP spatialXSEXP, SEXP spatialYSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -393,13 +393,15 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const bool >::type full_range(full_rangeSEXP);
     Rcpp::traits::input_parameter< const bool >::type force_range(force_rangeSEXP);
     Rcpp::traits::input_parameter< const double >::type gamma(gammaSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_transform(mat, color, msk, size, mode, type, input_range, add_noise, bg, sd, full_range, force_range, gamma));
+    Rcpp::traits::input_parameter< const double >::type spatialX(spatialXSEXP);
+    Rcpp::traits::input_parameter< const double >::type spatialY(spatialYSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_transform(mat, color, msk, size, mode, type, input_range, add_noise, bg, sd, full_range, force_range, gamma, spatialX, spatialY));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_extract
-Rcpp::List cpp_extract(const std::string fname, const Rcpp::List ifd, const Rcpp::List colors, const Rcpp::CharacterVector physicalChannel, const Rcpp::NumericVector xmin, const Rcpp::NumericVector xmax, const Rcpp::IntegerVector removal, const Rcpp::LogicalVector add_noise, const Rcpp::LogicalVector full_range, const Rcpp::LogicalVector force_range, const Rcpp::NumericVector gamma, const Rcpp::IntegerVector chan_to_extract, const uint8_t extract_msk, const std::string mode, const Rcpp::IntegerVector size, const bool verbose);
-RcppExport SEXP _IFC_cpp_extract(SEXP fnameSEXP, SEXP ifdSEXP, SEXP colorsSEXP, SEXP physicalChannelSEXP, SEXP xminSEXP, SEXP xmaxSEXP, SEXP removalSEXP, SEXP add_noiseSEXP, SEXP full_rangeSEXP, SEXP force_rangeSEXP, SEXP gammaSEXP, SEXP chan_to_extractSEXP, SEXP extract_mskSEXP, SEXP modeSEXP, SEXP sizeSEXP, SEXP verboseSEXP) {
+Rcpp::List cpp_extract(const std::string fname, const Rcpp::List ifd, const Rcpp::List colors, const Rcpp::CharacterVector physicalChannel, const Rcpp::NumericVector xmin, const Rcpp::NumericVector xmax, const Rcpp::NumericVector spatialX, const Rcpp::NumericVector spatialY, const Rcpp::IntegerVector removal, const Rcpp::LogicalVector add_noise, const Rcpp::LogicalVector full_range, const Rcpp::LogicalVector force_range, const Rcpp::NumericVector gamma, const Rcpp::IntegerVector chan_to_extract, const uint8_t extract_msk, const std::string mode, const Rcpp::IntegerVector size, const bool verbose);
+RcppExport SEXP _IFC_cpp_extract(SEXP fnameSEXP, SEXP ifdSEXP, SEXP colorsSEXP, SEXP physicalChannelSEXP, SEXP xminSEXP, SEXP xmaxSEXP, SEXP spatialXSEXP, SEXP spatialYSEXP, SEXP removalSEXP, SEXP add_noiseSEXP, SEXP full_rangeSEXP, SEXP force_rangeSEXP, SEXP gammaSEXP, SEXP chan_to_extractSEXP, SEXP extract_mskSEXP, SEXP modeSEXP, SEXP sizeSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -409,6 +411,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::CharacterVector >::type physicalChannel(physicalChannelSEXP);
     Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type xmin(xminSEXP);
     Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type xmax(xmaxSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type spatialX(spatialXSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type spatialY(spatialYSEXP);
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type removal(removalSEXP);
     Rcpp::traits::input_parameter< const Rcpp::LogicalVector >::type add_noise(add_noiseSEXP);
     Rcpp::traits::input_parameter< const Rcpp::LogicalVector >::type full_range(full_rangeSEXP);
@@ -419,7 +423,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const std::string >::type mode(modeSEXP);
     Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type size(sizeSEXP);
     Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_extract(fname, ifd, colors, physicalChannel, xmin, xmax, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk, mode, size, verbose));
+    rcpp_result_gen = Rcpp::wrap(cpp_extract(fname, ifd, colors, physicalChannel, xmin, xmax, spatialX, spatialY, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk, mode, size, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -452,8 +456,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_cleanse", (DL_FUNC) &_IFC_cpp_cleanse, 5},
     {"_IFC_cpp_mask", (DL_FUNC) &_IFC_cpp_mask, 3},
     {"_IFC_cpp_mark", (DL_FUNC) &_IFC_cpp_mark, 6},
-    {"_IFC_cpp_transform", (DL_FUNC) &_IFC_cpp_transform, 13},
-    {"_IFC_cpp_extract", (DL_FUNC) &_IFC_cpp_extract, 16},
+    {"_IFC_cpp_transform", (DL_FUNC) &_IFC_cpp_transform, 15},
+    {"_IFC_cpp_extract", (DL_FUNC) &_IFC_cpp_extract, 18},
     {NULL, NULL, 0}
 };
 

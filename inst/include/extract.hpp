@@ -40,6 +40,7 @@
 #include "tiff.hpp"
 #include "resize.hpp"
 #include "matrix_logic.hpp"
+#include "align.hpp"
 using namespace Rcpp;
 
 //' @title Matrix Normalization
@@ -212,7 +213,9 @@ Rcpp::NumericMatrix hpp_mark (const Rcpp::NumericMatrix A,
 //' @param full_range bool, only apply when mode is not "raw", if full_range is TRUE, then 'input_range' will be set to 'c(0,4095)' and gamma forced to 1. Default is false.
 //' @param force_range bool, only apply when mode is not "raw", if force_range is TRUE, then 'input_range' will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
 //' Note that this parameter takes the precedence over 'input_range' and 'full_range'.
-//' @param gamma correction. Default is 1, for no correction.
+//' @param gamma correction. Default is 1.0, for no correction.
+//' @param spatialX X offset correction. Default is 0.0 for no change.
+//' @param spatialY Y offset correction. Default is 0.0 for no change.
 //' @details When add_noise is false, background will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
 //' when a mask is detected, add_noise, full_range and force_range are set to false, background mean and sd to 0, and input_range to [0,3].\cr
 //' @keywords internal
@@ -230,7 +233,9 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
                                   const double sd = 0.0,
                                   const bool full_range = false,
                                   const bool force_range = false,
-                                  const double gamma = 1.0) {
+                                  const double gamma = 1.0,
+                                  const double spatialX = 0.0,
+                                  const double spatialY = 0.0) {
   Rcpp::NumericMatrix foo;
   Rcpp::CharacterVector removal = Rcpp::wrap(msk.attr("removal"));
   Rcpp::CharacterVector col_name = Rcpp::wrap(color.attr("names"));
@@ -243,7 +248,7 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
     } else {
       foo = hpp_cleanse(mat, msk, false, 0.0, 0.0);
     } 
-    foo = hpp_resize(foo, size[0], size[1], false, 0.0, 0.0);
+    foo = hpp_resize(hpp_align(foo, spatialX, spatialY), size[0], size[1], false, 0.0, 0.0);
     if(mode != "raw") {
       foo = hpp_normalize(foo, msk_range, false, false, 1.0);
     }
@@ -290,7 +295,7 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
     } else {
       foo = hpp_cleanse(mat, msk, add_noise, bg_2, sd_2);
     } 
-    foo = hpp_resize(foo, size[0], size[1], add_noise, bg_2, sd_2);
+    foo = hpp_resize(hpp_align(foo, spatialX, spatialY), size[0], size[1], add_noise, bg_2, sd_2);
     if(mode != "raw") {
       foo = hpp_normalize(foo, input_range, full_range, force_range, gamma);
     }
@@ -336,6 +341,8 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
 //' @param physicalChannel CharacterVector of indices for each channels
 //' @param xmin NumericVector of minimal values for each channels
 //' @param xmax NumericVector of maximal values for each channels
+//' @param spatialX NumericVector of X spatial offset correction for each channels
+//' @param spatialY NumericVector of Y spatial offset correction each channels 
 //' @param removal IntegerVector of removal method to be used for each channels
 //' @param add_noise LogicalVector of whether to add_noise for each channels
 //' @param full_range LogicalVector of whether to use full_range for each channels
@@ -349,7 +356,8 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
 //' - 3: at least one masked\cr
 //' - 4: at least one MC
 //' @param mode string, color mode export. Either "rgb", "gray" or "raw". Default is "raw".
-//' @param size a length 2 IntegerVector of final dimensions (height,width) of the image. Default is 0,0 for no change.\cr
+//' @param size a length 2 IntegerVector of final dimensions (height,width) of the image. Default is 0,0 for no change.
+//' @param spatial a length 2 NumericVector, of spatial offset correction to apply on the image. Default is 0.0,0.0 for no change.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
 //' @keywords internal
 ////' @export
@@ -360,6 +368,8 @@ Rcpp::List hpp_extract (const std::string fname,
                         const Rcpp::CharacterVector physicalChannel,
                         const Rcpp::NumericVector xmin,
                         const Rcpp::NumericVector xmax,
+                        const Rcpp::NumericVector spatialX,
+                        const Rcpp::NumericVector spatialY,
                         const Rcpp::IntegerVector removal,
                         const Rcpp::LogicalVector add_noise,
                         const Rcpp::LogicalVector full_range,
@@ -488,7 +498,9 @@ Rcpp::List hpp_extract (const std::string fname,
                                                 sd_2[chan_idx],
                                                     full_range[chan_idx],
                                                               force_range[chan_idx],
-                                                                         gamma[chan_idx]);
+                                                                         gamma[chan_idx],
+                                                                              spatialX[chan_idx],
+                                                                                      spatialY[chan_idx]);
     }
   } else {
     msk.attr("removal") = "none";
@@ -507,7 +519,9 @@ Rcpp::List hpp_extract (const std::string fname,
                                                 sd_2[chan_idx],
                                                     full_range[chan_idx],
                                                               force_range[chan_idx],
-                                                                         gamma[chan_idx]);
+                                                                         gamma[chan_idx],
+                                                                              spatialX[chan_idx],
+                                                                                      spatialY[chan_idx]);
     }
   }
   return out;

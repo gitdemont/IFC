@@ -667,6 +667,8 @@ Rcpp::NumericMatrix cpp_mark (const Rcpp::NumericMatrix A,
 //' @param force_range bool, only apply when mode is not "raw", if force_range is TRUE, then 'input_range' will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
 //' Note that this parameter takes the precedence over 'input_range' and 'full_range'.
 //' @param gamma correction. Default is 1, for no correction.
+//' @param spatialX X offset correction. Default is 0.0 for no change.
+//' @param spatialY Y offset correction. Default is 0.0 for no change.
 //' @details When add_noise is false, backgound will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
 //' when a mask is detected, add_noise, full_range and force_range are set to false, background mean and sd to 0, and input_range to [0,3].\cr
 //' @keywords internal
@@ -684,8 +686,10 @@ Rcpp::NumericVector cpp_transform(const Rcpp::NumericMatrix mat,
                                   const double sd = 0.0,
                                   const bool full_range = false,
                                   const bool force_range = false,
-                                  const double gamma = 1.0) {
-  return hpp_transform(mat, color, msk, size, mode, type, input_range, add_noise, bg, sd, full_range, force_range, gamma); 
+                                  const double gamma = 1.0,
+                                  const double spatialX = 0.0,
+                                  const double spatialY = 0.0) {
+  return hpp_transform(mat, color, msk, size, mode, type, input_range, add_noise, bg, sd, full_range, force_range, gamma, spatialX, spatialY); 
 }
 
 //' @title IFC_object Extraction
@@ -699,6 +703,8 @@ Rcpp::NumericVector cpp_transform(const Rcpp::NumericMatrix mat,
 //' @param physicalChannel CharacterVector of indices for each channels
 //' @param xmin NumericVector of minimal values for each channels
 //' @param xmax NumericVector of maximal values for each channels
+//' @param spatialX NumericVector of X spatial offset correction for each channels
+//' @param spatialY NumericVector of Y spatial offset correction each channels 
 //' @param removal IntegerVector of removal method to be used for each channels
 //' @param add_noise LogicalVector of whether to add_noise for each channels
 //' @param full_range LogicalVector of whether to use full_range for each channels
@@ -723,6 +729,8 @@ Rcpp::List cpp_extract (const std::string fname,
                         const Rcpp::CharacterVector physicalChannel,
                         const Rcpp::NumericVector xmin,
                         const Rcpp::NumericVector xmax,
+                        const Rcpp::NumericVector spatialX,
+                        const Rcpp::NumericVector spatialY,
                         const Rcpp::IntegerVector removal,
                         const Rcpp::LogicalVector add_noise,
                         const Rcpp::LogicalVector full_range,
@@ -733,6 +741,6 @@ Rcpp::List cpp_extract (const std::string fname,
                         const std::string mode = "raw",
                         const Rcpp::IntegerVector size = Rcpp::IntegerVector::create(0,0),
                         const bool verbose = false) {
-  return hpp_extract (fname, ifd, colors, physicalChannel, xmin, xmax, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk, mode, size, verbose);
+  return hpp_extract (fname, ifd, colors, physicalChannel, xmin, xmax, spatialX, spatialY, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk, mode, size, verbose);
 }
 // END extract
