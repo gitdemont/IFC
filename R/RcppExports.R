@@ -434,7 +434,7 @@ NULL
 #' @param xmin NumericVector of minimal values for each channels
 #' @param xmax NumericVector of maximal values for each channels
 #' @param spatialX NumericVector of X spatial offset correction for each channels
-#' @param spatialY NumericVector of Y spatial offset correction each channels 
+#' @param spatialY NumericVector of Y spatial offset correction for each channels 
 #' @param removal IntegerVector of removal method to be used for each channels
 #' @param add_noise LogicalVector of whether to add_noise for each channels
 #' @param full_range LogicalVector of whether to use full_range for each channels

@@ -342,7 +342,7 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
 //' @param xmin NumericVector of minimal values for each channels
 //' @param xmax NumericVector of maximal values for each channels
 //' @param spatialX NumericVector of X spatial offset correction for each channels
-//' @param spatialY NumericVector of Y spatial offset correction each channels 
+//' @param spatialY NumericVector of Y spatial offset correction for each channels 
 //' @param removal IntegerVector of removal method to be used for each channels
 //' @param add_noise LogicalVector of whether to add_noise for each channels
 //' @param full_range LogicalVector of whether to use full_range for each channels
@@ -357,7 +357,6 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
 //' - 4: at least one MC
 //' @param mode string, color mode export. Either "rgb", "gray" or "raw". Default is "raw".
 //' @param size a length 2 IntegerVector of final dimensions (height,width) of the image. Default is 0,0 for no change.
-//' @param spatial a length 2 NumericVector, of spatial offset correction to apply on the image. Default is 0.0,0.0 for no change.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
 //' @keywords internal
 ////' @export

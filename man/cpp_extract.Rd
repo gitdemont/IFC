@@ -20,7 +20,7 @@
 
 \item{spatialX}{NumericVector of X spatial offset correction for each channels}
 
-\item{spatialY}{NumericVector of Y spatial offset correction each channels}
+\item{spatialY}{NumericVector of Y spatial offset correction for each channels}
 
 \item{removal}{IntegerVector of removal method to be used for each channels}
 
