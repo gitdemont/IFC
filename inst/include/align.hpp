@@ -54,8 +54,9 @@ Rcpp::NumericMatrix hpp_align(const Rcpp::NumericMatrix mat,
   R_len_t mat_c = mat.ncol();
   
   if(dx == 0.0 && dy == 0.0) {
-    NumericMatrix out = clone(mat);
-    return out(Rcpp::Range(2 , mat_r - 2), Rcpp::Range(1 , mat_c - 2));
+    return(mat);
+    // NumericMatrix out = clone(mat);
+    // return out(Rcpp::Range(2 , mat_r - 2), Rcpp::Range(1 , mat_c - 2));
   } else {
     double sx = dx, sy = dy, ssx, ssy;
     uint8_t deltax = 0, deltay = 0;
