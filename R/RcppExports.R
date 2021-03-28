@@ -6,8 +6,8 @@
 #' @description
 #' This function uses bilinear interpolation to apply spatial offset correction on image
 #' @param mat, a NumericMatrix.
-#' @param dx, a double x spatial offset. It has to be within ]-1,+1[.
-#' @param dy, a double y spatial offset. It has to be within ]-1,+1[.
+#' @param dx, a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
+#' @param dy, a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
 #' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
 #' See William E. Ortyn et al. Sensitivity Measurement and Compensation in Spectral Imaging. Cytometry A 69 852-862 (2006).
 #' \url{https://onlinelibrary.wiley.com/doi/full/10.1002/cyto.a.20306}
@@ -453,7 +453,7 @@ NULL
 #' @keywords internal
 NULL
 
-cpp_align <- function(mat, dx = 0.0, dy = 0.0) {
+cpp_align <- function(mat, dx = NA_real_, dy = NA_real_) {
     .Call(`_IFC_cpp_align`, mat, dx, dy)
 }
 

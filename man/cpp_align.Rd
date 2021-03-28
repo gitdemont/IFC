@@ -6,9 +6,9 @@
 \arguments{
 \item{mat, }{a NumericMatrix.}
 
-\item{dx, }{a double x spatial offset. It has to be within ]-1,+1[.}
+\item{dx, }{a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.}
 
-\item{dy, }{a double y spatial offset. It has to be within ]-1,+1[.}
+\item{dy, }{a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.}
 }
 \value{
 a NumericMatrix.

@@ -158,7 +158,7 @@ objectExtract <- function(ifd,
     spatialX = param$channels$spatial_X
     spatialY = param$channels$spatial_Y
   } else {
-    spatialX = rep(0, nrow(param$channels))
+    spatialX = rep(NA_real_, nrow(param$channels))
     spatialY = spatialX
   }
 
