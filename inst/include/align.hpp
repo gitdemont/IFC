@@ -77,6 +77,7 @@ Rcpp::NumericMatrix hpp_align(const Rcpp::NumericMatrix mat,
                             (mat(i_row + 1, i_col) * ssx + mat(i_row + 1, i_col + 1) * sx) * sy;
       }
     }
+    if(mat.hasAttribute("mask")) out.attr("mask") = mat.attr("mask");
     return out(Rcpp::Range(2 - deltay, mat_r - 2 - deltay), Rcpp::Range(1 - deltax, mat_c  - 2 - deltax));
   }
 }
