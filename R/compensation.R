@@ -36,7 +36,7 @@
 #' Function to shortcut extraction and RIF file spatial correction and compensation 
 #' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
 #' If 'param' is provided 'export'(="matrix"), 'mode'(="raw"), 'removal'(="none"),
-#' 'composite'(=""), 'selection'(="all"), 'size'(=c(0, 0)), 'force_width'(=FALSE), will be overwritten.\cr
+#' 'composite'(=""), 'selection'(="all"), 'size'(=c(0, 0)), 'force_width'(=FALSE), 'spatial_correction'(=TRUE), will be overwritten.\cr
 #' If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr
 #' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integer vector, IDEAS objects ids numbers to use.
@@ -48,7 +48,6 @@
 #' will be compensated using spillover matrix set during acquisition. If not NULL the provided spillover 
 #' matrix will be used to compensate images.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param ... other arguments to be passed.
 #' @details this function is experimental inputs and outputs may change in the future.
 #' @return A list of matrices/arrays of images corresponding to objects extracted.
 #' @keywords internal
@@ -99,7 +98,7 @@ CompensateFromRIF <- function(...,
   verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
   param_extra = names(dots) %in% c("ifd","param","export","bypass","verbose",
                                    "mode", "removal","composite",
-                                   "selection","size","force_width")
+                                   "selection","size","force_width","spatial_correction")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("write_to","base64_id","base64_att","overwrite",
                                    "random_seed","add_noise","full_range","force_range")
@@ -110,40 +109,25 @@ CompensateFromRIF <- function(...,
   # 1: prefer using 'param' if found,
   # 2: otherwise use 'info' if found,
   # 3: finally look at fileName
-  if(length(param) == 0) {  
-    if(length(input$info) == 0) { 
-      param = do.call(what = "objectParam",
-                      args = c(list(fileName = fileName,
-                                    export = "matrix", mode = "raw", removal = "none",
-                                    composite = "", selection = "all", size = c(0,0), force_width = FALSE),
-                               dots_param))
+  filename = input$fileName
+  if(length(param) == 0) {
+    if(length(input$info) == 0) {
+      fileName = param$fileName_image 
     } else {
-      param = do.call(what = "objectParam",
-                      args = c(list(info = input$info,
-                                    export = "matrix", mode = "raw", removal = "none",
-                                    composite = "", selection = "all", size = c(0,0), force_width = FALSE),
-                               dots_param))
+      fileName = input$info$fileName_image
     }
   } else {
-    # param exist but we recompute it to ensure to extract raw
-    param = do.call(what = "objectParam",
-                    args = c(list(info = param$fileName_image,
-                                  export = "matrix", mode = "raw", removal = "none",
-                                  composite = "", selection = "all", size = c(0,0), force_width = FALSE),
-                             dots_param))
+    fileName = param$fileName_image
   }
-  if(length(input$info) == 0) { 
-    info = getInfo(fileName = param$fileName_image, from = "acquisition", warn = FALSE, 
-                   verbose = verbose, verbosity = verbosity)
-  } else {
-    info = input$info
-  }
+  if(length(fileName) == 0) fileName = attr(input$offsets, "fileName_image")
   
-  fileName = param$fileName_image
-  title_progress = basename(fileName)
-  
-  IFD = getIFD(fileName = param$fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, 
-               verbose = FALSE, verbosity = 1, display_progress = FALSE, bypass = TRUE)
+  # compute object param
+  info = getInfo(fileName = fileName, from = "acquisition", warn = FALSE)
+  param = objectParam(info = info, selection = "all", 
+                      add_noise = FALSE, removal = "none",
+                      mode = "raw", export = "matrix", 
+                      size = c(0,0), force_width = FALSE, spatial_correction = TRUE,
+                      force_range = FALSE)
   
   if(!missing(spillover)) {
     if(length(spillover) == 0) {
@@ -156,26 +140,6 @@ CompensateFromRIF <- function(...,
     spill = NULL
   }
   
-  # extract offsets from ASSIST db
-  tmp_ass = read_xml(getFullTag(IFD = IFD, which = 1, "33064"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
-  assist = lapply(as_list(xml_find_first(tmp_ass, "//ASSISTDb")), unlist)
-  n = switch(as.character(info$magnification),
-             "20" = "Offsets20x_Gen2_0_11",
-             "40" = "Offsets_Gen2_0_11",
-             "60" = "Offsets60x_Gen2_0_11")
-  shift = sapply(c("X","Y"), FUN = function(i) {
-    as.numeric(strsplit(assist[[paste0(i,n)]], split = " ", fixed = TRUE)[[1]])
-  })
-  shift = subset(shift, subset = info$in_use, drop = FALSE)
-  rm(assist); rm(tmp_ass)
-  
-  # compute object param
-  param = objectParam(info = info, selection = "all", 
-                      add_noise = FALSE, removal = "none",
-                      mode = "raw", export = "matrix", 
-                      size = c(0,0), force_width = FALSE,
-                      force_range = FALSE)
-  
   fileName = param$fileName_image
   title_progress = basename(fileName)
   
@@ -187,7 +151,7 @@ CompensateFromRIF <- function(...,
     objects = na.omit(as.integer(objects))
     tokeep = (objects >= 0) & (objects < nobj)
     if(length(tokeep) == 0) {
-      warning("ExtractImages_toMatrix: No objects to extract, check the objects you provided.", immediate. = TRUE, call. = FALSE)
+      warning("CompensateFromRIF: No objects to extract, check the objects you provided.", immediate. = TRUE, call. = FALSE)
       return(NULL)
     }
     if(!all(tokeep)) {
@@ -235,15 +199,10 @@ CompensateFromRIF <- function(...,
                                                      dots))
       lapply(1:length(pre), FUN = function(i_pre) {
         d = dim(pre[[i_pre]][[1]]) - c(3, 2)
-        foo = sapply(1:length(pre[[i_pre]]), FUN = function(i_ch) {
-          return(c(cpp_align(attr(pre[[i_pre]][[i_ch]], which = "raw"), dx = shift[i_ch,"X"], dy = shift[i_ch,"Y"])))
-        })
-        if(!is.null(spill)) foo = compensate(foo, spill)
+        if(!is.null(spill)) foo = compensate(c(pre[[i_pre]][[i_ch]]), spill)
         foo = lapply(1:length(pre[[i_pre]]), FUN = function(i_ch) {
           img = matrix(foo[, i_ch], nrow = d[1], ncol = d[2])
-          msk = cpp_align(attr(pre[[i_pre]][[i_ch]], which = "mask"), dx = shift[i_ch,"X"], dy = shift[i_ch,"Y"])
-          attr(msk, "removal") <- attr(attr(pre[[i_pre]][[i_ch]], "mask"), "removal")
-          attr(img, which = "mask") <- msk
+          attr(img, which = "mask") <- attr(pre[[i_pre]][[i_ch]], which = "mask")
           attr(img, "input_range") <- attr(pre[[i_pre]][[i_ch]], "input_range")
           attr(img, "full_range") <- attr(pre[[i_pre]][[i_ch]], "full_range")
           attr(img, "force_range") <- attr(pre[[i_pre]][[i_ch]], "force_range")
@@ -277,15 +236,10 @@ CompensateFromRIF <- function(...,
                                                      dots))
       lapply(1:length(pre), FUN = function(i_pre) {
         d = dim(pre[[i_pre]][[1]]) - c(3, 2)
-        foo = sapply(1:length(pre[[i_pre]]), FUN = function(i_ch) {
-          return(c(cpp_align(attr(pre[[i_pre]][[i_ch]], which = "raw"), dx = shift[i_ch,"X"], dy = shift[i_ch,"Y"])))
-        })
-        if(!is.null(spill)) foo = compensate(foo, spill)
+        if(!is.null(spill)) foo = compensate(c(pre[[i_pre]][[i_ch]]), spill)
         foo = lapply(1:length(pre[[i_pre]]), FUN = function(i_ch) {
           img = matrix(foo[, i_ch], nrow = d[1], ncol = d[2])
-          msk = cpp_align(attr(pre[[i_pre]][[i_ch]], which = "mask"), dx = shift[i_ch,"X"], dy = shift[i_ch,"Y"])
-          attr(msk, "removal") <- attr(attr(pre[[i_pre]][[i_ch]], "mask"), "removal")
-          attr(img, which = "mask") <- msk
+          attr(img, which = "mask") <- attr(pre[[i_pre]][[i_ch]], which = "mask")
           attr(img, "input_range") <- attr(pre[[i_pre]][[i_ch]], "input_range")
           attr(img, "full_range") <- attr(pre[[i_pre]][[i_ch]], "full_range")
           attr(img, "force_range") <- attr(pre[[i_pre]][[i_ch]], "force_range")
@@ -323,7 +277,7 @@ CompensateFromRIF <- function(...,
 #' Function to shortcut extraction and CIF file compensation / decompensation 
 #' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
 #' If 'param' is provided 'export'(="matrix"), 'mode'(="raw"), 'removal'(="none"),
-#' 'composite'(=""), 'selection'(="all"), 'size'(=c(0, 0)), 'force_width'(=FALSE), will be overwritten.\cr
+#' 'composite'(=""), 'selection'(="all"), 'size'(=c(0, 0)), 'force_width'(=FALSE), 'spatial_correction'(=FALSE) will be overwritten.\cr
 #' If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr
 #' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integer vector, IDEAS objects ids numbers to use.
@@ -334,15 +288,14 @@ CompensateFromRIF <- function(...,
 #' When set to NULL images will be decompensated using spillover matrix set within .cif file. Otherwise,
 #' the images will be decompensated with spillover matrix set within the file and recompensated with the one provided.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param ... other arguments to be passed.
 #' @details this function is experimental inputs and outputs may change in the future.
 #' @return A list of matrices/arrays of images corresponding to objects extracted.
 #' @keywords internal
-CompensateFromCIF <- function(fileName,
+CompensateFromCIF <- function(...,
                               objects,
                               offsets,
                               spillover,
-                              display_progress = TRUE, ...) { 
+                              display_progress = TRUE) { 
   dots=list(...)
   
   # check input
@@ -385,7 +338,7 @@ CompensateFromCIF <- function(fileName,
   verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
   param_extra = names(dots) %in% c("ifd","param","export","bypass","verbose",
                                    "mode", "removal","composite",
-                                   "selection","size","force_width")
+                                   "selection","size","force_width","spatial_correction")
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("write_to","base64_id","base64_att","overwrite",
                                    "random_seed","add_noise","full_range","force_range")
@@ -396,40 +349,25 @@ CompensateFromCIF <- function(fileName,
   # 1: prefer using 'param' if found,
   # 2: otherwise use 'info' if found,
   # 3: finally look at fileName
-  if(length(param) == 0) {  
-    if(length(input$info) == 0) { 
-      param = do.call(what = "objectParam",
-                      args = c(list(fileName = fileName,
-                                    export = "matrix", mode = "raw", removal = "none",
-                                    composite = "", selection = "all", size = c(0,0), force_width = FALSE),
-                               dots_param))
+  filename = input$fileName
+  if(length(param) == 0) {
+    if(length(input$info) == 0) {
+      fileName = param$fileName_image 
     } else {
-      param = do.call(what = "objectParam",
-                      args = c(list(info = input$info,
-                                    export = "matrix", mode = "raw", removal = "none",
-                                    composite = "", selection = "all", size = c(0,0), force_width = FALSE),
-                               dots_param))
+      fileName = input$info$fileName_image
     }
   } else {
-    # param exist but we recompute it to ensure to extract raw
-    param = do.call(what = "objectParam",
-                    args = c(list(info = param$fileName_image,
-                                  export = "matrix", mode = "raw", removal = "none",
-                                  composite = "", selection = "all", size = c(0,0), force_width = FALSE),
-                             dots_param))
+    fileName = param$fileName_image
   }
-  if(length(input$info) == 0) { 
-    info = getInfo(fileName = param$fileName_image, from = "acquisition", warn = FALSE, 
-                   verbose = verbose, verbosity = verbosity)
-  } else {
-    info = input$info
-  }
+  if(length(fileName) == 0) fileName = attr(input$offsets, "fileName_image")
   
-  fileName = param$fileName_image
-  title_progress = basename(fileName)
-  
-  IFD = getIFD(fileName = param$fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, 
-               verbose = FALSE, verbosity = 1, display_progress = FALSE, bypass = TRUE)
+  # compute object param
+  info = getInfo(fileName = fileName, from = "analysis", warn = FALSE)
+  param = objectParam(info = info, selection = "all", 
+                      add_noise = FALSE, removal = "none",
+                      mode = "raw", export = "matrix", 
+                      size = c(0,0), force_width = FALSE, spatial_correction = FALSE,
+                      force_range = FALSE)
   
   if(missing(spillover)) {
     spill = 0
@@ -451,7 +389,7 @@ CompensateFromCIF <- function(fileName,
     objects = na.omit(as.integer(objects))
     tokeep = (objects >= 0) & (objects < nobj)
     if(length(tokeep) == 0) {
-      warning("ExtractImages_toMatrix: No objects to extract, check the objects you provided.", immediate. = TRUE, call. = FALSE)
+      warning("CompensateFromCIF: No objects to extract, check the objects you provided.", immediate. = TRUE, call. = FALSE)
       return(NULL)
     }
     if(!all(tokeep)) {
@@ -511,7 +449,7 @@ CompensateFromCIF <- function(fileName,
         }
         foo = lapply(1:length(pre[[i_pre]]), FUN = function(i_ch) {
           img = matrix(foo[, i_ch], nrow = d[1], ncol = d[2])
-          attr(img, "mask") <- attr(attr(pre[[i_pre]][[i_ch]], "mask"), "removal")
+          attr(img, "mask") <- attr(pre[[i_pre]][[i_ch]], "mask")
           attr(img, "input_range") <- attr(pre[[i_pre]][[i_ch]], "input_range")
           attr(img, "full_range") <- attr(pre[[i_pre]][[i_ch]], "full_range")
           attr(img, "force_range") <- attr(pre[[i_pre]][[i_ch]], "force_range")
@@ -557,7 +495,7 @@ CompensateFromCIF <- function(fileName,
         }
         foo = lapply(1:length(pre[[i_pre]]), FUN = function(i_ch) {
           img = matrix(foo[, i_ch], nrow = d[1], ncol = d[2])
-          attr(img, "mask") <- attr(attr(pre[[i_pre]][[i_ch]], "mask"), "removal")
+          attr(img, "mask") <- attr(pre[[i_pre]][[i_ch]], "mask")
           attr(img, "input_range") <- attr(pre[[i_pre]][[i_ch]], "input_range")
           attr(img, "full_range") <- attr(pre[[i_pre]][[i_ch]], "full_range")
           attr(img, "force_range") <- attr(pre[[i_pre]][[i_ch]], "force_range")
