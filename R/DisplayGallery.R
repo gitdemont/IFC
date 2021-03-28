@@ -177,7 +177,7 @@ DisplayGallery <- function(...,
   dots = dots[!param_extra] # remove not allowed param
   param_param = names(dots) %in% c("write_to","base64_id","base64_att","overwrite",
                                    "composite","selection","random_seed",
-                                   "removal","add_noise","full_range","force_range")
+                                   "removal","add_noise","full_range","force_range","spatial_correction")
   dots_param = dots[param_param] # keep param_param for objectParam
   dots = dots[!param_param]
 
