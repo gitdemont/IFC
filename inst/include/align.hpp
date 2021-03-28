@@ -55,8 +55,6 @@ Rcpp::NumericMatrix hpp_align(const Rcpp::NumericMatrix mat,
   
   if(dx == 0.0 && dy == 0.0) {
     return(mat);
-    // NumericMatrix out = clone(mat);
-    // return out(Rcpp::Range(2 , mat_r - 2), Rcpp::Range(1 , mat_c - 2));
   } else {
     double sx = dx, sy = dy, ssx, ssy;
     uint8_t deltax = 0, deltay = 0;
@@ -70,15 +68,21 @@ Rcpp::NumericMatrix hpp_align(const Rcpp::NumericMatrix mat,
     }
     ssx = 1 - sx;
     ssy = 1 - sy;
-    NumericMatrix out(mat_r, mat_c);
+    Rcpp::NumericMatrix M(mat_r, mat_c);
     for(R_len_t i_col = 0; i_col < mat_c - 1; i_col++) {
       for(R_len_t i_row = 1; i_row < mat_r - 1; i_row++) {
-        out(i_row, i_col) = (mat(i_row    , i_col) * ssx + mat(i_row    , i_col + 1) * sx) * ssy +
-                            (mat(i_row + 1, i_col) * ssx + mat(i_row + 1, i_col + 1) * sx) * sy;
+        M(i_row, i_col) = (mat(i_row    , i_col) * ssx + mat(i_row    , i_col + 1) * sx) * ssy +
+                          (mat(i_row + 1, i_col) * ssx + mat(i_row + 1, i_col + 1) * sx) * sy;
       }
     }
-    if(mat.hasAttribute("mask")) out.attr("mask") = mat.attr("mask");
-    return out(Rcpp::Range(2 - deltay, mat_r - 2 - deltay), Rcpp::Range(1 - deltax, mat_c  - 2 - deltax));
+    Rcpp::NumericMatrix out = M(Rcpp::Range(2 - deltay, mat_r - 2 - deltay), Rcpp::Range(1 - deltax, mat_c  - 2 - deltax));
+    if(mat.hasAttribute("mask")) {
+      NumericMatrix foo = mat.attr("mask");
+      Rcpp::IntegerMatrix MM = Rcpp::as<IntegerMatrix>(hpp_align(foo, dx, dy));
+      if(foo.hasAttribute("removal")) MM.attr("removal") = foo.attr("removal");
+      out.attr("mask") = MM;
+    }
+    return out;
   }
 }
 
