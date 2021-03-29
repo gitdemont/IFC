@@ -32,6 +32,122 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+//' @title Spatial Offsets Image Correction for Image
+//' @name cpp_align_img
+//' @description
+//' This function uses bilinear interpolation to apply spatial offset correction on image
+//' @param mat, a NumericMatrix.
+//' @param dx, a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
+//' @param dy, a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
+//' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
+//' See William E. Ortyn et al. Sensitivity Measurement and Compensation in Spectral Imaging. Cytometry A 69 852-862 (2006).
+//' \url{https://onlinelibrary.wiley.com/doi/full/10.1002/cyto.a.20306}
+//' @return a NumericMatrix.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix hpp_align_img(const Rcpp::NumericMatrix mat,
+                                  const double dx = NA_REAL,
+                                  const double dy = NA_REAL) {
+  if(any(is_na(Rcpp::NumericVector::create(dx, dy)))) {
+    if(all(is_na(Rcpp::NumericVector::create(dx, dy)))) {
+      return(mat);
+    }
+    Rcpp::stop("hpp_align_img: bad offset value");
+  } 
+  if((std::abs(dx) >= 1.0) || (std::abs(dy) >= 1.0)) Rcpp::stop("hpp_align_img: offset should be ]-1,+1[");
+  R_len_t mat_r = mat.nrow();
+  R_len_t mat_c = mat.ncol();
+  Rcpp::NumericMatrix out = Rcpp::no_init_matrix(mat_r, mat_c);
+  if((dx == 0.0) && (dy == 0.0)) {
+    for(R_len_t i_col = 1; i_col < mat_c - 1; i_col++) {
+      for(R_len_t i_row = 2; i_row < mat_r - 1; i_row++) {
+        out(i_row, i_col) = mat(i_row, i_col);
+      }
+    }
+    return out(Rcpp::Range(2, mat_r - 2), Rcpp::Range(1, mat_c  - 2)); 
+  } else {
+    double sx = dx, sy = dy, ssx, ssy;
+    uint8_t deltax = 0, deltay = 0;
+    if(dx < 0) {
+      sx = 1 - std::abs(dx);
+      deltax = 1;
+    }
+    if(dy < 0) {
+      sy = 1 - std::abs(dy);
+      deltay = 1;
+    }
+    ssx = 1 - sx;
+    ssy = 1 - sy;
+    for(R_len_t i_col = 0; i_col < mat_c - 1; i_col++) {
+      for(R_len_t i_row = 1; i_row < mat_r - 1; i_row++) {
+        out(i_row, i_col) = (mat(i_row    , i_col) * ssx + mat(i_row    , i_col + 1) * sx) * ssy +
+                            (mat(i_row + 1, i_col) * ssx + mat(i_row + 1, i_col + 1) * sx) * sy;
+      }
+    }
+    return out(Rcpp::Range(2 - deltay, mat_r - 2 - deltay), Rcpp::Range(1 - deltax, mat_c  - 2 - deltax));
+  }
+  return R_NilValue;
+}
+
+//' @title Spatial Offsets Image Correction for Mask
+//' @name cpp_align_msk
+//' @description
+//' This function uses bilinear interpolation to apply spatial offset correction on mask
+//' @param msk, a IntegerMatrix.
+//' @param dx, a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
+//' @param dy, a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
+//' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
+//' See William E. Ortyn et al. Sensitivity Measurement and Compensation in Spectral Imaging. Cytometry A 69 852-862 (2006).
+//' \url{https://onlinelibrary.wiley.com/doi/full/10.1002/cyto.a.20306}
+//' @return a IntegerMatrix.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::IntegerMatrix hpp_align_msk(const Rcpp::IntegerMatrix msk,
+                                  const double dx = NA_REAL,
+                                  const double dy = NA_REAL) {
+  if(any(is_na(Rcpp::NumericVector::create(dx, dy)))) {
+    if(all(is_na(Rcpp::NumericVector::create(dx, dy)))) {
+      return(msk);
+    }
+    Rcpp::stop("hpp_align_msk: bad offset value");
+  } 
+  if((std::abs(dx) >= 1.0) || (std::abs(dy) >= 1.0)) Rcpp::stop("hpp_align_msk: offset should be ]-1,+1[");
+  R_len_t mat_r = msk.nrow();
+  R_len_t mat_c = msk.ncol();
+  Rcpp::IntegerMatrix out = Rcpp::no_init_matrix(mat_r, mat_c);
+  if((dx == 0.0) && (dy == 0.0)) {
+    for(R_len_t i_col = 1; i_col < mat_c - 1; i_col++) {
+      for(R_len_t i_row = 2; i_row < mat_r - 1; i_row++) {
+        out(i_row, i_col) = msk(i_row, i_col);
+      }
+    }
+    return out(Rcpp::Range(2, mat_r - 2), Rcpp::Range(1, mat_c  - 2));
+  } else{
+    double sx = dx, sy = dy, ssx, ssy;
+    uint8_t deltax = 0, deltay = 0;
+    if(dx < 0) {
+      sx = 1 - std::abs(dx);
+      deltax = 1;
+    }
+    if(dy < 0) {
+      sy = 1 - std::abs(dy);
+      deltay = 1;
+    }
+    ssx = 1 - sx;
+    ssy = 1 - sy;
+    for(R_len_t i_col = 0; i_col < mat_c - 1; i_col++) {
+      for(R_len_t i_row = 1; i_row < mat_r - 1; i_row++) {
+        out(i_row, i_col) = (msk(i_row    , i_col) * ssx + msk(i_row    , i_col + 1) * sx) * ssy +
+                            (msk(i_row + 1, i_col) * ssx + msk(i_row + 1, i_col + 1) * sx) * sy;
+      }
+    }
+    return out(Rcpp::Range(2 - deltay, mat_r - 2 - deltay), Rcpp::Range(1 - deltax, mat_c  - 2 - deltax));
+  }
+  return R_NilValue;
+}
+
 //' @title Spatial Offsets Image Correction
 //' @name cpp_align
 //' @description
@@ -49,49 +165,10 @@ using namespace Rcpp;
 Rcpp::NumericMatrix hpp_align(const Rcpp::NumericMatrix mat,
                               const double dx = NA_REAL,
                               const double dy = NA_REAL) {
-  if(any(is_na(Rcpp::NumericVector::create(dx, dy)))) {
-    if(all(is_na(Rcpp::NumericVector::create(dx, dy)))) {
-      return(mat);
-    }
-    Rcpp::stop("hpp_align: bad offset value");
-  } 
-  if((std::abs(dx) >= 1.0) || (std::abs(dy) >= 1.0)) Rcpp::stop("hpp_align: offset should be ]-1,+1[");
-  R_len_t mat_r = mat.nrow();
-  R_len_t mat_c = mat.ncol();
-  Rcpp::NumericMatrix out;
-  if((dx == 0.0) && (dy == 0.0)) {
-    Rcpp::NumericMatrix M(mat_r, mat_c);
-    for(R_len_t i_col = 1; i_col < mat_c - 1; i_col++) {
-      for(R_len_t i_row = 2; i_row < mat_r - 1; i_row++) {
-        M(i_row, i_col) = mat(i_row, i_col);
-      }
-    }
-    out = M(Rcpp::Range(2, mat_r - 2), Rcpp::Range(1, mat_c  - 2)); 
-  } else{
-    double sx = dx, sy = dy, ssx, ssy;
-    uint8_t deltax = 0, deltay = 0;
-    if(dx < 0) {
-      sx = 1 - std::abs(dx);
-      deltax = 1;
-    }
-    if(dy < 0) {
-      sy = 1 - std::abs(dy);
-      deltay = 1;
-    }
-    ssx = 1 - sx;
-    ssy = 1 - sy;
-    Rcpp::NumericMatrix M(mat_r, mat_c);
-    for(R_len_t i_col = 0; i_col < mat_c - 1; i_col++) {
-      for(R_len_t i_row = 1; i_row < mat_r - 1; i_row++) {
-        M(i_row, i_col) = (mat(i_row    , i_col) * ssx + mat(i_row    , i_col + 1) * sx) * ssy +
-                          (mat(i_row + 1, i_col) * ssx + mat(i_row + 1, i_col + 1) * sx) * sy;
-      }
-    }
-    out = M(Rcpp::Range(2 - deltay, mat_r - 2 - deltay), Rcpp::Range(1 - deltax, mat_c  - 2 - deltax)); 
-  }
+  Rcpp::NumericMatrix out = hpp_align_img(mat, dx, dy);
   if(mat.hasAttribute("mask")) {
-    NumericMatrix foo = mat.attr("mask");
-    Rcpp::IntegerMatrix MM = Rcpp::as<IntegerMatrix>(hpp_align(foo, dx, dy));
+    IntegerMatrix foo = mat.attr("mask");
+    Rcpp::IntegerMatrix MM = hpp_align_msk(foo, dx, dy);
     if(foo.hasAttribute("removal")) MM.attr("removal") = foo.attr("removal");
     out.attr("mask") = MM;
   }
