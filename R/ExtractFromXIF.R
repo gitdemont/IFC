@@ -227,8 +227,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   description$Images$physicalChannel = as.integer(description$Images$physicalChannel)
   description$Images = description$Images[order(description$Images$physicalChannel),]
   
-  if((length(description$masks) == 0) || (nrow(description$masks) == 0)) description$masks = data.frame(type = "C", name = "MC", paste0(sprintf("M%02i", description$Images$physicalChannel), collapse="|Or|"))
-  names(description$masks) = sapply(description$masks, FUN=function(x) x$name)
+  if(ncol(description$masks) == 0) description$masks = list(list(type = "C", name = "MC", strsplit(paste0(sprintf("M%02i", description$Images$physicalChannel), collapse="|Or|"), split = "|", fixed = TRUE)[[1]]))
   class(description$masks) <- c(class(description$masks), "IFC_masks")
   
   chan_number = sum(infos$in_use)

@@ -289,7 +289,7 @@ getInfo <- function(fileName,
   infos = c(infos, list("ChannelPresets" = to_list_node(xml_find_all(tmp_last, "//ChannelPresets")),
                         "ImageDisplaySettings" = to_list_node(xml_find_all(tmp_last, "//ImageDisplaySettings")),
                         "Images" = as.data.frame(do.call(what = "rbind", args = xml_attrs(xml_find_all(tmp_last, "//image"))), stringsAsFactors = FALSE),
-                        "masks" = lapply(xml_attrs(xml_find_all(tmp_last, "//mask")), FUN=strsplit, split="|", fixed=TRUE)),
+                        "masks" = as.data.frame(do.call(what="rbind", xml_attrs(xml_find_all(tmp_last, "//mask"))), stringsAsFactors=FALSE)),
             "ViewingModes" = to_list_node(xml_find_all(tmp_last, "//ViewingModes")),
             "Merged_rif" = list(Merged_rif),
             "Merged_cif" = list(Merged_cif),
@@ -318,8 +318,7 @@ getInfo <- function(fileName,
     col[col=="Control"] <- "Gray81"
     infos$Images[,"saturation"] <- col
   }
-  if((length(infos$masks) == 0) || (nrow(infos$masks) == 0)) infos$masks = data.frame(type = "C", name = "MC", paste0(sprintf("M%02i", infos$Images$physicalChannel), collapse="|Or|"))
-  names(infos$masks) = sapply(infos$masks, FUN=function(x) x$name)
+  if(ncol(infos$masks) == 0) infos$masks = data.frame(type = "C", name = "MC", def = paste0(sprintf("M%02i", infos$Images$physicalChannel), collapse="|Or|"))
   class(infos$masks) <- c(class(infos$masks), "IFC_masks")
   if(length(infos$ViewingModes) != 0) names(infos$ViewingModes) = sapply(infos$ViewingModes, FUN=function(x) x$name)
   
