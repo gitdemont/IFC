@@ -242,8 +242,6 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
     fileName_image = description$ID$file
   }
   
-  for(i in c("physicalChannel","xmin","xmax","xmid","ymid","scalemin","scalemax")) description$Images[, i] = as.numeric(description$Images[, i])
-  description$Images$physicalChannel = description$Images$physicalChannel + 1
   col = description$Images[,"color"]
   col[col=="Teal"] <- "Cyan4"
   col[col=="Green"] <- "Green4"
