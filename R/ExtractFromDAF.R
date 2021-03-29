@@ -117,6 +117,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
   chan_number = as.integer(xml_attr(xml_find_first(tmp, "//ChannelPresets"), attr = "count"))
   
   if(!is_fcs) {
+    description$Images$physicalChannel = as.integer(description$Images$physicalChannel)
     description$Images = description$Images[order(description$Images$physicalChannel),]
     checksum = checksumDAF(fileName)
     # chan_number = nrow(description$Images) # when from daf only available channels are imported

@@ -6,7 +6,7 @@
   -IFC: An R Package for Imaging Flow Cytometry              
   -YEAR: 2021                                                                   
   -COPYRIGHT HOLDERS: Yohann Demont, Jean-Pierre Marolleau, Loïc Garçon,        
-  CHU Amiens                                                
+                      CHU Amiens                                                
 
   DISCLAIMER:                                                                   
   -You are using this package on your own risk!                                 

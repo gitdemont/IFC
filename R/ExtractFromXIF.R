@@ -220,6 +220,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
                    "Images"=xml_attrs(xml_find_all(tmp, "//image")),
                    "masks"=xml_attrs(xml_find_all(tmp, "//mask")))
   description=lapply(description, FUN=function(x) {as.data.frame(do.call(what="rbind", x), stringsAsFactors=FALSE)})
+  description$Images$physicalChannel = as.integer(description$Images$physicalChannel)
   description$Images = description$Images[order(description$Images$physicalChannel),]
   class(description$masks) <- c(class(description$masks), "IFC_masks")
   chan_number = sum(infos$in_use)
