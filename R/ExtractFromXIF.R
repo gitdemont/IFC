@@ -220,9 +220,17 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
                    "Images"=xml_attrs(xml_find_all(tmp, "//image")),
                    "masks"=xml_attrs(xml_find_all(tmp, "//mask")))
   description=lapply(description, FUN=function(x) {as.data.frame(do.call(what="rbind", x), stringsAsFactors=FALSE)})
+  
+  for(i in c("physicalChannel","xmin","xmax","xmid","ymid","scalemin","scalemax")) if(i %in% names(description$Images)) description$Images[, i] = as.integer(description$Images[, i])
+  description$Images$physicalChannel = description$Images$physicalChannel + 1L
+  description$Images = description$Images[order(description$Images$physicalChannel), ]
   description$Images$physicalChannel = as.integer(description$Images$physicalChannel)
   description$Images = description$Images[order(description$Images$physicalChannel),]
+  
+  if((length(description$masks) == 0) || (nrow(description$masks) == 0)) description$masks = data.frame(type = "C", name = "MC", paste0(sprintf("M%02i", description$Images$physicalChannel), collapse="|Or|"))
+  names(description$masks) = sapply(description$masks, FUN=function(x) x$name)
   class(description$masks) <- c(class(description$masks), "IFC_masks")
+  
   chan_number = sum(infos$in_use)
   obj_number = as.integer(description$ID$objcount)
   description$ID$objcount = obj_number

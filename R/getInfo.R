@@ -296,15 +296,13 @@ getInfo <- function(fileName,
             "checksum" = checksumXIF(fileName_image),
             "fileName" = fileName,
             "fileName_image" = normalizePath(fileName_image, winslash = "/"))
-  
-  infos$Images = infos$Images[order(infos$Images$physicalChannel),]
-  names(infos$masks) = sapply(infos$masks, FUN=function(x) x$name)
-  class(infos$masks) <- c(class(infos$masks), "IFC_masks")
-  if(length(infos$ViewingModes) != 0) names(infos$ViewingModes) = sapply(infos$ViewingModes, FUN=function(x) x$name)
-  
-  for(i in c("physicalChannel","xmin","xmax","xmid","ymid","scalemin","scalemax")) infos$Images[, i] = as.numeric(infos$Images[, i])
-  infos$Images$physicalChannel = infos$Images$physicalChannel + 1
+
+  for(i in c("physicalChannel","xmin","xmax","xmid","ymid","scalemin","scalemax")) if(i %in% names(infos$Images)) infos$Images[, i] = as.integer(infos$Images[, i])
+  infos$Images$physicalChannel = infos$Images$physicalChannel + 1L
   infos$Images = infos$Images[order(infos$Images$physicalChannel), ]
+  infos$Images$physicalChannel = as.integer(infos$Images$physicalChannel)
+  infos$Images = infos$Images[order(infos$Images$physicalChannel),]
+  
   infos$Images$gamma = apply(infos$Images[,c("xmin", "xmax", "xmid", "ymid")], 1, cpp_computeGamma)
   col = infos$Images[,"color"]
   col[col=="Teal"] <- "Cyan4"
@@ -320,6 +318,11 @@ getInfo <- function(fileName,
     col[col=="Control"] <- "Gray81"
     infos$Images[,"saturation"] <- col
   }
+  if((length(infos$masks) == 0) || (nrow(infos$masks) == 0)) infos$masks = data.frame(type = "C", name = "MC", paste0(sprintf("M%02i", infos$Images$physicalChannel), collapse="|Or|"))
+  names(infos$masks) = sapply(infos$masks, FUN=function(x) x$name)
+  class(infos$masks) <- c(class(infos$masks), "IFC_masks")
+  if(length(infos$ViewingModes) != 0) names(infos$ViewingModes) = sapply(infos$ViewingModes, FUN=function(x) x$name)
+  
   attr(infos, "class") <- c("IFC_info",from)
   return(infos)
 }
