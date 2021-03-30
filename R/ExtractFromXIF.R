@@ -224,8 +224,6 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   for(i in c("physicalChannel","xmin","xmax","xmid","ymid","scalemin","scalemax")) if(i %in% names(description$Images)) description$Images[, i] = as.integer(description$Images[, i])
   description$Images$physicalChannel = description$Images$physicalChannel + 1L
   description$Images = description$Images[order(description$Images$physicalChannel), ]
-  description$Images$physicalChannel = as.integer(description$Images$physicalChannel)
-  description$Images = description$Images[order(description$Images$physicalChannel),]
   
   if(ncol(description$masks) == 0) description$masks = data.frame(type = "C", name = "MC", def = paste0(sprintf("M%02i", description$Images$physicalChannel), collapse="|Or|"))
   class(description$masks) <- c(class(description$masks), "IFC_masks")

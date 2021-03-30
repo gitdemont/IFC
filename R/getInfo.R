@@ -300,8 +300,6 @@ getInfo <- function(fileName,
   for(i in c("physicalChannel","xmin","xmax","xmid","ymid","scalemin","scalemax")) if(i %in% names(infos$Images)) infos$Images[, i] = as.integer(infos$Images[, i])
   infos$Images$physicalChannel = infos$Images$physicalChannel + 1L
   infos$Images = infos$Images[order(infos$Images$physicalChannel), ]
-  infos$Images$physicalChannel = as.integer(infos$Images$physicalChannel)
-  infos$Images = infos$Images[order(infos$Images$physicalChannel),]
   
   infos$Images$gamma = apply(infos$Images[,c("xmin", "xmax", "xmid", "ymid")], 1, cpp_computeGamma)
   col = infos$Images[,"color"]
