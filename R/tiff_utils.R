@@ -96,3 +96,21 @@ buildIFD <- function(val, typ, tag, endianness = .Platform$endian) {
   names(ifd) = tag
   return(ifd)
 }
+
+#' @title RIF/CIF Image Order Test
+#' @description Tests order of IFD within RIF and XIF file
+#' @param fileName path of file.
+#' @return an integer
+#' -1: not a XIF file
+#' 0: non regular XIF file, i.e. no mask found after 1st IFD and 1st Image
+#' +1: regular XIF file, i.e. a mask is found after 1st IFD and 1st Image
+#' @keywords internal
+testXIF <- function(fileName) {
+  IFD_first = suppressWarnings(getIFD(fileName))
+  if((length(IFD_first[[1]]$infos$TYPE) == 0) || (IFD_first[[1]]$infos$TYPE != 1) || (IFD_first[[1]]$next_IFD_offset == 0)) return(-1L)
+  IFD_second = cpp_getTAGS(fileName, IFD_first[[1]]$next_IFD_offset)
+  if((length(IFD_second$infos$TYPE) == 0) || (IFD_second$infos$TYPE != 2) || (IFD_second$next_IFD_offset == 0)) return(-1L)
+  IFD_third = cpp_getTAGS(fileName, IFD_second$next_IFD_offset)
+  if((length(IFD_third$infos$TYPE) != 0) && (IFD_third$infos$TYPE == 3)) return(+1L)
+  return(0L)
+}
