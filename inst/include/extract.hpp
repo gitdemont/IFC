@@ -400,8 +400,16 @@ Rcpp::List hpp_extract (const std::string fname,
     break;
   }
   case 2: { // an image is detected use background mean and sd
-    bg_2 = Rcpp::clone(Rcpp::as<Rcpp::NumericVector>(infos["BG_MEAN"]));
-    sd_2 = Rcpp::clone(Rcpp::as<Rcpp::NumericVector>(infos["BG_STD"]));
+    if(nNotisNULL(infos["BG_MEAN"])) {
+      bg_2 = Rcpp::clone(Rcpp::as<Rcpp::NumericVector>(infos["BG_MEAN"]));
+    } else {
+      bg_2 = Rcpp::rep(0.0, nb_channels);
+    }
+    if(nNotisNULL(infos["BG_STD"])) {
+      sd_2 = Rcpp::clone(Rcpp::as<Rcpp::NumericVector>(infos["BG_STD"]));
+    } else {
+      sd_2 = Rcpp::rep(0.0, nb_channels);
+    }
     break;
   }
   case 3: { // a mask is detected some parameters are forced
