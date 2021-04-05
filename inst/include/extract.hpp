@@ -427,7 +427,7 @@ Rcpp::List hpp_extract (const std::string fname,
                         imw, iml, nb_channels,
                         0, com, verbose);
   Rcpp::IntegerMatrix msk_init(iml, imw / nb_channels);
-  msk_init.fill(0);
+  // msk_init.fill(0);
   Rcpp::IntegerMatrix msk = Rcpp::clone(msk_init);
   Rcpp::IntegerMatrix MC = Rcpp::clone(msk_init);
   
