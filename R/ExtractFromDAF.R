@@ -301,11 +301,8 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     names(offsets) = paste0(c("img_","msk_"), rep(sprintf(paste0("%0",N,".f"), images$id), each = 2))
     attr(offsets, "all") = offsets
     attr(offsets, "fileName_image") = fileName_image
-    # if offsets are extracted from features and fileName_image can't be found, sum of 10 first images & masks offsets is used
-    # /!\ since retrieving 1st offset depends on fileName_image it is not used in this sum
-    # /!\ note that using offsets extracted from daf without fileName_image may lead to different results
-    # TODO ask AMNIS how checksum is computed to use same alg and place description$ID$checksum instead
     attr(offsets, "checksum") = checksumDAF(fileName)
+    attr(offsets, "test") = +1L
     attr(offsets, "class") = "IFC_offset"
     attr(offsets, "first") = NULL
   }

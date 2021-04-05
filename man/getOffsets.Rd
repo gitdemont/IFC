@@ -23,7 +23,6 @@ If set to FALSE, all object_ids will be scanned from 'fileName' to ensure extrac
 }
 \value{
 an integer vector of class `IFC_offset` of IFDs offsets found in XIF file.
-If no offsets is found an error is thrown.
 }
 \description{
 Extracts offsets of the IFDs (Image Field Directories) within a XIF file.

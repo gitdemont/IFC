@@ -116,7 +116,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
     if(!overwrite) stop(paste0("file ", write_to, " already exists"))
     if(tolower(fileName) == tolower(write_to)) stop("you are trying to overwrite source file which is not allowed")
     tryCatch({
-      IFD_export = getIFD(fileName = write_to, offsets = "first", force_trunc = FALSE, trunc_bytes = 8, verbose = FALSE, bypass = FALSE)[[1]] 
+      IFD_export = getIFD(fileName = write_to, offsets = "first", force_trunc = FALSE, trunc_bytes = 8, verbose = FALSE, bypass = TRUE)[[1]]
     }, error = function(e) {
       stop(paste0(write_to, "\ndoes not seem to be well formatted:\n", e$message), call. = FALSE)
     })
@@ -127,7 +127,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   file_w = ifelse(overwritten, tmp_file, write_to)
   
   # Extract important values
-  IFDs = getIFD(fileName = fileName, offsets = "first", force_trunc = FALSE, trunc_bytes = 8, verbose = FALSE, bypass = FALSE)
+  IFDs = getIFD(fileName = fileName, offsets = "first", force_trunc = FALSE, trunc_bytes = 8, verbose = FALSE, bypass = TRUE)
   nobj = IFDs[[1]]$tags[["33018"]]$map
   is_binary = as.logical(IFDs[[1]]$tags[["33082"]]$map)
   if(length(is_binary) == 0) is_binary = FALSE
@@ -145,6 +145,27 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
       V = strsplit(as.character(getFullTag(IFD = IFDs, which = 1, tag="33030")), "|", fixed = TRUE)[[1]]
   
   if(length(V) > 1) Files = normalizePath(paste(dirname(fileName), basename(V), sep = "/"), winslash = "/", mustWork = FALSE)
+  
+  compute_offsets = TRUE
+  if(!missing(offsets)) {
+    if(!("IFC_offset" %in% class(offsets))) {
+      warning("provided offsets do not match with expected ones, offsets will be recomputed", immediate. = TRUE, call. = FALSE)
+    } else {
+      if(attr(offsets, "checksum") != checksumXIF(fileName)) {
+        warning("provided offsets do not match with expected ones, offsets will be recomputed", immediate. = TRUE, call. = FALSE)
+      } else {
+        compute_offsets = FALSE
+      }
+    }
+  }
+  if(compute_offsets) {
+    offsets = suppressMessages(getOffsets(fileName = fileName, fast = fast, display_progress = display_progress)) 
+  } else {
+    fast = TRUE
+  }
+  XIF_test = attr(offsets, "test")
+  XIF_step = as.integer(XIF_test == 1) + 1L
+  if(length(nobj) == 0) nobj = length(offsets)
   
   if(missing(objects)) {
     message("\nAll objects will be extracted\n")
@@ -165,24 +186,6 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   }
   objects = objects[order(objects)] # since it appears that objects are stored with increasing number
   
-  compute_offsets = TRUE
-  if(!missing(offsets)) {
-    if(!("IFC_offset" %in% class(offsets))) {
-      warning("provided offsets do not match with expected ones, offsets will be recomputed", immediate. = TRUE, call. = FALSE)
-    } else {
-      if(attr(offsets, "checksum") != checksumXIF(fileName)) {
-        warning("provided offsets do not match with expected ones, offsets will be recomputed", immediate. = TRUE, call. = FALSE)
-      } else {
-        compute_offsets = FALSE
-      }
-    }
-  }
-  if(compute_offsets) {
-    offsets = suppressMessages(getOffsets(fileName = fileName, fast = fast, display_progress = display_progress))
-  } else {
-    fast = TRUE
-  }
-  
   # Initialize values
   obj_id = - 1
   L = length(objects)
@@ -190,7 +193,6 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   cur_env = environment()
   offsets = subsetOffsets(offsets = offsets, objects = objects, image_type = c("img", "msk"))
   offsets = c(IFDs[[1]]$curr_IFD_offset, offsets)
-  
   off_number = length(offsets)
   
   # unwanted tags
@@ -234,7 +236,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
       # extract IFD
       IFD = cpp_getTAGS(fname = fileName, offset = offsets[i_off], trunc_bytes = 8, force_trunc = FALSE, verbose = VER)
       cur_obj = IFD$infos
-      if(cur_obj$TYPE == 2) OBJECT_ID = cur_obj$OBJECT_ID
+      if((length(cur_obj$TYPE) != 0) && (cur_obj$TYPE == 2)) OBJECT_ID = cur_obj$OBJECT_ID
       if(length(OBJECT_ID) == 1) {
         if(fast) {
           expected_obj = as.integer(gsub("^.*_(.*)$", "\\1", names(offsets[i_off])))
@@ -244,7 +246,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
         }
       }
       if(display_progress) {
-        setPB(pb1, value = (obj_id+1)/2, title = title_progress, label = "objects subsetting")
+        setPB(pb1, value = (obj_id+1)/XIF_step, title = title_progress, label = "objects subsetting")
       }
       
       # go to file IFD offset
@@ -253,7 +255,6 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
       # TODO ask amnis if we can remove unnecessary tags for masks ?
       # i.e. only keep: 254, 256, 257, 258, 259, 262, 273, 277, 278, 279, 306, 33002, 33016, 33017
       # IFD$tags = IFD$tags[c(254, 256, 257, 258, 259, 262, 273, 277, 278, 279, 306, 33002, 33016, 33017)]
-
       # read number of directory entries
       # TODO what if n_entries != length(IFD$tags) ?
       # n_entries = readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian)
@@ -288,51 +289,63 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
       ifd = ifd[sapply(1:length(ifd), FUN=function(i_tag) length(ifd[[i_tag]]$min_content)!=0)]
       
       # extract features values in 1st IFD
-      if(IFD$infos$TYPE == 1) {
+      # if((length(IFD$infos$TYPE) != 0) && (IFD$infos$TYPE == 1)) {
+      if(i_off == 0) {
         features = list()
-        if(extract_features) {
-          tryCatch({
-            obj_shift = 0
-            for(f in Files) {
-              if(!file.exists(f)) {
-                features = list()
-                stop(f, "\nCan't find file")
-              }
-              toread2 = file(f, open = "rb")
-              tryCatch({
-                IFD_f = getIFD(fileName = f, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE, bypass = TRUE)[[1]]
-                is_binary = as.logical(IFD_f$tags[["33082"]]$map)
-                if(length(is_binary) == 0) is_binary = FALSE
-                if(!is_binary) {
+        if(XIF_test >= 0) {
+          if(extract_features) {
+            tryCatch({
+              obj_shift = 0
+              for(f in Files) {
+                if(!file.exists(f)) {
                   features = list()
-                  stop(f, "\nCan't deal with non-binary features")
+                  stop(f, "\nCan't find file")
                 }
-                
-                feat_where = ifelse((length(V) == 0) && (length(IFD_f$tags[["33080"]]$map) != 0) && (IFD_f$tags[["33080"]]$val < file.size(fileName)),
-                                    ifelse(length(IFD_f$tags[["33080"]]$map)==0, 
-                                           stop("can't find pointer '33080' to extract features"), 
-                                           IFD_f$tags[["33080"]]$val),
-                                    ifelse(length(IFD_f$tags[["33083"]]$map)==0, 
-                                           stop("can't find pointer '33083' to extract features"), 
-                                           IFD_f$tags[["33083"]]$val))
-                seek(toread2, feat_where)
-                
-                obj_number_r = readBin(toread2, what = "raw", n = 4, endian = r_endian)
-                obj_number = readBin(obj_number_r, what = "double", size = 4, n = 1, endian = r_endian)
-                feat_number_r = readBin(toread2, what = "raw", n = 4, endian = r_endian)
-                feat_number = readBin(feat_number_r, what = "double", size = 4, n = 1, endian = r_endian)
-                
-                if((length(obj_number) == 0) || (length(feat_number) == 0)) {
-                  features = list()
-                  stop(f, "\nBinary features is of length 0")
-                }
-                
-                title_progress = basename(f)
-                if(display_progress) {
-                  pb3 = newPB(session = dots$session, title = title_progress, label = "extracting features information", min = 0, max = obj_number, initial = 0, style = 3)
-                  tryCatch({
+                toread2 = file(f, open = "rb")
+                tryCatch({
+                  IFD_f = getIFD(fileName = f, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE, bypass = TRUE)[[1]]
+                  is_binary = as.logical(IFD_f$tags[["33082"]]$map)
+                  if(length(is_binary) == 0) is_binary = FALSE
+                  if(!is_binary) {
+                    features = list()
+                    stop(f, "\nCan't deal with non-binary features")
+                  }
+                  
+                  feat_where = ifelse((length(V) == 0) && (length(IFD_f$tags[["33080"]]$map) != 0) && (IFD_f$tags[["33080"]]$val < file.size(fileName)),
+                                      ifelse(length(IFD_f$tags[["33080"]]$map)==0, 
+                                             stop("can't find pointer '33080' to extract features"), 
+                                             IFD_f$tags[["33080"]]$val),
+                                      ifelse(length(IFD_f$tags[["33083"]]$map)==0, 
+                                             stop("can't find pointer '33083' to extract features"), 
+                                             IFD_f$tags[["33083"]]$val))
+                  seek(toread2, feat_where)
+                  
+                  obj_number_r = readBin(toread2, what = "raw", n = 4, endian = r_endian)
+                  obj_number = readBin(obj_number_r, what = "double", size = 4, n = 1, endian = r_endian)
+                  feat_number_r = readBin(toread2, what = "raw", n = 4, endian = r_endian)
+                  feat_number = readBin(feat_number_r, what = "double", size = 4, n = 1, endian = r_endian)
+                  
+                  if((length(obj_number) == 0) || (length(feat_number) == 0)) {
+                    features = list()
+                    stop(f, "\nBinary features is of length 0")
+                  }
+                  
+                  title_progress = basename(f)
+                  if(display_progress) {
+                    pb3 = newPB(session = dots$session, title = title_progress, label = "extracting features information", min = 0, max = obj_number, initial = 0, style = 3)
+                    tryCatch({
+                      features = c(features, lapply(1:obj_number, FUN = function(i_obj) {
+                        setPB(pb3, value = i_obj, title = title_progress, label = "extracting features information")
+                        fv = readBin(toread2, "raw", n = feat_number * 4, endian = r_endian)
+                        # extract object features values at expected position
+                        if((i_obj + obj_shift) %in% objects_1[1]) {
+                          assign("objects_1", value = objects_1[-1], envir = cur_env)
+                          return(fv)
+                        }
+                        return(raw(0))
+                      }))}, finally = endPB(pb3))
+                  } else {
                     features = c(features, lapply(1:obj_number, FUN = function(i_obj) {
-                      setPB(pb3, value = i_obj, title = title_progress, label = "extracting features information")
                       fv = readBin(toread2, "raw", n = feat_number * 4, endian = r_endian)
                       # extract object features values at expected position
                       if((i_obj + obj_shift) %in% objects_1[1]) {
@@ -340,42 +353,32 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
                         return(fv)
                       }
                       return(raw(0))
-                    }))}, finally = endPB(pb3))
-                } else {
-                  features = c(features, lapply(1:obj_number, FUN = function(i_obj) {
-                    fv = readBin(toread2, "raw", n = feat_number * 4, endian = r_endian)
-                    # extract object features values at expected position
-                    if((i_obj + obj_shift) %in% objects_1[1]) {
-                      assign("objects_1", value = objects_1[-1], envir = cur_env)
-                      return(fv)
-                    }
-                    return(raw(0))
-                  }))
-                }
-                features = unlist(features)
-                if(length(features) != 4 * feat_number * length(objects)) {
-                  features = list()
-                  stop(f, "\nMismatch in object number")
-                }
-              }, error = function(e) {
-                stop(e$message)
-              }, finally = close(toread2))
-              obj_shift = obj_shift + obj_number
-            }
-          }, error = function(e) {
-            message(paste0(e$message, ". Features values were not exported"))
-          })
-        }
-        
-        if(length(features) != 0) {
-          # we were able to extract binary features values so we recreate tags 33080 and 33082
-          features = c(writeBin(as.double(L), raw(), size = 4, endian = r_endian), feat_number_r, features)
-          # add back binary feature offset
-          ifd = c(ifd, buildIFD(val = 0, typ = 4, tag = 33080, endianness = r_endian))
-          # recreate feature binary boolean flag
-          ifd = c(ifd, buildIFD(val = 1, typ = 4, tag = 33082, endianness = r_endian))
-          # add back binary feature that corresponds to extracted objects
-          ifd = c(ifd, buildIFD(val = features, typ = 1, tag = 33083, endianness = r_endian))
+                    }))
+                  }
+                  features = unlist(features)
+                  if(length(features) != 4 * feat_number * length(objects)) {
+                    features = list()
+                    stop(f, "\nMismatch in object number")
+                  }
+                }, error = function(e) {
+                  stop(e$message)
+                }, finally = close(toread2))
+                obj_shift = obj_shift + obj_number
+              }
+            }, error = function(e) {
+              message(paste0(e$message, ". Features values were not exported"))
+            })
+          }
+          if(length(features) != 0) {
+            # we were able to extract binary features values so we recreate tags 33080 and 33082
+            features = c(writeBin(as.double(L), raw(), size = 4, endian = r_endian), feat_number_r, features)
+            # add back binary feature offset
+            ifd = c(ifd, buildIFD(val = 0, typ = 4, tag = 33080, endianness = r_endian))
+            # recreate feature binary boolean flag
+            ifd = c(ifd, buildIFD(val = 1, typ = 4, tag = 33082, endianness = r_endian))
+            # add back binary feature that corresponds to extracted objects
+            ifd = c(ifd, buildIFD(val = features, typ = 1, tag = 33083, endianness = r_endian))
+          }
         }
         # change now time
         ifd = c(ifd, buildIFD(val = format(Sys.time(), "%d-%m-%Y %H:%M:%S %p"), typ = 2, tag = 33004, endianness = r_endian))
@@ -411,7 +414,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
         # TODO if we remove mask tags it may be better to use offsets names as tracking object id
         
         # modify object id
-        tmp = packBits(intToBits(floor(obj_id/2)),type="raw")
+        tmp = packBits(intToBits(floor(obj_id/XIF_step)),type="raw")
         if(endianness!=r_endian) tmp = rev(tmp)
         
         # TODO ask amnis what to do with 33024

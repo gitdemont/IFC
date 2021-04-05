@@ -153,6 +153,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
         paste0("bgmean",(1:chan_number)),
         paste0("satcount",(1:chan_number)),
         paste0("satpercent",(1:chan_number)))
+  if(ncol(images) != length(N)) images = cbind(images, matrix(0, ncol = length(N) - ncol(images), nrow = nrow(images)))
   colnames(images) <- N
   rownames(images) <- 1:nrow(images)
   if(!all(objects == images$id)) warning("Extracted object_ids differ from expected ones. Concider running with 'fast' = FALSE", call. = FALSE, immediate. = TRUE)

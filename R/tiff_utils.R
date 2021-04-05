@@ -100,17 +100,51 @@ buildIFD <- function(val, typ, tag, endianness = .Platform$endian) {
 #' @title RIF/CIF Image Order Test
 #' @description Tests order of IFD within RIF and XIF file
 #' @param fileName path of file.
-#' @return an integer
-#' -1: not a XIF file
-#' 0: non regular XIF file, i.e. no mask found after 1st IFD and 1st Image
-#' +1: regular XIF file, i.e. a mask is found after 1st IFD and 1st Image
+#' @return an integer\cr
+#' -1: not a XIF file\cr
+#' 0: non regular XIF file, i.e. no mask found after 1st Image itself after 1st IFD\cr
+#' +1: regular XIF file, i.e. a mask is found after 1st Image itself after 1st IFD.
 #' @keywords internal
 testXIF <- function(fileName) {
-  IFD_first = suppressWarnings(getIFD(fileName))
-  if((length(IFD_first[[1]]$infos$TYPE) == 0) || (IFD_first[[1]]$infos$TYPE != 1) || (IFD_first[[1]]$next_IFD_offset == 0)) return(-1L)
-  IFD_second = cpp_getTAGS(fileName, IFD_first[[1]]$next_IFD_offset)
-  if((length(IFD_second$infos$TYPE) == 0) || (IFD_second$infos$TYPE != 2) || (IFD_second$next_IFD_offset == 0)) return(-1L)
-  IFD_third = cpp_getTAGS(fileName, IFD_second$next_IFD_offset)
-  if((length(IFD_third$infos$TYPE) != 0) && (IFD_third$infos$TYPE == 3)) return(+1L)
-  return(0L)
+  ans = -1L
+  IFD_first = getIFD(fileName = fileName, 
+                     offsets = "first", 
+                     trunc_bytes = 8, 
+                     force_trunc = TRUE, 
+                     verbose = FALSE, 
+                     verbosity = 1, 
+                     display_progress = FALSE,
+                     bypass = TRUE)
+
+  obj_count = suppressWarnings(as.integer(getFullTag(IFD_first, 1, "33018")))
+  IFD_second = list(next_IFD_offset = 0, curr_IFD_offset = 0)
+  IFD_third = list(next_IFD_offset = 0, curr_IFD_offset = 0)
+  
+  if(!((length(IFD_first[[1]]$infos$TYPE) == 0) || (IFD_first[[1]]$infos$TYPE != 1) || (IFD_first[[1]]$next_IFD_offset == 0))) {
+    IFD_second = cpp_getTAGS(fileName, IFD_first[[1]]$next_IFD_offset, FALSE, 8, TRUE)
+    if(!((length(IFD_second$infos$TYPE) == 0) || (IFD_second$infos$TYPE != 2))) {
+      ans = +0L
+      if(IFD_second$next_IFD_offset != 0) {
+        IFD_third = cpp_getTAGS(fileName, IFD_second$next_IFD_offset, FALSE, 8, TRUE)
+        if((length(IFD_third$infos$TYPE) != 0) && (IFD_third$infos$TYPE == 3)) {
+          ans = +1L
+        }
+      }
+    }
+  }
+  attr(ans, "obj_count") <- obj_count
+  attr(ans, "obj_estimated") <- obj_count
+  
+  # try to evaluate number of objects in file when it can not be retrieved from tag 33018
+  if((length(obj_count) == 0) || (obj_count == 0)) {
+    delta_second = ifelse(IFD_second$next_IFD_offset == 0, 0, abs(IFD_second$next_IFD_offset - IFD_second$curr_IFD_offset))
+    delta_third = ifelse(IFD_third$next_IFD_offset == 0, 0, abs(IFD_third$next_IFD_offset - IFD_third$curr_IFD_offset))
+    delta = abs(delta_second + delta_third) / (as.integer((ans == 0)) + 1L)
+    obj_estimated = ceiling(file.size(fileName) / delta)
+    obj_estimated = obj_estimated[is.finite(obj_estimated)]
+    if(length(obj_estimated) == 0) obj_estimated = 0
+    attr(ans, "obj_count") <- 0
+    attr(ans, "obj_estimated") <- obj_estimated
+  }
+  return(ans)
 }

@@ -74,6 +74,8 @@
 #' -checksum, checksum computed,\cr
 #' -Merged_rif, character vector of path of files used to create rif, if input file was a merged,\cr
 #' -Merged_cif, character vector of path of files used to create cif, if input file was a merged,\cr
+#' -XIF_test, integer defining XIF type,\cr
+#' -checksum, integer corresponding to file checksum,\cr
 #' -fileName, path of fileName input,\cr
 #' -fileName_image, path of fileName_image.
 #' @export
@@ -170,7 +172,7 @@ getInfo <- function(fileName,
   infos = list("objcount" = IFD[[1]]$tags[["33018"]]$map, # should not exceed 4 bytes
                "date"=getFullTag(IFD = IFD, which = 1, "33004"),
                "instrument"=getFullTag(IFD = IFD, which = 1, "33006"),
-               "sw_raw"=getFullTag(IFD = IFD, which = 1, "33069"),
+               "sw_raw"=suppressWarnings(getFullTag(IFD = IFD, which = 1, "33069")),
                "sw_process"=getFullTag(IFD = IFD, which = 1, "33066")) 
   # determines channelwidth, very important for objectExtract() when force_width = TRUE
   # prefer using channelwidth extracted from ifd dedicated tag (=tag 33009) rather than the one from parsing ASSISTdb (=tag 33064)
@@ -293,6 +295,7 @@ getInfo <- function(fileName,
             "ViewingModes" = to_list_node(xml_find_all(tmp_last, "//ViewingModes")),
             "Merged_rif" = list(Merged_rif),
             "Merged_cif" = list(Merged_cif),
+            "XIF_test" = testXIF(fileName_image),
             "checksum" = checksumXIF(fileName_image),
             "fileName" = fileName,
             "fileName_image" = normalizePath(fileName_image, winslash = "/"))

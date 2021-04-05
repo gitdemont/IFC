@@ -201,7 +201,11 @@ objectParam <- function(...,
   
   ##### fill removal, add_noise, full_range, force_range for every extracted channels
   channels[,"string_removal"] <- "none"
-  channels[chan_to_extract,"string_removal"] <- rep_len(removal, length.out = length(chan_to_extract))
+  if(info$XIF_test > 0) {
+    channels[chan_to_extract,"string_removal"] <- rep_len(removal, length.out = length(chan_to_extract))
+  } else {
+    if(any(removal != "none")) warning("'removal' was forced to \"none\" because no mask can be found in the file", call. = FALSE, immediate. = TRUE)
+  }
   channels[,"removal"] = as.integer(factor(x = channels[,"string_removal"], levels = c("none", "raw", "clipped", "masked", "MC"))) - 1
   channels[,"add_noise"] <- FALSE
   channels[chan_to_extract,"add_noise"] <- rep_len(add_noise, length.out = length(chan_to_extract))
@@ -262,6 +266,7 @@ objectParam <- function(...,
              coremode = info$coremode,
              magnification = info$magnification,
              checksum = info$checksum,
+             XIF_test = info$XIF_test,
              fileName_image = info$fileName_image)
   
   ##### compute extre param for export == "file" or ""base64"

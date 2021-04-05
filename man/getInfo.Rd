@@ -59,6 +59,8 @@ a list of information (open .daf file in an text editor for more details) about 
 -checksum, checksum computed,\cr
 -Merged_rif, character vector of path of files used to create rif, if input file was a merged,\cr
 -Merged_cif, character vector of path of files used to create cif, if input file was a merged,\cr
+-XIF_test, integer defining XIF type,\cr
+-checksum, integer corresponding to file checksum,\cr
 -fileName, path of fileName input,\cr
 -fileName_image, path of fileName_image.
 }

@@ -81,6 +81,9 @@ mergeXIF <- function (fileName, write_to,
     stop(e$message, call. = FALSE)
   })
   if(length(unique(tmp)) != 1) stop("can't deal with files in 'fileName' with different endianness")
+  XIF_test = unique(sapply(fileName, testXIF))
+  if(length(XIF_test) != 1) stop("can't deal with files in 'fileName' with different image/mask storage")
+  XIF_step = as.integer(XIF_test == 1) + 1L
   
   fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
   file_first = fileName[1]
@@ -93,7 +96,6 @@ mergeXIF <- function (fileName, write_to,
     as.logical(as.numeric(unlist(strsplit( xml_text(xml_find_first(tmp_acq, "//Imaging//ChannelInUseIndicators_0_11")), " ", useBytes = TRUE, fixed = TRUE))))
   })
   if(!do.call(what = "all.equal.list", args = tmp)) stop("files in 'fileName' have been acquired with different channels")
-  
   
   if(missing(write_to)) stop("'write_to' can't be missing")
   extract_features = as.logical(extract_features); assert(extract_features, len = 1, alw = c(TRUE, FALSE))
@@ -290,7 +292,7 @@ mergeXIF <- function (fileName, write_to,
     pos = pos + l_min[length(l_min)] + 2
     
     if(display_progress) {
-      pb2 = newPB(session = dots$session, title = title_progress, label = " ", min = 0, max = final_obj * 2, initial = 0, style = 3)
+      pb2 = newPB(session = dots$session, title = title_progress, label = " ", min = 0, max = final_obj * XIF_step, initial = 0, style = 3)
       on.exit(endPB(pb2), add = TRUE)
     }
     
@@ -299,7 +301,7 @@ mergeXIF <- function (fileName, write_to,
     # repeat same process for img / msk data for all files
     for(f in fileName) {
       IFD_first = getIFD(fileName = f, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE)
-      obj_count = 2*getFullTag(IFD = IFD_first, which = 1, tag = "33018")
+      obj_count = XIF_step * getFullTag(IFD = IFD_first, which = 1, tag = "33018")
       IFD = IFD_first[[1]]
       
       label_progress = basename(f)
@@ -307,7 +309,7 @@ mergeXIF <- function (fileName, write_to,
       toread = file(description = f, open = "rb")
       tryCatch({
         OBJECT_ID = NULL
-        for(i_obj in 1:obj_count) {
+        for(i_obj in seq(1 - (XIF_test != 1), to = obj_count - (XIF_test != 1))) {
           cum_obj = i_obj + off_obj
           setPB(pb = pb2, value = cum_obj, title = title_progress, label = paste0(label_progress, " - merging objects"))
           # extract IFD
@@ -364,7 +366,7 @@ mergeXIF <- function (fileName, write_to,
                                 typ = 2, tag = 33094, endianness = r_endian))
           
           # modify object id
-          tmp = packBits(intToBits(floor(cum_obj/2)),type="raw")
+          tmp = packBits(intToBits(floor(cum_obj/XIF_step)),type="raw")
           if(endianness!=r_endian) tmp = rev(tmp)
           
           # TODO ask amnis what to do with 33024
