@@ -51,7 +51,7 @@ Rcpp::NumericMatrix hpp_align_img(const Rcpp::NumericMatrix mat,
                                   const double dy = NA_REAL) {
   if(any(is_na(Rcpp::NumericVector::create(dx, dy)))) {
     if(all(is_na(Rcpp::NumericVector::create(dx, dy)))) {
-      return(mat);
+      return(Rcpp::clone(mat));
     }
     Rcpp::stop("hpp_align_img: bad offset value");
   } 
@@ -109,7 +109,7 @@ Rcpp::IntegerMatrix hpp_align_msk(const Rcpp::IntegerMatrix msk,
                                   const double dy = NA_REAL) {
   if(any(is_na(Rcpp::NumericVector::create(dx, dy)))) {
     if(all(is_na(Rcpp::NumericVector::create(dx, dy)))) {
-      return(msk);
+      return(Rcpp::clone(msk));
     }
     Rcpp::stop("hpp_align_msk: bad offset value");
   } 
