@@ -98,7 +98,9 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
     if(obj_count > 0) if(length(offsets_img) != obj_count) stop("Number of offsets found is different from expected object count.")
     offsets = as.integer(apply(cbind(offsets_img, offsets_msk), 1, FUN=function(i) i))
   }
-  if(length(offsets) != 0) {
+  if(length(offsets) == 0) {
+    obj_count = 0
+  } else {
     if(obj_count <= 0) obj_count = length(offsets) / type
     N = nchar(sprintf("%1.f",abs(obj_count-1)))
     if(type == 1) {
