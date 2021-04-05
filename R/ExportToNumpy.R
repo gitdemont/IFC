@@ -210,10 +210,7 @@ ExportToNumpy <- function(...,
   }
   
   # check objects to extract
-  nobj = as.numeric(param$objcount)
-  XIF_test = attr(offsets, "test")
-  XIF_step = as.integer(XIF_test == 1) + 1L
-  if(length(nobj) == 0) nobj = as.integer(attr("obj_count", offsets))
+  nobj = as.integer(attr("obj_count", offsets))
   
   N = nchar(sprintf("%1.f",abs(nobj-1)))
   if(missing(objects)) {

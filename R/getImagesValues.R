@@ -61,7 +61,6 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
   tmp = read_xml(getFullTag(IFD = IFD, which = 1, tag = "33027"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
   in_use = as.logical(as.numeric(strsplit(xml_text(xml_find_first(tmp, "//Imaging//ChannelInUseIndicators_0_11")), " ", useBytes = TRUE, fixed=TRUE)[[1]]))
   rm(tmp)
-  nobj = IFD[[1]]$tags$`33018`$map
   chan_number = sum(in_use)
   
   compute_offsets = TRUE
@@ -81,9 +80,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
   }
   
   # check objects to extract
-  XIF_test = attr(offsets, "test")
-  XIF_step = as.integer(XIF_test == 1) + 1L
-  if(length(nobj) == 0) nobj = as.integer(attr("obj_count", offsets))
+  nobj = as.integer(attr("obj_count", offsets))
   
   if(missing(objects)) {
     objects = as.integer(0:(nobj - 1))

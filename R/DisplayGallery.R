@@ -227,10 +227,7 @@ DisplayGallery <- function(...,
   }
   
   # check objects to extract
-  nobj = as.numeric(param$objcount)
-  XIF_test = attr(offsets, "test")
-  XIF_step = as.integer(XIF_test == 1) + 1L
-  if(length(nobj) == 0) nobj = as.integer(attr("obj_count", offsets))
+  nobj = as.integer(attr("obj_count", offsets))
   
   if(missing(objects)) {
     objects = as.integer(0:(nobj - 1))

@@ -128,7 +128,6 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   
   # Extract important values
   IFDs = getIFD(fileName = fileName, offsets = "first", force_trunc = FALSE, trunc_bytes = 8, verbose = FALSE, bypass = TRUE)
-  nobj = IFDs[[1]]$tags[["33018"]]$map
   is_binary = as.logical(IFDs[[1]]$tags[["33082"]]$map)
   if(length(is_binary) == 0) is_binary = FALSE
   V = NULL
@@ -165,7 +164,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   }
   XIF_test = attr(offsets, "test")
   XIF_step = as.integer(XIF_test == 1) + 1L
-  if(length(nobj) == 0) nobj = as.integer(attr("obj_count", offsets))
+  nobj = as.integer(attr("obj_count", offsets))
   
   if(missing(objects)) {
     message("\nAll objects will be extracted\n")
