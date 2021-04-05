@@ -70,6 +70,7 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
   XIF_test = testXIF(fileName)
   obj_count = attr(XIF_test, "obj_count")
   obj_estimated = attr(XIF_test, "obj_estimated")
+  if((obj_count != obj_estimated) && display_progress) message("offsets extraction is based on an estimation of total number of object within the file.\nIt is normal behaviour, if progress bar exceed or not reach 100%.")
   # obj_count = as.integer(getInfo(fileName, warn = FALSE, force_default = TRUE, display_progress = FALSE)$objcount)
   
   type = as.integer(XIF_test == 1) + 1L
@@ -78,6 +79,7 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
     offsets_1 = offsets[1]
     offsets = offsets[-1]
     if(obj_count > 0) if(length(offsets) != obj_estimated * type) stop("Number of offsets found is different from expected object count.")
+    
     message("Offsets were extracted from XIF file with fast method.\nCorrect mapping between offsets and objects ids is not guaranteed.")
   } else {
     offsets = as.data.frame(do.call(what = "cbind", args = cpp_getoffsets_wid(fileName, obj_count = obj_estimated / (as.integer(XIF_test != 1) + 1L), display_progress = display_progress, verbose = verbose)), stringsAsFactors = FALSE)
@@ -108,8 +110,9 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
   attr(offsets, "all") = offsets
   attr(offsets, "fileName_image") = fileName
   attr(offsets, "checksum") = checksumXIF(fileName)
-  attr(offsets, "class") = c("IFC_offset")
+  attr(offsets, "obj_count") = obj_count
   attr(offsets, "first") = offsets_1 
   attr(offsets, "test") = XIF_test
+  attr(offsets, "class") = c("IFC_offset")
   return(offsets)
 }

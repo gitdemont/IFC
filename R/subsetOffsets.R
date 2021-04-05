@@ -77,10 +77,10 @@ subsetOffsets <- function(offsets, objects, image_type = c("img", "msk")) {
         }
       } else {
         if(type == 1) {
-          in_offsets = 2 * (objects + 1)
-        } else {
           in_offsets = NULL
           warning("subsetOffsets: There may be no mask to subset.", immediate. = TRUE, call. = FALSE)
+        } else {
+          in_offsets = 2 * (objects + 1)
         }
       }
     }
@@ -90,6 +90,7 @@ subsetOffsets <- function(offsets, objects, image_type = c("img", "msk")) {
   attr(foo, "first") = attr(offsets, "first")
   attr(foo, "fileName_image") = attr(offsets, "fileName_image")
   attr(foo, "checksum") = attr(offsets, "checksum")
+  attr(foo, "obj_count") = attr(offsets, "obj_count")
   attr(foo, "test") = attr(offsets, "test")
   class(foo) = c("IFC_offset")
   return(foo)

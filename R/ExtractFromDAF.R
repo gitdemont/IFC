@@ -302,6 +302,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     attr(offsets, "all") = offsets
     attr(offsets, "fileName_image") = fileName_image
     attr(offsets, "checksum") = checksumDAF(fileName)
+    attr(offsets, "obj_count") = obj_count
     attr(offsets, "test") = +1L
     attr(offsets, "class") = "IFC_offset"
     attr(offsets, "first") = NULL
