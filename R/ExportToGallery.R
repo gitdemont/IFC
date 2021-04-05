@@ -248,7 +248,7 @@ ExportToGallery <- function(...,
   }
   
   # check objects to extract
-  nobj = as.integer(attr("obj_count", offsets))
+  nobj = as.integer(attr(x = offsets, which = "obj_count"))
   
   N = nchar(sprintf("%1.f",abs(nobj-1)))
   if(missing(objects)) {

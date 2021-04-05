@@ -165,7 +165,7 @@ ExtractImages_toFile <- function(...,
   }
   
   # check objects to extract
-  nobj = as.integer(attr("obj_count", offsets))
+  nobj = as.integer(attr(x = offsets, which = "obj_count"))
   
   if(missing(objects)) {
     objects = as.integer(0:(nobj - 1))

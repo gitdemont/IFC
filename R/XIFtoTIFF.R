@@ -164,7 +164,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
   }
   XIF_test = attr(offsets, "test")
   XIF_step = as.integer(XIF_test == 1) + 1L
-  nobj = as.integer(attr("obj_count", offsets))
+  nobj = as.integer(attr(x = offsets, which = "obj_count"))
   
   if(missing(objects)) {
     message("\nAll objects will be extracted\n")
