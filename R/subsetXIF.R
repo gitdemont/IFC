@@ -165,7 +165,6 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   }
   XIF_test = attr(offsets, "test")
   XIF_step = as.integer(XIF_test == 1) + 1L
-  if(length(nobj) == 0) nobj = length(offsets)
   
   if(missing(objects)) {
     message("\nAll objects will be extracted\n")
@@ -290,7 +289,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
       
       # extract features values in 1st IFD
       # if((length(IFD$infos$TYPE) != 0) && (IFD$infos$TYPE == 1)) {
-      if(i_off == 0) {
+      if(i_off == 1) {
         features = list()
         if(XIF_test >= 0) {
           if(extract_features) {
