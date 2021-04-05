@@ -1,5 +1,7 @@
 # NEWS
 ## 0.1.2
+- add support to more XIF files thanks to new testXIF function that allow to identify files with no mask
+
 - allow spatial correction directly from objectExtract thanks to the addition of spatial_correction parameter in objectParam
 
 - new function to convert XIF to TIFF (+ underlying hpp/cpp functions)
