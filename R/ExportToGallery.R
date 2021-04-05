@@ -229,33 +229,6 @@ ExportToGallery <- function(...,
   title_progress = basename(fileName)
   file_extension = getFileExt(fileName)
   
-  # check objects to extract
-  nobj = as.integer(param$objcount)
-  N = nchar(sprintf("%1.f",abs(nobj-1)))
-  if(missing(objects)) {
-    objects = as.integer(0:(nobj - 1))
-  } else {
-    objects = na.omit(as.integer(objects))
-    tokeep = (objects >= 0) & (objects < nobj)
-    if(length(tokeep) == 0) {
-      if(export == "file") {
-        warning(paste0("ExportToGallery: No objects to export, check the objects you provided.\n",
-                       "Can't create 'write_to' =", write_to, " from file.\n", param$fileName_image),
-                immediate. = TRUE, call. = FALSE)
-        return(invisible(NULL))
-      } else {
-        warning("ExportToGallery: No objects to export, check the objects you provided.\n", immediate. = TRUE, call. = FALSE)
-        return(NULL)
-      }
-    }
-    if(!all(tokeep)) {
-      warning("Some objects that are not in ", fileName, " have been automatically removed from extraction process:\n", paste0(objects[!tokeep], collapse=", "))
-      objects = objects[tokeep]
-    }
-  }
-  extract_max = as.integer(min(extract_max, length(objects)))
-  if(sampling) {objects=sample(objects,extract_max)} else {objects=objects[1:extract_max]}
-  if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width should be provided when 'object' length not equal to one")
   
   # check input offsets if any
   compute_offsets = TRUE
@@ -273,6 +246,27 @@ ExportToGallery <- function(...,
   if(compute_offsets) {
     offsets = suppressMessages(getOffsets(fileName = param$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
   }
+  
+  # check objects to extract
+  nobj = as.numeric(param$objcount)
+  XIF_test = attr(offsets, "test")
+  XIF_step = as.integer(XIF_test == 1) + 1L
+  if(length(nobj) == 0) nobj = as.integer(attr("obj_count", offsets))
+  
+  N = nchar(sprintf("%1.f",abs(nobj-1)))
+  if(missing(objects)) {
+    objects = as.integer(0:(nobj - 1))
+  } else {
+    objects = na.omit(as.integer(objects))
+    tokeep = (objects >= 0) & (objects < nobj)
+    if(!all(tokeep)) {
+      warning("Some objects that are not in ", fileName, " have been automatically removed from extraction process:\n", paste0(objects[!tokeep], collapse=", "))
+      objects = objects[tokeep]
+    }
+  }
+  extract_max = as.integer(min(extract_max, length(objects)))
+  if(sampling) {objects=sample(objects,extract_max)} else {objects=objects[1:extract_max]}
+  if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width should be provided when 'object' length not equal to one")
   
   # check export/write_to
   overwritten = FALSE
@@ -317,21 +311,32 @@ ExportToGallery <- function(...,
   }
   
   # extract objects
-  sel = split(objects, ceiling(seq_along(objects)/20))
-  L = length(sel)
+  sel = subsetOffsets(offsets = offsets, objects = objects, image_type = image_type)
+  sel = split(sel, ceiling(seq_along(sel)/20))
+  L=length(sel)
+  if(L == 0) {
+    if(export == "file") {
+      warning(paste0("ExportToGallery: No objects to export, check the objects you provided.\n",
+                     "Can't create 'write_to' =", write_to, " from file.\n", param$fileName_image),
+              immediate. = TRUE, call. = FALSE)
+      return(invisible(NULL))
+    } else {
+      warning("ExportToGallery: No objects to export, check the objects you provided.\n", immediate. = TRUE, call. = FALSE)
+      return(NULL)
+    }
+  }
   tryCatch({
     tryCatch({
       if(display_progress) {
         pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
         ans = lapply(1:L, FUN = function(i) {
           setPB(pb, value = i, title = title_progress, label = "exporting objects")
-          do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
-                                                                     offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = image_type),
-                                                                     trunc_bytes = 8, 
-                                                                     force_trunc = FALSE, 
-                                                                     verbose = verbose, 
-                                                                     verbosity = verbosity,
-                                                                     bypass = TRUE), 
+          do.call(what = "objectExtract", args = c(list(ifd = lapply(sel[[i]],
+                                                                     FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
+                                                                                                     offset = off,
+                                                                                                     trunc_bytes = 1, 
+                                                                                                     force_trunc = TRUE, 
+                                                                                                     verbose = verbose)),
                                                         param = param,
                                                         verbose = verbose,
                                                         bypass = TRUE),
@@ -339,13 +344,12 @@ ExportToGallery <- function(...,
         })
       } else {
         ans = lapply(1:L, FUN = function(i) {
-          do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
-                                                                     offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = image_type),
-                                                                     trunc_bytes = 8, 
-                                                                     force_trunc = FALSE, 
-                                                                     verbose = verbose, 
-                                                                     verbosity = verbosity,
-                                                                     bypass = TRUE), 
+          do.call(what = "objectExtract", args = c(list(ifd = lapply(sel[[i]],
+                                                                     FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
+                                                                                                     offset = off,
+                                                                                                     trunc_bytes = 1, 
+                                                                                                     force_trunc = TRUE, 
+                                                                                                     verbose = verbose)),
                                                         param = param,
                                                         verbose = verbose,
                                                         bypass = TRUE),

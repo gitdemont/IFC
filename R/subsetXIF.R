@@ -165,6 +165,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   }
   XIF_test = attr(offsets, "test")
   XIF_step = as.integer(XIF_test == 1) + 1L
+  if(length(nobj) == 0) nobj = as.integer(attr("obj_count", offsets))
   
   if(missing(objects)) {
     message("\nAll objects will be extracted\n")

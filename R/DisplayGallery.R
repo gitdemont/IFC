@@ -209,26 +209,6 @@ DisplayGallery <- function(...,
   fileName = param$fileName_image
   title_progress = basename(fileName)
   
-  # check objects to extract
-  nobj = as.numeric(param$objcount)
-  if(missing(objects)) {
-    objects = as.integer(0:(nobj - 1))
-  } else {
-    objects = na.omit(as.integer(objects))
-    tokeep = (objects >= 0) & (objects < nobj)
-    if(length(tokeep) == 0) {
-      warning("DisplayGallery: No objects to display, check the objects you provided.", immediate. = TRUE, call. = FALSE)
-      return(invisible(NULL))
-    }
-    if(!all(tokeep)) {
-      warning("Some objects that are not in ", fileName, " have been automatically removed from extraction process:\n", paste0(objects[!tokeep], collapse=", "))
-      objects = objects[tokeep]
-    }
-  }
-  extract_max = as.integer(min(extract_max, length(objects)))
-  if(sampling) {objects=sample(objects,extract_max)} else {objects=objects[1:extract_max]}
-  if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width should be provided when 'object' length not equal to one")
-  
   # check input offsets if any
   compute_offsets = TRUE
   if(length(offsets) != 0) {
@@ -246,21 +226,45 @@ DisplayGallery <- function(...,
     offsets = suppressMessages(getOffsets(fileName = param$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
   }
   
+  # check objects to extract
+  nobj = as.numeric(param$objcount)
+  XIF_test = attr(offsets, "test")
+  XIF_step = as.integer(XIF_test == 1) + 1L
+  if(length(nobj) == 0) nobj = as.integer(attr("obj_count", offsets))
+  
+  if(missing(objects)) {
+    objects = as.integer(0:(nobj - 1))
+  } else {
+    objects = na.omit(as.integer(objects))
+    tokeep = (objects >= 0) & (objects < nobj)
+    if(!all(tokeep)) {
+      warning("Some objects that are not in ", fileName, " have been automatically removed from extraction process:\n", paste0(objects[!tokeep], collapse=", "))
+      objects = objects[tokeep]
+    }
+  }
+  extract_max = as.integer(min(extract_max, length(objects)))
+  if(sampling) {objects=sample(objects,extract_max)} else {objects=objects[1:extract_max]}
+  if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width should be provided when 'object' length not equal to one")
+  
   # extract objects
-  sel = split(objects, ceiling(seq_along(objects)/20))
+  sel = subsetOffsets(offsets = offsets, objects = objects, image_type = image_type)
+  sel = split(sel, ceiling(seq_along(sel)/20))
   L=length(sel)
+  if(L == 0) {
+    warning("DisplayGallery: No objects to display, check the objects you provided.", immediate. = TRUE, call. = FALSE)
+    return(invisible(NULL))
+  }
   tryCatch({
     if(display_progress) {
       pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
       ans = lapply(1:L, FUN=function(i) {
         setPB(pb, value = i, title = title_progress, label = "exporting objects")
-        do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
-                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = image_type),
-                                                                   trunc_bytes = 8, 
-                                                                   force_trunc = FALSE, 
-                                                                   verbose = verbose, 
-                                                                   verbosity = verbosity,
-                                                                   bypass = TRUE),
+        do.call(what = "objectExtract", args = c(list(ifd = lapply(sel[[i]],
+                                                                   FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
+                                                                                                   offset = off,
+                                                                                                   trunc_bytes = 1, 
+                                                                                                   force_trunc = TRUE, 
+                                                                                                   verbose = verbose)),
                                                       param = param,
                                                       verbose = verbose,
                                                       bypass = TRUE),
@@ -268,13 +272,12 @@ DisplayGallery <- function(...,
       })
     } else {
       ans = lapply(1:L, FUN=function(i) {
-        do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
-                                                                   offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = image_type),
-                                                                   trunc_bytes = 8, 
-                                                                   force_trunc = FALSE, 
-                                                                   verbose = verbose, 
-                                                                   verbosity = verbosity,
-                                                                   bypass = TRUE),
+        do.call(what = "objectExtract", args = c(list(ifd = lapply(sel[[i]],
+                                                                   FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
+                                                                                                   offset = off,
+                                                                                                   trunc_bytes = 1, 
+                                                                                                   force_trunc = TRUE, 
+                                                                                                   verbose = verbose)),
                                                       param = param,
                                                       verbose = verbose,
                                                       bypass = TRUE),

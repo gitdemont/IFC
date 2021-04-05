@@ -143,23 +143,6 @@ CompensateFromRIF <- function(...,
   fileName = param$fileName_image
   title_progress = basename(fileName)
   
-  # check objects to extract
-  nobj = as.numeric(param$objcount)
-  if(missing(objects)) {
-    objects = as.integer(0:(nobj - 1))
-  } else {
-    objects = na.omit(as.integer(objects))
-    tokeep = (objects >= 0) & (objects < nobj)
-    if(length(tokeep) == 0) {
-      warning("CompensateFromRIF: No objects to extract, check the objects you provided.", immediate. = TRUE, call. = FALSE)
-      return(NULL)
-    }
-    if(!all(tokeep)) {
-      warning("Some objects that are not in ", fileName, " have been automatically removed from extraction process:\n", paste0(objects[!tokeep], collapse=", "))
-      objects = objects[tokeep]
-    }
-  }
-  
   # check input offsets if any
   compute_offsets = TRUE
   if(missing(offsets)) offsets = NULL
@@ -178,25 +161,46 @@ CompensateFromRIF <- function(...,
     offsets = suppressMessages(getOffsets(fileName = param$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
   }
   
+  # check objects to extract
+  nobj = as.numeric(param$objcount)
+  XIF_test = attr(offsets, "test")
+  XIF_step = as.integer(XIF_test == 1) + 1L
+  if(length(nobj) == 0) nobj = as.integer(attr("obj_count", offsets))
+  
+  if(missing(objects)) {
+    objects = as.integer(0:(nobj - 1))
+  } else {
+    objects = na.omit(as.integer(objects))
+    tokeep = (objects >= 0) & (objects < nobj)
+    if(!all(tokeep)) {
+      warning("Some objects that are not in ", fileName, " have been automatically removed from extraction process:\n", paste0(objects[!tokeep], collapse=", "))
+      objects = objects[tokeep]
+    }
+  }
+  
   # extract objects
-  sel = split(objects, ceiling(seq_along(objects)/20))
+  sel = subsetOffsets(offsets = offsets, objects = objects, image_type = "img")
+  sel = split(sel, ceiling(seq_along(sel)/20))
   L=length(sel)
+  if(L == 0) {
+    warning("CompensateFromRIF: No objects to extract, check the objects you provided.", immediate. = TRUE, call. = FALSE)
+    return(NULL)
+  }
   if(display_progress) {
     pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) {
       setPB(pb, value = i, title = title_progress, label = "exporting images to matrix")
-      pre = do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
-                                                                       offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"),
-                                                                       trunc_bytes = 8, 
-                                                                       force_trunc = FALSE, 
-                                                                       verbose = verbose, 
-                                                                       verbosity = verbosity,
-                                                                       bypass = TRUE),
-                                                          param = param,
-                                                          verbose = verbose,
-                                                          bypass = TRUE),
-                                                     dots))
+      pre = do.call(what = "objectExtract", args = c(list(ifd = lapply(sel[[i]],
+                                                                 FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
+                                                                                                 offset = off,
+                                                                                                 trunc_bytes = 1, 
+                                                                                                 force_trunc = TRUE, 
+                                                                                                 verbose = verbose)),
+                                                    param = param,
+                                                    verbose = verbose,
+                                                    bypass = TRUE),
+                                               dots))
       lapply(1:length(pre), FUN = function(i_pre) {
         d = dim(pre[[i_pre]][[1]]) - c(3, 2)
         if(!is.null(spill)) foo = compensate(c(pre[[i_pre]][[i_ch]]), spill)
@@ -223,17 +227,16 @@ CompensateFromRIF <- function(...,
     })
   } else {
     ans = lapply(1:L, FUN=function(i) { 
-      pre = do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
-                                                                       offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = c("img")),
-                                                                       trunc_bytes = 8, 
-                                                                       force_trunc = FALSE, 
-                                                                       verbose = verbose, 
-                                                                       verbosity = verbosity,
-                                                                       bypass = TRUE), 
-                                                          param = param,
-                                                          verbose = verbose,
-                                                          bypass = TRUE),
-                                                     dots))
+      pre = do.call(what = "objectExtract", args = c(list(ifd = lapply(sel[[i]],
+                                                                 FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
+                                                                                                 offset = off,
+                                                                                                 trunc_bytes = 1, 
+                                                                                                 force_trunc = TRUE, 
+                                                                                                 verbose = verbose)),
+                                                    param = param,
+                                                    verbose = verbose,
+                                                    bypass = TRUE),
+                                               dots))
       lapply(1:length(pre), FUN = function(i_pre) {
         d = dim(pre[[i_pre]][[1]]) - c(3, 2)
         if(!is.null(spill)) foo = compensate(c(pre[[i_pre]][[i_ch]]), spill)
@@ -381,23 +384,6 @@ CompensateFromCIF <- function(...,
   }
   decomp = info$CrossTalkMatrix[which(info$in_use), which(info$in_use)]
   
-  # check objects to extract
-  nobj = as.numeric(param$objcount)
-  if(missing(objects)) {
-    objects = as.integer(0:(nobj - 1))
-  } else {
-    objects = na.omit(as.integer(objects))
-    tokeep = (objects >= 0) & (objects < nobj)
-    if(length(tokeep) == 0) {
-      warning("CompensateFromCIF: No objects to extract, check the objects you provided.", immediate. = TRUE, call. = FALSE)
-      return(NULL)
-    }
-    if(!all(tokeep)) {
-      warning("Some objects that are not in ", fileName, " have been automatically removed from extraction process:\n", paste0(objects[!tokeep], collapse=", "))
-      objects = objects[tokeep]
-    }
-  }
-  
   # check input offsets if any
   compute_offsets = TRUE
   if(missing(offsets)) offsets = NULL
@@ -416,25 +402,46 @@ CompensateFromCIF <- function(...,
     offsets = suppressMessages(getOffsets(fileName = param$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
   }
   
+  # check objects to extract
+  nobj = as.numeric(param$objcount)
+  XIF_test = attr(offsets, "test")
+  XIF_step = as.integer(XIF_test == 1) + 1L
+  if(length(nobj) == 0) nobj = as.integer(attr("obj_count", offsets))
+  
+  if(missing(objects)) {
+    objects = as.integer(0:(nobj - 1))
+  } else {
+    objects = na.omit(as.integer(objects))
+    tokeep = (objects >= 0) & (objects < nobj)
+    if(!all(tokeep)) {
+      warning("Some objects that are not in ", fileName, " have been automatically removed from extraction process:\n", paste0(objects[!tokeep], collapse=", "))
+      objects = objects[tokeep]
+    }
+  }
+  
   # extract objects
-  sel = split(objects, ceiling(seq_along(objects)/20))
+  sel = subsetOffsets(offsets = offsets, objects = objects, image_type = "img")
+  sel = split(sel, ceiling(seq_along(sel)/20))
   L=length(sel)
+  if(L == 0) {
+    warning("CompensateFromCIF: No objects to extract, check the objects you provided.", immediate. = TRUE, call. = FALSE)
+    return(NULL)
+  }
   if(display_progress) {
     pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) {
       setPB(pb, value = i, title = title_progress, label = "exporting images to matrix")
-      pre = do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
-                                                                       offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"),
-                                                                       trunc_bytes = 8, 
-                                                                       force_trunc = FALSE, 
-                                                                       verbose = verbose, 
-                                                                       verbosity = verbosity,
-                                                                       bypass = TRUE),
-                                                          param = param,
-                                                          verbose = verbose,
-                                                          bypass = TRUE),
-                                                     dots))
+      pre = do.call(what = "objectExtract", args = c(list(ifd = lapply(sel[[i]],
+                                                                 FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
+                                                                                                 offset = off,
+                                                                                                 trunc_bytes = 1, 
+                                                                                                 force_trunc = TRUE, 
+                                                                                                 verbose = verbose)),
+                                                    param = param,
+                                                    verbose = verbose,
+                                                    bypass = TRUE),
+                                               dots))
       lapply(1:length(pre), FUN = function(i_pre) {
         d = dim(pre[[i_pre]][[1]])
         foo = sapply(1:length(pre[[i_pre]]), FUN = function(i_ch) {
@@ -470,17 +477,16 @@ CompensateFromCIF <- function(...,
     })
   } else {
     ans = lapply(1:L, FUN=function(i) { 
-      pre = do.call(what = "objectExtract", args = c(list(ifd = getIFD(fileName = param$fileName_image,
-                                                                       offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = c("img")),
-                                                                       trunc_bytes = 8, 
-                                                                       force_trunc = FALSE, 
-                                                                       verbose = verbose, 
-                                                                       verbosity = verbosity,
-                                                                       bypass = TRUE), 
-                                                          param = param,
-                                                          verbose = verbose,
-                                                          bypass = TRUE),
-                                                     dots))
+      pre = do.call(what = "objectExtract", args = c(list(ifd = lapply(sel[[i]],
+                                                                 FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
+                                                                                                 offset = off,
+                                                                                                 trunc_bytes = 1, 
+                                                                                                 force_trunc = TRUE, 
+                                                                                                 verbose = verbose)),
+                                                    param = param,
+                                                    verbose = verbose,
+                                                    bypass = TRUE),
+                                               dots))
       lapply(1:length(pre), FUN = function(i_pre) {
         d = dim(pre[[i_pre]][[1]])
         foo = sapply(1:length(pre[[i_pre]]), FUN = function(i_ch) {
