@@ -70,7 +70,7 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
   XIF_test = testXIF(fileName)
   obj_count = attr(XIF_test, "obj_count")
   obj_estimated = attr(XIF_test, "obj_estimated")
-  if((obj_count != obj_estimated) && display_progress) message("offsets extraction is based on an estimation of total number of object within the file.\nIt is normal behaviour, if progress bar exceed or not reach 100%.")
+  if((obj_count != obj_estimated) && display_progress) message("offsets extraction is based on an estimation of total number of objects within the file.\nConsequently, it is normal behaviour if progress bar can not reach or exceed 100%.")
   # obj_count = as.integer(getInfo(fileName, warn = FALSE, force_default = TRUE, display_progress = FALSE)$objcount)
   
   type = as.integer(XIF_test == 1) + 1L
