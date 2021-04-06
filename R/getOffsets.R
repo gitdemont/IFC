@@ -85,6 +85,7 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
     offsets = as.data.frame(do.call(what = "cbind", args = cpp_getoffsets_wid(fileName, obj_count = obj_estimated / (as.integer(XIF_test != 1) + 1L), display_progress = display_progress, verbose = verbose)), stringsAsFactors = FALSE)
     offsets_i = offsets[offsets$TYPE == 2, ]
     offsets_m = offsets[offsets$TYPE == 3, ]
+    if(type == 2) if(!identical(offsets_i$OBJECT_ID, offsets_m$OBJECT_ID)) stop("Offsets contain different numbers of 'img' and 'msk'.")
     
     ORD_i = order(offsets_i$OBJECT_ID)
     offsets_img = offsets_i$OFFSET[ORD_i]
@@ -94,7 +95,6 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
     offsets_1 = offsets[offsets$TYPE == 1, ]
     offsets_1 = offsets_1$OFFSET
     
-    if(type == 2) if(length(offsets_img) != length(offsets_msk)) stop("Offsets contain different numbers of 'img' and 'msk'.")
     if(obj_count > 0) if(length(offsets_img) != obj_count) stop("Number of offsets found is different from expected object count.")
     offsets = as.integer(apply(cbind(offsets_img, offsets_msk), 1, FUN=function(i) i))
   }
