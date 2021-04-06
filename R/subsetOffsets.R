@@ -56,7 +56,7 @@ subsetOffsets <- function(offsets, objects, image_type = c("img", "msk")) {
   assert(offsets, cla = "IFC_offset")
   assert(image_type, alw = c("img", "msk"))
   type = as.integer(attr(offsets, "test") == 1) + 1L
-  objects = as.integer(objects); objects = objects[(objects >= 0) & (objects < length(attr(offsets, "all")) / type) & (is.finite(objects))]
+  objects = as.integer(objects); objects = objects[(objects >= 0) & (objects < attr(offsets, "obj_count")) & (is.finite(objects))]
   if(length(objects) == 0) {
     warning("subsetOffsets: No objects to subset, check the objects you provided.", immediate. = TRUE, call. = FALSE)
     foo = integer()
