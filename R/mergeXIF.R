@@ -313,7 +313,7 @@ mergeXIF <- function (fileName, write_to,
           cum_obj = i_obj + off_obj
           setPB(pb = pb2, value = cum_obj, title = title_progress, label = paste0(label_progress, " - merging objects"))
           # extract IFD
-          IFD = cpp_getTAGS(fname = f, offset = IFD$next_IFD_offset, trunc_bytes = 8, force_trunc = FALSE, verbose = VER)
+          IFD = cpp_getTAGS(fname = f, offset = IFD$next_IFD_offset, trunc_bytes = 1, force_trunc = TRUE, verbose = VER)
           cur_obj = IFD$infos
           if(cur_obj$TYPE == 2) OBJECT_ID = cur_obj$OBJECT_ID
           
