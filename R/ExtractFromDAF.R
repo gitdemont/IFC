@@ -124,7 +124,6 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     description$Images = description$Images[order(description$Images$physicalChannel), ]
     
     if(ncol(description$masks) == 0) description$masks = data.frame(type = "C", name = "MC", def =paste0(sprintf("M%02i", description$Images$physicalChannel), collapse="|Or|"))
-    class(description$masks) <- c(class(description$masks), "IFC_masks")
     # chan_number = nrow(description$Images) # when from daf only available channels are imported
 
     col = description$Images[,"color"]
