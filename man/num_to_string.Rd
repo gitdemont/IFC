@@ -9,7 +9,7 @@ num_to_string(x, precision = 16)
 \arguments{
 \item{x}{a numeric vector.}
 
-\item{precision}{number of significant decimal digits to keep when abs(x) < 1. Default is 15.}
+\item{precision}{number of significant decimal digits to keep when abs(x) < 1. Default is 16.}
 }
 \value{
 a string vector.
