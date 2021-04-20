@@ -160,21 +160,6 @@ splitf <- function(file = NULL) {
   class(out) <- "splitf_obj"
   return(out)
 }
-# splitf <- function(file = NULL) {
-#   f = normalizePath(file, mustWork = FALSE, winslash = "/")
-#   dir = dirname(f)
-#   b_name = basename(gsub(dir, "", f))
-#   if(dir == "") {
-#     dir = f
-#   } else {
-#     dir = suppressWarnings(normalizePath(dir, mustWork = FALSE, winslash = "/"))
-#   }
-#   ext = getFileExt(file)
-#   short = gsub(paste0("\\.", ext, "$"), "", b_name, ignore.case = TRUE)
-#   out = c("dir" = dir, "parent" = basename(dir), "ext" = ext, "short" = short, "input" = file)
-#   class(out) <- "splitf_obj"
-#   return(out)
-# }
 
 #' @title File Path Placeholders Formatting
 #' @description
@@ -211,9 +196,74 @@ formatn <- function(splitp_obj, splitf_obj, channel = "", object = "") {
 #' @description
 #' Formats numeric to string used for features, images, ... values conversion when exporting to xml.
 #' @param x a numeric vector.
-#' @param precision number of significant decimal digits to keep when abs(x) < 1. Default is 15.
+#' @param precision number of significant decimal digits to keep when abs(x) < 1. Default is 16.
 #' @return a string vector.
 #' @keywords internal
 num_to_string <- function(x, precision = 16) {
   return(cpp_num_to_string(x, precision))
+}
+
+#' @title Next Component Prediction
+#' @description
+#' Helper to define next allowed component in a boolean vector.
+#' @param x a string, current component.
+#' @param count an integer, representing current number of opened/closed bracket.
+#' @return a vector of next allowed components.
+#' @keywords internal
+next_bool = function(x = "", count = 0L) {
+  return(switch(x,
+                "And" = {
+                  c("Not", "(", "obj")
+                },
+                "Or" = {
+                  c("Not", "(", "obj")
+                },
+                "Not" = {
+                  c("(", "obj")
+                },
+                "(" = {
+                  c("Not", "(", "obj")
+                },
+                ")" = {
+                  tmp = c("And", "Or")
+                  if(count > 0) tmp = c(tmp, ")")
+                  tmp
+                },
+                {  
+                  tmp = c("And", "Or")
+                  if(count > 0) tmp = c(tmp, ")")
+                  tmp
+                }))
+}
+
+#' @title Boolean Expression Validation
+#' @description
+#' Helper to check if a boolean vector is valid.
+#' @param x a string vector representing the boolean expression to be validated.
+#' @param all_names a character vector of scalars which are allowed to be part of the the boolean expression.
+#' @return x is returned if no exception is raised during validation process.
+#' @keywords internal
+validate_bool = function(x = "", all_names = "") {
+  operators = c("And", "Or", "Not", "(", ")")
+  all_names = setdiff(all_names, c(operators, ""))
+  if(!any(all_names %in% x)) stop("object definition is not possible: no match found")
+  count = 0L
+  alw = c("Not", "(", "obj")
+  lapply(1:length(x), FUN = function(i) {
+    if(x[i] == "(") count <<- count + 1L
+    if(x[i] == ")") count <<- count - 1L
+    if(x[i] %in% alw) {
+      alw <<- next_bool(x[i], count)
+      return(NULL)
+    } else {
+      if(("obj" %in% alw) && (x[i] %in% all_names)) {
+        alw <<- next_bool(x[i], count)
+        return(NULL)
+      }
+    }
+    stop("object definition is not possible: '",x[i],"' is not allowed at position [",i,"] in\n",x)
+  })
+  if(count != 0) stop("object definition is not possible: invalid number of opened bracket")
+  if(x[length(x)] %in% c("And", "Or", "Not", "(")) stop("object definition is not possible: it should not end with '",x[length(x)],"'")
+  return(x)
 }
