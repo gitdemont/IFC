@@ -31,16 +31,6 @@
 #' Retrieves ASSIST tests values stored within .cif / .rif files.
 #' @param fileName path to file..
 #' @param ... other arguments to be passed.
-#' @examples
-#' if(requireNamespace("IFCdata", quietly = TRUE)) {
-#'   ## use a rif file
-#'   file_rif <- system.file("extdata", "example.rif", package = "IFCdata")
-#'   ASSIST_db <- getASSIST(fileName = file_rif, from = "analysis")
-#' } else {
-#'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
-#'                   'https://gitdemont.github.io/IFCdata/',
-#'                   'to install extra files required to run this example.'))
-#' }
 #' @return a list of class `IFC_assist` of parsed ASSIST tests database.
 #' @keywords internal
 getASSIST <- function(fileName, ...) {

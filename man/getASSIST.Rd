@@ -17,15 +17,4 @@ a list of class `IFC_assist` of parsed ASSIST tests database.
 \description{
 Retrieves ASSIST tests values stored within .cif / .rif files.
 }
-\examples{
-if(requireNamespace("IFCdata", quietly = TRUE)) {
-  ## use a rif file
-  file_rif <- system.file("extdata", "example.rif", package = "IFCdata")
-  ASSIST_db <- getASSIST(fileName = file_rif, from = "analysis")
-} else {
-  message(sprintf('Please run `install.packages("IFCdata", repos = "\%s", type = "source")` \%s',
-                  'https://gitdemont.github.io/IFCdata/',
-                  'to install extra files required to run this example.'))
-}
-}
 \keyword{internal}
