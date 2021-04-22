@@ -56,9 +56,9 @@ remove_ext <- function(x) {
 #' Helper to replace special character.
 #' @param string string where specials will be replaced if found.
 #' @param replacement string replacement. Default is "_".
-#' @param specials  Default is '\\\\|\\/|\\:|\\*|\\?|\\"|\\<|\\>|\\|'.
+#' @param specials Default is '[\\|\\/|\\:|\\*|\\?|\\"|\'|\\<|\\>|\\|]'.
 #' @keywords internal
-specialr <- function(string = "", replacement = "_", specials = '\\\\|\\/|\\:|\\*|\\?|\\"|\\<|\\>|\\|') {
+specialr <- function(string = "", replacement = "_", specials = '[\\|\\/|\\:|\\*|\\?|\\"|\'|\\<|\\>|\\|]') {
   assert(replacement, len = 1, typ = "character")
   assert(specials, len = 1, typ = "character")
   if(grepl(pattern = specials, x = replacement, perl = FALSE)) stop("'replacement' can't contain 'specials'")
