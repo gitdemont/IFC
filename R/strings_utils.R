@@ -61,8 +61,8 @@ remove_ext <- function(x) {
 specialr <- function(string = "", replacement = "_", specials = '\\\\|\\/|\\:|\\*|\\?|\\"|\\<|\\>|\\|') {
   assert(replacement, len = 1, typ = "character")
   assert(specials, len = 1, typ = "character")
-  if(grepl(pattern = specials, x = replacement, perl = TRUE)) stop("'replacement' can't contain 'specials'")
-  return(gsub(pattern = specials, replacement = replacement, x = string, perl =TRUE))
+  if(grepl(pattern = specials, x = replacement, perl = FALSE)) stop("'replacement' can't contain 'specials'")
+  return(gsub(pattern = specials, replacement = replacement, x = string, perl = FALSE))
 }
 
 #' @title Name Protection
@@ -72,7 +72,7 @@ specialr <- function(string = "", replacement = "_", specials = '\\\\|\\/|\\:|\\
 #' @keywords internal
 protectn <- function(name) {
   assert(name, typ="character")
-  foo = gsub("(.)", "\\\\\\1", name, perl=TRUE)
+  foo = gsub("(.)", "\\\\\\1", name, perl=FALSE)
   paste0("(",paste0(sapply(foo, FUN = function(i) {
     return(paste0("[", i, "]"))
   }), collapse = "|"),")")
@@ -92,7 +92,7 @@ splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(",
   assert(all_names, typ="character")
   assert(operators, typ="character")
   assert(splitter, len=1, typ="character")
-  return(gsub(splitter, "", strsplit(gsub(protectn(c(all_names, operators)), paste0(splitter, "\\1", splitter), definition, perl=TRUE), split=paste0(splitter, "|", splitter), fixed = TRUE)[[1]], fixed=TRUE))
+  return(gsub(splitter, "", strsplit(gsub(protectn(c(all_names, operators)), paste0(splitter, "\\1", splitter), definition, perl=FALSE), split=paste0(splitter, "|", splitter), fixed = TRUE)[[1]], fixed=TRUE))
 }
 
 #' @title String Decomposition with Placeholders
