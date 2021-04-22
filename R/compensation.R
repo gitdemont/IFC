@@ -199,11 +199,20 @@ CompensateFromRIF <- function(...,
                                                     bypass = TRUE),
                                                dots))
       lapply(1:length(pre), FUN = function(i_pre) {
-        d = dim(pre[[i_pre]][[1]]) - c(3, 2)
-        if(!is.null(spill)) foo = compensate(c(pre[[i_pre]][[i_ch]]), spill)
+        d = dim(pre[[i_pre]][[1]])
+        foo = sapply(1:length(pre[[i_pre]]), FUN = function(i_ch) {
+          return(c(attr(pre[[i_pre]][[i_ch]], which = "raw")))
+        })
+        if(is.null(spill)) {
+          foo = decompensate(foo, decomp)
+        } else {
+          if(length(spill) != 1) {
+            foo = recompensate(foo, decomp, spill)
+          }
+        }
         foo = lapply(1:length(pre[[i_pre]]), FUN = function(i_ch) {
           img = matrix(foo[, i_ch], nrow = d[1], ncol = d[2])
-          attr(img, which = "mask") <- attr(pre[[i_pre]][[i_ch]], which = "mask")
+          attr(img, "mask") <- attr(pre[[i_pre]][[i_ch]], "mask")
           attr(img, "input_range") <- attr(pre[[i_pre]][[i_ch]], "input_range")
           attr(img, "full_range") <- attr(pre[[i_pre]][[i_ch]], "full_range")
           attr(img, "force_range") <- attr(pre[[i_pre]][[i_ch]], "force_range")
@@ -235,11 +244,20 @@ CompensateFromRIF <- function(...,
                                                     bypass = TRUE),
                                                dots))
       lapply(1:length(pre), FUN = function(i_pre) {
-        d = dim(pre[[i_pre]][[1]]) - c(3, 2)
-        if(!is.null(spill)) foo = compensate(c(pre[[i_pre]][[i_ch]]), spill)
+        d = dim(pre[[i_pre]][[1]])
+        foo = sapply(1:length(pre[[i_pre]]), FUN = function(i_ch) {
+          return(c(attr(pre[[i_pre]][[i_ch]], which = "raw")))
+        })
+        if(is.null(spill)) {
+          foo = decompensate(foo, decomp)
+        } else {
+          if(length(spill) != 1) {
+            foo = recompensate(foo, decomp, spill)
+          }
+        }
         foo = lapply(1:length(pre[[i_pre]]), FUN = function(i_ch) {
           img = matrix(foo[, i_ch], nrow = d[1], ncol = d[2])
-          attr(img, which = "mask") <- attr(pre[[i_pre]][[i_ch]], which = "mask")
+          attr(img, "mask") <- attr(pre[[i_pre]][[i_ch]], "mask")
           attr(img, "input_range") <- attr(pre[[i_pre]][[i_ch]], "input_range")
           attr(img, "full_range") <- attr(pre[[i_pre]][[i_ch]], "full_range")
           attr(img, "force_range") <- attr(pre[[i_pre]][[i_ch]], "force_range")
@@ -380,6 +398,9 @@ CompensateFromCIF <- function(...,
     }
   }
   decomp = info$CrossTalkMatrix[which(info$in_use), which(info$in_use)]
+  
+  fileName = param$fileName_image
+  title_progress = basename(fileName)
   
   # check input offsets if any
   compute_offsets = TRUE
