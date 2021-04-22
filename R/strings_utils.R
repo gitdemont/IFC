@@ -72,7 +72,7 @@ specialr <- function(string = "", replacement = "_", specials = '\\\\|\\/|\\:|\\
 #' @keywords internal
 protectn <- function(name) {
   assert(name, typ="character")
-  foo = gsub("([[:punct:]])", "\\\\\\1", name, perl=TRUE)
+  foo = gsub("(.)", "\\\\\\1", name, perl=TRUE)
   paste0("(",paste0(sapply(foo, FUN = function(i) {
     return(paste0("[", i, "]"))
   }), collapse = "|"),")")
