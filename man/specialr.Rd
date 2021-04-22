@@ -7,7 +7,7 @@
 specialr(
   string = "",
   replacement = "_",
-  specials = "\\\\\\\\|\\\\/|\\\\:|\\\\*|\\\\?|\\\\\\"|\\\\<|\\\\>|\\\\|"
+  specials = "[\\\\|\\\\/|\\\\:|\\\\*|\\\\?|\\\\\\"|'|\\\\<|\\\\>|\\\\|]"
 )
 }
 \arguments{
@@ -15,7 +15,7 @@ specialr(
 
 \item{replacement}{string replacement. Default is "_".}
 
-\item{specials}{Default is '\\\\|\\/|\\:|\\*|\\?|\\"|\\<|\\>|\\|'.}
+\item{specials}{Default is '[\\|\\/|\\:|\\*|\\?|\\"|\'|\\<|\\>|\\|]'.}
 }
 \description{
 Helper to replace special character.
