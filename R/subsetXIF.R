@@ -162,7 +162,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   } else {
     fast = TRUE
   }
-  XIF_test = attr(offsets, "test")
+  XIF_test = ifelse(length(attr(offsets, "test")) == 0, testXIF(fileName), attr(offsets, "test"))
   XIF_step = as.integer(XIF_test == 1) + 1L
   nobj = as.integer(attr(x = offsets, which = "obj_count"))
   
