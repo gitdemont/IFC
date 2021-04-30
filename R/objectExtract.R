@@ -216,7 +216,7 @@ objectExtract <- function(ifd,
            "base64" = {
              if(param$base64_id) {
                img = lapply(1:length(img), FUN=function(i) {
-                 sprintf("<img id=%s %s width='%s' height='%s' src='data:image/%s;base64,%s'>",
+                 sprintf("<img id='%s' %s width='%i' height='%i' src='data:image/%s;base64,%s'>",
                          formatn(splitp_obj = param$splitp_obj,
                                  splitf_obj = param$splitf_obj,
                                  channel = c(sprintf("Ch%02.f",channels[chan_to_extract,"physicalChannel"]),composite)[i],
@@ -229,7 +229,7 @@ objectExtract <- function(ifd,
                })
              } else {
                img = lapply(1:length(img), FUN=function(i) {
-                 sprintf("<img %s width='%s' height='%s' src='data:image/%s;base64,%s'>",
+                 sprintf("<img %s width='%i' height='%i' src='data:image/%s;base64,%s'>",
                          param$base64_att,
                          ncol(img[[i]]),
                          nrow(img[[i]]),
