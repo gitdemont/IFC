@@ -81,22 +81,22 @@ bool trigo_pnt_in_poly (const Rcpp::NumericVector pnt,
     x1 = poly(i, 0); x2 = poly((i + 1), 0); x = pnt[0];
     y1 = poly(i, 1); y2 = poly((i + 1), 1); y = pnt[1];
     //check if point is vertix
-    if (x == x1 && y == y1) { angle = PI + 1; break; }
+    if (x == x1 && y == y1) { angle = M_PI + 1; break; }
     //check if point is on border line between 2 points
-    if (x == x1 && x == x2) { if ((y1 <= y && y <= y2) || (y1 >= y && y >= y2)) { angle = PI + 1; break; } } // check point between two horizontal points
-    if (y == y1 && y == y2) { if ((x1 <= x && x <= x2) || (x1 >= x && x >= x2)) { angle = PI + 1; break; } } // check point between two verticle points
+    if (x == x1 && x == x2) { if ((y1 <= y && y <= y2) || (y1 >= y && y >= y2)) { angle = M_PI + 1; break; } } // check point between two horizontal points
+    if (y == y1 && y == y2) { if ((x1 <= x && x <= x2) || (x1 >= x && x >= x2)) { angle = M_PI + 1; break; } } // check point between two verticle points
     dy = (y1==y2) ? -9999:(y1-y)/(y1-y2); //check if the relative change in x == relative change in y
     dx = (x1==x2) ? -9999:(x1-x)/(x1-x2); //check if the relative change in x == relative change in y
     dd = dy-dx; dd = (dd<0) ? -dd:dd;
-    if (dd < epsilon && dy>0 && dy<1) { angle = PI + 1; break; } // if dx == dy and dy is between 0 & 1 ... point is on the border line
+    if (dd < epsilon && dy>0 && dy<1) { angle = M_PI + 1; break; } // if dx == dy and dy is between 0 & 1 ... point is on the border line
     // && dy > 0 && dy < 1
     //if not a vertex or on border lines... sum the angles
     double dtheta = std::atan2(y2 - y, x2 - x) - std::atan2(y1 - y, x1 - x);
-    while (dtheta > PI) dtheta -= 2 * PI;
-    while (dtheta < -PI) dtheta += 2 * PI;
+    while (dtheta > M_PI) dtheta -= 2 * M_PI;
+    while (dtheta < -M_PI) dtheta += 2 * M_PI;
     angle += dtheta;
   }
-  return (std::fabs(angle) >= PI);
+  return (std::fabs(angle) >= M_PI);
 }
 
 //' @title Point in Ellipse
