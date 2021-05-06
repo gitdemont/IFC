@@ -55,7 +55,7 @@ subsetOffsets <- function(offsets, objects, image_type = c("img", "msk")) {
   if(missing(objects)) stop("'objects' can't be missing")
   assert(offsets, cla = "IFC_offset")
   assert(image_type, alw = c("img", "msk"))
-  XIF_test = ifelse(length(attr(offsets, "test")) == 0, testXIF(fileName), attr(offsets, "test"))
+  XIF_test = ifelse(length(attr(offsets, "test")) == 0, testXIF(attr(offsets, "fileName_image")), attr(offsets, "test"))
   type = as.integer(XIF_test == 1) + 1L
   objects = as.integer(objects); objects = objects[(objects >= 0) & (objects < attr(offsets, "obj_count")) & (is.finite(objects))]
   if(length(objects) == 0) {
