@@ -28,6 +28,7 @@
   along with IFC. If not, see <http://www.gnu.org/licenses/>.                   
 */
 
+#define STRICT_R_HEADERS
 #include <Rcpp.h>
 #include "../inst/include/align.hpp"
 #include "../inst/include/assert.hpp"
