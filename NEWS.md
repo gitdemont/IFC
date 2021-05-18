@@ -1,20 +1,24 @@
 # NEWS
 ## 0.1.2
-- add support to more XIF files thanks to new testXIF function that allow to identify files with no mask
+- apply STRICT_R_HEADERS patch for Rcpp and change PI to M_PI
+
+- fix bug with base64id that was not quoted which could lead id to be truncated on space characters
+
+- modify string_utils to better escape and recognize regions, populations and features names, particularly when they contain | or when names are constituted of repeated patterns
+
+- add redefine_ family internal functions to allow images, masks, and features renaming and their propagation across upstream dependency
+
+- add support to more XIF files thanks to new internal testXIF function that allow to identify files with no mask
 
 - allow spatial correction directly from objectExtract thanks to the addition of spatial_correction parameter in objectParam
 
-- new function to convert XIF to TIFF (+ underlying hpp/cpp functions)
+- new experimental internal function to convert XIF to uncompressed TIFF (+ underlying hpp/cpp functions)
 
 - remove TILE support and only use STRIP in mergeXIF and susbsetXIF since it seems to never been used
 
-- remove hard dependency on object number retrieved from first IFD in getIFD
-allowing to get IFDs from other files than RIF / CIF (i.e. TIFF)
+- remove hard dependency on object number retrieved from first IFD in getIFD allowing to get IFDs from other files than RIF / CIF (i.e. TIFF)
 
-- make decomp.hpp more robust to invalid nbytes, imgWidth, imgHeight, nb_channels input 
-fix potential off-by-one issue that could cause buffer overrun in code although it should never be reached 
-
-- new function to deal with compensation
+- make decomp.hpp more robust to invalid nbytes, imgWidth, imgHeight, nb_channels input fix potential off-by-one issue that could cause buffer overrun in code although it should never be reached 
 
 - new function to apply spatial offsets correction on images
 
@@ -28,18 +32,30 @@ fix potential off-by-one issue that could cause buffer overrun in code although 
 
 - add maxpoints parameter in buildGraph to control the number of cells displayed in 2D graphs
 
-- create read/write/apply GatingStrategy family functions to save/retrieve gating strategy
-(association of regions / populations and graphs)
+- create read/write/apply GatingStrategy family functions to save/retrieve gating strategy (association of regions / populations and graphs)
 
 - better compute graph dependency in data_rm_ family functions
 
-- add adjust_graph parameter to control if graph should be removed or if it should be modified when a
+- add adjust_graph parameter to control if graph should be removed or if it should be modified if possible
 
 - improve getAborted to retrieve file path of aborted elements in batch
 
 - fix bug in shiny progress bar which did not initialize with title / detail
 
 - improve mergeXIF and subsetXIF functions (speed gain + no more dependency on seek for reading current position)
+
+#### This leads to the following visible changes for the user
+*buildGraph gains a new `maxpoints` parameter*
+
+*data_rm_ functions gain a new `adjust_graph` parameter*
+
+*subsetOffsets and getOffsets returned object gain an additional `test` attribute*
+
+*getInfo now returns `XIF_test` value in addition to former elements*
+
+*objectParam gains a new `spatial_correction` parameter which when TRUE adds a 2 new columns, namely `spatial_X` and `spatial_Y`, to the returned data.frame in 'channels'*
+
+*paletteIFC now maps Control to Gray81*
 
 ## 0.1.1
 - CRAN release
