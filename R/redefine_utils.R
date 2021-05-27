@@ -564,7 +564,7 @@ redefine_features_def_msk_img <- function(features_def, masks, images, ...) {
   to_replace_image = c(to_replace[to_keep], M$name[has_changed])
   to_match_image = sapply(to_match_image, protectn)
   to_match_image = substr(to_match_image, 3, nchar(to_match_image)-2) # to remove ([ and ])
-  to_find = paste0("^(.*)(\\|?)(",to_match_image,")(\\|?)(.*)$")
+  to_find = paste0("^(.*)(\\|?).(",to_match_image,")(\\|?)(.*)$")
   
   # we store current features names
   old_names = names(features_def)
