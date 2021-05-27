@@ -555,16 +555,20 @@ redefine_features_def_msk_img <- function(features_def, masks, images, ...) {
   # we define names to change in features definition
   # names to changed can be new masks names but also new images names
   has_changed = M$name != masks$name 
-  
-  
   to_match = images$name
   to_replace = foo$images$name
   to_keep = to_match != to_replace
   to_match_image = c(to_match[to_keep], masks$name[has_changed])
   to_replace_image = c(to_replace[to_keep], M$name[has_changed])
-  to_match_image = sapply(to_match_image, protectn)
-  to_match_image = substr(to_match_image, 3, nchar(to_match_image)-2) # to remove ([ and ])
-  to_find = paste0("^(.*)(\\|?).(",to_match_image,")(\\|?)(.*)$")
+  
+  # matches are encapsulated within | |
+  to_find = paste0("|",to_match_image,"|")
+  to_replace_image = paste0("|",to_replace_image,"|")
+  
+  # ordering should ensure that names consisted of repeated pattern should be treated 1st
+  order_ = order(nchar(to_find), decreasing = TRUE)
+  to_find = to_find[order_]
+  to_replace_image = to_replace_image[order_]
   
   # we store current features names
   old_names = names(features_def)
@@ -583,7 +587,11 @@ redefine_features_def_msk_img <- function(features_def, masks, images, ...) {
   def = lapply(1:LL, FUN = function(i_feat) {
     def_def <- features_def[[i_feat]]
     sapply(1:L, FUN = function(i_pat) {
-      def_def$def <<- gsub(to_find[i_pat], paste0("\\1\\2",to_replace_image[i_pat],"\\4\\5"), x = def_def$def)
+      # features definition are encapsulated within | | 
+      # to ensure that we can capture matches at the start or end of def_def$def
+      # and then 1st and last | are removed
+      tmp = gsub(to_find[i_pat], to_replace_image[i_pat], x = paste0("|",def_def$def,"|"), fixed = TRUE) 
+      def_def$def <<- substr(tmp, 2, nchar(tmp)-1)
     })
     if(to_modify[i_feat]) def_def$name <- feature_namer(def_def)
     def_def
