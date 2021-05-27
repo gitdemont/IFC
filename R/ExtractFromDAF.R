@@ -343,8 +343,8 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
         features=as.data.frame(matrix(features[[1]][-1], ncol=1), stringsAsFactors = FALSE)
       } else {
         features=as.data.frame(do.call(what = cbind, args = features), stringsAsFactors = FALSE)
-        features_def = features_def[order(features[1,])]
-        features = features[-1,order(features[1,])]
+        features_def = features_def[order(unlist(features[1,]))]
+        features = features[-1,order(unlist(features[1,]))]
       }
     } else {
       features=xml_attr(xml_find_all(tmp, "//UDFValues"), attr = "fv")
@@ -433,8 +433,8 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
                   "graphtitlefontsize","regionlabelsfontsize","bincount","histogramsmoothingfactor","xsize","ysize","splitterdistance")
       plots=lapply(plots, FUN=function(x) {replace(x, plots_tmp, lapply(x[plots_tmp], as.numeric))})
       plot_order=sapply(plots, FUN=function(i_plot) as.numeric(i_plot[c("xlocation", "ylocation")]))
-      plots=plots[order(plot_order[1,],plot_order[2,])]
-      plots=plots[order(plot_order[2,])]
+      plots=plots[order(unlist(plot_order[1,]),unlist(plot_order[2,]))]
+      plots=plots[order(unlist(plot_order[2,]))]
       rm(list=c("plots_tmp", "plot_order"))
       if(modify_feat) {
         plots = lapply(plots, FUN = function(g) {
