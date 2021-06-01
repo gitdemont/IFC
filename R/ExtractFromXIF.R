@@ -410,10 +410,23 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
       pops=lapply(xml_attrs(xml_find_all(tmp, "//Pop")), FUN=function(x) as.list(x))
       if(length(pops)>0) {
         names(pops)=lapply(pops, FUN=function(x) x$name)
-        pops_=lapply(pops, FUN=function(i_pop) {
-          pat=paste0("//Pop[@name='",i_pop$name,"']//ob")
-          list(obj=as.numeric(unlist(xml_attrs(xml_find_all(tmp, pat)))))
-        })
+        if(display_progress) {
+          pb_pops = newPB(session = dots$session, min = 0, max = length(pops), initial = 0, style = 3)
+          tryCatch({
+            pops_=lapply(1:length(pops), FUN=function(i_pop) {
+              setPB(pb_pops, value = i_pop, title = title_progress, label = "extracting tagged population objects")
+              pat=paste0("//Pop[@name='",pops[[i_pop]]$name,"']//ob")
+              list(obj=as.integer(unlist(xml_attrs(xml_find_all(tmp, pat)))))
+            })
+          }, error = function(e) {
+            stop(e$message)
+          }, finally = endPB(pb_pops))
+        } else {
+          pops_=lapply(1:length(pops), FUN=function(i_pop) {
+            pat=paste0("//Pop[@name='",pops[[i_pop]]$name,"']//ob")
+            list(obj=as.integer(unlist(xml_attrs(xml_find_all(tmp, pat)))))
+          })
+        }
         pops=mapply(FUN = append, pops, pops_, SIMPLIFY = FALSE)
         rm(pops_)
       }
