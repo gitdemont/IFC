@@ -12,106 +12,130 @@
 
 # Tools for Imaging Flow Cytometry (IFC)
 
-## INSTALLATION
+## INSTALLATION (from CRAN)
 
-### On Windows (tested 7 and 10)
+IFC package is now on CRAN, the easiest way to install it is:
+
+```R
+install.packages("IFC")
+```
+
+## INSTALLATION (from IN-DEV github master branch)
+
+However current in development branch can be installed from github
+
+#### On Windows (tested 7 and 10)
 
 - install [Rtools for windows](https://cran.r-project.org/bin/windows/Rtools/)
 
 - ensure that Rtools compiler  in present in Windows PATH
 
-In R console, if you installed Rtools directly on C: you should see something like C:\\Rtools\\bin and C:\\Rtools\\mingw_32\\bin by typing: unlist(strsplit(Sys.getenv("PATH"), ";"))
+In R console, if you installed Rtools directly on C: you should see something like C:\\Rtools\\bin and C:\\Rtools\\mingw_32\\bin 
 
-Otherwise, try shell('setx PATH "C:\\Rtools\\bin"') and shell('setx PATH "C:\\Rtools\\mingw_32\\bin"')
+```R
+print(unlist(strsplit(Sys.getenv("PATH"), ";")))
+```
+
+Otherwise, try to set it
+
+```R
+shell('setx PATH "C:\\Rtools\\bin"')
+# or ('setx PATH "C:\\Rtools\\mingw_32\\bin"')
+```
 
 You may need to reboot to operate changes
 
-### On MacOS (tested on High Sierra)
+#### On MacOS (tested on High Sierra)
 
-- IFC package seems to installed without additional requirement.
+- IFC package seems to install without additional requirement.
 
-### On Linux (tested on Ubuntu 16.04 LTS)
+#### On Linux (tested on Ubuntu 16.04 LTS)
 
 - IFC package is dependent on tiff package. It requires tiff libraries which may not be on the system.
 
 sudo apt-get install libtiff-dev 
 
-### in R
+#### in R
 
-- install R dependencies require for IFC package : "Rcpp", "RcppProgress", "xml2", "png", "tiff", "jpeg", "utils", "grid", "gridExtra", "lattice", "latticeExtra", "KernSmooth", "DT", "visNetwork"
+- install R dependencies required for IFC package
+"Rcpp", "RcppProgress", "xml2", "png", "tiff", "jpeg", "utils", "grid", "gridExtra", "lattice", "latticeExtra", "KernSmooth", "DT", "visNetwork"
 
+```R
 install.packages(c("Rcpp", "RcppProgress", "xml2", "png", "tiff", "jpeg", "utils", "grid", "gridExtra", "lattice", "latticeExtra", "KernSmooth", "DT", "visNetwork"))
+```
 
-- install "devtools", to install IFC package from github devtools is needed.
+- install "remotes", to install IFC package from github remotes is needed.
 
-install.packages("devtools")
+```R
+install.packages("remotes")
+```
 
 - install IFC
 
-library(devtools)
-
-install_github(repo = "gitdemont/IFC", ref = "master", dependencies = FALSE)
-
+```R
+remotes::install_github(repo = "gitdemont/IFC", ref = "master", dependencies = FALSE)
+```
 
 ## USAGE
 
-library(IFC)
+Several examples in IFC package are dependent on data files that can be found in dedicated IFCdata package.
 
-help(IFC)
+To install IFCdata package and run examples in IFC:
+
+```R
+install.packages("IFCdata", repos = "https://gitdemont.github.io/IFCdata/", type = "source")
+```
 
 ## DETAILS
 
-- parse files .daf
+- parse files .daf, .rif, .cif
 
-use: **readIFC()** or **ExtractFromDAF()**
+use: **readIFC()** or **ExtractFromDAF()** or **ExtractFromXIF()**
 
 This allows retrieving several information from files like: 
 
-> features defined and their values, graphs from the analysis worksheet,
+`features` defined and their values
 
-> masks defined,
+`masks` defined and their definitions,
 
-> regions drawn,
+`regions` drawn and their vertices,
 
-> populations created.
+`populations` created and know whether a cell belongs to this population or not,
+
+`graphs` from the analysis worksheet.
 
 As a consequence ones can get for each cell the population it belongs to. 
 One main advantage is that you don't have to use export / extract .cif or .fcs or .txt manually for each subpopulation you are interested in.
-Having features values for each cells and knowing which populations a cell is belonging to, one can pass it to a supervised machine learning (ML) algorithm (they are many in R) to create a model fitting the data (IDEAS only provides Rd Ratio).
-
-- parse files .rif, .cif
-
-use: **readIFC()** or **ExtractFromXIF()**
-
-This allows to directly extract raw / compensated images and associated masks for all acquired channels. These images can be then easily exported to R arrays or TIFF / JPEG / PNG images.
-For instance, we can programmatically export images or images values from a desired population indentified in a daf file.
-Accessing images allow image export to create beautiful gallery export but also to pass it to deep learning frameworks like Tensorflow or MXNet (e.g. Convolutional Neural Network)
+Having features values for each cells and knowing which populations a cell is belonging to, one can pass it to a supervised machine learning (ML) algorithm (they are many in R) to create a model fitting the data.
 
 - write in .daf
 
 use: **writeIFC()** or **ExportToDAF()**
 
 Once data are parsed and treated new elements can be injected in daf file, e.g. a ML model is trained on a daf file and used to predict populations in other daf files.
-Then these predicted populations can be injected so as to be checked using IDEAS in addition to their predicted probability values (or other features like PCA/t-SNE dimensions).
+Then these predicted populations can be injected so as to be checked using IDEAS in addition to their predicted probability values (or other features like PCA/t-SNE/UMAP dimensions).
 
 - subset or merge .rif, .cif,
 
 use: **writeIFC()** or **ExportToXIF()**
+
 Once data are parsed and treated new elements can be used to subset or merge raw / compensated images files
 
-- Scale up productivity; here are several (among others) functions that have been created to:
+- Scale up productivity; here are several (among others) functions that have been created:
 
-> display cells / gallery of cells in R, use **DisplayGallery()**,
+**DisplayGallery()**, displays cells / gallery of cells in R,
 
-> export gallery of cells (with desired channels) to image files (tiff, png, jpeg, …), use **ExportToGallery()**,
+**ExtractImages_toFile()**, extracts cells (with desired channels) to image files (tiff, png, jpeg, …),
 
-> export gallery of cells (with desired channels) to Numpy arrays, use **ExportToNumpy()**,
+This allows direct extraction of raw / compensated images and associated masks for all acquired channels. These images can be then easily exported to R arrays or TIFF / JPEG / PNG images.
+For instance, we can programmatically export images from a desired population identified in a daf file.
+Accessing images allows to pass them to deep learning frameworks like tensorflow or MXNet (e.g. Convolutional Neural Network)
 
-> export graphs and associated stats from analysis worksheet of files, use **ExportToReport()**,
+**ExportToReport()**, exports graphs and associated stats from analysis worksheet of files,
 
-> view in R / export population hierarchy, use **popsNetwork()**,
+**popsNetwork()**, allows visualization in R / exports population hierarchy,
 
-> create batch demand to be processed by IDEAS, use **ExportToBATCH()**.
+**ExportToBATCH()**, creates batch demand to be processed by IDEAS,
 
 - Other low level functions are very useful see ?IFC, for how to use them.
 
