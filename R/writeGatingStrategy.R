@@ -113,8 +113,7 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   pkg_ver = paste0(unlist(packageVersion("IFC")), collapse = ".")
   is_fcs = length(obj$description$FCS)!=0
   
-  now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
-  pkg_ver = paste0(unlist(packageVersion("IFC")), collapse = ".")
+  # creates root
   root <- xml_new_root("Network")
   root %>% xml_set_attrs(value = c(IFC_version = pkg_ver, date = now, IDEAS_version = obj$description$Assay$IDEAS_version))
   xml_add_child(root, .value = xml_new_node(name = "SampleName", text = splitf_obj["short"]))
