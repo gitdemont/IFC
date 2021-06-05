@@ -20,7 +20,7 @@ IFC package is now on CRAN, the easiest way to install it is:
 install.packages("IFC")
 ```
 
-## INSTALLATION (from IN-DEV github master branch)
+## INSTALLATION (from **in-dev** github master branch)
 
 However current in development branch can be installed from github
 
