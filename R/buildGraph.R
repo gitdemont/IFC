@@ -54,8 +54,8 @@
 #' @param bincount Integer. Histogram bin count. Default is 0. Allowed are: 0, 8, 16, 32, 64, 128, 256, 512, 1024.
 #' @param freq Character. Histogram with frequency normalization of not. Default is "T", allowed are "T" or "F".
 #' @param histogramsmoothingfactor Integer. Histogram smoothing factor. Allowed are [0-20]. Only partly implemented, default is 0 for no smoothing other values will produce same smoothing. 
-#' @param xlogrange determines hyper parameter of smoothLinLog transformation for x-axis. Default is "P" for no transformation.
-#' @param ylogrange determines hyper parameter of smoothLinLog transformation for y-axis. Default is "P" for no transformation.
+#' @param xlogrange determines transformation instruction for x-axis. Default is "P" for no transformation.
+#' @param ylogrange determines transformation instruction for y-axis. Default is "P" for no transformation.
 #' @param maxpoints determines the maximum number of points to display. Default is +Inf to display all points.\cr
 #' If provided, values from ]0,1] will be used as a proportion of the total number of points to show.\cr
 #' While values values superior to 1 will be interpreted as the maximal number of points to show.\cr
@@ -153,18 +153,18 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   bincount = as.integer(bincount); assert(bincount, len=1, alw=as.integer(c(0,2^(3:10))))
   xlogrange = as.character(xlogrange)
   ylogrange = as.character(ylogrange)
-  if(xlogrange != "P") {
-    tmp = as.numeric(xlogrange)
-    if(is.na(tmp)) stop("'xlogrange' should be coercible to positive numeric")
-    if(tmp<0) stop("'xlogrange' should be coercible to positive numeric")
-    xlogrange = as.character(tmp)
-  }
-  if(ylogrange != "P") {
-    tmp = as.numeric(ylogrange)
-    if(is.na(tmp)) stop("'ylogrange' should be coercible to positive numeric")
-    if(tmp<0) stop("'ylogrange' should be coercible to positive numeric")
-    ylogrange = as.character(tmp)
-  }
+  # if(xlogrange != "P") {
+  #   tmp = as.numeric(xlogrange)
+  #   if(is.na(tmp)) stop("'xlogrange' should be coercible to positive numeric")
+  #   if(tmp<0) stop("'xlogrange' should be coercible to positive numeric")
+  #   xlogrange = as.character(tmp)
+  # }
+  # if(ylogrange != "P") {
+  #   tmp = as.numeric(ylogrange)
+  #   if(is.na(tmp)) stop("'ylogrange' should be coercible to positive numeric")
+  #   if(tmp<0) stop("'ylogrange' should be coercible to positive numeric")
+  #   ylogrange = as.character(tmp)
+  # }
   stats_alw = c("Count","%Total","%Gated","%Plotted","Objects/mL","Mean","Median","Std. Dev.","MAD","CV","Minimum","Maximum","Geo. Mean","Mode","Variance","NaN")
   assert(xstats, len=1, typ="character"); stopifnot(strsplit(xstats, split="|", fixed=TRUE)[[1]] %in% stats_alw)
   assert(ystats, len=1, typ="character"); stopifnot(xstats == ystats, strsplit(ystats, split="|", fixed=TRUE)[[1]] %in% stats_alw)

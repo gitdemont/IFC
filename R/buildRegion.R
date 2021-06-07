@@ -38,8 +38,8 @@
 #' @param lightcolor lightcolor of the region. See \code{\link{paletteIFC}} for allowed colors.
 #' @param ismarker Default is 'false'. Allowed are 'true' or 'false'. Used for compatibility with amnis file but role remains unknown.
 #' @param doesnotoverride Default is 'false'. Allowed are 'true' or 'false'. Used for compatibility with amnis file but role remains unknown.
-#' @param xlogrange determines hyper parameter of smoothLinLog transformation for x-axis. Default is "P" for no transformation.
-#' @param ylogrange determines hyper parameter of smoothLinLog transformation for y-axis. Default is "P" for no transformation.
+#' @param xlogrange determines transformation instruction for x-axis. Default is "P" for no transformation.
+#' @param ylogrange determines transformation instruction for y-axis. Default is "P" for no transformation.
 #' @param x vector of x vertices values.
 #' @param y vector of y vertices values.
 #' @param ... Other arguments to be passed.
@@ -58,18 +58,18 @@ buildRegion <- function(type, label, cx, cy, color, lightcolor, ismarker="false"
   if(missing(ylogrange)) stop("'ylogrange' can't be missing")
   xlogrange = as.character(xlogrange)
   ylogrange = as.character(ylogrange)
-  if(xlogrange != "P") {
-    tmp = as.integer(xlogrange)
-    if(is.na(tmp)) stop("'xlogrange' should be coercible to positive integer")
-    if(tmp<0) stop("'xlogrange' should be coercible to positive integer")
-    xlogrange = as.character(tmp)
-  }
-  if(ylogrange != "P") {
-    tmp = as.integer(ylogrange)
-    if(is.na(tmp)) stop("'ylogrange' should be coercible to positive integer")
-    if(tmp<0) stop("'ylogrange' should be coercible to positive integer")
-    ylogrange = as.character(tmp)
-  }
+  # if(xlogrange != "P") {
+  #   tmp = as.integer(xlogrange)
+  #   if(is.na(tmp)) stop("'xlogrange' should be coercible to positive integer")
+  #   if(tmp<0) stop("'xlogrange' should be coercible to positive integer")
+  #   xlogrange = as.character(tmp)
+  # }
+  # if(ylogrange != "P") {
+  #   tmp = as.integer(ylogrange)
+  #   if(is.na(tmp)) stop("'ylogrange' should be coercible to positive integer")
+  #   if(tmp<0) stop("'ylogrange' should be coercible to positive integer")
+  #   ylogrange = as.character(tmp)
+  # }
   if(missing(color)) {
     if(missing(lightcolor)) {
       tmp = sample(nrow(paletteIFC("")),1)

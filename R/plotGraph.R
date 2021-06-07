@@ -152,16 +152,23 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   }
   Xlim = c(g$xmin, g$xmax)
   Ylim = c(g$ymin, g$ymax)
-  trans_x = g$xlogrange
-  trans_y = g$ylogrange
-  if(trans_x!="P") {
-    trans_x = as.numeric(g$xlogrange)
-    D[,"x2"] = smoothLinLog(D[,"x1"], hyper=trans_x, base=10)
-    Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
-    Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
-  } else {
-    D[,"x2"] = D[,"x1"]
-  }
+  
+  # trans_x = g$xlogrange
+  # trans_y = g$ylogrange
+  trans_x <- parseTrans(g$xlogrange)
+  trans_y <- parseTrans(g$ylogrange)
+  
+  # if(trans_x!="P") {
+  #   trans_x = as.numeric(g$xlogrange)
+  #   D[,"x2"] = smoothLinLog(D[,"x1"], hyper=trans_x, base=10)
+  #   Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+  #   Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
+  # } else {
+  #   D[,"x2"] = D[,"x1"]
+  # }
+  D[,"x2"] = applyTrans(D[,"x1"], trans_x)
+  Xlim = applyTrans(Xlim, trans_x)
+  # Xlim = Xlim + c(-0.07,0.07)*diff(Xlim) # fix, this should not be here error
   
   base_n = unlist(lapply(g$BasePop, FUN=function(x) x$name))
   reg_n = unlist(lapply(g$GraphRegion, FUN=function(x) x$name))
@@ -224,7 +231,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         alg = 3
         reg = R[[r]]
         coords = reg["x"]
-        if(trans_x!="P") coords$x = smoothLinLog(coords$x, hyper=trans_x, base=10)
+        # if(trans_x!="P") coords$x = smoothLinLog(coords$x, hyper=trans_x, base=10)
+        coords$x = applyTrans(coords$x, trans_x)
         np = sum(D[,d])
         if(np == 0) return(structure(rep(NA, 8), names = c("count","perc",
                                                            "Min.","1st Qu.","Median","Mean", "3rd Qu.","Max.")))
@@ -244,7 +252,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     # br = do.breaks(range(D[,"x2"], na.rm = TRUE, finite = TRUE), nbin)
     if(viewport == "data") {
       Xlim = suppressWarnings(range(D[,"x1"], na.rm = TRUE, finite = TRUE))
-      if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+      # if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+      Xlim = applyTrans(Xlim, trans_x)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
     }
@@ -255,7 +264,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         return(c(reg$cx, coords))
       })
       Xlim = suppressWarnings(range(c(D[,"x1"], regx), na.rm = TRUE, finite = TRUE))
-      if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+      # if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+      Xlim = applyTrans(Xlim, trans_x)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
     }
@@ -266,10 +276,12 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     }
     if(!all(is.finite(Xlim))) {
       Xlim = c(g$xmin, g$xmax)
-      if(trans_x!="P") {
-        Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
-        Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
-      }
+      # if(trans_x!="P") {
+      #   Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+      #   Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
+      # }
+      Xlim = applyTrans(Xlim, trans_x)
+      Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       if(!all(is.finite(Xlim))) Xlim = c(-1, 1)
       if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
       D[D[,"x2"] < Xlim[1], "x2"] <- Xlim[1]
@@ -288,7 +300,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         if(Ylim[1] == Ylim[2]) Ylim = Ylim[1] + c(0,0.07)
       } 
       foo = histogram(~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, main = trunc_string(g$title, trunc_labels),
-                      scales =  myScales(x=list("hyper"=trans_x)), border = "transparent",
+                      scales =  myScales(x=list("hyper"=g$xlogrange)), border = "transparent",
                       xlab =  trunc_string(g$xlabel, trunc_labels), ylab = g$ylabel,
                       nint = nbin, type = type, breaks = br, normalize = normalize,
                       panel = function(x, ...) { })
@@ -312,10 +324,12 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                                 reg = R[[r]] 
                                 col = reg[c("color","lightcolor")][[color_mode]]
                                 coords = reg[c("x","y")]
-                                if(trans_x!="P") {
-                                  coords$x = smoothLinLog(coords$x, hyper=trans_x, base=10)
-                                  reg$cx = smoothLinLog(reg$cx, hyper=trans_x, base=10)
-                                }
+                                # if(trans_x!="P") {
+                                #   coords$x = smoothLinLog(coords$x, hyper=trans_x, base=10)
+                                #   reg$cx = smoothLinLog(reg$cx, hyper=trans_x, base=10)
+                                # }
+                                coords$x = applyTrans(coords$x, trans_x)
+                                reg$cx = applyTrans(reg$cx, trans_x)
                                 lab =  trunc_string(reg$label, trunc_labels)
                                 panel.text(x=reg$cx, y=reg$cy*diff(Ylim), col=col, labels=lab, pos=4)
                                 panel.lines(x=coords$x, y=coords$y*diff(Ylim),col=col)
@@ -328,7 +342,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     } else {
       Ylim = c(g$ymin, g$ymax)
       foo = histogram(0 ~ 0, auto.key=FALSE, xlim = Xlim, ylim = Ylim, main =  trunc_string(g$title, trunc_labels), 
-                      scales =  myScales(x=list("hyper"=trans_x)), border = "transparent",
+                      scales =  myScales(x=list("hyper"=g$xlogrange)), border = "transparent",
                       xlab =  trunc_string(g$xlabel, trunc_labels), ylab = g$ylabel,
                       nint = nbin, type = type, normalize = normalize, Ylim = Ylim,
                       panel = function(x, Ylim = Ylim, ...) {
@@ -337,10 +351,12 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                           reg = R[[r]] 
                           col = reg[c("color","lightcolor")][[color_mode]]
                           coords = reg[c("x","y")]
-                          if(trans_x!="P") {
-                            coords$x = smoothLinLog(coords$x, hyper=trans_x, base=10)
-                            reg$cx = smoothLinLog(reg$cx, hyper=trans_x, base=10)
-                          }
+                          # if(trans_x!="P") {
+                          #   coords$x = smoothLinLog(coords$x, hyper=trans_x, base=10)
+                          #   reg$cx = smoothLinLog(reg$cx, hyper=trans_x, base=10)
+                          # }
+                          coords$x = applyTrans(coords$x, trans_x)
+                          reg$cx = applyTrans(reg$cx, trans_x)
                           lab = trunc_string(reg$label, trunc_labels)
                           panel.text(x=reg$cx, y=reg$cy*diff(Ylim), col=col, labels=lab, pos=4)
                           panel.lines(x=coords$x, y=coords$y*diff(Ylim), col=col)
@@ -352,13 +368,16 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                "cex"=lt$add.text$cex * 0.5,
                "points"=list(col = sapply(P[displayed_r], FUN=function(p) p[c("color","lightModeColor")][[color_mode]]),
                              pch = sapply(P[displayed_r], FUN=function(p) p$style)))
-    if(trans_y!="P") {
-      trans_y = as.numeric(g$ylogrange)
-      D[,"y2"] = smoothLinLog(D[,"y1"], hyper=trans_y, base=10)
-      Ylim = smoothLinLog(Ylim, hyper=trans_y, base=10)
-    } else {
-      D[,"y2"] = D[,"y1"]
-    }
+    # if(trans_y!="P") {
+    #   trans_y = as.numeric(g$ylogrange)
+    #   D[,"y2"] = smoothLinLog(D[,"y1"], hyper=trans_y, base=10)
+    #   Ylim = smoothLinLog(Ylim, hyper=trans_y, base=10)
+    # } else {
+    #   D[,"y2"] = D[,"y1"]
+    # }
+    D[,"y2"] = applyTrans(D[,"y1"], trans_y)
+    Ylim = applyTrans(Ylim, trans_y)
+    
     base_s = lapply(base_n, FUN=function(d) {
       np = sum(D[,d])
       if(np == 0) return(structure(rep(NA, 14), names = c("count","perc",
@@ -381,8 +400,10 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       alg = 1
       reg = R[[r]]
       coords = reg[c("x","y")]
-      if(trans_x!="P") coords$x = smoothLinLog(coords$x, hyper=trans_x, base=10)
-      if(trans_y!="P") coords$y = smoothLinLog(coords$y, hyper=trans_y, base=10)
+      # if(trans_x!="P") coords$x = smoothLinLog(coords$x, hyper=trans_x, base=10)
+      # if(trans_y!="P") coords$y = smoothLinLog(coords$y, hyper=trans_y, base=10)
+      coords$x = applyTrans(coords$x, trans_x)
+      coords$y = applyTrans(coords$y, trans_y)
       if(reg$type=="oval") alg = 3
       if(reg$type=="rect") alg = 2
       do.call(what = "rbind", args = lapply(base_n, FUN=function(d) {
@@ -411,10 +432,12 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     
     if(viewport == "data") {
       Xlim = suppressWarnings(range(D[,"x1"], na.rm = TRUE, finite = TRUE))
-      if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+      # if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+      Xlim = applyTrans(Xlim, trans_x)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       Ylim = suppressWarnings(range(D[,"y1"], na.rm = TRUE, finite = TRUE))
-      if(trans_y != "P") Ylim = smoothLinLog(Ylim, hyper=trans_y, base=10)
+      # if(trans_y != "P") Ylim = smoothLinLog(Ylim, hyper=trans_y, base=10)
+      Ylim = applyTrans(Ylim, trans_y)
       Ylim = Ylim + c(-0.07,0.07)*diff(Ylim)
     }
     if(viewport == "max") {
@@ -424,7 +447,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         return(c(reg$cx, coords))
       })
       Xlim = suppressWarnings(range(c(D[,"x1"], regx), na.rm = TRUE, finite = TRUE))
-      if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+      # if(trans_x != "P") Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+      Xlim = applyTrans(Xlim, trans_x)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       regy = sapply(reg_n, FUN=function(r) {
         reg = R[[r]] 
@@ -432,24 +456,29 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         return(c(reg$cy, coords))
       })
       Ylim = suppressWarnings(range(c(D[,"y1"], regy), na.rm = TRUE, finite = TRUE))
-      if(trans_y != "P") Ylim = smoothLinLog(Ylim, hyper=trans_y, base=10)
+      # if(trans_y != "P") Ylim = smoothLinLog(Ylim, hyper=trans_y, base=10)
+      Ylim = applyTrans(Ylim, trans_y)
       Ylim = Ylim + c(-0.07,0.07)*diff(Ylim)
     }
     if(!all(is.finite(Xlim))) {
       Xlim = c(g$xmin, g$xmax)
-      if(trans_x!="P") {
-        Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
-        Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
-      }
+      # if(trans_x!="P") {
+      #   Xlim = smoothLinLog(Xlim, hyper=trans_x, base=10)
+      #   Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
+      # }
+      Xlim = applyTrans(Xlim, trans_x)
+      Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       if(!all(is.finite(Xlim))) Xlim = c(-1, 1)
       if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
     }
     if(!all(is.finite(Ylim))) {
       Ylim = c(g$ymin, g$ymax)
-      if(trans_y!="P") {
-        Ylim = smoothLinLog(Ylim, hyper=trans_y, base=10)
-        Ylim = Ylim + c(-0.07,0.07)*diff(Ylim)
-      }
+      # if(trans_y!="P") {
+      #   Ylim = smoothLinLog(Ylim, hyper=trans_y, base=10)
+      #   Ylim = Ylim + c(-0.07,0.07)*diff(Ylim)
+      # }
+      Ylim = applyTrans(Ylim, trans_y)
+      Ylim = Ylim + c(-0.07,0.07)*diff(Ylim)
       if(!all(is.finite(Ylim))) Ylim = c(-1, 1)
       if(Ylim[1] == Ylim[2]) Ylim = Ylim[1] + c(-0.07,0.07)
     }
@@ -463,7 +492,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     }
     foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, 
                  main = trunc_string(g$title, trunc_labels), groups=groups, subset=xy_subset,
-                 scales =  myScales(x=list(hyper=trans_x), y=list(hyper=trans_y)),
+                 scales =  myScales(x=list(hyper=g$xlogrange), y=list(hyper=g$ylogrange)),
                  xlab =  trunc_string(g$xlabel, trunc_labels), ylab = trunc_string(g$ylabel, trunc_labels),
                  panel = function(x, y, groups=NULL, subscripts, ...) {
                    if(any(c("panel","both")%in%add_key)) if(g$type=="scatter") pan_key(key=c(KEY,"background"="lightgrey","alpha.background"=0.8), x = 0.02)
@@ -482,14 +511,18 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                      reg = R[[r]]
                      k = reg[c("color","lightcolor")][[color_mode]]
                      coords = reg[c("x","y")]
-                     if(trans_x!="P") {
-                       coords$x = smoothLinLog(coords$x, hyper=trans_x, base=10)
-                       reg$cx = smoothLinLog(reg$cx, hyper=trans_x, base=10)
-                     }
-                     if(trans_y!="P") {
-                       coords$y = smoothLinLog(coords$y, hyper=trans_y, base=10)
-                       reg$cy = smoothLinLog(reg$cy, hyper=trans_y, base=10)
-                     }
+                     # if(trans_x!="P") {
+                     #   coords$x = smoothLinLog(coords$x, hyper=trans_x, base=10)
+                     #   reg$cx = smoothLinLog(reg$cx, hyper=trans_x, base=10)
+                     # }
+                     coords$x = applyTrans(coords$x, trans_x)
+                     reg$cx = applyTrans(reg$cx, trans_x)
+                     # if(trans_y!="P") {
+                     #   coords$y = smoothLinLog(coords$y, hyper=trans_y, base=10)
+                     #   reg$cy = smoothLinLog(reg$cy, hyper=trans_y, base=10)
+                     # }
+                     coords$y = applyTrans(coords$y, trans_y)
+                     reg$cy = applyTrans(reg$cy, trans_y)
                      if(reg$type=="rect") {
                        coords$x=c(coords$x[1],coords$x[1],coords$x[2],coords$x[2])
                        coords$y=c(coords$y[1],coords$y[2],coords$y[2],coords$y[1])
@@ -528,7 +561,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                             "title" = g$title,
                             "xlab" = g$xlab, "ylab" = g$ylab,
                             "xlim" = Xlim, "ylim" = Ylim, 
-                            "trans_x" = trans_x, "trans_y" = trans_y,
+                            "trans_x" = g$xlogrange, "trans_y" = g$ylogrange,
                             "trans" = trans,
                             "order" = displayed_o,
                             "base" = g$BasePop,

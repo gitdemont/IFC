@@ -37,9 +37,9 @@ buildRegion(
 
 \item{doesnotoverride}{Default is 'false'. Allowed are 'true' or 'false'. Used for compatibility with amnis file but role remains unknown.}
 
-\item{xlogrange}{determines hyper parameter of smoothLinLog transformation for x-axis. Default is "P" for no transformation.}
+\item{xlogrange}{determines transformation instruction for x-axis. Default is "P" for no transformation.}
 
-\item{ylogrange}{determines hyper parameter of smoothLinLog transformation for y-axis. Default is "P" for no transformation.}
+\item{ylogrange}{determines transformation instruction for y-axis. Default is "P" for no transformation.}
 
 \item{x}{vector of x vertices values.}
 

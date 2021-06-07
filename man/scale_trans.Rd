@@ -4,7 +4,7 @@
 \alias{scale_trans}
 \title{LinLog Transformation of Ticks and Labels}
 \usage{
-scale_trans(hyper, b = 10, lin_comp = log(b))
+scale_trans(hyper = 1000, base = 10, lin_comp = log(base))
 }
 \description{
 Helper to rescale and label axes when linlog transformation is used

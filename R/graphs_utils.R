@@ -30,13 +30,13 @@
 #' @title LinLog Transformation of Ticks and Labels
 #' @description Helper to rescale and label axes when linlog transformation is used
 #' @keywords internal
-scale_trans=function(hyper, b=10, lin_comp=log(b)){
-  at=outer(-10:10,-10:10,FUN=function(m,p) {m*b^p})
+scale_trans=function(hyper=1000, base=10, lin_comp=log(base)) {
+  at=outer(-10:10,-10:10,FUN=function(m,p) {m*base^p})
   toKeep=abs(at)>=hyper
   at=c(at[toKeep],seq(-hyper,hyper,length.out = 9)[2:8])
-  at=smoothLinLog(x=at, hyper=hyper, base=b, lin_comp=lin_comp)
-  lab=outer(-10:10,-10:10,FUN=function(m,p) {paste0(m,"*",b,"^",p)})
-  lab[grep(paste0(1,"\\*",b,"\\^"),lab,invert=TRUE)]=""
+  at=smoothLinLog(x=at, hyper=hyper, base=base, lin_comp=lin_comp)
+  lab=outer(-10:10,-10:10,FUN=function(m,p) {paste0(m,"*",base,"^",p)})
+  lab[grep(paste0(1,"\\*",base,"\\^"),lab,invert=TRUE)]=""
   lab=c(lab[toKeep],seq(-hyper,hyper,length.out = 9)[2:8])
   lab=gsub("\\*10\\^","e",lab)
   return(list(at=at,labels=lab))
@@ -49,21 +49,23 @@ myScales=function(x=list(), y=list()) {
   if(length(x$alternating)==0) x$alternating=1
   if(length(x$tck)==0) x$tck=c(TRUE,FALSE)
   if(length(x$hyper)==0) x$hyper="P"
-  if(length(x$b)==0) x$b=10
-  if(length(x$lin_comp)==0) x$lin_comp=log(x$b)
+  # if(length(x$b)==0) x$b=10
+  # if(length(x$lin_comp)==0) x$lin_comp=log(x$b)
   if(length(x$rot)==0) x$rot=45
   
   if(length(y$alternating)==0) y$alternating=1
   if(length(y$tck)==0) y$tck=c(TRUE,FALSE)
   if(length(y$hyper)==0) y$hyper="P"
-  if(length(y$b)==0) y$b=10
-  if(length(y$lin_comp)==0) y$lin_comp=log(y$b)
+  # if(length(y$b)==0) y$b=10
+  # if(length(y$lin_comp)==0) y$lin_comp=log(y$b)
   if(length(y$rot)==0) y$rot=0
   
   x_scale=list("alternating"=x$alternating,"tck"=x$tck,"rot"=x$rot)
   y_scale=list("alternating"=y$alternating,"tck"=y$tck,"rot"=y$rot)
-  if(x$hyper!="P") x_scale=c(x_scale, do.call("scale_trans", list(hyper=x$hyper,b=x$b,lin_comp=x$lin_comp)))
-  if(y$hyper!="P") y_scale=c(y_scale, do.call("scale_trans", list(hyper=y$hyper, b=y$b, lin_comp=y$lin_comp)))
+  trans_x = parseTrans(x$hyper)
+  trans_y = parseTrans(y$hyper)
+  if(trans_x$what =="smoothLinLog") x_scale=c(x_scale, do.call(what = "scale_trans", args = trans_x$args))
+  if(trans_y$what =="smoothLinLog") y_scale=c(y_scale, do.call(what = "scale_trans", args = trans_x$args))
   
   if(length(x$at)!=0) x_scale=c(x_scale,"at"=x$at)
   if(length(x$lab)!=0) x_scale=c(x_scale,"labels"=x$labels)
@@ -91,7 +93,7 @@ densCols=function (x, y = NULL, nbin = 128, bandwidth, colramp = colorRampPalett
   xbin <- cut(x[, 1], mkBreaks(map$x1), labels = FALSE)
   ybin <- cut(x[, 2], mkBreaks(map$x2), labels = FALSE)
   dens <- map$fhat[cbind(xbin, ybin)]
-  dens <- transformation(dens) # slightly modifyed: a transformation function has been introduced 
+  dens <- transformation(dens) # slightly modified: a transformation function has been introduced 
   dens[is.na(dens)] <- 0
   colpal <- cut(dens, length(dens), labels = FALSE)
   cols <- rep(NA_character_, length(select))
@@ -223,7 +225,8 @@ toEllipse=function(gate, theta=2*pi, npoints=100) {
 base_axis_constr = function(lim, hyper = "P", nint = 10) {
   nint = na.omit(as.integer(nint)); assert(nint, len = 1, typ = "integer")
   assert(hyper, len = 1)
-  if(hyper == "P") {
+  trans_ = parseTrans(hyper)
+  if(trans_$what != "smoothLinLog") {
     at = axisTicks(lim, log = FALSE, nint = nint)
     return(list("at" = at, "label" = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE)))
   }
@@ -491,10 +494,13 @@ convert_to_baseplot = function(obj) {
   for(reg in obj$input$regions) {
     k = reg[c("color","lightcolor")][[obj$input$mode]]
     coords = reg[c("x","y")]
-    if(obj$input$trans_x!="P") {
-      coords$x = smoothLinLog(coords$x, hyper=obj$input$trans_x, base=10)
-      reg$cx = smoothLinLog(reg$cx, hyper=obj$input$trans_x, base=10)
-    }
+    # if(obj$input$trans_x!="P") {
+    #   coords$x = smoothLinLog(coords$x, hyper=obj$input$trans_x, base=10)
+    #   reg$cx = smoothLinLog(reg$cx, hyper=obj$input$trans_x, base=10)
+    # }
+    trans_x = parseTrans(obj$input$trans_x)
+    coords$x = applyTrans(coords$x, trans_x)
+    reg$cx = applyTrans(reg$cx, trans_x)
     lab =  trunc_string(reg$label, obj$input$trunc_labels)
     if(reg$type=="line") {
       switch(pkg,
@@ -508,10 +514,13 @@ convert_to_baseplot = function(obj) {
                polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
              })
     } else {
-      if(obj$input$trans_y!="P") {
-        coords$y = smoothLinLog(coords$y, hyper=obj$input$trans_y, base=10)
-        reg$cy = smoothLinLog(reg$cy, hyper=obj$input$trans_y, base=10)
-      }
+      # if(obj$input$trans_y!="P") {
+      #   coords$y = smoothLinLog(coords$y, hyper=obj$input$trans_y, base=10)
+      #   reg$cy = smoothLinLog(reg$cy, hyper=obj$input$trans_y, base=10)
+      # }
+      trans_y = parseTrans(obj$input$trans_y)
+      coords$y = applyTrans(coords$y, trans_y)
+      reg$cy = applyTrans(reg$cy, trans_y)
       if(reg$type=="rect") {
         coords$x=c(coords$x[1],coords$x[1],coords$x[2],coords$x[2])
         coords$y=c(coords$y[1],coords$y[2],coords$y[2],coords$y[1])

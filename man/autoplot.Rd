@@ -55,8 +55,8 @@ Note that providing x feature :
 
 \item{x_trans}{parameter for x-axis transformation. Default is NULL.
 If not provided, transformation will be determined thanks to 'shown_pops'.
-It takes precedence when provided and If provided it has to be be either 'P' or coercible to a positive numeric.
-"P' will leave x-axis as is but a positive numeric will be passed has hyper argument of \code{\link{smoothLinLog}} to transform x-axis.}
+It takes precedence when provided and if provided it has to be be either "P" or coercible to a positive numeric.
+"P" will leave x-axis as is but a positive numeric will be passed has hyper argument of \code{\link{smoothLinLog}} to transform x-axis.}
 
 \item{y}{feature for y-axis. Default is NULL.
 When empty, \code{\link{autoplot}} will try to determine it automatically from 'shown_pops' argument.
@@ -67,8 +67,8 @@ Note that providing y feature
 
 \item{y_trans}{parameter for y-axis transformation. Default is NULL.
 If not provided, transformation will be determined thanks to 'shown_pops'.
-It takes precedence when provided and has to be be either 'P' or coercible to a positive numeric.
-"P' will leave y-axis as is but a positive numeric will be passed has hyper argument of \code{\link{smoothLinLog}} to transform y-axis.
+It takes precedence when provided and and if provided it has to be be either "P" or coercible to a positive numeric.
+"P" will leave y-axis as is but a positive numeric will be passed has hyper argument of \code{\link{smoothLinLog}} to transform y-axis.
 Note that it is irrelevant for "histogram".}
 
 \item{type}{type of plot. Default is NULL to allow \code{\link{autoplot}} to detemine 'type' automatically.

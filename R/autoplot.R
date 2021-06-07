@@ -58,8 +58,8 @@
 #' - will reset x-axis transformation to "P" except if 'x_trans' is filled.
 #' @param x_trans parameter for x-axis transformation. Default is NULL.
 #' If not provided, transformation will be determined thanks to 'shown_pops'.
-#' It takes precedence when provided and If provided it has to be be either 'P' or coercible to a positive numeric.
-#' "P' will leave x-axis as is but a positive numeric will be passed has hyper argument of \code{\link{smoothLinLog}} to transform x-axis.
+#' It takes precedence when provided and if provided it has to be be either "P" or coercible to a positive numeric.
+#' "P" will leave x-axis as is but a positive numeric will be passed has hyper argument of \code{\link{smoothLinLog}} to transform x-axis.
 #' @param y feature for y-axis. Default is NULL.
 #' When empty, \code{\link{autoplot}} will try to determine it automatically from 'shown_pops' argument.
 #' If provided, y feature has to be a name from obj features.
@@ -68,8 +68,8 @@
 #' - will reset y-axis transformation to "P" except if 'y_trans' is filled.
 #' @param y_trans parameter for y-axis transformation. Default is NULL.
 #' If not provided, transformation will be determined thanks to 'shown_pops'.
-#' It takes precedence when provided and has to be be either 'P' or coercible to a positive numeric.
-#' "P' will leave y-axis as is but a positive numeric will be passed has hyper argument of \code{\link{smoothLinLog}} to transform y-axis.
+#' It takes precedence when provided and and if provided it has to be be either "P" or coercible to a positive numeric.
+#' "P" will leave y-axis as is but a positive numeric will be passed has hyper argument of \code{\link{smoothLinLog}} to transform y-axis.
 #' Note that it is irrelevant for "histogram".
 #' @param type type of plot. Default is NULL to allow \code{\link{autoplot}} to detemine 'type' automatically.
 #' If provided it has to be either "histogram", "scatter", "density".
@@ -351,26 +351,34 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
       
       xran = range(obj$features[SUB, foo$f1], na.rm = TRUE)
       if(length(foo$xlogrange)==0) foo$xlogrange = trans_x
-      if(foo$xlogrange == "P") {
-        xran = xran + diff(xran) * c(-0.07,0.07)
-      } else {
-        xran = smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
-        xran = xran + diff(xran) * c(-0.07,0.07)
-        xran = inv_smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
-      }
+      # if(foo$xlogrange == "P") {
+      #   xran = xran + diff(xran) * c(-0.07,0.07)
+      # } else {
+      #   xran = smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
+      #   xran = xran + diff(xran) * c(-0.07,0.07)
+      #   xran = inv_smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
+      # }
+      trans_x = parseTrans(foo$xlogrange)
+      xran = applyTrans(xran, trans_x)
+      xran = xran + diff(xran) * c(-0.07,0.07)
+      xran = applyTrans(xran, trans_x, inverse = TRUE)
       if(xran[1] == xran[2]) xran = xran[1] + c(-0.07,0.07)
       foo$xmin = xran[1]
       foo$xmax = xran[2]
       if(foo$type!="histogram") {
         yran = range(obj$features[SUB, foo$f2], na.rm = TRUE)
         if(length(foo$ylogrange)==0) foo$ylogrange = trans_y
-        if(foo$ylogrange == "P") {
-          yran = yran + diff(yran) * c(-0.07,0.07)
-        } else {
-          yran = smoothLinLog(yran, hyper = as.numeric(foo$ylogrange))
-          yran = yran + diff(yran) * c(-0.07,0.07)
-          yran = inv_smoothLinLog(yran, hyper = as.numeric(foo$ylogrange))
-        }
+        # if(foo$ylogrange == "P") {
+        #   yran = yran + diff(yran) * c(-0.07,0.07)
+        # } else {
+        #   yran = smoothLinLog(yran, hyper = as.numeric(foo$ylogrange))
+        #   yran = yran + diff(yran) * c(-0.07,0.07)
+        #   yran = inv_smoothLinLog(yran, hyper = as.numeric(foo$ylogrange))
+        # }
+        trans_y = parseTrans(foo$ylogrange)
+        yran = applyTrans(yran, trans_y)
+        yran = yran + diff(yran) * c(-0.07,0.07)
+        yran = applyTrans(yran, trans_y, inverse = TRUE)
         if(yran[1] == yran[2]) yran = yran[1] + c(-0.07,0.07)
         foo$ymin = yran[1]
         foo$ymax = yran[2]

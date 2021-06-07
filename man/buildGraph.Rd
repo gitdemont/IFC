@@ -88,9 +88,9 @@ Checked but not yet implemented.}
 
 \item{histogramsmoothingfactor}{Integer. Histogram smoothing factor. Allowed are [0-20]. Only partly implemented, default is 0 for no smoothing other values will produce same smoothing.}
 
-\item{xlogrange}{determines hyper parameter of smoothLinLog transformation for x-axis. Default is "P" for no transformation.}
+\item{xlogrange}{determines transformation instruction for x-axis. Default is "P" for no transformation.}
 
-\item{ylogrange}{determines hyper parameter of smoothLinLog transformation for y-axis. Default is "P" for no transformation.}
+\item{ylogrange}{determines transformation instruction for y-axis. Default is "P" for no transformation.}
 
 \item{maxpoints}{determines the maximum number of points to display. Default is +Inf to display all points.\cr
 If provided, values from ]0,1] will be used as a proportion of the total number of points to show.\cr
