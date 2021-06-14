@@ -36,7 +36,7 @@
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param ... other arguments to be passed.
 #' @details /!\ Please note that all former gating strategy (i.e. regions, pops, graphs and stats) will be removed from returned object.
-#' An error will be thrown if a feature is required to create a population or a graph but can'be found in 'obj'.
+#' An error will be thrown if a feature is required to create a population or a graph but can't be found in 'obj'.
 #' @return A named list of class `IFC_data` with new regions, pops and graphs
 #' @export
 applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = FALSE, ...) {
@@ -99,7 +99,7 @@ applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = F
     if(length(ans$graphs) > 0) {
       ans$graphs = lapply(ans$graphs, FUN = function(g) {
         if(length(g$GraphRegion) != 0) {
-          g$GraphRegion = sapply(g$GraphRegion, FUN = function(r) {
+          g$GraphRegion = lapply(g$GraphRegion, FUN = function(r) {
             foo = sapply(ans$pops,
                          FUN = function(p) {
                            bar = (p$type == "G") && 
