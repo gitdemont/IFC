@@ -191,6 +191,50 @@ formatn <- function(splitp_obj, splitf_obj, channel = "", object = "") {
   return(paste0(splitp_obj$decomp, collapse=""))
 }
 
+#' @title Color Mapping
+#' @name map_color
+#' @description
+#' Converts IDEAS/INSPIRE colors toR and inversely
+#' @param color a string. Default is missing.
+#' @param toR whether to convert color toR or back. Default is TRUE.
+#' @return a character string
+#' @keywords internal
+map_color <- function(color, toR = TRUE) {
+  set1 = c("Teal", "Green", "Lime", "Control")
+  set2 = c("Cyan4", "Green4", "Chartreuse", "Gray81")
+  if(toR) {
+    tmp1 = set1 %in% color
+    tmp2 = color %in% set1
+    color[tmp2] <- set2[tmp1]
+  } else {
+    tmp1 = set2 %in% color
+    tmp2 = color %in% set2
+    color[tmp2] <- set1[tmp1]
+  }
+  return(color)
+}
+
+#' @title Random Name Generator
+#' @name random_name
+#' @description
+#' Generates random name
+#' @param n number of characters of the desired return name. Default is 10.
+#' @param ALPHA upper case letters. Default is LETTERS.
+#' @param alpha lower case letters. Default is letters.
+#' @param num integer to use. Default is 0:9 
+#' @param special characters. Default is c("#", "@@", "?", "!", "&", "%%", "$").
+#' @param forbidden forbidden character strings. Default is character().
+#' @return a character string
+#' @keywords internal
+random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, special = c("#", "@", "?", "!", "&", "%", "$"), forbidden = character()) {
+  if(length(ALPHA)!=0) assert(ALPHA, alw = LETTERS)
+  if(length(alpha)!=0) assert(alpha, alw = letters)
+  if(length(num)!=0) assert(num, cla="integer", alw = 0L:9L)
+  id = paste0(sample(c(ALPHA, alpha, num,  special), n), collapse = "")
+  while(id %in% forbidden) { id <- random_name(n, ALPHA, alpha, num, special, forbidden) }
+  return(id)
+}
+
 #' @title Numeric to String Formatting
 #' @name num_to_string
 #' @description
