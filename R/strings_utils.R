@@ -92,6 +92,7 @@ splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(",
   assert(all_names, typ="character")
   assert(operators, typ="character")
   assert(splitter, len=1, typ="character")
+  # all_names = all_names[order(sapply(all_names, nchar), decreasing = TRUE)]
   return(gsub(splitter, "", strsplit(gsub(protectn(c(all_names, operators)), paste0(splitter, "\\1", splitter), definition, perl=FALSE), split=paste0(splitter, "|", splitter), fixed = TRUE)[[1]], fixed=TRUE))
 }
 
@@ -222,7 +223,7 @@ map_color <- function(color, toR = TRUE) {
 #' @param ALPHA upper case letters. Default is LETTERS.
 #' @param alpha lower case letters. Default is letters.
 #' @param num integer to use. Default is 0:9 
-#' @param special characters. Default is c("#", "@@", "?", "!", "&", "%%", "$").
+#' @param special characters. Default is c("#", "@@", "?", "!", "&", "\%", "$").
 #' @param forbidden forbidden character strings. Default is character().
 #' @return a character string
 #' @keywords internal
