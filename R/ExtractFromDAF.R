@@ -127,9 +127,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     # chan_number = nrow(description$Images) # when from daf only available channels are imported
 
     description$Images[,"color"] = map_color(description$Images[,"color"])
-    if("saturation"%in%names(description$Images)) {
-      description$Images[,"saturation"] = map_color(description$Images[,"saturation"])
-    }
+    if("saturation"%in%names(description$Images)) description$Images[,"saturation"] = map_color(description$Images[,"saturation"])
     if(extract_stats & !extract_features) {
       extract_features = TRUE
       message("'extract_features' has been forced to TRUE to extract statistics.")
