@@ -20,4 +20,8 @@ Helper to parse transformation parameter.
 -If string is of length 1 and coercible to a numeric, smoothLinLog will be applied with hyper parameter set with as.numeric(string) value.\cr
 -Otherwise, string will be split with "|", 1st element will be considered as function to call and all other elements will be passed after being coerced to numeric to this function in the order they are provided with the exception of 1st one; if coercion results in NA, the argument will be skipped.
 }
+\examples{
+## this will use smoothLinLog, skip argument hyper and fill base with 2
+parseTrans("smoothLinLog||2")
+}
 \keyword{internal}

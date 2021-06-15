@@ -34,7 +34,7 @@
 #' @details -If string is "P" no transformation will be applied.\cr
 #' -If string is of length 1 and coercible to a numeric, smoothLinLog will be applied with hyper parameter set with as.numeric(string) value.\cr
 #' -Otherwise, string will be split with "|", 1st element will be considered as function to call and all other elements will be passed after being coerced to numeric to this function in the order they are provided with the exception of 1st one; if coercion results in NA, the argument will be skipped.
-#' @example 
+#' @examples 
 #' ## this will use smoothLinLog, skip argument hyper and fill base with 2
 #' parseTrans("smoothLinLog||2")
 #' @return a list with 2 members what (=the transformation function) and args (=the parameters to pass to this function) 
@@ -82,7 +82,7 @@ parseTrans <- function(string) {
 #' @param trans the object returned by parseTrans().
 #' @param inverse whether or not to apply the inverse transformation. Default is FALSE.
 #' @details for the moment, in addition to no transformation, only smoothLinLog and asinh are supported.
-#' @example
+#' @examples
 #' x <- 10^(1:10)
 #' ## parse the transformation instruction
 #' trans <- parseTrans("smoothLinLog|100|4")
@@ -101,32 +101,4 @@ applyTrans <- function(x, trans, inverse = FALSE) {
                            "asinh" = "sinh",
                            stop("can't find inverse transformation for: '",fun,"'" ))
   do.call(what = fun, args = c(list(x), trans$args))
-}
-
-#' @title Smooth LinLog Transformation
-#' @description
-#' Transforms values in lin-log
-#' @param x A numeric vector.
-#' @param hyper value where transition between Lin/Log is applied.
-#' @param base base of Log scale.
-#' @param lin_comp value that is used to smooth transition between Lin/Log. Default is log(base).
-#' @return the smoothLinLog transformation of the input.
-#' @export
-smoothLinLog <- function(x, hyper=1000, base=10, lin_comp=log(base)) {
-  stopifnot(hyper > 0, base > 0, lin_comp >0)
-  return(cpp_smoothLinLog(x, hyper, base, lin_comp))
-}
-
-#' @title Inverse Smooth LinLog Transformation
-#' @description
-#' Gets values back just to their original values before applying smoothLinLog.
-#' @param x A numeric vector.
-#' @param hyper value where transition between Lin/Log is applied.
-#' @param base base of Log scale.
-#' @param lin_comp value that is used to smooth transition between Lin/Log. Default is log(base).
-#' @return the inverse smoothLinLog transformation of the input.
-#' @export
-inv_smoothLinLog <- function(x, hyper=1000, base=10, lin_comp=log(base)) {
-  stopifnot(hyper > 0, base > 0, lin_comp > 0)
-  return(cpp_inv_smoothLinLog(x, hyper, base, lin_comp))
 }

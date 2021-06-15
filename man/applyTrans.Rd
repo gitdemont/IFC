@@ -22,4 +22,14 @@ Helper apply transformation.
 \details{
 for the moment, in addition to no transformation, only smoothLinLog and asinh are supported.
 }
+\examples{
+x <- 10^(1:10)
+## parse the transformation instruction
+trans <- parseTrans("smoothLinLog|100|4")
+## transform x
+xx <- applyTrans(x, trans)
+## inverse transform the transformed values
+x_back <- applyTrans(xx, trans, inverse = TRUE)
+stopifnot(all.equal(x, x_back))
+}
 \keyword{internal}
