@@ -1,5 +1,7 @@
 # NEWS
 ## 0.1.2
+- modify how transformation instruction is parsed to allow for more transformations in the future
+
 - apply STRICT_R_HEADERS patch for Rcpp and change PI to M_PI
 
 - fix bug with base64id that was not quoted which could lead id to be truncated on space characters
@@ -32,7 +34,7 @@
 
 - add maxpoints parameter in buildGraph to control the number of cells displayed in 2D graphs
 
-- create read/write/apply GatingStrategy family functions to save/retrieve gating strategy (association of regions / populations and graphs)
+- create read/write/apply GatingStrategy family functions to save/retrieve gating strategy (association of regions / populations and graphs) with partial support for GatingML
 
 - better compute graph dependency in data_rm_ family functions
 
