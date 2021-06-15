@@ -532,15 +532,15 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
         if(length(g$GraphRegion) != 0) {
           g$GraphRegion = lapply(g$GraphRegion, FUN = function(r) {
             foo = sapply(pops,
-                   FUN = function(p) {
-                     bar = (p$type == "G") && 
-                       (p$region == r$name) && 
-                       (p$base %in% unique(unlist(lapply(g$BasePop, FUN = function(b) b$name)))) &&
-                       (g$f1 == p$fx)
-                     if(regions[[r$name]]$type != "line") bar = bar && (g$f2 == p$fy)
-                     return(bar)
-                   })
-            return(list(c(r, list(def = names(which(foo))))))
+                         FUN = function(p) {
+                           bar = (p$type == "G") && 
+                             (p$region == r$name) && 
+                             (p$base %in% unique(unlist(lapply(g$BasePop, FUN = function(b) b$name)))) &&
+                             (g$f1 == p$fx)
+                           if(regions[[r$name]]$type != "line") bar = bar && (g$f2 == p$fy)
+                           return(bar)
+                         })
+            return(c(r, list(def = names(which(foo)))))
           })
         }
         return(g)

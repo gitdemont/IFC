@@ -418,7 +418,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
       if(length(plots) > 0) {
         plots = lapply(plots, FUN = function(g) {
           if(length(g$GraphRegion) != 0) {
-            N = lapply(g$GraphRegion, FUN = function(r) {
+            g$GraphRegion = lapply(g$GraphRegion, FUN = function(r) {
               foo = sapply(pops,
                            FUN = function(p) {
                              bar = (p$type == "G") && 
@@ -428,9 +428,8 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
                              if(regions[[r$name]]$type != "line") bar = bar && (g$f2 == p$fy)
                              return(bar)
                            })
-              return(names(which(foo)))
+              return(c(r, list(def = names(which(foo)))))
             })
-            g$GraphRegion$def = N
           }
           return(g)
         })
