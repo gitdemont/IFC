@@ -150,7 +150,6 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
     Nr[Nr == "color"] <- "color1"
     Nr[Nr == "lightcolor"] <- "color2"
     names(reg) <- Nr
-    reg = reg[!(Nr %in% c("ismarker", "doesnotoverride"))]
     
     # color conversion
     reg$color1 <- map_color(reg$color1, FALSE)
@@ -175,7 +174,6 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   #' @keywords internal
   toXML2_boolpop_gs <- function(pop) {
     # recover definition
-    str(pop)
     if(pop$name == "Events") aa <<- pop
     if(pop$name == "complex") bb <<- pop
     pop_def <- pop$split

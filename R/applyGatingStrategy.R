@@ -109,7 +109,7 @@ applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = F
                            if(ans$regions[[r$name]]$type != "line") bar = bar && (g$f2 == p$fy)
                            return(bar)
                          })
-            return(list(c(r, list(def = names(which(foo))))))
+            return(c(r, list(def = names(which(foo)))))
           })
         }
         return(g)
