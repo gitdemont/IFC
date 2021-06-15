@@ -246,10 +246,10 @@ readGatingML <- function(fileName, ...) {
         N = names(g)
         N[N == "basepop"] <- "BasePop"
         N[N == "legend"] <- "Legend"
-        N[N == "overlay"] <- "ShowPop"
+        N[N == "overlay"] <- "ShownPop"
         N[N == "region"] <- "GraphRegion"
         names(g) <- N
-        if(length(g$ShowPop) != 0) g$ShowPop = lapply(splitn(definition = g$ShowPop[[1]]$displayed, all_names = names(pops)), FUN = function(x) list(name=x))
+        if(length(g$ShownPop) != 0) g$ShownPop = lapply(splitn(definition = g$ShownPop[[1]]$displayed, all_names = names(pops)), FUN = function(x) list(name=x))
         if(length(g$GraphRegion) != 0) g$GraphRegion = lapply(splitn(definition = g$GraphRegion[[1]]$displayed, all_names = names(regions)), FUN = function(r) list(name = r))
         return(g)
       })
