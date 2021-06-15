@@ -154,10 +154,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
   if(!is_fcs) {
     if(length(obj$images)==0) stop("please use argument 'extract_images' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that images were correctly extracted")
     # changes to DAF compatible colors
-    if(any(channels$color=="Cyan4")) channels$color[channels$color=="Cyan4"] <- "Teal"
-    if(any(channels$color=="Green4")) channels$color[channels$color=="Green4"] <- "Green"
-    if(any(channels$color=="Chartreuse")) channels$color[channels$color=="Chartreuse"] <- "Lime"
-    if(any(channels$color=="Gray81")) channels$color[channels$color=="Gray81"] <- "Control"
+    channels$color = map_color(channels$color, FALSE)
     # removes gamma
     channels = channels[, !grepl("gamma", names(channels))]
     channels[, "physicalChannel"] = channels[, "physicalChannel"] - 1

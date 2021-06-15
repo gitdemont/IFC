@@ -305,20 +305,9 @@ getInfo <- function(fileName,
   infos$Images = infos$Images[order(infos$Images$physicalChannel), ]
   
   infos$Images$gamma = apply(infos$Images[,c("xmin", "xmax", "xmid", "ymid")], 1, cpp_computeGamma)
-  col = infos$Images[,"color"]
-  col[col=="Teal"] <- "Cyan4"
-  col[col=="Green"] <- "Green4"
-  col[col=="Lime"] <- "Chartreuse"
-  col[col=="Control"] <- "Gray81"
-  infos$Images[,"color"] <- col
-  if("saturation"%in%names(infos$Images)) {
-    col = infos$Images[,"saturation"]
-    col[col=="Teal"] <- "Cyan4"
-    col[col=="Green"] <- "Green4"
-    col[col=="Lime"] <- "Chartreuse"
-    col[col=="Control"] <- "Gray81"
-    infos$Images[,"saturation"] <- col
-  }
+  infos$Images[,"color"] = map_color(infos$Images[,"color"])
+  if("saturation"%in%names(infos$Images)) infos$Images[,"saturation"] = map_color(infos$Images[,"saturation"])
+  
   if(ncol(infos$masks) == 0) infos$masks = data.frame(type = "C", name = "MC", def = paste0(sprintf("M%02i", infos$Images$physicalChannel), collapse="|Or|"))
   class(infos$masks) <- c(class(infos$masks), "IFC_masks")
   if(length(infos$ViewingModes) != 0) names(infos$ViewingModes) = sapply(infos$ViewingModes, FUN=function(x) x$name)

@@ -69,14 +69,8 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
     style_tmp = pop$style==c("Simple Dot","Cross","Plus","Empty Circle","Empty Diamond","Empty Square","Empty Triangle","Solid Diamond","Solid Square","Solid Triangle")
     if(any(style_tmp)) pops[[i]]$style=c(20, 4, 3, 1, 5, 0, 2, 18, 15, 17)[style_tmp]
     # changes colors to R compatible
-    if(pop$color=="Teal") {pops[[i]]$color="Cyan4"}
-    if(pop$color=="Green") {pops[[i]]$color="Green4"}
-    if(pop$color=="Lime") {pops[[i]]$color="Chartreuse"}
-    if(pop$color=="Control") {pops[[i]]$color="Gray81"}
-    if(pop$lightModeColor=="Teal") {pops[[i]]$lightModeColor="Cyan4"}
-    if(pop$lightModeColor=="Green") {pops[[i]]$lightModeColor="Green4"}
-    if(pop$lightModeColor=="Lime") {pops[[i]]$lightModeColor="Chartreuse"}
-    if(pop$lightModeColor=="Control") {pops[[i]]$lightModeColor="Gray81"}
+    pop$color = map_color(pop$color)
+    pop$lightModeColor = map_color(pop$lightModeColor)
     
     switch(pop$type,
            "B" = { 

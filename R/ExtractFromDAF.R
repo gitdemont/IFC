@@ -126,19 +126,9 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     if(ncol(description$masks) == 0) description$masks = data.frame(type = "C", name = "MC", def =paste0(sprintf("M%02i", description$Images$physicalChannel), collapse="|Or|"))
     # chan_number = nrow(description$Images) # when from daf only available channels are imported
 
-    col = description$Images[,"color"]
-    col[col=="Teal"] <- "Cyan4"
-    col[col=="Green"] <- "Green4"
-    col[col=="Lime"] <- "Chartreuse"
-    col[col=="Control"] <- "Gray81"
-    description$Images[,"color"] <- col
+    description$Images[,"color"] = map_color(description$Images[,"color"])
     if("saturation"%in%names(description$Images)) {
-      col = description$Images[,"saturation"]
-      col[col=="Teal"] <- "Cyan4"
-      col[col=="Green"] <- "Green4"
-      col[col=="Lime"] <- "Chartreuse"
-      col[col=="Control"] <- "Gray81"
-      description$Images[,"saturation"] <- col
+      description$Images[,"saturation"] = map_color(description$Images[,"saturation"])
     }
     if(extract_stats & !extract_features) {
       extract_features = TRUE
@@ -465,14 +455,8 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       rm(regions_tmp)
       ##### changes unknown color names in regions
       for(i in 1:length(regions)) {
-        if(regions[[i]]$color=="Teal") {regions[[i]]$color="Cyan4"}
-        if(regions[[i]]$color=="Green") {regions[[i]]$color="Green4"}
-        if(regions[[i]]$color=="Lime") {regions[[i]]$color="Chartreuse"}
-        if(regions[[i]]$color=="Control") {regions[[i]]$color="Gray81"}
-        if(regions[[i]]$lightcolor=="Teal") {regions[[i]]$lightcolor="Cyan4"}
-        if(regions[[i]]$lightcolor=="Green") {regions[[i]]$lightcolor="Green4"}
-        if(regions[[i]]$lightcolor=="Lime") {regions[[i]]$lightcolor="Chartreuse"}
-        if(regions[[i]]$lightcolor=="Control") {regions[[i]]$lightcolor="Gray81"}
+        regions[[i]]$color = map_color(regions[[i]]$color)
+        regions[[i]]$lightcolor = map_color(regions[[i]]$lightcolor)
       }
     }
     class(regions) <- "IFC_regions"
