@@ -31,10 +31,29 @@ Exported file extension will be deduced from this pattern. Note that it has to b
 \item{verbose}{whether to display information (use for debugging purpose). Default is FALSE.}
 
 \item{...}{other arguments to be passed.}
+
+\item{pop}{a member of `IFC_pops` object.}
 }
 \value{
 It invisibly returns full path of exported file.
+
+a list of xml_node.
 }
 \description{
-Writes Gating Strategy from an `IFC_data` object to a xml file
+Writes GatingML from an `IFC_data` object to a xml file
+
+Helper to convert boolean population to XML nodes in GatingML files.
 }
+\details{
+Partial implementation of ISAC's Gating-ML 2.0 data exchange standard for gating description.
+See Josef Spidlen et al. Cytometry A 87 683-687 (2015). \url{https://onlinelibrary.wiley.com/doi/full/10.1002/cyto.a.22690}\cr
+GatingML is partly implemented because:\cr
+-Tagged population are not part of GatingML gates\cr
+-IDEAS/INSPIRE regions are different from the collection of gates listed in GatingML. Notably,\cr
+--only 1 or 2 dimensions gates will be used,
+--range gates and quadrant gates are absent from IDEAS/INSPIRE
+--ellipse gates exist in IDEAS/INSPIRE but are axis aligned and not rotated.
+-Transformation applied in \pkg{IFC} is not part of GatingML.
+Nonetheless, when possible additional information are provided in dedicated custom_info field.
+}
+\keyword{internal}

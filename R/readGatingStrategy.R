@@ -29,10 +29,9 @@
 
 #' @title Gating Strategy File Reader
 #' @description
-#' Extracts Gating Strategy from Files.
+#' Extracts Gating Strategy from files.
 #' @param fileName path to file. It should be a .ast, .cif, .daf, .ist, .rif or .xml file.
 #' @return A named list of class `IFC_gating`, whose members are:\cr
-#' -description, a list of descriptive information,\cr
 #' -graphs, a list of graphical elements found,\cr
 #' -pops, a list describing populations found,\cr
 #' -regions, a list describing how regions are defined.
@@ -47,10 +46,10 @@ readGatingStrategy <- function(fileName, ...) {
   title_progress = basename(fileName)
   
   fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
-  if(file_extension %in% c("daf", "ast", "xml")) {
+  if(file_extension == "xml") return(readGatingML(fileName, ...))
+  if(file_extension %in% c("daf", "ast")) {
     assay = switch(file_extension,
                    daf = "/Assay",
-                   xml = "/Network",
                    ast = "/AssayTemplate")
     toskip=cpp_scanFirst(fname = fileName, target = paste0("<",assay,">"), start = 0, end = 0)
     if(toskip==0) stop(paste0(fileName, "\ndoes not seem to be well formatted: <",assay,"> not found"))
@@ -71,19 +70,19 @@ readGatingStrategy <- function(fileName, ...) {
   }
 
   ##### extracts description
-  assay_attr = xml_attrs(xml_find_all(tmp, paste0("/",assay)))
-  description=list("Assay" = assay_attr,
-                   "FCS"=xml_attrs(xml_find_all(tmp, "//FCS")),
-                   "SOD"=xml_attrs(xml_find_all(tmp, "//SOD")))
-  description=lapply(description, FUN=function(x) {as.data.frame(do.call(what="rbind", x), stringsAsFactors=FALSE)})
-  if(length(description$FCS)==0) {
-    description$ID = description$SOD
-    is_fcs = FALSE
-  } else {
-    description$ID = description$FCS
-    is_fcs = TRUE
-  }
-  obj_count = as.integer(description$ID$objcount)
+  # assay_attr = xml_attrs(xml_find_all(tmp, paste0("/",assay)))
+  # description=list("Assay" = assay_attr,
+  #                  "FCS"=xml_attrs(xml_find_all(tmp, "//FCS")),
+  #                  "SOD"=xml_attrs(xml_find_all(tmp, "//SOD")))
+  # description=lapply(description, FUN=function(x) {as.data.frame(do.call(what="rbind", x), stringsAsFactors=FALSE)})
+  # if(length(description$FCS)==0) {
+  #   description$ID = description$SOD
+  #   is_fcs = FALSE
+  # } else {
+  #   description$ID = description$FCS
+  #   is_fcs = TRUE
+  # }
+  # obj_count = as.integer(description$ID$objcount)
   
   ##### extracts graphs information
   plots=lapply(xml_attrs(xml_find_all(tmp, "//Graph")), FUN=function(x) as.list(x))
@@ -111,8 +110,16 @@ readGatingStrategy <- function(fileName, ...) {
   if(length(regions) != 0) {
     names(regions)=lapply(regions, FUN=function(x) x$label)
     # regions=mapply(regions, FUN=c, SIMPLIFY = FALSE)
-    regions_tmp=c("cx","cy")
-    regions=lapply(regions, FUN=function(x) {replace(x, regions_tmp, lapply(x[regions_tmp], as.numeric))})
+    regions=lapply(regions, FUN=function(x) {
+      N = names(x)
+      ##### changes unknown color names in regions
+      if("color" %in% N) x[["color"]] <- map_color(x[["color"]])
+      if("lightcolor" %in% N) x[["lightcolor"]] <- map_color(x[["lightcolor"]])
+      ##### convert label position to numeric
+      if("cx" %in% N) x[["cx"]] <- as.numeric(x["cx"])
+      if("cy" %in% N) x[["cy"]] <- as.numeric(x["cy"])
+      x
+    })
     regions_tmp=lapply(regions, FUN=function(i_region) {
       pat=paste0("//Region[@label='",i_region$label,"']//axy")
       axy=do.call(cbind, args = xml_attrs(xml_find_all(tmp, pat)))
@@ -120,17 +127,6 @@ readGatingStrategy <- function(fileName, ...) {
     })
     regions=mapply(FUN = append, regions, regions_tmp, SIMPLIFY = FALSE)
     rm(regions_tmp)
-    ##### changes unknown color names in regions
-    for(i in 1:length(regions)) {
-      if(regions[[i]]$color=="Teal") {regions[[i]]$color="Cyan4"}
-      if(regions[[i]]$color=="Green") {regions[[i]]$color="Green4"}
-      if(regions[[i]]$color=="Lime") {regions[[i]]$color="Chartreuse"}
-      if(regions[[i]]$color=="Control") {regions[[i]]$color="Gray81"}
-      if(regions[[i]]$lightcolor=="Teal") {regions[[i]]$lightcolor="Cyan4"}
-      if(regions[[i]]$lightcolor=="Green") {regions[[i]]$lightcolor="Green4"}
-      if(regions[[i]]$lightcolor=="Lime") {regions[[i]]$lightcolor="Chartreuse"}
-      if(regions[[i]]$lightcolor=="Control") {regions[[i]]$lightcolor="Gray81"}
-    }
   }
   class(regions) <- "IFC_regions"
   
@@ -160,7 +156,7 @@ readGatingStrategy <- function(fileName, ...) {
   }
   class(pops) <- "IFC_pops"
   
-  ans = list("description"=description, "fileName"=fileName, "graphs"=plots, "pops"=pops, "regions"=regions)
+  ans = list("graphs"=plots, "pops"=pops, "regions"=regions)
   attr(ans, "class") <- c("IFC_gating")
   return(ans)
 }
