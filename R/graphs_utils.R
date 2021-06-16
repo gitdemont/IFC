@@ -193,7 +193,7 @@ toEllipse=function(gate, theta=2*pi, npoints=100) {
 #' @description Helper to rescale and label axes when linlog / asinh transformation is used.
 #' @param lim vector of length 2 of axis extents.
 #' @param trans transformation applied. Defaut is "P".
-#' @param nint positive integer value indicating (approximately) the desired number of intervals. Default is 20.
+#' @param nint positive integer value indicating (approximately) the desired number of intervals. Default is 10.
 #' @keywords internal
 base_axis_constr = function(lim, trans = "P", nint = 10) {
   nint = na.omit(as.integer(nint)); assert(nint, len = 1, typ = "integer")

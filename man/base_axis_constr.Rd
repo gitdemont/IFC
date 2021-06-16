@@ -2,18 +2,18 @@
 % Please edit documentation in R/graphs_utils.R
 \name{base_axis_constr}
 \alias{base_axis_constr}
-\title{Axis Constructor for 'base' Plot}
+\title{Axis Constructor}
 \usage{
-base_axis_constr(lim, hyper = "P", nint = 10)
+base_axis_constr(lim, trans = "P", nint = 10)
 }
 \arguments{
 \item{lim}{vector of length 2 of axis extents.}
 
-\item{hyper}{value where transition between Lin/Log is applied. Defaut is "P".}
+\item{trans}{transformation applied. Defaut is "P".}
 
 \item{nint}{positive integer value indicating (approximately) the desired number of intervals. Default is 10.}
 }
 \description{
-Helper to rescale and label axes when linlog transformation is used.
+Helper to rescale and label axes when linlog / asinh transformation is used.
 }
 \keyword{internal}
