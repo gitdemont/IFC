@@ -27,23 +27,9 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
-#' @title LinLog Transformation of Ticks and Labels
-#' @description Helper to rescale and label axes when linlog transformation is used
-#' @keywords internal
-scale_trans=function(hyper=1000, base=10, lin_comp=log(base)) {
-  at=outer(-10:10,-10:10,FUN=function(m,p) {m*base^p})
-  toKeep=abs(at)>=hyper
-  at=c(at[toKeep],seq(-hyper,hyper,length.out = 9)[2:8])
-  at=smoothLinLog(x=at, hyper=hyper, base=base, lin_comp=lin_comp)
-  lab=outer(-10:10,-10:10,FUN=function(m,p) {paste0(m,"*",base,"^",p)})
-  lab[grep(paste0(1,"\\*",base,"\\^"),lab,invert=TRUE)]=""
-  lab=c(lab[toKeep],seq(-hyper,hyper,length.out = 9)[2:8])
-  lab=gsub("\\*10\\^","e",lab)
-  return(list(at=at,labels=lab))
-}
 
-#' @title LinLog Transformation for IFC Graphs Plotting Scales
-#' @description Helper to rescale and label axes when linlog transformation is used
+#' @title Scale Constructor for IFC Graphs Plotting
+#' @description Helper to rescale and label axes
 #' @keywords internal
 myScales=function(x=list(), y=list()) {
   if(length(x$alternating)==0) x$alternating=1
@@ -58,15 +44,9 @@ myScales=function(x=list(), y=list()) {
   
   x_scale=list("alternating"=x$alternating,"tck"=x$tck,"rot"=x$rot)
   y_scale=list("alternating"=y$alternating,"tck"=y$tck,"rot"=y$rot)
-  trans_x = parseTrans(x$hyper)
-  trans_y = parseTrans(y$hyper)
-  if(trans_x$what %in% c("smoothLinLog","smoothAsinh")) x_scale=c(x_scale, do.call(what = "scale_trans", args = trans_x$args))
-  if(trans_y$what %in% c("smoothLinLog","smoothAsinh")) y_scale=c(y_scale, do.call(what = "scale_trans", args = trans_x$args))
+  x_scale=c(x_scale, base_axis_constr(x$lim, x$hyper))
+  y_scale=c(y_scale, base_axis_constr(y$lim, y$hyper))
   
-  if(length(x$at)!=0) x_scale=c(x_scale,"at"=x$at)
-  if(length(x$lab)!=0) x_scale=c(x_scale,"labels"=x$labels)
-  if(length(y$at)!=0) y_scale=c(y_scale,"at"=y$at)
-  if(length(y$lab)!=0) y_scale=c(y_scale,"labels"=y$labels)
   return(list("x"=x_scale,"y"=y_scale))
 }
 
@@ -208,109 +188,120 @@ toEllipse=function(gate, theta=2*pi, npoints=100) {
   return(list("x"=xx*cos(2*pi-theta)+yy*sin(2*pi-theta)+ell[3],"y"=yy*cos(2*pi-theta)-xx*sin(2*pi-theta)+ell[4]))
 }
 
-################################################################################
-#                       functions to use base plot                             #
-################################################################################
-#' @title Axis Constructor for 'base' Plot
+#' @title Axis Constructor
 #' @name base_axis_constr
-#' @description Helper to rescale and label axes when linlog transformation is used.
+#' @description Helper to rescale and label axes when linlog / asinh transformation is used.
 #' @param lim vector of length 2 of axis extents.
-#' @param hyper value where transition between Lin/Log is applied. Defaut is "P".
-#' @param nint positive integer value indicating (approximately) the desired number of intervals. Default is 10.
+#' @param trans transformation applied. Defaut is "P".
+#' @param nint positive integer value indicating (approximately) the desired number of intervals. Default is 20.
 #' @keywords internal
-base_axis_constr = function(lim, hyper = "P", nint = 10) {
+base_axis_constr = function(lim, trans = "P", nint = 10) {
   nint = na.omit(as.integer(nint)); assert(nint, len = 1, typ = "integer")
-  assert(hyper, len = 1)
-  trans_ = parseTrans(hyper)
-  if(!(trans_$what %in% c("smoothLinLog","smoothAsinh"))) {
+  assert(trans, len = 1)
+  trans_ = parseTrans(trans)
+  if(trans_$what %in% c("smoothLinLog","smoothAsinh")) {
+    hyper = formals(trans_$what)$hyper
+    if(length(trans_$args$hyper)!=0) hyper = trans_$args$hyper
+    base = formals(trans_$what)$base
+    if(length(base) == 0) base = 10
+    if(length(trans_$args$base)!=0) base = trans_$args$base
+    n_ticks = 0
+    p_ticks = 0
+    neg_log_ticks = 0
+    pos_log_ticks = 0
+    # compute range without expansion in original scale
+    ran = diff(lim) / 1.14 * c(0.07, -0.07) + lim
+    ran = applyTrans(ran, trans_, inverse = TRUE)
+    n_ticks = max(ran[1], -hyper)
+    p_ticks = min(ran[2], hyper)
+    ran = ran + c(hyper, -hyper)
+    # # identify pos and neg base mult within displayed range
+    ran = sign(ran) * log(abs(ran) / hyper, base)
+    if(ran[1] < 0) neg_log_ticks = floor(ran[1])
+    if(ran[2] > 0) pos_log_ticks = ceiling(ran[2])
+    tot = pos_log_ticks - neg_log_ticks + 
+      ifelse((neg_log_ticks < 0) && (n_ticks <= -hyper), 0.5, 0) + 
+      ifelse((pos_log_ticks > 0) && (p_ticks >= hyper), 0.5, 0)
+    # create ticks and labels
+    ticks_at = c()
+    ticks_lab = c()
+    if(neg_log_ticks != 0) {
+      at = sort(unique(c(outer(1:base, (max(abs(neg_log_ticks),abs(pos_log_ticks))-1):0 + log(hyper, base),
+                               FUN=function(m,p) {-m*base^p}))), decreasing = FALSE)
+      at_scaled = applyTrans(at, trans_)
+      at_lab = rep("", length(at_scaled))
+      neg_nint = as.integer(-neg_log_ticks / tot * 3 * nint)
+      if(neg_nint > 0) {
+        if(length(at) < (1 * nint)) {
+          at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = TRUE) 
+        } else {
+          if(base == 10) {
+            pretty_lab = -axisTicks(log10(-range(at)), log = TRUE, nint = neg_nint)
+          } else {
+            pretty_lab = -base^axisTicks(log(-range(at), base), log = FALSE, nint = neg_nint)
+          }
+          at_lab[at %in% pretty_lab] <- formatC(x = at[at %in% pretty_lab], format = "g", width = -1, digits = 1)
+        }
+      }
+      ticks_at = c(ticks_at, at_scaled)
+      ticks_lab = c(ticks_lab, at_lab)
+    }
+    if(n_ticks <= -hyper) {
+      at = axisTicks(c(-hyper,0), log = FALSE, nint = ceiling(1/tot*nint))
+      at = at[at > -hyper]
+      if(length(at) > 0) {
+        at_scaled = applyTrans(at, trans_)
+        at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE) 
+        ticks_at = c(ticks_at, at_scaled)
+        ticks_lab = c(ticks_lab, at_lab)
+      }
+    }
+    if(p_ticks >= hyper) {
+      at = axisTicks(c(0,hyper), log = FALSE, nint = ceiling(1/tot*nint))
+      at = at[at < hyper]
+      if(length(at) > 0) {
+        at_scaled = applyTrans(at, trans_)
+        at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE) 
+        ticks_at = c(ticks_at, at_scaled)
+        ticks_lab = c(ticks_lab, at_lab)
+      }
+    }
+    if(pos_log_ticks != 0) {
+      at = sort(unique(c(outer(1:base, 0:(max(abs(neg_log_ticks),abs(pos_log_ticks))-1) + log(hyper, base),
+                               FUN=function(m,p) {m*base^p}))), decreasing = FALSE)
+      at_scaled = applyTrans(at, trans_)
+      at_lab = rep("", length(at_scaled))
+      pos_nint = as.integer(pos_log_ticks / tot * 3 * nint)
+      if(pos_nint > 0) {
+        if(length(at) < (1 * nint)) {
+          at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = TRUE) 
+        } else {
+          if(base == 10) {
+            pretty_lab = axisTicks(log10(range(at)), log = TRUE, nint = pos_nint)
+          } else {
+            pretty_lab = base^axisTicks(log(range(at), base), log = FALSE, nint = pos_nint)
+          }
+          at_lab[at %in% pretty_lab] <- formatC(x = at[at %in% pretty_lab], format = "g", width = -1, digits = 1)
+        }
+      }
+      ticks_at = c(ticks_at, at_scaled)
+      ticks_lab = c(ticks_lab, at_lab)
+    }
+    keep = (ticks_at >= lim[1]) & (ticks_at <= lim[2])
+    dup = duplicated(ticks_at)
+    ticks_at = ticks_at[!dup & keep]
+    ticks_lab = ticks_lab[!dup & keep]
+    if(length(ticks_at) < 2) {
+      at = signif(seq(from = lim[1], to = lim[2], length.out = nint), 3)
+      ticks_at = applyTrans(at, trans_)
+      ticks_lab = at
+    }
+    ord = order(ticks_at)
+    return(list("at" = ticks_at[ord], "labels" = ticks_lab[ord]))
+  } else {
     at = axisTicks(lim, log = FALSE, nint = nint)
     return(list("at" = at, "label" = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE)))
   }
-  hyper = trans_$args$hyper
-  n_ticks = 0
-  p_ticks = 0
-  neg_log_ticks = 0
-  pos_log_ticks = 0
-  ran = lim / c(1.07)
-  ran = inv_smoothLinLog(ran, hyper)
-  n_ticks = max(ran[1], -hyper)
-  p_ticks = min(ran[2], hyper)
-  ran = ran + c(hyper, -hyper)
-  ran = sign(ran) * log10(abs(ran) / hyper)
-  dif = diff(ran)
-  if(ran[1] < 0) neg_log_ticks = floor(ran[1])
-  if(ran[2] > 0) pos_log_ticks = ceiling(ran[2])
-  tot = pos_log_ticks - neg_log_ticks + 
-    ifelse((neg_log_ticks < 0) && (n_ticks <= -hyper), 0.5, 0) + 
-    ifelse((pos_log_ticks > 0) && (p_ticks >= hyper), 0.5, 0)
-  
-  ticks_at = c()
-  ticks_lab = c()
-  if(neg_log_ticks != 0) {
-    at = sort(unique(c(outer(1:10, (abs(neg_log_ticks)-1):0 + log10(hyper),
-                             FUN=function(m,p) {-m*10^p}))), decreasing = FALSE)
-    at_scaled = smoothLinLog(at, hyper = hyper)
-    at_lab = rep("", length(at_scaled))
-    neg_nint = as.integer(-neg_log_ticks / tot * 3 * nint)
-    if(neg_nint > 0) {
-      if(length(at) < (1 * nint)) {
-        at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = TRUE) 
-      } else {
-        pretty_lab = -axisTicks(log10(-range(at)), log = TRUE, nint = neg_nint)
-        at_lab[at %in% pretty_lab] <- formatC(x = at[at %in% pretty_lab], format = "g", width = -1, digits = 1)
-      }
-    }
-    ticks_at = c(ticks_at, at_scaled)
-    ticks_lab = c(ticks_lab, at_lab)
-  }
-  if(n_ticks <= -hyper) {
-    at = axisTicks(c(-hyper,0), log = FALSE, nint = ceiling(1/tot*nint))
-    at = at[at > -hyper]
-    if(length(at) > 0) {
-      at_scaled = smoothLinLog(at, hyper = hyper)
-      at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE) 
-      ticks_at = c(ticks_at, at_scaled)
-      ticks_lab = c(ticks_lab, at_lab)
-    }
-  }
-  if(p_ticks >= hyper) {
-    at = axisTicks(c(0,hyper), log = FALSE, nint = ceiling(1/tot*nint))
-    at = at[at < hyper]
-    if(length(at) > 0) {
-      at_scaled = smoothLinLog(at, hyper = hyper)
-      at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE) 
-      ticks_at = c(ticks_at, at_scaled)
-      ticks_lab = c(ticks_lab, at_lab)
-    }
-  }
-  if(pos_log_ticks != 0) {
-    at = sort(unique(c(outer(1:10, 0:(abs(pos_log_ticks)-1) + log10(hyper),
-                             FUN=function(m,p) {m*10^p}))), decreasing = FALSE)
-    at_scaled = smoothLinLog(at, hyper = hyper)
-    at_lab = rep("", length(at_scaled))
-    pos_nint = as.integer(pos_log_ticks / tot * 3 * nint)
-    if(pos_nint > 0) {
-      if(length(at) < (1 * nint)) {
-        at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = TRUE) 
-      } else {
-        pretty_lab = axisTicks(log10(range(at)), log = TRUE, nint = pos_nint)
-        at_lab[at %in% pretty_lab] <- formatC(x = at[at %in% pretty_lab], format = "g", width = -1, digits = 1)
-      }
-    }
-    ticks_at = c(ticks_at, at_scaled)
-    ticks_lab = c(ticks_lab, at_lab)
-  }
-  keep = (ticks_at >= lim[1]) & (ticks_at <= lim[2])
-  dup = duplicated(ticks_at)
-  ticks_at = ticks_at[!dup & keep]
-  ticks_lab = ticks_lab[!dup & keep]
-  if(length(ticks_at) < 2) {
-    at = signif(seq(from = lim[1], to = lim[2], length.out = nint), 3)
-    ticks_at = smoothLinLog(at, hyper = hyper)
-    ticks_lab = at
-  }
-  ord = order(ticks_at)
-  return(list("at" = ticks_at[ord], "label" = ticks_lab[ord]))
 }
 
 #' @title Histogram Constructor for 'base' Plot
@@ -478,11 +469,11 @@ convert_to_baseplot = function(obj) {
   
   # axis
   if(pkg == "base") {
-    x_ticks = base_axis_constr(lim = Xlim, hyper = obj$input$trans_x, nint = n_ticks)
-    y_ticks = base_axis_constr(lim = Ylim, hyper = obj$input$trans_y, nint = n_ticks)
+    x_ticks = base_axis_constr(lim = Xlim, trans = obj$input$trans_x, nint = n_ticks)
+    y_ticks = base_axis_constr(lim = Ylim, trans = obj$input$trans_y, nint = n_ticks)
     x_axis = axis(side = 1, at = x_ticks$at, labels = FALSE, cex.lab = obj$plot$par.settings$par.xlab.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex)
-    text(x_axis, Ylim[1] - diff(Ylim) * 0.07, x_ticks$label, srt=45, xpd=TRUE, pos = 1, cex = obj$plot$par.settings$axis.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex)
-    axis(side = 2, at = y_ticks$at, labels = y_ticks$label, las = 2, cex.lab = obj$plot$par.settings$par.xlab.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex)
+    text(x = x_axis, y = Ylim[1] - diff(Ylim) * 0.07, labels = x_ticks$labels, srt=45, xpd=TRUE, pos = 1, cex = obj$plot$par.settings$axis.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex)
+    axis(side = 2, at = y_ticks$at, labels = y_ticks$labels, las = 2, cex.lab = obj$plot$par.settings$par.xlab.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex)
     box()
   }
   
@@ -490,10 +481,6 @@ convert_to_baseplot = function(obj) {
   for(reg in obj$input$regions) {
     k = reg[c("color","lightcolor")][[obj$input$mode]]
     coords = reg[c("x","y")]
-    # if(obj$input$trans_x!="P") {
-    #   coords$x = smoothLinLog(coords$x, hyper=obj$input$trans_x, base=10)
-    #   reg$cx = smoothLinLog(reg$cx, hyper=obj$input$trans_x, base=10)
-    # }
     trans_x = parseTrans(obj$input$trans_x)
     coords$x = applyTrans(coords$x, trans_x)
     reg$cx = applyTrans(reg$cx, trans_x)
@@ -510,10 +497,6 @@ convert_to_baseplot = function(obj) {
                polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
              })
     } else {
-      # if(obj$input$trans_y!="P") {
-      #   coords$y = smoothLinLog(coords$y, hyper=obj$input$trans_y, base=10)
-      #   reg$cy = smoothLinLog(reg$cy, hyper=obj$input$trans_y, base=10)
-      # }
       trans_y = parseTrans(obj$input$trans_y)
       coords$y = applyTrans(coords$y, trans_y)
       reg$cy = applyTrans(reg$cy, trans_y)

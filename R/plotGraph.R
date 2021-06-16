@@ -300,7 +300,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         if(Ylim[1] == Ylim[2]) Ylim = Ylim[1] + c(0,0.07)
       } 
       foo = histogram(~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, main = trunc_string(g$title, trunc_labels),
-                      scales =  myScales(x=list("hyper"=g$xlogrange)), border = "transparent",
+                      scales =  myScales(x=list(lim = Xlim, "hyper"=g$xlogrange), y=list(lim = Ylim, "hyper"=g$ylogrange)), border = "transparent",
                       xlab =  trunc_string(g$xlabel, trunc_labels), ylab = g$ylabel,
                       nint = nbin, type = type, breaks = br, normalize = normalize,
                       panel = function(x, ...) { })
@@ -342,7 +342,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     } else {
       Ylim = c(g$ymin, g$ymax)
       foo = histogram(0 ~ 0, auto.key=FALSE, xlim = Xlim, ylim = Ylim, main =  trunc_string(g$title, trunc_labels), 
-                      scales =  myScales(x=list("hyper"=g$xlogrange)), border = "transparent",
+                      scales =  myScales(x=list(lim = Xlim, "hyper"=g$xlogrange), y=list(lim = Ylim, "hyper"=g$ylogrange)), border = "transparent",
                       xlab =  trunc_string(g$xlabel, trunc_labels), ylab = g$ylabel,
                       nint = nbin, type = type, normalize = normalize, Ylim = Ylim,
                       panel = function(x, Ylim = Ylim, ...) {
@@ -492,7 +492,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     }
     foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, 
                  main = trunc_string(g$title, trunc_labels), groups=groups, subset=xy_subset,
-                 scales =  myScales(x=list(hyper=g$xlogrange), y=list(hyper=g$ylogrange)),
+                 scales =  myScales(x=list(lim = Xlim, hyper=g$xlogrange), y=list(lim = Ylim, hyper=g$ylogrange)),
                  xlab =  trunc_string(g$xlabel, trunc_labels), ylab = trunc_string(g$ylabel, trunc_labels),
                  panel = function(x, y, groups=NULL, subscripts, ...) {
                    if(any(c("panel","both")%in%add_key)) if(g$type=="scatter") pan_key(key=c(KEY,"background"="lightgrey","alpha.background"=0.8), x = 0.02)
