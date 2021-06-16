@@ -98,7 +98,22 @@ applyTrans <- function(x, trans, inverse = FALSE) {
   if(inverse) fun = switch(fun,
                            "return" = "return" ,
                            "smoothLinLog" = "inv_smoothLinLog",
+                           "smoothAsinh" = "inv_smoothAsinh",
                            "asinh" = "sinh",
                            stop("can't find inverse transformation for: '",fun,"'" ))
   do.call(what = fun, args = c(list(x), trans$args))
+}
+
+#' @title Smooth Asinh Transformation
+#' @description Transforms values in asinh
+#' @keywords internal
+smoothAsinh <- function(x, hyper = 1000) {
+  return(asinh(x/hyper))
+}
+
+#' @title Inverse Smooth Asinh Transformation
+#' @description Gets values back just to their original values before applying smoothAsinh
+#' @keywords internal
+inv_smoothAsinh <- function(x, hyper = 1000) {
+  return(sinh(x)*hyper)
 }

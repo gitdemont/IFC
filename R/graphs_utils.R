@@ -49,23 +49,19 @@ myScales=function(x=list(), y=list()) {
   if(length(x$alternating)==0) x$alternating=1
   if(length(x$tck)==0) x$tck=c(TRUE,FALSE)
   if(length(x$hyper)==0) x$hyper="P"
-  # if(length(x$b)==0) x$b=10
-  # if(length(x$lin_comp)==0) x$lin_comp=log(x$b)
   if(length(x$rot)==0) x$rot=45
   
   if(length(y$alternating)==0) y$alternating=1
   if(length(y$tck)==0) y$tck=c(TRUE,FALSE)
   if(length(y$hyper)==0) y$hyper="P"
-  # if(length(y$b)==0) y$b=10
-  # if(length(y$lin_comp)==0) y$lin_comp=log(y$b)
   if(length(y$rot)==0) y$rot=0
   
   x_scale=list("alternating"=x$alternating,"tck"=x$tck,"rot"=x$rot)
   y_scale=list("alternating"=y$alternating,"tck"=y$tck,"rot"=y$rot)
   trans_x = parseTrans(x$hyper)
   trans_y = parseTrans(y$hyper)
-  if(trans_x$what =="smoothLinLog") x_scale=c(x_scale, do.call(what = "scale_trans", args = trans_x$args))
-  if(trans_y$what =="smoothLinLog") y_scale=c(y_scale, do.call(what = "scale_trans", args = trans_x$args))
+  if(trans_x$what %in% c("smoothLinLog","smoothAsinh")) x_scale=c(x_scale, do.call(what = "scale_trans", args = trans_x$args))
+  if(trans_y$what %in% c("smoothLinLog","smoothAsinh")) y_scale=c(y_scale, do.call(what = "scale_trans", args = trans_x$args))
   
   if(length(x$at)!=0) x_scale=c(x_scale,"at"=x$at)
   if(length(x$lab)!=0) x_scale=c(x_scale,"labels"=x$labels)
@@ -226,7 +222,7 @@ base_axis_constr = function(lim, hyper = "P", nint = 10) {
   nint = na.omit(as.integer(nint)); assert(nint, len = 1, typ = "integer")
   assert(hyper, len = 1)
   trans_ = parseTrans(hyper)
-  if(trans_$what != "smoothLinLog") {
+  if(!trans_$what %in% c("smoothLinLog","smoothAsinh")) {
     at = axisTicks(lim, log = FALSE, nint = nint)
     return(list("at" = at, "label" = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE)))
   }
