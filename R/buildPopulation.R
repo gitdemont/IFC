@@ -58,8 +58,6 @@ buildPopulation <- function(name, type, base="All", color, lightModeColor, style
   if(missing(type)) {
     type = ""
     if(missing(fx)) {
-      # if(missing(definition) & !missing(obj)) type="T"
-      # if(!missing(definition) & missing(obj)) type="C"
       if(missing(definition)) {
         if(!missing(obj)) type="T"
       } else{
