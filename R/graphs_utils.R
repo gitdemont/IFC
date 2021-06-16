@@ -222,11 +222,11 @@ base_axis_constr = function(lim, hyper = "P", nint = 10) {
   nint = na.omit(as.integer(nint)); assert(nint, len = 1, typ = "integer")
   assert(hyper, len = 1)
   trans_ = parseTrans(hyper)
-  if(!trans_$what %in% c("smoothLinLog","smoothAsinh")) {
+  if(!(trans_$what %in% c("smoothLinLog","smoothAsinh"))) {
     at = axisTicks(lim, log = FALSE, nint = nint)
     return(list("at" = at, "label" = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE)))
   }
-  hyper = na.omit(as.integer(hyper)); assert(hyper, len = 1, typ = "integer")
+  hyper = trans_$args$hyper
   n_ticks = 0
   p_ticks = 0
   neg_log_ticks = 0
