@@ -40,6 +40,7 @@
 #' @return a list with 2 members what (=the transformation function) and args (=the parameters to pass to this function) 
 #' @keywords internal
 parseTrans <- function(string) {
+  if(length(string) == 0) return(list(what = "return", args = list()))
   foo = strsplit(string, split = "|", fixed = TRUE)[[1]]
   if(length(foo) == 1 && foo == "P") return(list(what = "return", args = list()))
   if(length(foo) != 1 || is.na(suppressWarnings(as.numeric(foo[1])))) {
