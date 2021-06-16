@@ -48,7 +48,7 @@ parseTrans <- function(string) {
     args <- suppressWarnings(as.numeric(foo)) # eliminates 1st arg (e.g 'x')
     names(args) <- fun_args[seq_along(foo)]
     args <- args[!is.na(args)]
-    return(list(what = fun, args = args))
+    return(list(what = fun, args = as.list(args)))
   } else {
     return(list(what = "smoothLinLog", args = list(hyper = as.numeric(foo[1]))))
   }
