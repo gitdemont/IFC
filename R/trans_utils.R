@@ -30,13 +30,13 @@
 #' @title Parse Transformation Information
 #' @name parseTrans
 #' @description Helper to parse transformation parameter.
-#' @param string character string describing transformation used and its hyperparameter.
+#' @param string character string describing transformation used and its parameters, if any.
 #' @details -If string is "P" no transformation will be applied.\cr
-#' -If string is of length 1 and coercible to a numeric, smoothLinLog will be applied with hyper parameter set with as.numeric(string) value.\cr
-#' -Otherwise, string will be split with "|", 1st element will be considered as function to call and all other elements will be passed after being coerced to numeric to this function in the order they are provided with the exception of 1st one; if coercion results in NA, the argument will be skipped.
-#' @examples 
-#' ## this will use smoothLinLog, skip argument hyper and fill base with 2
-#' parseTrans("smoothLinLog||2")
+#' -If string is of length 1 and coercible to a numeric, smoothLinLog will be applied with 'hyper' parameter set with as.numeric(string) value.\cr
+#' -Otherwise, string will be split with "|", 1st element will be considered as function to call
+#' and all other elements will be passed to this function after being coerced to numeric
+#' in the order they are provided with the exception of 1st one;
+#' if coercion results in NA, the argument will be skipped.
 #' @return a list with 2 members what (=the transformation function) and args (=the parameters to pass to this function) 
 #' @keywords internal
 parseTrans <- function(string) {
@@ -83,15 +83,6 @@ parseTrans <- function(string) {
 #' @param trans the object returned by parseTrans().
 #' @param inverse whether or not to apply the inverse transformation. Default is FALSE.
 #' @details for the moment, in addition to no transformation, only smoothLinLog and asinh are supported.
-#' @examples
-#' x <- 10^(1:10)
-#' ## parse the transformation instruction
-#' trans <- parseTrans("smoothLinLog|100|4")
-#' ## transform x
-#' xx <- applyTrans(x, trans)
-#' ## inverse transform the transformed values
-#' x_back <- applyTrans(xx, trans, inverse = TRUE)
-#' stopifnot(all.equal(x, x_back))
 #' @return the transformation of the input
 #' @keywords internal
 applyTrans <- function(x, trans, inverse = FALSE) {
