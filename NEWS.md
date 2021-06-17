@@ -1,5 +1,7 @@
 # NEWS
 ## 0.1.2
+- improve axes labels positioning
+
 - modify how transformation instruction is parsed to allow for more transformations in the future
 
 - apply STRICT_R_HEADERS patch for Rcpp and change PI to M_PI
@@ -58,6 +60,8 @@
 *objectParam gains a new `spatial_correction` parameter which when TRUE adds a 2 new columns, namely `spatial_X` and `spatial_Y`, to the returned data.frame in 'channels'*
 
 *paletteIFC now maps Control to Gray81*
+
+*axes display have been slightly changed to show labels at `pretty` positions when LinLog transformation is used*
 
 ## 0.1.1
 - CRAN release
