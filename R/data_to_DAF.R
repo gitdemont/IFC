@@ -48,7 +48,7 @@
 #' Note that it can represent a convenient way to make file written in binary mode back-compatible with former version of IDEAS software.\cr
 #' /!\ However unexpected behaviour may happen if features, regions, pops, ... are depending on masks (e.g. AdaptiveErode, Component, LevelSet, Watershed) introduced in newer version of IDEAS software.\cr
 #' /!\ Important please note that conversion from binary to non-binary and back to binary may create some rounding adjustment resulting in some features/image values changes.\cr
-#' Finally, if data originate from FCS, 'binary'will be forced to FALSE. 
+#' Finally, if data originate from FCS, 'binary' will be forced to FALSE. 
 #' @param endianness The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
 #' Endianness describes the bytes order of data stored within the files. This parameter may not be modified.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
