@@ -90,19 +90,12 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
     br = do.breaks(xran, 520)
     yran = c(0,max(sapply(obj$pops[unique(c(parent1, parent2))], FUN=function(p) {
       x = obj$features[p$obj, foo$f1]
-      # if(foo$xlogrange != "P") x = smoothLinLog(x, hyper = as.numeric(foo$xlogrange))
       x = applyTrans(x, trans_x)
       get_ylim(x=x, type="percent", br=br) * 1.07
     })))
     if(yran[1] == yran[2]) yran = yran[1] + c(0,0.07)
   } else {
     xran = range(c(obj$features[SUB, foo$f1], unlist(lapply(R, FUN=function(r) c(r$x, r$cx)))), na.rm = TRUE)
-    # if(foo$xlogrange == "P") {
-    #   xran = xran + diff(xran) * c(-0.07,0.07)
-    # } else {
-    #   xran = smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
-    #   xran = xran + diff(xran) * c(-0.07,0.07)
-    # }
     trans_x = parseTrans(foo$xlogrange)
     xran = applyTrans(xran, trans_x)
     xran = xran + diff(xran) * c(-0.07,0.07)
@@ -110,13 +103,6 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
     foo$f2 = P[[1]]$fy
     foo$ylogrange = R[[1]]$ylogrange
     yran = range(c(obj$features[SUB, foo$f2], unlist(lapply(R, FUN=function(r) c(r$y,r$cy)))), na.rm = TRUE)
-    # if(foo$ylogrange == "P") {
-    #   yran = yran + diff(yran) * c(-0.07,0.07)
-    # } else {
-    #   yran = smoothLinLog(yran, hyper = as.numeric(foo$ylogrange))
-    #   yran = yran + diff(yran) * c(-0.07,0.07)
-    #   yran = inv_smoothLinLog(yran, hyper = as.numeric(foo$ylogrange))
-    # }
     trans_y = parseTrans(foo$ylogrange)
     yran = applyTrans(yran, trans_y)
     yran = yran + diff(yran) * c(-0.07,0.07)
@@ -124,7 +110,6 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
     
     foo$type = vis2D
   }
-  # if(foo$xlogrange != "P") xran = inv_smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
   xran = applyTrans(xran, trans_x, inverse = TRUE)
   foo$xmin = xran[1]
   foo$xmax = xran[2]

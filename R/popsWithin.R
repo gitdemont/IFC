@@ -88,17 +88,9 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
                fy_pos=which(names(features)==pop$fy)
                y=features[,fy_pos]
                ylim=as.numeric(regions[[pop_pos]]$y)
-               # if(regions[[pop_pos]]$xlogrange != "P") {
-               #   x = smoothLinLog(x, hyper = as.numeric(regions[[pop_pos]]$xlogrange), base = 10)
-               #   xlim = smoothLinLog(xlim, hyper = as.numeric(regions[[pop_pos]]$xlogrange), base = 10)
-               # }
                trans_x = parseTrans(regions[[pop_pos]]$xlogrange)
                x = applyTrans(x, trans_x)
                xlim = applyTrans(xlim, trans_x)
-               # if(regions[[pop_pos]]$ylogrange != "P") {
-               #   y = smoothLinLog(y, hyper = as.numeric(regions[[pop_pos]]$ylogrange), base = 10)
-               #   ylim = smoothLinLog(ylim, hyper = as.numeric(regions[[pop_pos]]$ylogrange), base = 10)
-               # }
                trans_y = parseTrans(regions[[pop_pos]]$ylogrange)
                y = applyTrans(y, trans_y)
                ylim = applyTrans(ylim, trans_y)
