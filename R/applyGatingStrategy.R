@@ -35,8 +35,10 @@
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param ... other arguments to be passed.
-#' @details /!\ Please note that all former gating strategy (i.e. regions, pops, graphs and stats) will be removed from returned object.
-#' An error will be thrown if a feature is required to create a population or a graph but can't be found in 'obj'.
+#' @details /!\ Please note that all former gating strategy (i.e. regions, pops, graphs and stats) will be removed from returned object.\cr
+#' An error will be thrown if a feature is required to create a population or a graph but can't be found in 'obj'.\cr
+#' If tagged population(s) is(are) imported, objects from this(these) population(s) outside 'obj' will be discarded.\cr
+#' If this results in NULL, then all objects will be tagged.
 #' @return A named list of class `IFC_data` with new regions, pops and graphs
 #' @export
 applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = FALSE, ...) {
@@ -91,8 +93,23 @@ applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = F
       stop(paste0(msg, collapse = "\n"), call. = FALSE)
     } 
     
+    ##### forces tagged population import
+    ans$pops = lapply(ans$pops, FUN = function(p) {
+      if(p$type != "T") return(p)
+      obj = obj$features$`Object Number` %in% p$obj
+      S = sum(obj)
+      if(S == 0) {
+        warning("importing tagged population [",p$name,"] resulted in NULL and has been replaced with \"All\" objects import", call. = FALSE, immediate. = TRUE)
+        p$obj = rep(TRUE, length(obj))
+      } else {
+        if(S != length(p$obj)) warning("mismatch found between imported tagged population [",p$name,"] and objects stored within 'obj'", call. = FALSE, immediate. = TRUE)
+        p$obj = obj
+      }
+      return(p)
+    })
+    
     ##### determines which object belongs to each population and changes styles and colors
-    ans$pops = popsCompute(pops = gating$pops, regions = ans$regions, features = ans$features,
+    ans$pops = popsCompute(pops = ans$pops, regions = ans$regions, features = ans$features,
                            display_progress = display_progress, ...)
     
     ##### retrieves name(s) of graphical population created by region applied in graph

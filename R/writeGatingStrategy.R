@@ -66,11 +66,6 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   # check mandatory param
   assert(obj, cla = "IFC_data")
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
-  is_tagged = sapply(obj$pops, FUN = function(p) p$type == "T")
-  if(any(is_tagged)) {
-    warning(paste0("some 'pops' in 'obj$pops' are dependent on tagged population(s) and can't be exported:\n", paste0(paste0("\t- ", names(obj$pops[is_tagged]), collapse = "\n"))), call. = FALSE, immediate. = TRUE)
-    obj = data_rm_pops(obj = obj, pops = names(obj$pops[is_tagged]), list_only = FALSE, adjust_graph = FALSE)
-  }
   
   if(missing(write_to)) stop("'write_to' can't be missing")
   assert(write_to, len = 1, typ = "character")

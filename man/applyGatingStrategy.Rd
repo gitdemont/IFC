@@ -24,6 +24,8 @@ A named list of class `IFC_data` with new regions, pops and graphs
 Applies Gating Strategy to an `IFC_data` object
 }
 \details{
-/!\ Please note that all former gating strategy (i.e. regions, pops, graphs and stats) will be removed from returned object.
-An error will be thrown if a feature is required to create a population or a graph but can't be found in 'obj'.
+/!\ Please note that all former gating strategy (i.e. regions, pops, graphs and stats) will be removed from returned object.\cr
+An error will be thrown if a feature is required to create a population or a graph but can't be found in 'obj'.\cr
+If tagged population(s) is(are) imported, objects from this(these) population(s) outside 'obj' will be discarded.\cr
+If this results in NULL, then all objects will be tagged.
 }
