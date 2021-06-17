@@ -160,9 +160,9 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
   if(length(x)>1) stop("when provided 'x' should be of length 1")
   if(length(y)>1) stop("when provided 'y' should be of length 1")
   if(length(x_trans)>1) stop("when provided 'x_trans' should be of length 1")
-  if(!is.null(trans_x)) if(trans_x!="P") if(!is.numeric(as.numeric(trans_x))) stop("'x_trans', should be either \"P\" or coercible to a positive numeric")
+  # if(!is.null(trans_x)) if(trans_x!="P") if(!is.numeric(as.numeric(trans_x))) stop("'x_trans', should be either \"P\" or coercible to a positive numeric")
   if(length(y_trans)>1) stop("when provided 'y_trans' should be of length 1")
-  if(!is.null(trans_y)) if(trans_y!="P") if(!is.numeric(as.numeric(trans_y))) stop("y_trans, should be either \"P\" or coercible to a positive numeric")
+  # if(!is.null(trans_y)) if(trans_y!="P") if(!is.numeric(as.numeric(trans_y))) stop("y_trans, should be either \"P\" or coercible to a positive numeric")
   if(!is.null(smoothingfactor)) {
     smoothingfactor = na.omit(as.integer(smoothingfactor)); assert(smoothingfactor, len=1, alw=as.integer(0:20))
   }
@@ -351,13 +351,6 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
       
       xran = range(obj$features[SUB, foo$f1], na.rm = TRUE)
       if(length(foo$xlogrange)==0) foo$xlogrange = trans_x
-      # if(foo$xlogrange == "P") {
-      #   xran = xran + diff(xran) * c(-0.07,0.07)
-      # } else {
-      #   xran = smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
-      #   xran = xran + diff(xran) * c(-0.07,0.07)
-      #   xran = inv_smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
-      # }
       trans_x = parseTrans(foo$xlogrange)
       xran = applyTrans(xran, trans_x)
       xran = xran + diff(xran) * c(-0.07,0.07)
@@ -368,13 +361,6 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
       if(foo$type!="histogram") {
         yran = range(obj$features[SUB, foo$f2], na.rm = TRUE)
         if(length(foo$ylogrange)==0) foo$ylogrange = trans_y
-        # if(foo$ylogrange == "P") {
-        #   yran = yran + diff(yran) * c(-0.07,0.07)
-        # } else {
-        #   yran = smoothLinLog(yran, hyper = as.numeric(foo$ylogrange))
-        #   yran = yran + diff(yran) * c(-0.07,0.07)
-        #   yran = inv_smoothLinLog(yran, hyper = as.numeric(foo$ylogrange))
-        # }
         trans_y = parseTrans(foo$ylogrange)
         yran = applyTrans(yran, trans_y)
         yran = yran + diff(yran) * c(-0.07,0.07)
