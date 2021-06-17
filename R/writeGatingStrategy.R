@@ -174,8 +174,6 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   #' @keywords internal
   toXML2_boolpop_gs <- function(pop) {
     # recover definition
-    if(pop$name == "Events") aa <<- pop
-    if(pop$name == "complex") bb <<- pop
     pop_def <- pop$split
     pop_def[pop_def == "And"]="&"
     pop_def[pop_def == "Or"] ="|"

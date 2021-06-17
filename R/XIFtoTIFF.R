@@ -423,7 +423,6 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
                                                    bits = bits,
                                                    swap = endianness!=r_endian,
                                                    verbose=FALSE)
-          # if(IFD$infos$TYPE == 3 && IFD$infos$OBJECT_ID == 2) { aa <<- IFD; bb <<- ifd[["273"]]$add_content; stop() }
           ifd = c(ifd, buildIFD(val = length(ifd[["273"]]$add_content), typ = 4, tag = 279, endianness = r_endian))
         }
         # register current object id in new tag to be able to track it
