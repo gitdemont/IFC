@@ -123,15 +123,15 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
              if(length(pop$obj) != obj_number) {
                Kp = class(pop$obj)
                if(Kp%in%"numeric" | Kp%in%"integer") {
-                 if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+                 if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to compute a tagged population with element(s) outside of objects acquired: ", pop$name))
                  pops[[i]]$obj=rep(FALSE,obj_number)
                  pops[[i]]$obj[pop$obj+1]=TRUE
                } else {
-                 if(!Kp%in%"logical") stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+                 if(!Kp%in%"logical") stop(paste0("trying to compute a tagged population with element(s) outside of objects acquired: ", pop$name))
                }
              }
-             if(sum(pops[[i]]$obj)==0) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
-             if(obj_number != length(pops[[i]]$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+             if(sum(pops[[i]]$obj)==0) stop(paste0("trying to compute a tagged population with element(s) outside of objects acquired: ", pop$name))
+             if(obj_number != length(pops[[i]]$obj)) stop(paste0("trying to compute a tagged population with element(s) outside of objects acquired: ", pop$name))
            })
     if(display_progress) {
       setPB(pb, value = i, title = title_progress, label = "extacting populations")
