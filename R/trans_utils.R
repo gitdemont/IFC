@@ -45,7 +45,7 @@ parseTrans <- function(string) {
   if(length(foo) == 1 && foo == "P") return(list(what = "return", args = list()))
   if(length(foo) != 1 || is.na(suppressWarnings(as.numeric(foo[1])))) {
     fun = foo[1]
-    fun_args <- formalArgs(fun)
+    fun_args <- names(formals(fun))
     args <- suppressWarnings(as.numeric(foo)) # eliminates 1st arg (e.g 'x')
     names(args) <- fun_args[seq_along(foo)]
     args <- args[!is.na(args)]
