@@ -27,27 +27,27 @@ If missing, the default, 'type' will be deduced from other parameters.
 If 'name' is "All" type will be "B". Otherwise, if 'fx' is given type will be "G".
 Otherwise, "T", if 'definition' is missing but not 'obj' or "C" if 'definition' is not missing.}
 
-\item{base}{which population is base on. Default is base='All'. Only needed when type = "T".}
+\item{base}{which population is based on. It will be base="All", for 'type' "T" and "C" and base="", for 'type' "B". It is only needed when type = "G".}
 
-\item{color}{color of the population. See \code{\link{paletteIFC}} for allowed colors. If not provided, will be sampled.}
+\item{color}{color of the population. See \code{\link{paletteIFC}} for allowed colors. If not provided, it will be sampled.}
 
-\item{lightModeColor}{lightModeColor of the population. See \code{\link{paletteIFC}} for allowed colors. If not provided, will be sampled.}
+\item{lightModeColor}{lightModeColor of the population. See \code{\link{paletteIFC}} for allowed colors. If not provided, it will be sampled.}
 
 \item{style}{style of the population. Either 20, 4, 3, 1, 5, 0, 2, 18, 15, 17, respectively for:
 "Simple Dot", "Cross", "Plus", "Empty Circle", "Empty Diamond", "Empty Square",
 "Empty Triangle", "Solid Diamond", "Solid Square", "Solid Triangle".}
 
-\item{region}{Only if type='G'. Name of the region defining the population.}
+\item{region}{Only if type="G". Name of the region defining the population.}
 
-\item{fx}{Only needed if type='G'. Name of the x-feature defining the population.}
+\item{fx}{Only needed if type="G". Name of the x-feature defining the population.}
 
-\item{fy}{Only needed if type='G' and only if region is defined in 2D. Name of the y-feature defining the population.}
+\item{fy}{Only needed if type="G" and only if region is defined in 2D. Name of the y-feature defining the population.}
 
-\item{definition}{Only needed if type='C'. Parameters defining the population.}
+\item{definition}{Only needed if type="C". Parameters defining the population.}
 
-\item{obj}{Only needed if type='T'. Either a:\cr
--Logical vector of same length as 'All' population indicating if a cell belongs to the population or not.\cr
--Numeric Vector of indices of cells that belongs to the population.}
+\item{obj}{Only needed if type="T". Either a:\cr
+-Logical vector of same length as "All" population indicating if a cell belongs to the population or not.\cr
+-Integer vector of indices of cells that belongs to the population. Note that first object is 0.}
 
 \item{...}{Other arguments to be passed.}
 }
