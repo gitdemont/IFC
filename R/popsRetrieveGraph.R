@@ -72,12 +72,6 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
   foo$title = paste0(unique(c(parent1, parent2)), collapse = ", ")
   if(length(P[[1]]$fy) == 0) {
     xran = range(c(obj$features[SUB, foo$f1], unlist(lapply(R, FUN=function(r) c(r$x, r$cx)))), na.rm = TRUE)
-    # if(foo$xlogrange == "P") {
-    #   xran = xran + diff(xran) * c(-0.07,0.07)
-    # } else {
-    #   xran = smoothLinLog(xran, hyper = as.numeric(foo$xlogrange))
-    #   xran = xran + diff(xran) * c(-0.07,0.07)
-    # }
     trans_x = parseTrans(foo$xlogrange)
     xran = applyTrans(xran, trans_x)
     xran = xran + diff(xran) * c(-0.07,0.07)
