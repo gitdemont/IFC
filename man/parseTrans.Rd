@@ -10,7 +10,10 @@ parseTrans(string)
 \item{string}{character string describing transformation used and its parameters, if any.}
 }
 \value{
-a list with 2 members what (=the transformation function) and args (=the parameters to pass to this function)
+a list with 3 members:\cr
+-what, the transformation function,\cr
+-args, he parameters to pass to this function (with the exception of the 1st one),\cr
+-trans, the transformation instruction coerced to character.
 }
 \description{
 Helper to parse transformation parameter.

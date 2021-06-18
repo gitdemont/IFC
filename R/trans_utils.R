@@ -37,44 +37,27 @@
 #' and all other elements will be passed to this function after being coerced to numeric
 #' in the order they are provided with the exception of 1st one;
 #' if coercion results in NA, the argument will be skipped.
-#' @return a list with 2 members what (=the transformation function) and args (=the parameters to pass to this function) 
+#' @return a list with 3 members:\cr
+#' -what, the transformation function,\cr
+#' -args, he parameters to pass to this function (with the exception of the 1st one),\cr
+#' -trans, the transformation instruction coerced to character.
 #' @keywords internal
 parseTrans <- function(string) {
-  if(length(string) == 0) return(list(what = "return", args = list()))
+  if(missing(string) || length(string) == 0) return(list(what = "return", args = list(), trans = character()))
+  string = as.character(string)
   foo = strsplit(string, split = "|", fixed = TRUE)[[1]]
-  if(length(foo) == 1 && foo == "P") return(list(what = "return", args = list()))
+  if(length(foo) == 1 && foo == "P") return(list(what = "return", args = list(), trans = string))
   if(length(foo) != 1 || is.na(suppressWarnings(as.numeric(foo[1])))) {
     fun = foo[1]
     fun_args <- names(formals(fun))
     args <- suppressWarnings(as.numeric(foo)) # eliminates 1st arg (e.g 'x')
     names(args) <- fun_args[seq_along(foo)]
     args <- args[!is.na(args)]
-    return(list(what = fun, args = as.list(args)))
+    return(list(what = fun, args = as.list(args), trans = string))
   } else {
-    return(list(what = "smoothLinLog", args = list(hyper = as.numeric(foo[1]))))
+    return(list(what = "smoothLinLog", args = list(hyper = as.numeric(foo[1])), trans = string))
   }
 }
-
-# version to include ...
-# parseTrans <- function(string) {
-#   foo = strsplit(string, split = "|", fixed = TRUE)[[1]]
-#   if(length(foo) == 1 && foo == "P") return(list(what = "return", args = list()))
-#   if(length(foo) != 1 || is.na(suppressWarnings(as.numeric(foo[1])))) {
-#     fun = foo[1]
-#     fun_args <- formals(fun)
-#     args <- lapply(foo, FUN = function(x) suppressWarnings(as.numeric(x)))
-#     names(args) <- names(fun_args[seq_along(foo)])
-#     for(i in na.omit(names(args[is.na(unlist(args))]))) {
-#       try({args[[i]] <- eval(parse(text=fun_args[[i]])) }, silent = TRUE) # try is used to not include args that evaluates other args 
-#     }
-#     if(anyNA(names(args)) && "..." %in% names(args)) { args[["..."]] <- c(args[["..."]], na.omit(unname(unlist(args[is.na(names(args))])))) }
-#     args <- args[!is.na(unlist(args))]
-#     args <- args[!is.na(names(args))]
-#     return(list(what = fun, args = args))
-#   } else {
-#     return(list(what = "smoothLinLog", args = list(hyper = as.numeric(foo[1]))))
-#   }
-# }
 
 #' @title Apply Transformation
 #' @name applyTrans
