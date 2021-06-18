@@ -56,20 +56,20 @@ buildRegion <- function(type, label, cx, cy, color, lightcolor, ismarker="false"
   doesnotoverride = tolower(doesnotoverride); assert(doesnotoverride, len=1, alw=c("false","true"))
   if(missing(xlogrange)) stop("'xlogrange' can't be missing")
   if(missing(ylogrange)) stop("'ylogrange' can't be missing")
-  xlogrange = as.character(xlogrange)
-  ylogrange = as.character(ylogrange)
-  # if(xlogrange != "P") {
-  #   tmp = as.integer(xlogrange)
-  #   if(is.na(tmp)) stop("'xlogrange' should be coercible to positive integer")
-  #   if(tmp<0) stop("'xlogrange' should be coercible to positive integer")
-  #   xlogrange = as.character(tmp)
-  # }
-  # if(ylogrange != "P") {
-  #   tmp = as.integer(ylogrange)
-  #   if(is.na(tmp)) stop("'ylogrange' should be coercible to positive integer")
-  #   if(tmp<0) stop("'ylogrange' should be coercible to positive integer")
-  #   ylogrange = as.character(tmp)
-  # }
+  xlogrange = as.character(xlogrange); assert(xlogrange, len=1)
+  ylogrange = as.character(ylogrange); assert(ylogrange, len=1)
+  if(xlogrange != "P") {
+    tmp = as.numeric(xlogrange)
+    if(is.na(tmp)) stop("'xlogrange' should be either \"P\" or coercible to a positive numeric")
+    if(tmp<0) stop("'xlogrange' should be either \"P\" or coercible to a positive numeric")
+    xlogrange = as.character(tmp)
+  }
+  if(ylogrange != "P") {
+    tmp = as.numeric(ylogrange)
+    if(is.na(tmp)) stop("'ylogrange' should be either \"P\" or coercible to a positive numeric")
+    if(tmp<0) stop("'ylogrange' should be either \"P\" or coercible to a positive numeric")
+    ylogrange = as.character(tmp)
+  }
   if(missing(color)) {
     if(missing(lightcolor)) {
       tmp = sample(nrow(paletteIFC("")),1)

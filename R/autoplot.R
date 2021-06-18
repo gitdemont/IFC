@@ -160,9 +160,17 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
   if(length(x)>1) stop("when provided 'x' should be of length 1")
   if(length(y)>1) stop("when provided 'y' should be of length 1")
   if(length(x_trans)>1) stop("when provided 'x_trans' should be of length 1")
-  # if(!is.null(trans_x)) if(trans_x!="P") if(!is.numeric(as.numeric(trans_x))) stop("'x_trans', should be either \"P\" or coercible to a positive numeric")
+  if(!is.null(trans_x)) if(trans_x!="P") {
+    tmp = as.numeric(trans_x)
+    if(is.na(tmp)) stop("'x_trans', should be either \"P\" or coercible to a positive numeric")
+    if(tmp<0) stop("'x_trans', should be either \"P\" or coercible to a positive numeric")
+  }
   if(length(y_trans)>1) stop("when provided 'y_trans' should be of length 1")
-  # if(!is.null(trans_y)) if(trans_y!="P") if(!is.numeric(as.numeric(trans_y))) stop("y_trans, should be either \"P\" or coercible to a positive numeric")
+  if(!is.null(trans_y)) if(trans_y!="P") {
+    tmp = as.numeric(trans_y)
+    if(is.na(tmp)) stop("'y_trans', should be either \"P\" or coercible to a positive numeric")
+    if(tmp<0) stop("'y_trans', should be either \"P\" or coercible to a positive numeric")
+  }
   if(!is.null(smoothingfactor)) {
     smoothingfactor = na.omit(as.integer(smoothingfactor)); assert(smoothingfactor, len=1, alw=as.integer(0:20))
   }

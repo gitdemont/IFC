@@ -151,20 +151,20 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   if(length(histogramsmoothingfactor)==0) histogramsmoothingfactor = as.integer(0); histogramsmoothingfactor = as.integer(histogramsmoothingfactor); assert(histogramsmoothingfactor, len=1, alw=as.integer(0:20))
   
   bincount = as.integer(bincount); assert(bincount, len=1, alw=as.integer(c(0,2^(3:10))))
-  xlogrange = as.character(xlogrange)
-  ylogrange = as.character(ylogrange)
-  # if(xlogrange != "P") {
-  #   tmp = as.numeric(xlogrange)
-  #   if(is.na(tmp)) stop("'xlogrange' should be coercible to positive numeric")
-  #   if(tmp<0) stop("'xlogrange' should be coercible to positive numeric")
-  #   xlogrange = as.character(tmp)
-  # }
-  # if(ylogrange != "P") {
-  #   tmp = as.numeric(ylogrange)
-  #   if(is.na(tmp)) stop("'ylogrange' should be coercible to positive numeric")
-  #   if(tmp<0) stop("'ylogrange' should be coercible to positive numeric")
-  #   ylogrange = as.character(tmp)
-  # }
+  xlogrange = as.character(xlogrange); assert(xlogrange, len=1)
+  ylogrange = as.character(ylogrange); assert(ylogrange, len=1)
+  if(xlogrange != "P") {
+    tmp = as.numeric(xlogrange)
+    if(is.na(tmp)) stop("'xlogrange' should be either \"P\" or coercible to a positive numeric")
+    if(tmp<0) stop("'xlogrange' should be either \"P\" or coercible to a positive numeric")
+    xlogrange = as.character(tmp)
+  }
+  if(ylogrange != "P") {
+    tmp = as.numeric(ylogrange)
+    if(is.na(tmp)) stop("'ylogrange' should be either \"P\" or coercible to a positive numeric")
+    if(tmp<0) stop("'ylogrange' should be either \"P\" or coercible to a positive numeric")
+    ylogrange = as.character(tmp)
+  }
   stats_alw = c("Count","%Total","%Gated","%Plotted","Objects/mL","Mean","Median","Std. Dev.","MAD","CV","Minimum","Maximum","Geo. Mean","Mode","Variance","NaN")
   assert(xstats, len=1, typ="character"); stopifnot(strsplit(xstats, split="|", fixed=TRUE)[[1]] %in% stats_alw)
   assert(ystats, len=1, typ="character"); stopifnot(xstats == ystats, strsplit(ystats, split="|", fixed=TRUE)[[1]] %in% stats_alw)
