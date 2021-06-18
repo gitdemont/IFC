@@ -154,13 +154,13 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   xlogrange = as.character(xlogrange); assert(xlogrange, len=1)
   ylogrange = as.character(ylogrange); assert(ylogrange, len=1)
   if(xlogrange != "P") {
-    tmp = as.numeric(xlogrange)
+    tmp = suppressWarnings(as.numeric(xlogrange))
     if(is.na(tmp)) stop("'xlogrange' should be either \"P\" or coercible to a positive numeric")
     if(tmp<0) stop("'xlogrange' should be either \"P\" or coercible to a positive numeric")
     xlogrange = as.character(tmp)
   }
   if(ylogrange != "P") {
-    tmp = as.numeric(ylogrange)
+    tmp = suppressWarnings(as.numeric(ylogrange))
     if(is.na(tmp)) stop("'ylogrange' should be either \"P\" or coercible to a positive numeric")
     if(tmp<0) stop("'ylogrange' should be either \"P\" or coercible to a positive numeric")
     ylogrange = as.character(tmp)
@@ -298,13 +298,15 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   } else {
     assert(xstatsorder, len=1, typ="character")
   }
-
+  Xtrans = dots$xtrans; parseTrans(Xtrans)
+  Ytrans = dots$ytrans; parseTrans(Ytrans)
   args = c(args, list(scaletype=scaletype, 
                       xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
                       title=title, xlabel=xlabel, ylabel=ylabel, 
                       axislabelsfontsize=axislabelsfontsize, axistickmarklabelsfontsize=axistickmarklabelsfontsize, graphtitlefontsize=graphtitlefontsize,
                       regionlabelsfontsize=regionlabelsfontsize, bincount=bincount,
-                      freq=freq, histogramsmoothingfactor=histogramsmoothingfactor, xlogrange=xlogrange, ylogrange=ylogrange, maxpoints=maxpoints, 
+                      freq=freq, histogramsmoothingfactor=histogramsmoothingfactor, xlogrange=xlogrange, ylogrange=ylogrange,
+                      xtrans=Xtrans, ytrans=Ytrans, maxpoints=maxpoints, 
                       stats=stats, xsize=xsize, ysize=ysize, splitterdistance=splitterdistance,
                       xstats=xstats, ystats=ystats, order=order, xstatsorder=xstatsorder,
                       Legend=Legend, BasePop=BasePop, GraphRegion=GraphRegion, ShownPop=ShownPop))

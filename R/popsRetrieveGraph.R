@@ -68,14 +68,15 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
   # start rebuilding original graph
   foo$f1 = P[[1]]$fx
   foo$xlogrange = R[[1]]$xlogrange
+  foo$xtrans = R[[1]]$xtrans
   foo$ShownPop = list()
   foo$title = paste0(unique(c(parent1, parent2)), collapse = ", ")
+  Xtrans = foo$xtrans; if(length(Xtrans) == 0) Xtrans = foo$xlogrange
   if(length(P[[1]]$fy) == 0) {
     xran = range(c(obj$features[SUB, foo$f1], unlist(lapply(R, FUN=function(r) c(r$x, r$cx)))), na.rm = TRUE)
-    trans_x = parseTrans(foo$xlogrange)
+    trans_x = parseTrans(Xtrans)
     xran = applyTrans(xran, trans_x)
     xran = xran + diff(xran) * c(-0.07,0.07)
-    
     foo$xmin = xran[1]
     foo$xmax = xran[2]
     foo$type = "histogram"
@@ -90,18 +91,18 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
     if(yran[1] == yran[2]) yran = yran[1] + c(0,0.07)
   } else {
     xran = range(c(obj$features[SUB, foo$f1], unlist(lapply(R, FUN=function(r) c(r$x, r$cx)))), na.rm = TRUE)
-    trans_x = parseTrans(foo$xlogrange)
+    trans_x = parseTrans(Xtrans)
     xran = applyTrans(xran, trans_x)
     xran = xran + diff(xran) * c(-0.07,0.07)
-    
     foo$f2 = P[[1]]$fy
     foo$ylogrange = R[[1]]$ylogrange
+    foo$ytrans = R[[1]]$ytrans
+    Ytrans = foo$ytrans; if(length(Ytrans) == 0) Ytrans = foo$ylogrange
     yran = range(c(obj$features[SUB, foo$f2], unlist(lapply(R, FUN=function(r) c(r$y,r$cy)))), na.rm = TRUE)
-    trans_y = parseTrans(foo$ylogrange)
+    trans_y = parseTrans(Ytrans)
     yran = applyTrans(yran, trans_y)
     yran = yran + diff(yran) * c(-0.07,0.07)
     yran = applyTrans(yran, trans_y, inverse = TRUE)
-    
     foo$type = vis2D
   }
   xran = applyTrans(xran, trans_x, inverse = TRUE)

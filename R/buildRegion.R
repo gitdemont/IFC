@@ -59,13 +59,13 @@ buildRegion <- function(type, label, cx, cy, color, lightcolor, ismarker="false"
   xlogrange = as.character(xlogrange); assert(xlogrange, len=1)
   ylogrange = as.character(ylogrange); assert(ylogrange, len=1)
   if(xlogrange != "P") {
-    tmp = as.numeric(xlogrange)
+    tmp = suppressWarnings(as.numeric(xlogrange))
     if(is.na(tmp)) stop("'xlogrange' should be either \"P\" or coercible to a positive numeric")
     if(tmp<0) stop("'xlogrange' should be either \"P\" or coercible to a positive numeric")
     xlogrange = as.character(tmp)
   }
   if(ylogrange != "P") {
-    tmp = as.numeric(ylogrange)
+    tmp = suppressWarnings(as.numeric(ylogrange))
     if(is.na(tmp)) stop("'ylogrange' should be either \"P\" or coercible to a positive numeric")
     if(tmp<0) stop("'ylogrange' should be either \"P\" or coercible to a positive numeric")
     ylogrange = as.character(tmp)
@@ -124,5 +124,11 @@ buildRegion <- function(type, label, cx, cy, color, lightcolor, ismarker="false"
       if(missing(cy)) cy= mean(y)
     }
   }
-  return(list("type"=type, "label"=label, "cx"=cx, "cy"=cy, "color"=color, "lightcolor"=lightcolor, "ismarker"=ismarker, "doesnotoverride"=doesnotoverride, "xlogrange"=xlogrange, "ylogrange"=ylogrange, "x"=x, "y"=y))
+  Xtrans = dots$xtrans; parseTrans(Xtrans)
+  Ytrans = dots$ytrans; parseTrans(Ytrans)
+  return(list("type"=type, "label"=label, "cx"=cx, "cy"=cy, "color"=color, "lightcolor"=lightcolor,
+              "ismarker"=ismarker, "doesnotoverride"=doesnotoverride,
+              "xlogrange"=xlogrange, "ylogrange"=ylogrange,
+              "xtrans"=Xtrans, "ytrans"=Ytrans,
+              "x"=x, "y"=y))
 }

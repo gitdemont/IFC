@@ -51,20 +51,22 @@ popsGetSiblings1 <- function(obj, pops) {
     map = sapply(obj$pops, FUN=function(m) {
       if(m$type!="G") return(rep(FALSE, 5))
       if(is.null(obj$regions[[m$region]])) return(rep(FALSE, 5))
-      m$xlogrange = obj$regions[[m$region]]$xlogrange
+      use_transx = ifelse(length(obj$regions[[m$region]]$xtrans) == 0, 1, 2)
+      m$Xtrans = obj$regions[[m$region]][[c("xlogrange","xtrans")[use_transx]]]
       if(is.null(p$fy)) {
         return(c(m$base==p$base,
                  ifelse(is.null(m$fx), FALSE, identical(m$fx, p$fx)),
-                 ifelse(is.null(m$xlogrange), FALSE, identical(r$xlogrange, m$xlogrange)), 
+                 ifelse(is.null(m$Xtrans), FALSE, identical(r[[c("xlogrange","xtrans")[use_transx]]], m$Xtrans)),
                  is.null(m$fy),
                  TRUE))
       } else {
-        m$ylogrange = obj$regions[[m$region]]$ylogrange
+        use_transy = ifelse(length(obj$regions[[m$region]]$ytrans) == 0, 1, 2)
+        m$Ytrans = obj$regions[[m$region]][[c("ylogrange","ytrans")[use_transy]]]
         return(c(m$base==p$base,
                  ifelse(is.null(m$fx), FALSE, identical(m$fx, p$fx)), 
-                 ifelse(is.null(m$xlogrange), FALSE, identical(m$xlogrange, r$xlogrange)), 
+                 ifelse(is.null(m$Xtrans), FALSE, identical(r[[c("xlogrange","xtrans")[use_transx]]], m$Xtrans)),
                  ifelse(is.null(m$fy), FALSE, identical(m$fy, p$fy)),
-                 ifelse(is.null(m$ylogrange), FALSE, identical(m$ylogrange, r$ylogrange))))
+                 ifelse(is.null(m$Ytrans), FALSE, identical(r[[c("ylogrange","ytrans")[use_transy]]], m$Ytrans))))
       }
     })
     return(N[apply(map, 2, all)])
@@ -95,20 +97,22 @@ popsGetSiblings2 <- function(obj, pops) {
     map = sapply(obj$pops, FUN=function(m) {
       if(m$type!="G") return(rep(FALSE, 5))
       if(is.null(obj$regions[[m$region]])) return(rep(FALSE, 5))
-      m$xlogrange = obj$regions[[m$region]]$xlogrange
+      use_transx = ifelse(length(obj$regions[[m$region]]$xtrans) == 0, 1, 2)
+      m$Xtrans = obj$regions[[m$region]][[c("xlogrange","xtrans")[use_transx]]]
       if(is.null(p$fy)) {
         return(c(m$base!=p$base,
                  ifelse(is.null(m$fx), FALSE, identical(m$fx, p$fx)),
-                 ifelse(is.null(m$xlogrange), FALSE, identical(r$xlogrange, m$xlogrange)), 
+                 ifelse(is.null(m$Xtrans), FALSE, identical(r[[c("xlogrange","xtrans")[use_transx]]], m$Xtrans)),
                  is.null(m$fy),
                  TRUE))
       } else {
-        m$ylogrange = obj$regions[[m$region]]$ylogrange
+        use_transy = ifelse(length(obj$regions[[m$region]]$ytrans) == 0, 1, 2)
+        m$Ytrans = obj$regions[[m$region]][[c("ylogrange","ytrans")[use_transy]]]
         return(c(m$base!=p$base,
                  ifelse(is.null(m$fx), FALSE, identical(m$fx, p$fx)), 
-                 ifelse(is.null(m$xlogrange), FALSE, identical(m$xlogrange, r$xlogrange)), 
+                 ifelse(is.null(m$Xtrans), FALSE, identical(r[[c("xlogrange","xtrans")[use_transx]]], m$Xtrans)),
                  ifelse(is.null(m$fy), FALSE, identical(m$fy, p$fy)),
-                 ifelse(is.null(m$ylogrange), FALSE, identical(m$ylogrange, r$ylogrange))))
+                 ifelse(is.null(m$Ytrans), FALSE, identical(r[[c("ylogrange","ytrans")[use_transy]]], m$Ytrans))))
       }
     })
     return(N[apply(map, 2, all)])
@@ -136,10 +140,16 @@ popsGetSiblings <- function(obj, pops) {
   if(length(x) != length(type)) return(NULL)
   if((length(unique(x)) != 1) ||
      (length(unique(type)) != 1)) return(NULL)
-  xlog = sapply(obj$pops[bar], FUN = function(p) obj$regions[[p$region]]$xlogrange)
+  xlog = sapply(obj$pops[bar], FUN = function(p) {
+    if(length(obj$regions[[p$region]]$xtrans) == 0) return(obj$regions[[p$region]]$xlogrange)
+    return(obj$regions[[p$region]]$xtrans)
+  })
   if(!all(type)) {
     y = unlist(lapply(obj$pops[bar], FUN = function(p) p$fy))
-    ylog = sapply(obj$pops[bar], FUN = function(p) obj$regions[[p$region]]$ylogrange)
+    ylog = sapply(obj$pops[bar], FUN = function(p) {
+      if(length(obj$regions[[p$region]]$ytrans) == 0) return(obj$regions[[p$region]]$ylogrange)
+      return(obj$regions[[p$region]]$ytrans)
+    })
     if((length(unique(y)) != 1) ||
        (length(unique(xlog)) != 1) ||
        (length(unique(ylog)) != 1)) return(NULL)

@@ -88,10 +88,12 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
                fy_pos=which(names(features)==pop$fy)
                y=features[,fy_pos]
                ylim=as.numeric(regions[[pop_pos]]$y)
-               trans_x = parseTrans(regions[[pop_pos]]$xlogrange)
+               Xtrans = regions[[pop_pos]]$xtrans; if(length(Xtrans) == 0) Xtrans = regions[[pop_pos]]$xlogrange
+               trans_x = parseTrans(Xtrans)
                x = applyTrans(x, trans_x)
                xlim = applyTrans(xlim, trans_x)
-               trans_y = parseTrans(regions[[pop_pos]]$ylogrange)
+               Ytrans = regions[[pop_pos]]$ytrans; if(length(Ytrans) == 0) Ytrans = regions[[pop_pos]]$ylogrange
+               trans_y = parseTrans(Ytrans)
                y = applyTrans(y, trans_y)
                ylim = applyTrans(ylim, trans_y)
                switch(regions[[pop_pos]]$type, 
