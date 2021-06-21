@@ -303,11 +303,12 @@ fromXML2_gating  <- function(xml_nodes, type = "rect") {
                y = c(-1,1) * eig_val[2] + as.numeric(mu[2])
              },
              "poly" = {
-               vertices = matrix(unlist(node[names(node) == "vertex"]), ncol = L)
-               x = vertices[, 1]
-               y = vertices[, 2]
+               vertices = matrix(unlist(node[names(node) == "vertex"]), ncol = L, byrow = TRUE)
+               x = as.numeric(vertices[, 1])
+               y = as.numeric(vertices[, 2])
              })
-      reg = list(label=ifelse(length(meta$rtext)==0,ids[1],meta$rtext), type=type, x=x, y=y, xlogrange="P", ylogrange="P")
+      reg_label = ifelse(length(meta$rtext)==0,ids[1],meta$rtext)
+      reg = list(label=reg_label, type=type, x=x, y=y, xlogrange="P", ylogrange="P")
       if(length(meta$rcolors) != 0) {
         meta$rcolors = strsplit(meta$rcolors, split="|", fixed=TRUE)[[1]]
         reg$color = meta$rcolors[1]
@@ -320,7 +321,7 @@ fromXML2_gating  <- function(xml_nodes, type = "rect") {
       if(length(meta$ylog) != 0) reg$ylogrange = meta$ylog
       if(length(meta$xtrans) != 0) reg$xtrans = meta$xtrans
       if(length(meta$ytrans) != 0) reg$ytrans = meta$ytrans
-      pop = list(name=ids[1], type="G", base=ids[2], region=ids[1], fx=names_dim[1])
+      pop = list(name=ids[1], type="G", base=ids[2], region=reg_label, fx=names_dim[1])
       if(L == 2) pop = c(pop, list(fy = names_dim[2]))
     }
     if(length(meta$pch) != 0) pop$style = meta$pch
@@ -400,6 +401,24 @@ readGatingML <- function(fileName, ...) {
   pops = pops[sapply(pops, length) != 0]
   names(regions) = sapply(regions, FUN = function(x) x$label)
   names(pops) = sapply(pops, FUN = function(x) x$name)
+  
+  # check for duplicated regions
+  dup = unique(names(regions)[duplicated(names(regions))])
+  sapply(dup, FUN = function(x) {
+    sapply(which(names(regions) == x)[-1], FUN = function(r) {
+      if(!identical(regions[[x]], regions[[r]])) stop("non-identical regions with same name [",x,"]")
+    })
+  })
+  regions = regions[!duplicated(names(regions))]
+  
+  # check for duplicated population
+  dup = unique(names(pops)[duplicated(names(pops))])
+  sapply(dup, FUN = function(x) {
+    sapply(which(names(pops) == x)[-1], FUN = function(p) {
+      if(!identical(pops[[x]], pops[[p]])) stop("non-identical pops with same name [",x,"]")
+    })
+  })
+  pops = pops[!duplicated(names(pops))]
   
   # access general custom info
   general_custom = suppressWarnings(xml_find_first(gating, "data-type:custom_info", ns = ns))
