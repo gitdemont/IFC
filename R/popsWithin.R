@@ -56,6 +56,9 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
   
   K = class(pops)
   L = length(pops)
+  # tmp_style = c("Simple Dot","Cross","Plus","Empty Circle","Empty Diamond","Empty Square","Empty Triangle","Solid Diamond","Solid Square","Solid Triangle")
+  # pch_style = c(20, 4, 3, 1, 5, 0, 2, 18, 15, 17)
+  
   obj_number = nrow(features)
   if(display_progress) {
     pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
@@ -66,8 +69,9 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
     fy_pos = NULL
     pop=pops[[i]]
     # changes styles to R compatible
-    style_tmp = pop$style==c("Simple Dot","Cross","Plus","Empty Circle","Empty Diamond","Empty Square","Empty Triangle","Solid Diamond","Solid Square","Solid Triangle")
-    if(any(style_tmp)) pops[[i]]$style=c(20, 4, 3, 1, 5, 0, 2, 18, 15, 17)[style_tmp]
+    # style_tmp = pop$style==tmp_style
+    # if(any(style_tmp)) pops[[i]]$style=pch_style[style_tmp]
+    pops[[i]]$style = map_style(pops[[i]]$style, toR=TRUE)
     # changes colors to R compatible
     pops[[i]]$color = map_color(pops[[i]]$color)
     pops[[i]]$lightModeColor = map_color(pops[[i]]$lightModeColor)
