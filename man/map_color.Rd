@@ -7,12 +7,12 @@
 map_color(color, toR = TRUE)
 }
 \arguments{
-\item{color}{a string. Default is missing.}
+\item{color}{a character vector Default is missing.}
 
 \item{toR}{whether to convert color toR or back. Default is TRUE.}
 }
 \value{
-a character string
+a character vector
 }
 \description{
 Converts IDEAS/INSPIRE colors toR and inversely

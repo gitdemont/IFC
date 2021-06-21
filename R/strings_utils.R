@@ -1,6 +1,6 @@
 ################################################################################
 # This file is released under the GNU General Public License, Version 3, GPL-3 #
-# Copyright (C) 2020 Yohann Demont                                             #
+# Copyright (C) 2021 Yohann Demont                                             #
 #                                                                              #
 # It is part of IFC package, please cite:                                      #
 # -IFC: An R Package for Imaging Flow Cytometry                                #
@@ -196,9 +196,9 @@ formatn <- function(splitp_obj, splitf_obj, channel = "", object = "") {
 #' @name map_color
 #' @description
 #' Converts IDEAS/INSPIRE colors toR and inversely
-#' @param color a string. Default is missing.
+#' @param color a character vector Default is missing.
 #' @param toR whether to convert color toR or back. Default is TRUE.
-#' @return a character string
+#' @return a character vector
 #' @keywords internal
 map_color <- function(color, toR = TRUE) {
   set1 = c("Teal", "Green", "Lime", "Control")
@@ -213,6 +213,36 @@ map_color <- function(color, toR = TRUE) {
     color[tmp2] <- set1[tmp1]
   }
   return(color)
+}
+
+#' @title Style Mapping
+#' @name map_style
+#' @description
+#' Converts IDEAS/INSPIRE style toR and inversely
+#' @param style a pch (converted to integer) or a character vector. Default is missing.
+#' @param toR whether to convert color toR or back. Default is FALSE.
+#' @return an integer vector when toR is TRUE or a character vector.
+#' @keywords internal
+map_style <- function(style, toR = FALSE) {
+  set1 = c("Simple Dot", "Cross", "Plus", 
+                       "Empty Circle", "Empty Diamond", "Empty Square", 
+                       "Empty Triangle", "Solid Diamond", "Solid Square", 
+                       "Solid Triangle")
+  set2 = c(20, 4, 3, 1, 5, 0, 2, 18, 15, 17)
+  if(toR) {
+    tmp1 = set1 %in% style
+    tmp2 = style %in% set1
+    style[tmp2] <- set2[tmp1]
+    if(!all(style %in% set2)) stop("not supported 'style'")
+    style = as.integer(style)
+  } else {
+    foo = suppressWarnings(as.integer(style))
+    tmp1 = set2 %in% foo
+    tmp2 = foo %in% set2
+    style[tmp2] <- set1[tmp1]
+    if(!all(style %in% set1)) stop("not supported 'style'")
+  }
+  return(style)
 }
 
 #' @title Random Name Generator
@@ -241,11 +271,12 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
 #' @description
 #' Formats numeric to string used for features, images, ... values conversion when exporting to xml.
 #' @param x a numeric vector.
-#' @param precision number of significant decimal digits to keep when abs(x) < 1. Default is 16.
+#' @param precision number of significant decimal digits to keep when abs(x) < 1. Default is 15.
 #' @return a string vector.
 #' @keywords internal
-num_to_string <- function(x, precision = 16) {
-  return(cpp_num_to_string(x, precision))
+num_to_string <- function(x, precision = 15) {
+  return(formatC(x, digits = precision, width = -1, drop0trailing = TRUE))
+  # return(cpp_num_to_string(x, precision))
 }
 
 #' @title Next Component Prediction

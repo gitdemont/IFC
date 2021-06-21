@@ -4,12 +4,12 @@
 \alias{num_to_string}
 \title{Numeric to String Formatting}
 \usage{
-num_to_string(x, precision = 16)
+num_to_string(x, precision = 15)
 }
 \arguments{
 \item{x}{a numeric vector.}
 
-\item{precision}{number of significant decimal digits to keep when abs(x) < 1. Default is 16.}
+\item{precision}{number of significant decimal digits to keep when abs(x) < 1. Default is 15.}
 }
 \value{
 a string vector.
