@@ -175,13 +175,6 @@ formatn <- function(splitp_obj, splitf_obj, channel = "", object = "") {
     splitf_obj = list(dir = "", parent = "", file = "", ext = "")
     class(splitf_obj) <- c("splitf_obj", oldClass(splitf_obj))
   }
-  # internal function all these checks are useless
-  # if(missing(splitp_obj)) stop("'splitp_obj' can't be missing")
-  #   assert(splitp_obj, cla = "splitp_obj")
-  #   assert(splitf_obj, cla = c("splitf_obj"))
-  #   channel = as.character(channel); assert(channel, len = 1, typ = "character")
-  #   object = as.character(object); assert(object, len = 1, typ = "character")
-  # }
   N = names(splitp_obj$decomp)
   splitp_obj$decomp[N == "dir"] <- splitf_obj["dir"]
   splitp_obj$decomp[N == "parent"] <- splitf_obj["parent"]
