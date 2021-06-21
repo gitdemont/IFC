@@ -204,13 +204,17 @@ map_color <- function(color, toR = TRUE) {
   set1 = c("Teal", "Green", "Lime", "Control")
   set2 = c("Cyan4", "Green4", "Chartreuse", "Gray81")
   if(toR) {
-    tmp1 = set1 %in% color
-    tmp2 = color %in% set1
-    color[tmp2] <- set2[tmp1]
+    foo = color %in% set1
+    if(any(foo)) {
+      bar = sapply(color[foo], FUN = function(x) which(set1 %in% x))
+      color[foo] <- set2[bar]
+    }
   } else {
-    tmp1 = set2 %in% color
-    tmp2 = color %in% set2
-    color[tmp2] <- set1[tmp1]
+    foo = color %in% set2
+    if(any(foo)) {
+      bar = sapply(color[foo], FUN = function(x) which(set2 %in% x))
+      color[foo] <- set1[bar]
+    }
   }
   return(color)
 }
@@ -230,16 +234,20 @@ map_style <- function(style, toR = FALSE) {
                        "Solid Triangle")
   set2 = c(20, 4, 3, 1, 5, 0, 2, 18, 15, 17)
   if(toR) {
-    tmp1 = set1 %in% style
-    tmp2 = style %in% set1
-    style[tmp2] <- set2[tmp1]
+    foo = style %in% set1
+    if(any(foo)) {
+      bar = sapply(style[foo], FUN = function(x) which(set1 %in% x))
+      style[foo] <- set2[bar]
+    }
     if(!all(style %in% set2)) stop("not supported 'style'")
     style = as.integer(style)
   } else {
-    foo = suppressWarnings(as.integer(style))
-    tmp1 = set2 %in% foo
-    tmp2 = foo %in% set2
-    style[tmp2] <- set1[tmp1]
+    style_ = suppressWarnings(as.integer(style))
+    foo = style_ %in% set2
+    if(any(foo)) {
+      bar = sapply(style_[foo], FUN = function(x) which(set2 %in% x))
+      style[foo] <- set1[bar]
+    }
     if(!all(style %in% set1)) stop("not supported 'style'")
   }
   return(style)
