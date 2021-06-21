@@ -106,7 +106,8 @@ buildPopulation <- function(name, type, base="All", color, lightModeColor, style
     style = names(sample(tmp_style, 1))
     if(type == "B") style = "Simple Dot"
   } else {
-    if(style%in%tmp_style) style = names(tmp_style[which(style==tmp_style)][1])
+    foo = suppressWarnings(as.integer(style))
+    if(foo%in%tmp_style) style = names(tmp_style[which(foo==tmp_style)][1])
     if(style%in%names(tmp_style)) {
       style = names(tmp_style[which(style==names(tmp_style))][1])
     } else {
