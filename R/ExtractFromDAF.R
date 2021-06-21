@@ -409,7 +409,6 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     ##### extracts graphs information
     plots=lapply(xml_attrs(xml_find_all(tmp, "//Graph")), FUN=function(x) as.list(x))
     if(length(plots)!=0) {
-      # plots=mapply(plots, FUN=c, SIMPLIFY = FALSE)
       plots_tmp=lapply(plots, FUN=function(plot) {
         pat=paste0("//Graph[@xlocation='",plot$xlocation,"'][@ylocation='",plot$ylocation,"']")
         sapply(c("Legend","BasePop","GraphRegion","ShownPop"), FUN=function(i_subnode){
@@ -422,7 +421,6 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       plots=lapply(plots, FUN=function(x) {replace(x, plots_tmp, lapply(x[plots_tmp], as.numeric))})
       plot_order=sapply(plots, FUN=function(i_plot) as.numeric(i_plot[c("xlocation", "ylocation")]))
       plots=plots[order(unlist(plot_order[1,]),unlist(plot_order[2,]))]
-      # plots=plots[order(unlist(plot_order[2,]))]
       rm(list=c("plots_tmp", "plot_order"))
       if(modify_feat) {
         plots = lapply(plots, FUN = function(g) {
@@ -441,7 +439,6 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     regions=lapply(xml_attrs(xml_find_all(tmp, "//Region")), FUN=function(x) as.list(x))
     if(length(regions) != 0) {
       names(regions)=lapply(regions, FUN=function(x) x$label)
-      # regions=mapply(regions, FUN=c, SIMPLIFY = FALSE)
       regions_tmp=c("cx","cy")
       regions=lapply(regions, FUN=function(x) {replace(x, regions_tmp, lapply(x[regions_tmp], as.numeric))})
       regions_tmp=lapply(regions, FUN=function(i_region) {
@@ -463,8 +460,6 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     pops=lapply(xml_attrs(xml_find_all(tmp, "//Pop")), FUN=function(x) as.list(x))
     if(length(pops)>0) {
       names(pops)=lapply(pops, FUN=function(x) x$name)
-      # pops=mapply(pops, fromIDEAS=TRUE, FUN=c, SIMPLIFY = FALSE)
-      # pops=mapply(pops, FUN=c, SIMPLIFY = FALSE)
       if(display_progress) {
         pb_pops = newPB(session = dots$session, min = 0, max = length(pops), initial = 0, style = 3)
         tryCatch({
