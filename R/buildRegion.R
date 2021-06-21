@@ -101,8 +101,8 @@ buildRegion <- function(type, label, cx, cy, color, lightcolor, ismarker="false"
   
   if(missing(x)) stop("'x' can't be missing")
   if(missing(y)) stop("'y' can't be missing")
-  x = as.numeric(x)
-  y = as.numeric(y)
+  x = suppressWarnings(as.numeric(x))
+  y = suppressWarnings(as.numeric(y))
   x = x[is.finite(x)]
   y = y[is.finite(y)]
   if(type=="poly") {
