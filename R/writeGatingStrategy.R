@@ -127,171 +127,62 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   # identify gatingML node
   gating = xml_find_first(root, "//gating:Gating-ML", ns = xml_ns(root))
   
+  # check if there are some tagged population
+  is_tagged = sapply(obj$pops, FUN = function(x) x$type == "T")
+  
   # add general custom info node
-  gating %>% xml_add_child(xml_new_node(name = "_ns_data-type_ns_custom_info",
-                                        .children = lapply(c("info","regions","pops","plots"), xml_new_node)))
+  to_create = c("info","tagged","plots")[c(TRUE,any(is_tagged),TRUE)]
+  gating %>% xml_add_child(xml_new_node(name = "_ns_data-type_ns_custom_info", .children = lapply(to_create, xml_new_node)))
   custom_info = xml_find_first(root, "_ns_data-type_ns_custom_info//info")
-  custom_pops = xml_find_first(root, "_ns_data-type_ns_custom_info//pops")
-  custom_regions = xml_find_first(root, "_ns_data-type_ns_custom_info//regions")
+  custom_tagged = xml_find_first(root, "_ns_data-type_ns_custom_info//tagged")
   custom_plots = xml_find_first(root, "_ns_data-type_ns_custom_info//plots")
   
   # fill general custom info node with info nodes
-  custom_info %>% xml_add_child(xml_new_node(name = "IFC", attrs = list(IFC_version = pkg_ver, date = now, IDEAS_version = obj$description$Assay$IDEAS_version, objcount = obj$description$ID$objcount)))
+  custom_info %>% xml_add_child(xml_new_node(name = "IFC", attrs = list(IFC_version = pkg_ver,
+                                                                        date = now, 
+                                                                        IDEAS_version = obj$description$Assay$IDEAS_version, 
+                                                                        objcount = obj$description$ID$objcount, 
+                                                                        All = paste0(c(map_style(obj$pops[["All"]]$style, toR=FALSE),
+                                                                                       map_color(c(obj$pops[["All"]]$color, obj$pops[["All"]]$lightModeColor), toR = FALSE)), collapse="|"))))
   
-  # fill general custom info node with region custom nodes
-  lapply(obj$regions, FUN = function(reg) {
-    # region names conversion
-    Nr = names(reg)
-    Nr[Nr == "color"] <- "color1"
-    Nr[Nr == "lightcolor"] <- "color2"
-    names(reg) <- Nr
-    
+  # fill general custom info node with tagged pop nodes
+  tagged_nodes = lapply(obj$pops[is_tagged], FUN = function(pop) {
     # color conversion
-    reg$color1 <- map_color(reg$color1, FALSE)
-    reg$color2 <- map_color(reg$color2, FALSE)
-    # collapse regions vertices
-    reg$x = paste0(reg$x, collapse = "|")
-    reg$y = paste0(reg$y, collapse = "|")
-    custom_regions %>% xml_add_child(xml_new_node(name = "region", attrs = reg))
+    pop$colors = paste0(map_color(c(pop$color,pop$lightModeColor), FALSE),collapse="|")
+    custom_tagged %>% xml_add_child(xml_new_node(name = "pop", attrs = list(name=pop$name,type="T", 
+                                                                            colors=pop$colors, 
+                                                                            pch=map_style(pop$style, toR=FALSE), 
+                                                                            obj=paste0(which(pop$obj) - 1L, collapse = "|"))))
   })
   
-  # fill general custom info node with graph custom nodes
+  # fill general custom info node with graph nodes
   graph_nodes = toXML2_graphs_gs(obj$graphs)
   lapply(graph_nodes, FUN =function(node) {
     custom_plots %>% xml_add_child(node)
   })
   
-  #' @title Boolean Population GatingML Conversion
-  #' @description 
-  #' Helper to convert boolean population to XML nodes in GatingML files.
-  #' @param pop a member of `IFC_pops` object.
-  #' @return a list of xml_node.
-  #' @keywords internal
-  toXML2_boolpop_gs <- function(pop) {
-    # recover definition
-    pop_def <- pop$split
-    pop_def[pop_def == "And"]="&"
-    pop_def[pop_def == "Or"] ="|"
-    pop_def[pop_def == "Not"]="!"
-    pop_names = !(pop_def %in% c("&", "|", "!", "(", ")"))
-    pop_def[pop_names] = paste0("`",pop_def[pop_names],"`")
-    pop_def = str2lang(paste0(pop_def,collapse = " "))
-    
-    # recover arithmetic tree
-    expand_tree = function(x) {
-      branch = lapply(x, unlist)
-      if(length(branch) <= 1) return(branch)
-      if(inherits(x, "("))  branch = branch[-1]
-      lapply(branch, expand_tree)
-    }
-    
-    tree = expand_tree(pop_def)
-    # inialize values for recursive loop
-    children = c()
-    ids = c()
-    # group by operation
-    op = lapply(rev(unlist(tree)), FUN = function(x) {
-      ele <- as.character(unlist(x))
-      if(ele %in% c("|", "&", "!")) {
-        # an operator is encountered
-        # we generate a random id for the population resulting of the operation
-        id = random_name(special = NULL, alpha = NULL, forbidden = c(ids, names(obj$pops)))
-        names = children
-        if(length(names) == 2) { # we have an operator and 2 names eg pop1 & pop2 , pop1 | pop2
-          ids <<- c(id, ids) 
-        } else {
-          # we use children if any and add last defined population name
-          names = c(names, ids[1])
-          # we remove last population name from the stack
-          ids <<- ids[-1]
-          if(ele != "!" && length(names) == 1) {
-            # we have only one name for a 2 side operation (& , |)
-            # we add population name from the stack to have 2 names
-            names = c(names, ids[1])
-            # we remove last population name from the stack
-            ids <<- ids[-1]
-          }
-          # finally new population name defined by the operation is added to the stack
-          ids <<- c(id, ids)
-        }
-        # already encountered names are flushed
-        children <<- c()
-        return(list(bool = ele, def = names, id = id))
-      } else {
-        # no operator found, so this is a children name
-        # children name is added
-        children <<- c(children, ele)
-      }
-      return(NULL)
-    })
-    op = op[sapply(op, length) != 0]
-    # if length(op) is 0 it means that population is an alias of another
-    # so as a hack we declare it as being a `and` of this alias
-    if(length(op) == 0) op = list(list(bool="&", def=c(pop$definition,pop$definition)))
-    
-    # id of the last operation is the population name
-    op[[length(op)]]$id <- pop$name
-    
-    # create nodes
-    lapply(op, FUN = function(x) {
-      bool = switch(x$bool, "|" = "or", "&" = "and", "!" = "not")
-      xml_new_node(name = "_ns_gating_ns_BooleanGate", attrs = list("_ns_gating_ns_id" = x$id),
-                   .children = list(xml_new_node(name = "_ns_data-type_ns_custom_info", attrs = c(pop[!(names(pop) %in% "split")])),
-                                    xml_new_node(name = paste0("_ns_gating_ns_", bool),
-                                                 .children = lapply(x$def, FUN = function(def) {
-                                                   xml_new_node(name = "_ns_gating_ns_gateReference", attrs = list("_ns_gating_ns_ref" = def))
-                                                 }))))
-    })
-  }
   
-  # create pop nodes either custom or gatingML ones
+  # Now, we fill GatingML with Boolean and Graphical pop + regions (C and G) in gating node
   pop_nodes = lapply(obj$pops, FUN = function(pop) {
-    # pop names conversion
-    Np = names(pop)
-    Np[Np == "color"] <- "color1"
-    Np[Np == "lightModeColor"] <- "color2"
-    names(pop) <- Np
-    
     # color conversion
-    pop$color1 <- map_color(pop$color1, FALSE)
-    pop$color2 <- map_color(pop$color2, FALSE)
+    pop$colors = paste0(map_color(c(pop$color,pop$lightModeColor), FALSE),collapse="|")
+    # only keep what is need
+    pop = pop[!(names(pop) %in% c("color","lightModeColor","names"))]
     
     gatingML_node = switch(pop$type, 
-                           "B" = {
-                             pop = pop[!(Np %in% c("obj","names"))]
-                             list()
-                           },
                            "C" = {
-                             pop = pop[!(Np %in% c("obj","names"))]
-                             toXML2_boolpop_gs(pop)
+                             pop = pop[!(names(pop) %in% "obj")]
+                             toXML2_boolpop_gs(obj, pop)
                            },
                            "G" = {
-                             pop = pop[!(Np %in% c("obj","names"))]
+                             pop = pop[!(names(pop) %in% "obj")]
                              reg = obj$regions[[pop$region]]
-                             toXML2_gating(pop, reg)
-                           },
-                           "T" = {
-                             pop = pop[!(Np %in% c("names"))]
-                             pop$obj = paste0(which(pop$obj) - 1L, collapse = "|")
-                             list()
+                             toXML2_graphpop_gs(pop, reg)
                            })
-    # whatever what pop is we export its definition in custom info
-    return(list(gatingML = gatingML_node, custom = xml_new_node(name = "pop", attrs = pop[!(names(pop) %in% "split")])))
-  })
-  
-  # fill general custom info node with population custom nodes
-  lapply(pop_nodes, FUN = function(node) {
-    if(length(node$custom) == 0) return(NULL)
-    custom_pops %>% xml_add_child(node$custom)
-  })
-  
-  # fill gatingML node
-  foo = lapply(pop_nodes, FUN = function(node) {
-    if(length(node$gatingML) == 0) return(NULL)
-    if(inherits(node$gatingML, "xml_node")) {
-      gating %>% xml_add_child(node$gatingML) 
+    if(inherits(gatingML_node, "xml_node")) {
+      gating %>% xml_add_child(gatingML_node) 
     } else {
-      lapply(node$gatingML, FUN = function(node_ele) {
+      lapply(gatingML_node, FUN = function(node_ele) {
         gating %>% xml_add_child(node_ele)
       })
     }

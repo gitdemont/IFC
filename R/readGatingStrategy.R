@@ -69,25 +69,9 @@ readGatingStrategy <- function(fileName, ...) {
     assay = "/AssayTemplate"
   }
 
-  ##### extracts description
-  # assay_attr = xml_attrs(xml_find_all(tmp, paste0("/",assay)))
-  # description=list("Assay" = assay_attr,
-  #                  "FCS"=xml_attrs(xml_find_all(tmp, "//FCS")),
-  #                  "SOD"=xml_attrs(xml_find_all(tmp, "//SOD")))
-  # description=lapply(description, FUN=function(x) {as.data.frame(do.call(what="rbind", x), stringsAsFactors=FALSE)})
-  # if(length(description$FCS)==0) {
-  #   description$ID = description$SOD
-  #   is_fcs = FALSE
-  # } else {
-  #   description$ID = description$FCS
-  #   is_fcs = TRUE
-  # }
-  # obj_count = as.integer(description$ID$objcount)
-  
   ##### extracts graphs information
   plots=lapply(xml_attrs(xml_find_all(tmp, "//Graph")), FUN=function(x) as.list(x))
   if(length(plots)!=0) {
-    # plots=mapply(plots, FUN=c, SIMPLIFY = FALSE)
     plots_tmp=lapply(plots, FUN=function(plot) {
       pat=paste0("//Graph[@xlocation='",plot$xlocation,"'][@ylocation='",plot$ylocation,"']")
       sapply(c("Legend","BasePop","GraphRegion","ShownPop"), FUN=function(i_subnode){
@@ -100,7 +84,6 @@ readGatingStrategy <- function(fileName, ...) {
     plots=lapply(plots, FUN=function(x) {replace(x, plots_tmp, lapply(x[plots_tmp], as.numeric))})
     plot_order=sapply(plots, FUN=function(i_plot) as.numeric(i_plot[c("xlocation", "ylocation")]))
     plots=plots[order(unlist(plot_order[1,]),unlist(plot_order[2,]))]
-    # plots=plots[order(unlist(plot_order[2,]))]
     rm(list=c("plots_tmp", "plot_order"))
   }
   class(plots) <- "IFC_graphs"
@@ -109,7 +92,6 @@ readGatingStrategy <- function(fileName, ...) {
   regions=lapply(xml_attrs(xml_find_all(tmp, "//Region")), FUN=function(x) as.list(x))
   if(length(regions) != 0) {
     names(regions)=lapply(regions, FUN=function(x) x$label)
-    # regions=mapply(regions, FUN=c, SIMPLIFY = FALSE)
     regions=lapply(regions, FUN=function(x) {
       N = names(x)
       ##### changes unknown color names in regions

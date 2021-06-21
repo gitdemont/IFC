@@ -22,6 +22,6 @@ Extracts GatingML from file.
 }
 \details{
 reading GatingML files is in development and partly implemented.
-For the moment only files generated with IFC package can be read.
+For the moment, only files generated with IFC package can be read.
 }
 \keyword{internal}

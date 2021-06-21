@@ -31,18 +31,12 @@ Exported file extension will be deduced from this pattern. Note that it has to b
 \item{verbose}{whether to display information (use for debugging purpose). Default is FALSE.}
 
 \item{...}{other arguments to be passed.}
-
-\item{pop}{a member of `IFC_pops` object.}
 }
 \value{
 It invisibly returns full path of exported file.
-
-a list of xml_node.
 }
 \description{
 Writes GatingML from an `IFC_data` object to a xml file
-
-Helper to convert boolean population to XML nodes in GatingML files.
 }
 \details{
 Partial implementation of ISAC's Gating-ML 2.0 data exchange standard for gating description.
@@ -56,4 +50,3 @@ GatingML is partly implemented because:\cr
 -Transformation applied in \pkg{IFC} is not part of GatingML.
 Nonetheless, when possible additional information are provided in dedicated custom_info field.
 }
-\keyword{internal}
