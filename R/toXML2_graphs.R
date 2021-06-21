@@ -39,6 +39,7 @@ toXML2_graphs = function(graphs, verbose = FALSE) {
   if(verbose) message("creating graphs node")
   assert(graphs, cla = "IFC_graphs")
   if(length(graphs)==0) return(xml_new_node(name = "Displays", text = ""))
+  graphs = graphs[sapply(graphs, length) != 0] # to remove empty values (e.g. xtrans, ytrans)
   graphs = lapply(graphs, FUN=function(i) {
     i$GraphRegion = lapply(i$GraphRegion, FUN = function(g) g[!grepl("def", names(g))]) # it is mandatory to remove def
     if(typeof(i) %in% c("integer","double")) {
@@ -49,7 +50,7 @@ toXML2_graphs = function(graphs, verbose = FALSE) {
   })
   xml_new_node(name = "Displays", attrs = list(count = num_to_string(length(graphs)), layout="1", entriesPerRow="12", lightDarkMode="1"),
              .children = lapply(graphs, FUN=function(i_graph) {
-               xml_new_node(name = "Graph", attrs = i_graph[!grepl("Legend|BasePop|GraphRegion|ShownPop", names(i_graph)) & sapply(i_graph, FUN=function(ele) length(ele)!=0)],
+               xml_new_node(name = "Graph", attrs = i_graph[!grepl("Legend|BasePop|GraphRegion|ShownPop", names(i_graph))],
                           .children = c(lapply(i_graph[["Legend"]], FUN=function(i) xml_new_node(name = "Legend", attrs = i)),
                                         lapply(i_graph[["BasePop"]], FUN=function(i) xml_new_node(name = "BasePop", attrs = i)),
                                         lapply(i_graph[["GraphRegion"]], FUN=function(i) xml_new_node(name = "GraphRegion", attrs = i)),
