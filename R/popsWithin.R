@@ -75,13 +75,12 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
     # changes colors to R compatible
     pops[[i]]$color = map_color(pops[[i]]$color)
     pops[[i]]$lightModeColor = map_color(pops[[i]]$lightModeColor)
-    
     switch(pop$type,
            "B" = { 
              pops[[i]]$obj=rep(TRUE,obj_number)
            }, 
            "G" = {
-             pop_pos=which(names(regions)==pop$region)
+             pop_pos=which(names(regions)==pop$region) # here there should be only one !
              fx_pos=which(names(features)==pop$fx)
              x=features[,fx_pos]
              xlim=as.numeric(regions[[pop_pos]]$x)
