@@ -63,7 +63,7 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
 
   P = obj$pops[pops]
   SUB = apply(do.call("rbind", lapply(obj$pops[unique(c(parent1, parent2))], FUN = function(p) p$obj)), 2, any)
-  R = sapply(P, simplify = F, FUN=function(p) obj$regions[[p$region]])
+  R = sapply(P, simplify = FALSE, FUN=function(p) obj$regions[[p$region]])
   foo = list()
   # start rebuilding original graph
   foo$f1 = P[[1]]$fx
