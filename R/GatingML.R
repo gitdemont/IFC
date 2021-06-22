@@ -451,6 +451,7 @@ readGatingML <- function(fileName, ...) {
         if("pch" %in% N) names(x)[N == "pch"] <- "style"
         # modify obj
         if("obj" %in% N) x$obj = as.integer(strsplit(x$obj, split="|", fixed=TRUE)[[1]])
+        x$type = "T"
         return(x)
       })
       names(tagged) = sapply(tagged, FUN=function(x) x$name)
