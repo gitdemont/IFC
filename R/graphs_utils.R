@@ -497,6 +497,8 @@ convert_to_baseplot = function(obj) {
     reg$cx = applyTrans(reg$cx, trans_x)
     lab =  trunc_string(reg$label, obj$input$trunc_labels)
     if(reg$type=="line") {
+      if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
+      if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
       switch(pkg,
              "lattice" = {
                foo = foo +

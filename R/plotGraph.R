@@ -310,6 +310,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                                 coords$x = applyTrans(coords$x, trans_x)
                                 reg$cx = applyTrans(reg$cx, trans_x)
                                 lab =  trunc_string(reg$label, trunc_labels)
+                                if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
+                                if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
                                 panel.text(x=reg$cx, y=reg$cy*diff(Ylim), col=col, labels=lab, pos=4)
                                 panel.lines(x=coords$x, y=coords$y*diff(Ylim),col=col)
                               })
@@ -333,6 +335,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                           coords$x = applyTrans(coords$x, trans_x)
                           reg$cx = applyTrans(reg$cx, trans_x)
                           lab = trunc_string(reg$label, trunc_labels)
+                          if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
+                          if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
                           panel.text(x=reg$cx, y=reg$cy*diff(Ylim), col=col, labels=lab, pos=4)
                           panel.lines(x=coords$x, y=coords$y*diff(Ylim), col=col)
                         })
