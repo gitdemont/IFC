@@ -108,25 +108,27 @@ buildRegion <- function(type, label, cx, cy, color, lightcolor, ismarker="false"
   if(type=="poly") {
     if(length(x) != length(y)) stop("'x' and 'y' should be numeric vectors of equal length with finite values")
     if(length(x)<2) stop("type='poly' and number of vertices is smaller than 2")
-    if(missing(cx) | missing(cy)) {
+    if(missing(cx) || missing(cy)) {
       # cent = cpp_poly_centroid(cbind(x,y)) # TODO # for future use
       # if(missing(cx)) cx= cent[1]
       # if(missing(cy)) cy= cent[2]
-      if(missing(cx)) cx= mean(x)
-      if(missing(cy)) cy= mean(y)
+      if(missing(cx)) cx=mean(x)
+      if(missing(cy)) cy=mean(y)
     }
   } else {
     if(length(x) != 2) stop(paste0("'x' should be a length 2 numeric vector with finite values when type is '",type,"'"))
     if(length(y) != 2) stop(paste0("'y' should be a length 2 numeric vector with finite values when type is '",type,"'"))
-    if(type=="line" & y[1]!=y[2]) stop("'y' values should be identical when type is 'line")
-    if(missing(cx) | missing(cy)) {
-      if(missing(cx)) cx= mean(x)
-      if(missing(cy)) cy= mean(y)
+    if(type=="line" && y[1]!=y[2]) stop("'y' values should be identical when type is 'line")
+    if(missing(cx) || missing(cy)) {
+      if(missing(cx)) cx=mean(x)
+      if(missing(cy)) cy=mean(y)
     }
   }
   Xtrans = dots$xtrans; parseTrans(Xtrans)
   Ytrans = dots$ytrans; parseTrans(Ytrans)
-  return(list("type"=type, "label"=label, "cx"=cx, "cy"=cy, "color"=color, "lightcolor"=lightcolor,
+  return(list("type"=type, "label"=label,
+              "cx"=suppressWarnings(as.numeric(cx)), "cy"=suppressWarnings(as.numeric(cy)),
+              "color"=color, "lightcolor"=lightcolor,
               "ismarker"=ismarker, "doesnotoverride"=doesnotoverride,
               "xlogrange"=xlogrange, "ylogrange"=ylogrange,
               "xtrans"=Xtrans, "ytrans"=Ytrans,
