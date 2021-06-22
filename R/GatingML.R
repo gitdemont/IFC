@@ -171,6 +171,7 @@ toXML2_boolpop_gs <- function(obj, pop) {
   pop_names = !(pop_def %in% c("&", "|", "!", "(", ")"))
   pop_def[pop_names] = paste0("`",pop_def[pop_names],"`")
   pop_def = str2lang(paste0(pop_def,collapse = " "))
+  pch = map_style(pop$style, toR = FALSE)
   
   # recover arithmetic tree
   expand_tree = function(x) {
@@ -187,35 +188,40 @@ toXML2_boolpop_gs <- function(obj, pop) {
   # group by operation
   op = lapply(rev(unlist(tree)), FUN = function(x) {
     ele <- as.character(unlist(x))
-    if(ele %in% c("|", "&", "!")) {
-      # an operator is encountered
+    if(ele %in% c("|", "&", "!")) { # an operator is encountered
+      take = 2 # number of pop_name we will use for the boolean operation
       # we generate a random id for the population resulting of the operation
       id = random_name(special = NULL, alpha = NULL, forbidden = c(ids, names(obj$pops)))
-      names = children
-      if(length(names) == 2) { # we have an operator and 2 names eg pop1 & pop2 , pop1 | pop2
-        ids <<- c(id, ids) 
+      pop_name = children
+      if(length(pop_name) >= 2) { # we have an operator and 2 pop_name eg pop1 & pop2 , pop1 | pop2
+        # already encountered pop_name are flushed
+        children <<- children[-c(1:2)]
       } else {
+        # already encountered pop_name are flushed
+        if(length(pop_name) >= 1) children <<- children[-1]
         # we use children if any and add last defined population name
-        names = c(names, ids[1])
+        pop_name = c(pop_name, ids[1])
         # we remove last population name from the stack
         ids <<- ids[-1]
-        if(ele != "!" && length(names) == 1) {
-          # we have only one name for a 2 side operation (& , |)
-          # we add population name from the stack to have 2 names
-          names = c(names, ids[1])
-          # we remove last population name from the stack
-          ids <<- ids[-1]
+        if(ele == "!") {
+          take = 1 # not operation takes only one operand
+        } else { 
+          if(length(pop_name) == 1) {
+            # we have only one name for a 2 side operation (& , |)
+            # we add population name from the stack to have 2 pop_name
+            pop_name = c(pop_name, ids[1])
+            # we remove last population name from the stack
+            ids <<- ids[-1]
+          }
         }
-        # finally new population name defined by the operation is added to the stack
-        ids <<- c(id, ids)
       }
-      # already encountered names are flushed
-      children <<- c()
-      return(list(bool = ele, def = names, id = id))
+      # finally new population name defined by the operation is added to the stack
+      ids <<- c(id, ids) 
+      return(list(bool = ele, def = pop_name[1:take], id = id))
     } else {
       # no operator found, so this is a children name
       # children name is added
-      children <<- c(children, ele)
+      children <<- c(ele, children)
     }
     return(NULL)
   })
@@ -226,12 +232,13 @@ toXML2_boolpop_gs <- function(obj, pop) {
   
   # id of the last operation is the population name
   op[[length(op)]]$id <- pop$name
-  
+
   # create nodes
-  lapply(op, FUN = function(x) {
+  lapply(1:length(op), FUN = function(i) {
+    x=op[[i]]
     bool = switch(x$bool, "|" = "or", "&" = "and", "!" = "not")
     xml_new_node(name = "_ns_gating_ns_BooleanGate", attrs = list("_ns_gating_ns_id" = x$id),
-                 .children = list(xml_new_node(name = "_ns_data-type_ns_custom_info", attrs = c(pop[!(names(pop) %in% "split")])),
+                 .children = list(xml_new_node(name = "_ns_data-type_ns_custom_info", attrs = list(op=paste0(pop$name,"_",i),pch=pch, colors=pop$colors)),
                                   xml_new_node(name = paste0("_ns_gating_ns_", bool),
                                                .children = lapply(x$def, FUN = function(def) {
                                                  xml_new_node(name = "_ns_gating_ns_gateReference", attrs = list("_ns_gating_ns_ref" = def))
