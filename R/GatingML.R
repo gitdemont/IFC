@@ -58,8 +58,8 @@ toXML2_graphs_gs = function(graphs) {
     gg$xlog=g$xlogrange
     gg$ylog=g$ylogrange
     gg$at=paste0(c(g$xlocation,g$ylocation,g$splitterdistance), collapse="|")
-    gg$dim1=g$f1
-    gg$dim2=ifelse(length(g$f2)==0, g$freq, g$f2)
+    gg$x=g$f1
+    gg$y=ifelse(length(g$f2)==0, g$freq, g$f2)
     gg$scale=g$scale
     gg$bin=g$bincount
     gg$smooth=g$histogramsmoothingfactor
@@ -501,7 +501,7 @@ readGatingML <- function(fileName, ...) {
         foo = to_list_node(plot_node)
         foo$order = xml_text(plot_node)
         g[c("size","at","xran","yran")] = sapply(g[c("size","at","xran","yran")], strsplit, split="|", fixed=TRUE)
-        ans = list(type = g$type, f1=g$dim1,
+        ans = list(type = g$type, f1=g$x,
                    xlocation=g$at[1], ylocation=g$at[2], splitterdistance=g$at[3],
                    xsize=g$size[1], ysize=g$size[2], scaletype=g$scale,
                    xmin=g$xran[1], xmax=g$xran[2], ymin=g$yran[1], ymax=g$yran[2],
@@ -514,9 +514,9 @@ readGatingML <- function(fileName, ...) {
                    BasePop=unname(foo[names(foo)=="basepop"]), 
                    order=foo$order)
         if(g$type=="histogram") {
-          ans = c(ans, list(freq=g$dim2, histogramsmoothingfactor=g$smooth, bincount=g$bin))
+          ans = c(ans, list(freq=g$y, histogramsmoothingfactor=g$smooth, bincount=g$bin))
         } else {
-          ans = c(ans, list(f2=g$dim2))
+          ans = c(ans, list(f2=g$y))
         }
         if(length(foo$region) != 0) ans$GraphRegion=lapply(splitn(foo$region$displayed, all_names = names(pops)), FUN = function(x) list(name=x))
         if(length(foo$overlay) != 0) ans$ShownPop=lapply(splitn(foo$overlay$displayed, all_names = names(pops)), FUN = function(x) list(name=x))
