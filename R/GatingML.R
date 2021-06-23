@@ -77,13 +77,25 @@ toXML2_graphs_gs = function(graphs) {
     if(region == "") region = NULL
     overlay = paste0(unlist(g[["ShownPop"]]), collapse = "|")
     if(overlay == "") overlay = NULL
+    density=list()
+    if(gg$type == "density") {
+      tmp = grepl("density", names(g$BasePop[[1]]))
+      density = g$BasePop[[1]][tmp]
+      names(density) = gsub("density", "", names(density))
+      names(density)[names(density) == "bincount"] <- "bin"
+      names(density)[names(density) == "colorslightmode"] <- "color1"
+      names(density)[names(density) == "colorsdarkmode"] <- "color2"
+      density = list(xml_new_node(name = "density", attrs = density))
+      g$BasePop[[1]] = g$BasePop[[1]][!tmp]
+    }
     xml_new_node(name = "plot", attrs = gg[sapply(gg, length) != 0],
-                 .children = c(list(xml_new_node(name = "labels", attrs = labs)),
-                               list(xml_new_node(name = "stats", attrs = stats)),
+                 .children = c(density,
+                               list(xml_new_node(name = "labels", attrs = labs)),
                                lapply(g[["Legend"]], FUN=function(i) xml_new_node(name = "legend", attrs = i)),
                                lapply(g[["BasePop"]], FUN=function(i) xml_new_node(name = "basepop", attrs = i)),
                                lapply(region, FUN=function(i) xml_new_node(name = "region", attrs = list(displayed = i))),
                                lapply(overlay, FUN=function(i) xml_new_node(name = "overlay", attrs = list(displayed = i))),
+                               list(xml_new_node(name = "stats", attrs = stats)),
                                list(xml_new_node(name = "order", text = g$order))))
   })
 }
@@ -517,6 +529,13 @@ readGatingML <- function(fileName, ...) {
           ans = c(ans, list(freq=g$y, histogramsmoothingfactor=g$smooth, bincount=g$bin))
         } else {
           ans = c(ans, list(f2=g$y))
+          if(g$type == "density") {
+            names(foo$density)[names(foo$density) == "color2"] <- "colorsdarkmode"
+            names(foo$density)[names(foo$density) == "color1"] <- "colorslightmode"
+            names(foo$density)[names(foo$density) == "bin"] <- "bincount"
+            names(foo$density) = paste0("density", names(foo$density))
+            ans$BasePop[[1]] = c(ans$BasePop[[1]], foo$density)
+          }
         }
         if(length(foo$region) != 0) ans$GraphRegion=lapply(splitn(foo$region$displayed, all_names = names(pops)), FUN = function(x) list(name=x))
         if(length(foo$overlay) != 0) ans$ShownPop=lapply(splitn(foo$overlay$displayed, all_names = names(pops)), FUN = function(x) list(name=x))
