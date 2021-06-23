@@ -122,24 +122,18 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
                       ShownPop=list(list()), ...) {
   dots = list(...)
   assert(type, len=1, alw=c("histogram","scatter","density"))
-  xlocation = na.omit(as.integer(xlocation));# xlocation = xlocation[xlocation>=0]
-  assert(xlocation, typ="integer", len=1)
-  ylocation = na.omit(as.integer(ylocation));# ylocation = ylocation[ylocation>=0] 
-  assert(ylocation, typ="integer", len=1)
+  xlocation = na.omit(as.integer(xlocation)); assert(xlocation, len=1)
+  ylocation = na.omit(as.integer(ylocation)); assert(ylocation, len=1)
   assert(f1, len=1, typ="character")
   assert(stats, len=1, alw=c("true","false"))
   if(missing(Legend)) Legend=list(list(onoff="false",x="0",y="0",witdh="96",height="128"))
-  ###### Removed since xsize and ysize can be freely defined
-  # assert(xsize, len=1, alw=c(320,480,640))
-  # assert(splitterdistance, len=1, alw=120)
-  # assert(ysize, len=1, alw=xsize+ifelse(stats=="true",splitterdistance,0))
-  ######
-  xsize=na.omit(as.integer(xsize)); xsize = xsize[xsize>=0]
-  assert(xsize, len=1, typ="integer")
-  ysize=na.omit(as.integer(ysize)); ysize = ysize[ysize>=0]
-  assert(ysize, len=1, typ="integer")
-  splitterdistance=na.omit(as.integer(splitterdistance)); splitterdistance = splitterdistance[splitterdistance>=0]
-  assert(splitterdistance, len=1, typ="integer")
+  xmin=na.omit(as.numeric(xmin)); assert(xmin, len=1)
+  xmax=na.omit(as.numeric(xmax)); assert(xmax, len=1)
+  ymin=na.omit(as.numeric(ymin)); assert(ymin, len=1)
+  ymax=na.omit(as.numeric(ymax)); assert(ymax, len=1)
+  xsize=na.omit(as.integer(xsize)); xsize = xsize[xsize>=0]; assert(xsize, len=1)
+  ysize=na.omit(as.integer(ysize)); ysize = ysize[ysize>=0]; assert(ysize, len=1)
+  splitterdistance=na.omit(as.integer(splitterdistance)); splitterdistance = splitterdistance[splitterdistance>=0]; assert(splitterdistance, len=1)
   assert(xlabel, len=1, typ="character")
   assert(freq, len=1, alw=c("T","F"))
   font_size_avl = as.integer(c(8:11,(6:14)*2))
