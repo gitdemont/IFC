@@ -28,7 +28,7 @@ However current in development branch can be installed from github
 
 - install [Rtools for windows](https://cran.r-project.org/bin/windows/Rtools/)
 
-- ensure that Rtools compiler  in present in Windows PATH
+- ensure that Rtools compiler is present in Windows PATH
 
 In R console, if you installed Rtools directly on C: you should see something like C:\\Rtools\\bin and C:\\Rtools\\mingw_32\\bin 
 
@@ -53,7 +53,9 @@ You may need to reboot to operate changes
 
 - IFC package is dependent on tiff package. It requires tiff libraries which may not be on the system.
 
-sudo apt-get install libtiff-dev 
+```terminal
+sudo apt-get install libtiff-dev
+```
 
 #### in R
 
