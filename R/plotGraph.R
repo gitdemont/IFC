@@ -175,7 +175,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   L = length(displayed_n)
 
   base_o = sapply(base_n, FUN=function(x) which(displayed_n%in%x))
-  base_n = names(base_o)[order(base_o)]
+  base_n = base_n[order(base_o)]
   
   if(length(shown_n) == 0) {
     shown_o = NULL
