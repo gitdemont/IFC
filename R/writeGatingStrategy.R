@@ -147,10 +147,8 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   
   # fill general custom info node with tagged pop nodes
   tagged_nodes = lapply(obj$pops[is_tagged], FUN = function(pop) {
-    # color conversion
-    pop$colors = paste0(map_color(c(pop$color,pop$lightModeColor), FALSE),collapse="|")
     custom_tagged %>% xml_add_child(xml_new_node(name = "pop", attrs = list(name=pop$name,
-                                                                            colors=pop$colors, 
+                                                                            colors=paste0(map_color(c(pop$color,pop$lightModeColor), FALSE),collapse="|"), 
                                                                             pch=map_style(pop$style, toR=FALSE), 
                                                                             obj=paste0(which(pop$obj) - 1L, collapse = "|"))))
   })
