@@ -40,24 +40,51 @@
 #' @keywords internal
 toXML2_graphs_gs = function(graphs) {
   if(length(graphs)==0) return(list())
-  graphs = lapply(graphs, FUN=function(i) {
-    i$GraphRegion = lapply(i$GraphRegion, FUN = function(g) g[!grepl("def", names(g))]) # it is mandatory to remove def
-    if(typeof(i) %in% c("integer","double")) {
-      return(num_to_string(i))
-    } else {
-      return(i)
-    }
+  graphs = lapply(graphs, FUN=function(g) {
+    g$GraphRegion = lapply(g$GraphRegion, FUN = function(r) r[!grepl("def", names(r))]) # it is mandatory to remove def
+    foo = lapply(g, FUN = function(i) {
+      if(typeof(i) %in% c("integer","double")) {
+        return(num_to_string(i))
+      } else {
+        return(i)
+      }
+    })
   })
-  lapply(graphs, FUN=function(i_graph) {
-    region = paste0(unlist(i_graph[["GraphRegion"]]), collapse = "|")
+  lapply(graphs, FUN=function(g) {
+    gg=list(type=g$type)
+    gg$size=paste0(c(g$xsize, g$ysize), collapse="|")
+    gg$xran=paste0(c(g$xmin, g$xmax), collapse="|")
+    gg$yran=paste0(c(g$ymin, g$ymax), collapse="|")
+    gg$xlog=g$xlogrange
+    gg$ylog=g$ylogrange
+    gg$at=paste0(c(g$xlocation,g$ylocation,g$splitterdistance), collapse="|")
+    gg$dim1=g$f1
+    gg$dim2=ifelse(length(g$f2)==0, g$freq, g$f2)
+    gg$scale=g$scale
+    gg$bin=g$bincount
+    gg$smooth=g$histogramsmoothingfactor
+    # additional parameters
+    gg$maxpoints=g$maxpoints
+    gg$xtrans=g$xtrans
+    gg$ytrans=g$ytrans
+    labs = list(main= g$title, x=g$xlabel, y=g$ylabel,
+                title=g$graphtitlefontsize,
+                regions=g$regionlabelsfontsize,
+                labs=g$axislabelsfontsize,
+                ticks=g$axistickmarklabelsfontsize)
+    stats = list(x=g$xstats, y=g$ystats, order=g$xstatsorder, show=g$stats)
+    region = paste0(unlist(g[["GraphRegion"]]), collapse = "|")
     if(region == "") region = NULL
-    overlay = paste0(unlist(i_graph[["ShownPop"]]), collapse = "|")
+    overlay = paste0(unlist(g[["ShownPop"]]), collapse = "|")
     if(overlay == "") overlay = NULL
-    xml_new_node(name = "plot", attrs = i_graph[!grepl("Legend|BasePop|GraphRegion|ShownPop", names(i_graph)) & sapply(i_graph, FUN=function(ele) length(ele)!=0)],
-                 .children = c(lapply(i_graph[["Legend"]], FUN=function(i) xml_new_node(name = "legend", attrs = i)),
-                               lapply(i_graph[["BasePop"]], FUN=function(i) xml_new_node(name = "basepop", attrs = i)),
+    xml_new_node(name = "plot", attrs = gg[sapply(gg, length) != 0],
+                 .children = c(list(xml_new_node(name = "labels", attrs = labs)),
+                               list(xml_new_node(name = "stats", attrs = stats)),
+                               lapply(g[["Legend"]], FUN=function(i) xml_new_node(name = "legend", attrs = i)),
+                               lapply(g[["BasePop"]], FUN=function(i) xml_new_node(name = "basepop", attrs = i)),
                                lapply(region, FUN=function(i) xml_new_node(name = "region", attrs = list(displayed = i))),
-                               lapply(overlay, FUN=function(i) xml_new_node(name = "overlay", attrs = list(displayed = i)))))
+                               lapply(overlay, FUN=function(i) xml_new_node(name = "overlay", attrs = list(displayed = i))),
+                               list(xml_new_node(name = "order", text = g$order))))
   })
 }
 
@@ -72,7 +99,7 @@ toXML2_graphs_gs = function(graphs) {
 toXML2_graphpop_gs <- function(pop, reg, verbose = FALSE) {
   # color conversion
   reg$colors = paste0(map_color(c(reg$color,reg$lightcolor), FALSE),collapse="|")
-  # only keep what is need
+  # only keep what is needed
   reg = reg[!(names(reg) %in% c("ismarker", "doesnotoverride","color","lightcolor"))]
 
   # nodes creation 
@@ -189,20 +216,24 @@ toXML2_boolpop_gs <- function(obj, pop) {
   op = lapply(rev(unlist(tree)), FUN = function(x) {
     ele <- as.character(unlist(x))
     if(ele %in% c("|", "&", "!")) { # an operator is encountered
-      take = 2 # number of pop_name we will use for the boolean operation
       # we generate a random id for the population resulting of the operation
       id = random_name(special = NULL, alpha = NULL, forbidden = c(ids, names(obj$pops)))
       pop_name = children
-      if(length(pop_name) >= 2) { # we have an operator and 2 pop_name eg pop1 & pop2 , pop1 | pop2
+      take = 2 # set default number of pop_name we will use for the boolean operation
+      if(length(pop_name) >= 2) {
+        # we have an operator and 2 pop_name eg pop1 & pop2 , pop1 | pop2
         # already encountered pop_name are flushed
         children <<- children[-c(1:2)]
       } else {
+        # we have an operator and no or only one pop
         # already encountered pop_name are flushed
         if(length(pop_name) >= 1) children <<- children[-1]
-        # we use children if any and add last defined population name
-        pop_name = c(pop_name, ids[1])
-        # we remove last population name from the stack
-        ids <<- ids[-1]
+        if(length(pop_name) == 0) {
+          # we use children if any and add last defined population id
+          pop_name = c(pop_name, ids[1])
+          # we remove last population name from the stack
+          ids <<- ids[-1]
+        }
         if(ele == "!") {
           take = 1 # not operation takes only one operand
         } else { 
@@ -317,7 +348,7 @@ fromXML2_gating  <- function(xml_nodes, type = "rect") {
       reg_label = ifelse(length(meta$rtext)==0,ids[1],meta$rtext)
       reg = list(label=reg_label, type=type, x=x, y=y, xlogrange="P", ylogrange="P")
       if(length(meta$rcolors) != 0) {
-        meta$rcolors = strsplit(meta$rcolors, split="|", fixed=TRUE)[[1]]
+        meta$rcolors = map_color(strsplit(meta$rcolors, split="|", fixed=TRUE)[[1]], toR = TRUE)
         reg$color = meta$rcolors[1]
         reg$lightcolor = meta$rcolors[length(meta$rcolors)]
       }
@@ -333,7 +364,7 @@ fromXML2_gating  <- function(xml_nodes, type = "rect") {
     }
     if(length(meta$pch) != 0) pop$style = meta$pch
     if(length(meta$colors) != 0) {
-      meta$colors = strsplit(meta$colors, split="|", fixed=TRUE)[[1]]
+      meta$colors = map_color(strsplit(meta$colors, split="|", fixed=TRUE)[[1]], toR = TRUE)
       pop$color = meta$colors[1]
       pop$lightModeColor = meta$colors[length(meta$colors)]
     }
@@ -465,33 +496,37 @@ readGatingML <- function(fileName, ...) {
     ##### extracts graphs information
     plots=lapply(xml_attrs(xml_find_all(general_custom, "plots//plot")), FUN=function(x) as.list(x))
     if(length(plots)!=0) {
-      plots_tmp=lapply(plots, FUN=function(plot) {
-        pat=paste0("//plot[@xlocation='",plot$xlocation,"'][@ylocation='",plot$ylocation,"']")
-        sapply(c("legend","basepop","region","overlay"), simplify = FALSE, FUN=function(i_subnode){
-          lapply(xml_attrs(xml_find_all(general_custom, paste(pat,i_subnode,sep="/"))), FUN=function(x) as.list(x))
-        })
+      plots = lapply(plots, FUN = function(g) {
+        plot_node = xml_find_first(general_custom, paste0("//plot[@at='",g$at,"']"))
+        foo = to_list_node(plot_node)
+        foo$order = xml_text(plot_node)
+        g[c("size","at","xran","yran")] = sapply(g[c("size","at","xran","yran")], strsplit, split="|", fixed=TRUE)
+        ans = list(type = g$type, f1=g$dim1,
+                   xlocation=g$at[1], ylocation=g$at[2], splitterdistance=g$at[3],
+                   xsize=g$size[1], ysize=g$size[2], scaletype=g$scale,
+                   xmin=g$xran[1], xmax=g$xran[2], ymin=g$yran[1], ymax=g$yran[2],
+                   xlogrange=g$xlog,ylogrange=g$ylog,
+                   axislabelsfontsize=foo$labels$labs, axistickmarklabelsfontsize=foo$labels$ticks,
+                   graphtitlefontsize=foo$labels$title, regionlabelsfontsize=foo$labels$regions,
+                   xlabel=foo$labels$x, ylabel=foo$labels$y, title=foo$labels$main,
+                   stats=foo$stats$show,xstats=foo$stats$x,ystats=foo$stats$y,xstatsorder=foo$stats$order,
+                   Legend=list(foo$legend),
+                   BasePop=unname(foo[names(foo)=="basepop"]), 
+                   order=foo$order)
+        if(g$type=="histogram") {
+          ans = c(ans, list(freq=g$dim2, histogramsmoothingfactor=g$smooth, bincount=g$bin))
+        } else {
+          ans = c(ans, list(f2=g$dim2))
+        }
+        if(length(foo$region) != 0) ans$GraphRegion=lapply(splitn(foo$region$displayed, all_names = names(pops)), FUN = function(x) list(name=x))
+        if(length(foo$overlay) != 0) ans$ShownPop=lapply(splitn(foo$overlay$displayed, all_names = names(pops)), FUN = function(x) list(name=x))
+        if(length(g$maxpoints) != 0) ans$maxpoints = g$maxpoints
+        if(length(g$xtrans) != 0) ans$xtrans = g$xtrans
+        if(length(g$ytrans) != 0) ans$ytrans = g$ytrans
+        return(ans)
       })
-      plots=mapply(plots, plots_tmp, FUN = append, SIMPLIFY = FALSE)
-      plots_tmp=c("xlocation","ylocation","scaletype","xmin","xmax","ymin","ymax","axislabelsfontsize","axistickmarklabelsfontsize",
-                  "graphtitlefontsize","regionlabelsfontsize","bincount","histogramsmoothingfactor","xsize","ysize","splitterdistance")
-      plots=lapply(plots, FUN=function(x) {replace(x, plots_tmp, lapply(x[plots_tmp], as.numeric))})
-      plots_tmp=c("region","overlay")
       plot_order=sapply(plots, FUN=function(i_plot) as.numeric(i_plot[c("xlocation", "ylocation")]))
       plots=plots[order(unlist(plot_order[1,]),unlist(plot_order[2,]))]
-      rm(list=c("plots_tmp", "plot_order"))
-      # now we need to modify plot with names of regions and pops
-      plots = lapply(plots, FUN = function(g) {
-        ##### modify pops and regions names
-        N = names(g)
-        N[N == "basepop"] <- "BasePop"
-        N[N == "legend"] <- "Legend"
-        N[N == "overlay"] <- "ShownPop"
-        N[N == "region"] <- "GraphRegion"
-        names(g) <- N
-        if(length(g$ShownPop) != 0) g$ShownPop = lapply(splitn(definition = g$ShownPop[[1]]$displayed, all_names = names(pops)), FUN = function(x) list(name=x))
-        if(length(g$GraphRegion) != 0) g$GraphRegion = lapply(splitn(definition = g$GraphRegion[[1]]$displayed, all_names = names(regions)), FUN = function(r) list(name = r))
-        return(g)
-      })
     }
   }
   
