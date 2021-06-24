@@ -60,7 +60,8 @@ calcDensity <- getFromNamespace(x = ".smoothScatterCalcDensity", ns = "grDevices
 #' @description Helper to map density to colors
 #' @source derived from \pkg{grDevices} R Core Team, Florian Hahne at FHCRC, originally
 #' @keywords internal
-densCols=function (x, y = NULL, nbin = 128, bandwidth, colramp = colorRampPalette(c("blue","green","red")), transformation=function(x) (x^0.125)) {
+densCols=function (x, y = NULL, nbin = 128, bandwidth, colramp = colorRampPalette(c("blue","green","red")), transformation=function(x) (asinh(x))) {
+  x_features = attr(x, "features")
   xy <- xy.coords(x, y)
   select <- is.finite(xy$x) & is.finite(xy$y)
   x <- cbind(xy$x, xy$y)[select, ]
@@ -69,7 +70,17 @@ densCols=function (x, y = NULL, nbin = 128, bandwidth, colramp = colorRampPalett
   xbin <- cut(x[, 1], mkBreaks(map$x1), labels = FALSE)
   ybin <- cut(x[, 2], mkBreaks(map$x2), labels = FALSE)
   dens <- map$fhat[cbind(xbin, ybin)]
-  dens <- transformation(dens) # slightly modified: a transformation function has been introduced 
+  check_fun <- try(suppressWarnings(formals(transformation)), silent = TRUE)
+  if(!inherits(check_fun, what="try-error")) {
+    if("features" %in% names(check_fun)) {
+      args = list(features = x_features)
+    } else {
+      args = list(x = dens)
+    }
+    dens <- do.call(what = transformation, args = args)  
+  } else {
+    dens = x_features
+  }
   dens[is.na(dens)] <- 0
   colpal <- cut(dens, length(dens), labels = FALSE)
   cols <- rep(NA_character_, length(select))
@@ -89,6 +100,15 @@ colConv=function(col){
     foo
   }))
 }
+
+#' @title Hexadecimal to Integer Color Conversion
+#' @description Helper to convert color from hex
+#' @keywords internal
+inv_colConv=function(col){
+  x = col2rgb(col,T)
+  paste0(apply(x, 2, FUN = function(i) { sum(i * c(2^16,2^8,2^1,0)) - 2^24 - i[3] }),"|",collapse="")
+}
+
 
 #' @title Histogram Constructor
 #' @name hist_constr
@@ -417,7 +437,8 @@ convert_to_baseplot = function(obj) {
       pch=16
       col = "white"
       if((nrow(obj$input$data) > 0) && any(obj$input$subset)) if(nrow(obj$input$data[obj$input$subset,]) > 0) 
-        col=densCols(x = obj$input$data$x2[obj$input$subset], y = obj$input$data$y2[obj$input$subset],
+        col=densCols(x = structure(obj$input$data$x2[obj$input$subset], features=attr(obj$input$data,"features")),
+                     y = obj$input$data$y2[obj$input$subset],
                      colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[obj$input$mode]])),
                      nbin=obj$input$bin,
                      transformation=obj$input$trans)

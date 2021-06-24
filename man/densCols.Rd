@@ -13,7 +13,7 @@ densCols(
   nbin = 128,
   bandwidth,
   colramp = colorRampPalette(c("blue", "green", "red")),
-  transformation = function(x) (x^0.125)
+  transformation = function(x) (asinh(x))
 )
 }
 \description{

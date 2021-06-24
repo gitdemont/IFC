@@ -42,7 +42,7 @@
 #' -"light", the default, will only display points of same coordinates that are among the other layers.\cr
 #' -"full" will display all the layers.
 #' @param trunc_labels maximum number of characters to display for labels. Default is 38.
-#' @param trans transformation function for density graphs. Default is asinh.
+#' @param trans transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise asinh will be used.
 #' @param bin number of bin used for histogram / density. Default is missing.
 #' @param viewport either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
 #' -"ideas" will use same limits as the one defined in ideas.\cr
@@ -82,15 +82,20 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   draw = as.logical(draw); assert(draw, len=1, alw=c(TRUE,FALSE))
   stats_print = as.logical(stats_print); assert(stats_print, len=1, alw=c(TRUE,FALSE))
   assert(viewport, len = 1, alw = c("ideas","data","max"))
-  if(!all(typeof(trans) == "builtin") && (class(trans) == "function")) stop("'trans' should be a function")
   
   # shortcuts
   normalize = FALSE
   P = obj$pops
   R = obj$regions
   g = do.call(what=buildGraph, args=graph)
-  tmp = c(g$f1, g$f2) %in% names(obj$features)
-  if(!all(tmp)) stop(paste0("trying to plot a features not found in obj$features: ",  paste0(c(g$f1, g$f2)[!tmp], collapse=", ")))
+  if(missing(trans)) trans = g$BasePop[[1]]$densitytrans
+  is_fun = inherits(trans, what="function") || !inherits(try(suppressWarnings(formals(trans)), silent = TRUE), what="try-error")
+  dens_feat = numeric()
+  if(length(trans) == 0) trans = "asinh"
+  foo = c(g$f1, g$f2)
+  if(g$type == "density" && !is_fun) foo = c(foo, trans)
+  tmp = foo %in% names(obj$features)
+  if(!all(tmp)) stop(paste0("trying to plot a features not found in obj$features: ",  paste0(foo[!tmp], collapse=", ")))
 
   # define text/points size
   lt <- custom.theme(bg=c("black","white")[color_mode], fg=c("white","black")[color_mode])
@@ -187,10 +192,11 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   
   # subset data
   base = as.data.frame(sapply(base_n, FUN=function(x) P[[x]]$obj), stringsAsFactors = FALSE)
-  sub = apply(base, 1, any)
+  data_sub = apply(base, 1, any)
   displayed_o = c(base_o, shown_o)
   D = cbind(D, displayed_d)
-  D = D[sub, ]
+  D = D[data_sub, ]
+  
   xy_subset = rep(TRUE, nrow(D))
   if(length(xy_subset) == 0) xy_subset = TRUE
   
@@ -448,13 +454,20 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         xy_subset[sample(x = nrow(D), size = min(g$maxpoints,nrow(D)), replace = FALSE)] <- TRUE
       }
     }
+    if(is_fun) {
+      dens_feat = obj$features[data_sub,][xy_subset,]
+    } else {
+      dens_feat = obj$features[data_sub,][xy_subset,trans]
+      dens_ran = range(dens_feat, na.rm = TRUE)
+      dens_feat = (dens_feat-dens_ran[1])/diff(dens_ran)
+    }
     foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, 
                  main = trunc_string(g$title, trunc_labels), groups=groups, subset=xy_subset,
                  scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)),
                  xlab =  trunc_string(g$xlabel, trunc_labels), ylab = trunc_string(g$ylabel, trunc_labels),
                  panel = function(x, y, groups=NULL, subscripts, ...) {
                    if(any(c("panel","both")%in%add_key)) if(g$type=="scatter") pan_key(key=c(KEY,"background"="lightgrey","alpha.background"=0.8), x = 0.02)
-                   if(g$type == "density") panel.xyplot(x=x, y=y, pch=".", col=densCols(x=x,y=y,colramp=colorRampPalette(colConv(g$BasePop[[base_o[1]]][c("densitycolorsdarkmode","densitycolorslightmode")][[color_mode]])),nbin=nbin, transformation=trans))
+                   if(g$type == "density") panel.xyplot(x=x, y=y, pch=".", col=densCols(x=structure(x, features=dens_feat), y=y,colramp=colorRampPalette(colConv(g$BasePop[[base_o[1]]][c("densitycolorsdarkmode","densitycolorslightmode")][[color_mode]])),nbin=nbin, transformation=trans))
                    if(g$type == "scatter") {
                      if(is.null(groups[subscripts])) {
                        panel.xyplot(x=x[1], y=y[1], pch="", alpha=0)
@@ -506,7 +519,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   })
   ret = list("plot" = foo,
              "stats" = as.table(stats),
-             "input" = list("data" = D[ ,c(which(ret_order), which(!ret_order))], 
+             "input" = list("data" = structure(D[ ,c(which(ret_order), which(!ret_order))], features=dens_feat), 
                             "trunc_labels" = trunc_labels,
                             "title" = g$title,
                             "xlab" = g$xlab, "ylab" = g$ylab,

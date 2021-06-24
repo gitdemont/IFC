@@ -89,11 +89,11 @@
 #' For 'BasePop', if left as is "All" will be used as default.\cr
 #' This parameter will be built / checked according to 'type' argument.\cr
 #' 'BasePop' has to be a list of list(s) and each sub-list should can contain several elements, but only "name" is mandatory.\cr
-#' The sublist mebers ar:\cr
+#' The sublist members are:\cr
 #' -"name", "linestyle", "fill",\cr
 #' and only when 'type' is "density"\cr
 #' -"densitybincount", "densitymin", "densitymax",\cr
-#' -"densitycolors", "densitycolorslightmode", "densitycolorsdarkmode".\cr
+#' -"densitycolors", "densitycolorslightmode", "densitycolorsdarkmode", "densitytrans".\cr
 #' Each sub-list will be created automatically with the following default values (except if explicitly provided):\cr
 #' -linestyle='Solid',\cr
 #' -fill='true',\cr
@@ -101,6 +101,9 @@
 #' -densitycolors='-16776961|-13447886|-256|-23296|-65536|',\cr
 #' -densitycolorslightmode='-16776961|-13447886|-256|-23296|-65536|',\cr
 #' -densitycolorsdarkmode='-16776961|-13447886|-256|-23296|-65536|'\cr
+#' -densitytrans='asinh'\cr
+#'   *it can take a function to be applied to the 2D local densities\cr
+#'   *or a name of a feature within `IFC_data` object to draw a gradient against this feature\cr
 #' Note that when 'type' is "density", 'BasePop' should be of length one.\cr
 #' and fill will be overwritten to 'true'.
 #' @param ... Other arguments to be passed.
@@ -162,7 +165,7 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   stats_alw = c("Count","%Total","%Gated","%Plotted","Objects/mL","Mean","Median","Std. Dev.","MAD","CV","Minimum","Maximum","Geo. Mean","Mode","Variance","NaN")
   assert(xstats, len=1, typ="character"); stopifnot(strsplit(xstats, split="|", fixed=TRUE)[[1]] %in% stats_alw)
   assert(ystats, len=1, typ="character"); stopifnot(xstats == ystats, strsplit(ystats, split="|", fixed=TRUE)[[1]] %in% stats_alw)
-  BasePop_name_alw = c("name", "linestyle", "fill", "densitybincount", "densitymin", "densitymax", "densitycolors", "densitycolorslightmode", "densitycolorsdarkmode")
+  BasePop_name_alw = c("name", "linestyle", "fill", "densitybincount", "densitymin", "densitymax", "densitycolors", "densitycolorslightmode", "densitycolorsdarkmode", "densitytrans")
   
   # starts building args
   args=list(type=type, xlocation=xlocation, ylocation=ylocation, f1=f1)
@@ -220,7 +223,8 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
                          densitybincount="128", densitymin="0", densitymax="0",
                          densitycolors="-16776961|-13447886|-256|-23296|-65536|",
                          densitycolorslightmode="-16776961|-13447886|-256|-23296|-65536|",
-                         densitycolorsdarkmode="-16776961|-13447886|-256|-23296|-65536|")
+                         densitycolorsdarkmode="-16776961|-13447886|-256|-23296|-65536|",
+                         densitytrans="asinh")
   if(type!="density") BasePop_default = BasePop_default[1:3]
   BasePop = lapply(BasePop, FUN=function(x) {
     tmp = BasePop_name_alw %in% names(x)
@@ -239,6 +243,12 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
       })
       # overwrites fill
       BasePop_default$fill = "true"
+      # checks transformation
+      is_fun = inherits(BasePop_default$densitytrans, what="function") || !inherits(try(suppressWarnings(formals(BasePop_default$densitytrans)), silent = TRUE), what="try-error")
+      if(!is_fun) {
+        to_fun = try(eval(parse(text=paste0(deparse(trans), collapse = "\n"))))
+        if(!inherits(to_fun, "try-error")) BasePop_default$densitytrans = to_fun
+      }
     }
     # checks that linestyle is ok
     assert(BasePop_default$linestyle, len=1, alw=BasePop_style_alw)

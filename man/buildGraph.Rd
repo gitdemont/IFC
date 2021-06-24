@@ -147,11 +147,11 @@ Many parameters are not used or are only partly implemented, but most are checke
 For 'BasePop', if left as is "All" will be used as default.\cr
 This parameter will be built / checked according to 'type' argument.\cr
 'BasePop' has to be a list of list(s) and each sub-list should can contain several elements, but only "name" is mandatory.\cr
-The sublist mebers ar:\cr
+The sublist members are:\cr
 -"name", "linestyle", "fill",\cr
 and only when 'type' is "density"\cr
 -"densitybincount", "densitymin", "densitymax",\cr
--"densitycolors", "densitycolorslightmode", "densitycolorsdarkmode".\cr
+-"densitycolors", "densitycolorslightmode", "densitycolorsdarkmode", "densitytrans".\cr
 Each sub-list will be created automatically with the following default values (except if explicitly provided):\cr
 -linestyle='Solid',\cr
 -fill='true',\cr
@@ -159,6 +159,9 @@ Each sub-list will be created automatically with the following default values (e
 -densitycolors='-16776961|-13447886|-256|-23296|-65536|',\cr
 -densitycolorslightmode='-16776961|-13447886|-256|-23296|-65536|',\cr
 -densitycolorsdarkmode='-16776961|-13447886|-256|-23296|-65536|'\cr
+-densitytrans='asinh'\cr
+  *it can take a function to be applied to the 2D local densities\cr
+  *or a name of a feature within `IFC_data` object to draw a gradient against this feature\cr
 Note that when 'type' is "density", 'BasePop' should be of length one.\cr
 and fill will be overwritten to 'true'.
 }
