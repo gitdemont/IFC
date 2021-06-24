@@ -129,7 +129,7 @@ applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = F
             return(c(r, list(def = names(which(foo)))))
           })
         }
-        return(g)
+        return(do.call(buildGraph, args = g))
       })
     }
     class(ans$graphs) <- "IFC_graphs"

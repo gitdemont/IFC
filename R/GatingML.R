@@ -91,8 +91,11 @@ toXML2_graphs_gs = function(graphs) {
     xml_new_node(name = "plot", attrs = gg[sapply(gg, length) != 0],
                  .children = c(density,
                                list(xml_new_node(name = "labels", attrs = labs)),
-                               lapply(g[["Legend"]], FUN=function(i) xml_new_node(name = "legend", attrs = i)),
-                               lapply(g[["BasePop"]], FUN=function(i) xml_new_node(name = "basepop", attrs = i)),
+                               # lapply(g[["Legend"]], FUN=function(i) xml_new_node(name = "legend", attrs = i)),
+                               lapply(g[["BasePop"]], FUN=function(i) { 
+                                 names(i)[names(i) == "linestyle"] <- "lty"
+                                 xml_new_node(name = "base", attrs = i)
+                               }),
                                lapply(region, FUN=function(i) xml_new_node(name = "region", attrs = list(displayed = i))),
                                lapply(overlay, FUN=function(i) xml_new_node(name = "overlay", attrs = list(displayed = i))),
                                list(xml_new_node(name = "stats", attrs = stats)),
@@ -522,8 +525,12 @@ readGatingML <- function(fileName, ...) {
                    graphtitlefontsize=foo$labels$title, regionlabelsfontsize=foo$labels$regions,
                    xlabel=foo$labels$x, ylabel=foo$labels$y, title=foo$labels$main,
                    stats=foo$stats$show,xstats=foo$stats$x,ystats=foo$stats$y,xstatsorder=foo$stats$order,
-                   Legend=list(foo$legend),
-                   BasePop=unname(foo[names(foo)=="basepop"]), 
+                   # Legend=list(foo$legend),
+                   BasePop=unname(lapply(foo[names(foo)=="base"],
+                                         FUN = function(i) { 
+                                           names(i)[names(i)=="lty"] <- "linestyle"
+                                           return(i)
+                                         })), 
                    order=foo$order)
         if(g$type=="histogram") {
           ans = c(ans, list(freq=g$y, histogramsmoothingfactor=g$smooth, bincount=g$bin))
