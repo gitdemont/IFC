@@ -1,6 +1,6 @@
 ################################################################################
 # This file is released under the GNU General Public License, Version 3, GPL-3 #
-# Copyright (C) 2020 Yohann Demont                                             #
+# Copyright (C) 2021 Yohann Demont                                             #
 #                                                                              #
 # It is part of IFC package, please cite:                                      #
 # -IFC: An R Package for Imaging Flow Cytometry                                #
@@ -52,7 +52,7 @@
 #' -"light", the default, will only display points of same coordinates that are amoung the other layers.\cr
 #' -"full" will display all the layers.
 #' @param trunc_labels maximum number of characters to display for labels. Default is 38.
-#' @param trans transformation function for density graphs. Default is asinh.
+#' @param trans transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise asinh will be used.
 #' @param bin default number of bin used for histogram. Default is missing.
 #' @param viewport Either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
 #' -"ideas" will use same limits as the one defined in ideas.\cr
@@ -92,6 +92,13 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
   dots = list(...)
   # backup last state of graphic device
   dv <- dev.cur()
+  
+  pdf_dev = TRUE
+  create_pdf = FALSE
+  create_csv = FALSE
+  from = sys.nframe()
+  if(from > 1) pdf_dev = (as.list(sys.call(-1))[[1]] != "DisplayReport")
+  
   tryCatch({
   # old_ask <- devAskNewPage(ask = FALSE)
   # on.exit(devAskNewPage(ask = old_ask), add = TRUE)
@@ -105,38 +112,7 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
   if(missing(obj)) stop("'obj' can't be missing")
   if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class `IFC_data`")
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
-  if(missing(write_to)) stop("'write_to' can't be missing")
-  assert(write_to, typ = "character")
-  file_extension = getFileExt(write_to)
-  assert(file_extension, alw = c("pdf", "csv"))
-  if(any(duplicated(file_extension))) stop("'write_to' has to be only one .pdf and / or only one .csv")
-  title_progress = basename(obj$fileName)
-  splitf_obj = splitf(obj$fileName)
-  create_pdf = FALSE
-  create_csv = FALSE
-  export_to_pdf = NULL
-  export_to_csv = NULL
-  if(any(file_extension%in%"pdf")) {
-    create_pdf = TRUE
-    splitp_obj_pdf = splitp(write_to[file_extension=="pdf"])
-    if(any(splitp_obj_pdf$channel > 0)) message("'write_to' (pdf part) has %c argument but channel information can't be retrieved with ExportToReport()")
-    if(any(splitp_obj_pdf$object > 0)) message("'write_to' (pdf part) has %o argument but channel information can't be retrieved with ExportToReport()")
-    export_to_pdf = formatn(splitp_obj_pdf, splitf_obj)
-  }
-  if(any(file_extension%in%"csv")) {
-    create_csv = TRUE
-    splitp_obj_csv = splitp(write_to[file_extension=="csv"])
-    if(any(splitp_obj_csv$channel > 0)) message("'write_to', (csv part) has %c argument but channel information can't be retrieved with ExportToReport()")
-    if(any(splitp_obj_csv$object > 0)) message("'write_to' (csv part) has %o argument but channel information can't be retrieved with ExportToReport()")
-    export_to_csv = formatn(splitp_obj_csv, splitf_obj)
-  }
-  write_to = c(export_to_pdf, export_to_csv)
   
-  assert(color_mode, len=1, alw=c("white","black"))
-  assert(precision, len=1, alw=c("light","full"))
-  if(!all(add_key%in%c("panel","global","both",FALSE))) stop("Accepted values for add_key are either: FALSE, 'panel', 'global', 'both' or c('panel', 'global')")
-  assert(onepage, len=1, alw=c(TRUE,FALSE))
-  assert(overwrite, len=1, alw=c(TRUE,FALSE))
   trunc_labels=na.omit(as.integer(trunc_labels));trunc_labels=trunc_labels[trunc_labels>=0]
   assert(trunc_labels, len=1, typ="integer")
   if(missing(bin)) {
@@ -145,41 +121,73 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
     bin=na.omit(as.integer(bin)); assert(bin, len=1, typ="integer")
   }
   display_progress = as.logical(display_progress); assert(display_progress, len=1, alw=c(TRUE,FALSE))
-  overwritten = FALSE
-  tmp = file.exists(write_to)
-  if(any(tmp)) {
-    if(!overwrite) stop(paste0("file ",paste0(write_to[tmp]," already exists"), collapse="\n"))
-    if(create_pdf) if(file.exists(export_to_pdf)) export_to_pdf = normalizePath(export_to_pdf, winslash = "/")
-    if(create_csv) if(file.exists(export_to_csv)) export_to_csv = normalizePath(export_to_csv, winslash = "/")
-    overwritten = TRUE
-  }
-  if(create_pdf) {
-    tryCatch({
-      if(!dir.exists(dirname(export_to_pdf))) {
-        if(!dir.create(dirname(export_to_pdf), showWarnings = FALSE, recursive = TRUE)) {
-          stop(paste0(export_to_pdf,"\ncan't be created: check dirname"), call. = FALSE)
+  assert(color_mode, len=1, alw=c("white","black"))
+  assert(precision, len=1, alw=c("light","full"))
+  if(!all(add_key%in%c("panel","global","both",FALSE))) stop("Accepted values for add_key are either: FALSE, 'panel', 'global', 'both' or c('panel', 'global')")
+  assert(onepage, len=1, alw=c(TRUE,FALSE))
+  title_progress = basename(obj$fileName)
+  splitf_obj = splitf(obj$fileName)
+  
+  if(pdf_dev) {
+    if(missing(write_to)) stop("'write_to' can't be missing")
+    assert(write_to, typ = "character")
+    file_extension = getFileExt(write_to)
+    assert(file_extension, alw = c("pdf", "csv"))
+    if(any(duplicated(file_extension))) stop("'write_to' has to be only one .pdf and / or only one .csv")
+    export_to_pdf = NULL
+    export_to_csv = NULL
+    if(any(file_extension%in%"pdf")) {
+      create_pdf = TRUE
+      splitp_obj_pdf = splitp(write_to[file_extension=="pdf"])
+      if(any(splitp_obj_pdf$channel > 0)) message("'write_to' (pdf part) has %c argument but channel information can't be retrieved with ExportToReport()")
+      if(any(splitp_obj_pdf$object > 0)) message("'write_to' (pdf part) has %o argument but channel information can't be retrieved with ExportToReport()")
+      export_to_pdf = formatn(splitp_obj_pdf, splitf_obj)
+    }
+    if(any(file_extension%in%"csv")) {
+      create_csv = TRUE
+      splitp_obj_csv = splitp(write_to[file_extension=="csv"])
+      if(any(splitp_obj_csv$channel > 0)) message("'write_to', (csv part) has %c argument but channel information can't be retrieved with ExportToReport()")
+      if(any(splitp_obj_csv$object > 0)) message("'write_to' (csv part) has %o argument but channel information can't be retrieved with ExportToReport()")
+      export_to_csv = formatn(splitp_obj_csv, splitf_obj)
+    }
+    write_to = c(export_to_pdf, export_to_csv)
+    assert(overwrite, len=1, alw=c(TRUE,FALSE))
+    overwritten = FALSE
+    tmp = file.exists(write_to)
+    if(any(tmp)) {
+      if(!overwrite) stop(paste0("file ",paste0(write_to[tmp]," already exists"), collapse="\n"))
+      if(create_pdf) if(file.exists(export_to_pdf)) export_to_pdf = normalizePath(export_to_pdf, winslash = "/")
+      if(create_csv) if(file.exists(export_to_csv)) export_to_csv = normalizePath(export_to_csv, winslash = "/")
+      overwritten = TRUE
+    }
+    if(create_pdf) {
+      tryCatch({
+        if(!dir.exists(dirname(export_to_pdf))) {
+          if(!dir.create(dirname(export_to_pdf), showWarnings = FALSE, recursive = TRUE)) {
+            stop(paste0(export_to_pdf,"\ncan't be created: check dirname"), call. = FALSE)
+          }
         }
-      }
-      pdf(file=export_to_pdf)
-    }, error = function(e) stop(paste0(export_to_pdf,"\ncan't be created: check name / currently opened ?"), call. = FALSE))
-    dev.off(dev.cur())
-    export_to_pdf = normalizePath(export_to_pdf, winslash = "/")
-  }
-  if(create_csv) {
-    tryCatch({
-      if(!dir.exists(dirname(export_to_csv))) {
-        if(!dir.create(dirname(export_to_csv), showWarnings = FALSE, recursive = TRUE)) {
-          stop(paste0(export_to_csv,"\ncan't be created: check dirname"), call. = FALSE)
+        pdf(file=export_to_pdf)
+      }, error = function(e) stop(paste0(export_to_pdf,"\ncan't be created: check name / currently opened ?"), call. = FALSE))
+      dev.off(dev.cur())
+      export_to_pdf = normalizePath(export_to_pdf, winslash = "/")
+    }
+    if(create_csv) {
+      tryCatch({
+        if(!dir.exists(dirname(export_to_csv))) {
+          if(!dir.create(dirname(export_to_csv), showWarnings = FALSE, recursive = TRUE)) {
+            stop(paste0(export_to_csv,"\ncan't be created: check dirname"), call. = FALSE)
+          }
         }
-      }
-      write.table(x=rbind(c("pop","count","perc","x-Min.","x-1st Qu.","x-Median","x-Mean","x-3rd Qu.","x-Max.",
-                                   "y-Min.","y-1st Qu.","y-Median","y-Mean","y-3rd Qu.","y-Max.")),
-                         sep=",", row.names = FALSE, col.names = FALSE, file=export_to_csv)
+        write.table(x=rbind(c("pop","count","perc","x-Min.","x-1st Qu.","x-Median","x-Mean","x-3rd Qu.","x-Max.",
+                              "y-Min.","y-1st Qu.","y-Median","y-Mean","y-3rd Qu.","y-Max.")),
+                    sep=",", row.names = FALSE, col.names = FALSE, file=export_to_csv)
       }, error = function(e) stop(paste0(export_to_csv,"\ncan't be created: check name / currently opened ?"), call. = FALSE))
-    export_to_csv = normalizePath(export_to_csv, winslash = "/")
+      export_to_csv = normalizePath(export_to_csv, winslash = "/")
+    }
+    write_to = c(export_to_pdf,export_to_csv)
+    message(paste0(ifelse(length(write_to)==2, "files", "file")," will be exported in :\n",paste0(normalizePath(dirname(write_to), winslash = "/"),collapse="\n")))
   }
-  write_to = c(export_to_pdf,export_to_csv)
-  message(paste0(ifelse(length(write_to)==2, "files", "file")," will be exported in :\n",paste0(normalizePath(dirname(write_to), winslash = "/"),collapse="\n")))
   tryCatch({
     # shortcuts
     G = obj$graphs
@@ -218,18 +226,23 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
       pb_gr = newPB(session = dots$session, min = 0, max = gl, initial = 0, style = 3)
       on.exit(endPB(pb_gr), add = TRUE)
     }
+    args = list(obj=obj, draw=FALSE, color_mode=color_mode, add_key=add_key,
+                precision=precision, trunc_labels=trunc_labels, viewport=viewport)
+    if(length(bin) != 0) args = c(args, list(bin=bin))
+    if(!missing(trans)) args = c(args, list(trans=trans))
     suppressWarnings({
       graphs = lapply(1:gl, FUN=function(i) {
         if(display_progress) {
           setPB(pb = pb_gr, value = i, title = title_progress, label = paste0("computing ",ifelse(create_pdf,"graphs and ",""),"stats"))
         }
-        if(length(bin) == 0) {
-          g = try(plotGraph(obj, G[[i]], draw=FALSE, color_mode=color_mode, add_key=add_key,
-                        precision=precision, trunc_labels=trunc_labels, trans=trans, viewport=viewport), silent = TRUE)
-        } else {
-          g = try(plotGraph(obj, G[[i]], draw=FALSE, color_mode=color_mode, add_key=add_key,
-                        precision=precision, trunc_labels=trunc_labels, trans=trans, viewport=viewport, bin=bin), silent = TRUE)
-        }
+        g = try(do.call(what = plotGraph, args = c(args, list(graph = G[[i]]))))
+        # if(length(bin) == 0) {
+        #   g = try(plotGraph(obj, G[[i]], draw=FALSE, color_mode=color_mode, add_key=add_key,
+        #                 precision=precision, trunc_labels=trunc_labels, trans=trans, viewport=viewport), silent = TRUE)
+        # } else {
+        #   g = try(plotGraph(obj, G[[i]], draw=FALSE, color_mode=color_mode, add_key=add_key,
+        #                 precision=precision, trunc_labels=trunc_labels, trans=trans, viewport=viewport, bin=bin), silent = TRUE)
+        # }
         if(inherits(x = g, what = "try-error")) {
           foo = arrangeGrob(grid.text(label = paste0("Error: ", attr(x = g, which = "condition")$message), gp=gpar(col="red"), draw = FALSE),
                             top = textGrob(paste0("\n",G[[i]]$title), gp = gpar(fontsize = 8, font=2, lineheight=0.5)))
@@ -268,14 +281,14 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
         return(foo)
       })
     })
-    if(create_pdf) {
+    if(create_pdf || !pdf_dev) {
       if(display_progress) {
         pb_pdf = newPB(session = dots$session, title = title_progress, label = "writing to pdf (no update but file is being processed)", min = 0, max = gl, initial = 0, style = 3)
         on.exit(endPB(pb_pdf), add = TRUE)
       }
       if(onepage) {
-        pdf(file=export_to_pdf, width = 3*max(lay$x)*2.54, height = 3*max(lay$y)*2.54, 
-            family = "serif", onefile = TRUE, pagecentre = TRUE, useDingbats = FALSE)
+        if(pdf_dev) pdf(file=export_to_pdf, width = 3*max(lay$x)*2.54, height = 3*max(lay$y)*2.54, 
+                        family = "serif", onefile = TRUE, pagecentre = TRUE, useDingbats = FALSE)
         # on.exit(dev.off(which = dev.cur()), add = TRUE)
         # TODO add a progress bar
         # for(i in 1:gl) {
@@ -295,7 +308,7 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
         # }
         grid.arrange(grobs = graphs[lay$N], top = title_progress, newpage = TRUE, layout_matrix = lay_mat, as.table = FALSE)
       } else {
-        pdf(file=export_to_pdf, paper = "a4", onefile = TRUE, pagecentre = TRUE, useDingbats = FALSE, family = "serif")
+        if(pdf_dev) pdf(file=export_to_pdf, paper = "a4", onefile = TRUE, pagecentre = TRUE, useDingbats = FALSE, family = "serif")
         # on.exit(dev.off(which = dev.cur()), add = TRUE)
         for(i in 1:gl) {
           grid.arrange(graphs[[i]], top = title_progress, newpage = TRUE) #, respect = TRUE)
@@ -306,15 +319,28 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
       }
     }
   }, error = function(e) {
-    message(paste0(ifelse(length(write_to)==2, "files have", "file has"), " been incompletely ", ifelse(overwritten, "overwritten", "exported"), "\n"))
+    if(pdf_dev) message(paste0(ifelse(length(write_to)==2, "files have", "file has"), " been incompletely ", ifelse(overwritten, "overwritten", "exported"), "\n"))
     stop(e$message, call. = FALSE)
   })
-  message(paste0("\n######################\n",ifelse(length(write_to)==2, "files have", "file has"), " been successfully ", ifelse(overwritten, "overwritten", "exported"),"\n"))
-  return(invisible(write_to))
+  if(pdf_dev) {
+    message(paste0("\n######################\n",ifelse(length(write_to)==2, "files have", "file has"), " been successfully ", ifelse(overwritten, "overwritten", "exported"),"\n"))
+    return(invisible(write_to))
+  }
   },
   finally = {
-    while(!all(dv == dev.cur())) {
+    if(pdf_dev) while(!all(dv == dev.cur())) {
       dev.off(which = rev(dev.cur())[1])
     }
   })
+}
+
+
+#' @title Graphical and Statistic Report Display
+#' @description
+#' Displays report from `IFC_data` object.
+#' @param ... arguments to pass to \code{\link{ExportToReport}} where write_to is inoperative.
+#' @return It invisibly returns NULL
+#' @keywords internal
+DisplayReport = function( ...) {
+  ExportToReport(...)
 }
