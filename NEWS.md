@@ -1,5 +1,7 @@
 # NEWS
 ## 0.1.2
+- add experimental FCS reader / writer
+
 - improve axes labels positioning
 
 - modify how transformation instruction is parsed to allow for more transformations in the future
