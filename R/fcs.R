@@ -541,6 +541,10 @@ ExtractFromFCS <- function(fileName, ...) {
 #' -\%e: with extension of 'obj$fileName' (without leading .)\cr
 #' -\%s: with shortname from 'obj$fileName' (i.e. basename without extension).\cr
 #' Exported file extension will be deduced from this pattern. Note that it has to be a .fcs.
+#' @param overwrite whether to overwrite file or not. Default is FALSE.
+#' Note that if TRUE, it will overwrite exported file if path of 'fileName' and deduced from 'write_to' arguments are different.
+#' Otherwise, you will get an error saying that overwriting source file is not allowed.\cr
+#' Note also that an original file will never be overwritten.
 #' @param delimiter an ASCII character to separate the FCS keyword/value pairs. Default is : "/".
 #' @param cytometer string, if provided it to use to fill $CYT keyword.\cr
 #' However, when missing it will be filled with obj$description$FCS$instrument if found, otherwise "Image Stream" will be used.
@@ -583,9 +587,17 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   if(file.exists(write_to)) {
     write_to = normalizePath(write_to, winslash = "/", mustWork = FALSE)
     if(!overwrite) stop(paste0("file ",write_to," already exists"))
+    if(tolower(fileName) == tolower(write_to)) stop("you are trying to overwrite source file which is not allowed")
+    tryCatch({
+      fcs = readFCS(fileName = write_to)
+    }, error = function(e) {
+      stop(paste0(write_to, "\ndoes not seem to be well formatted")) 
+    })
+    if(length(fcs[[1]]$text[["$IFC_version"]]) == 0) stop("you are trying to overwrite an original file which is not allowed")
     tmp_file = normalizePath(tempfile(), winslash = "/", mustWork = FALSE)
     overwritten = TRUE
   }
+  
   dir_name = dirname(write_to)
   if(!dir.exists(dir_name)) if(!dir.create(dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dir_name))
   file_w = ifelse(overwritten, tmp_file, write_to)

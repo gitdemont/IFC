@@ -24,6 +24,11 @@ Placeholders, like "\%d/\%s_fromR.\%e", will be substituted:\cr
 -\%s: with shortname from 'obj$fileName' (i.e. basename without extension).\cr
 Exported file extension will be deduced from this pattern. Note that it has to be a .fcs.}
 
+\item{overwrite}{whether to overwrite file or not. Default is FALSE.
+Note that if TRUE, it will overwrite exported file if path of 'fileName' and deduced from 'write_to' arguments are different.
+Otherwise, you will get an error saying that overwriting source file is not allowed.\cr
+Note also that an original file will never be overwritten.}
+
 \item{delimiter}{an ASCII character to separate the FCS keyword/value pairs. Default is : "/".}
 
 \item{cytometer}{string, if provided it to use to fill $CYT keyword.\cr
