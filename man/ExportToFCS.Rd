@@ -29,7 +29,7 @@ Note that if TRUE, it will overwrite exported file if path of 'fileName' and ded
 Otherwise, you will get an error saying that overwriting source file is not allowed.\cr
 Note also that an original file will never be overwritten.}
 
-\item{delimiter}{an ASCII character to separate the FCS keyword/value pairs. Default is : "/".}
+\item{delimiter}{an ASCII character to separate the FCS keyword-value pairs. Default is : "/".}
 
 \item{cytometer}{string, if provided it to use to fill $CYT keyword.\cr
 However, when missing it will be filled with obj$description$FCS$instrument if found, otherwise "Image Stream" will be used.}
@@ -40,5 +40,5 @@ However, when missing it will be filled with obj$description$FCS$instrument if f
 invisibly returns full path of exported file.
 }
 \description{
-Writes an `IFC_data` object to a fcs file
+Writes an `IFC_data` object to a Flow Cytometry Standard (FCS) file.
 }

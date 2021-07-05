@@ -10,7 +10,8 @@ FCS specifications available at \url{http://murphylab.web.cmu.edu/FCSAPI/FCS3.ht
 ExtractFromFCS(fileName, ...)
 }
 \arguments{
-\item{fileName}{path(s) of file(s). If multiple files are provided they will be merged and populations will be created to identify them within returned `IFC_data` object.}
+\item{fileName}{path(s) of file(s). If multiple files are provided they will be merged and 
+populations will be created to identify each single file within returned `IFC_data` object.}
 
 \item{...}{other arguments to be passed to readFCS function.}
 }
@@ -18,7 +19,7 @@ ExtractFromFCS(fileName, ...)
 A named list of class `IFC_data`, whose members are:\cr
 -description, a list of descriptive information,\cr
 -fileName, path of fileName input,\cr
--fileName_image, path of .cif image fileName is refering to,\cr
+-fileName_image, path of .cif image fileName is referring to,\cr
 -features, a data.frame of features,\cr
 -features_def, a describing how features are defined,\cr
 -graphs, a list of graphical elements found,\cr
@@ -30,5 +31,5 @@ A named list of class `IFC_data`, whose members are:\cr
 -checksum, a checksum integer.
 }
 \description{
-Extracts data from FCS Files.
+Extracts data from Flow Cytometry Standard (FCS) Files.
 }

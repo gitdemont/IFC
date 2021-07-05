@@ -20,12 +20,12 @@ readFCS(
 \item{fileName}{path to file.}
 
 \item{options}{list of options used to parse FCS file. It should contain:\cr
-- header, a list whose members define at the position where to read info and n the number of bytes to extract:\cr
--- version: where to retrieve file version. Default is list(at = 0, n = 6),\cr
+- header, a list whose members define the "at" position where to start reading info and the "n" number of bytes to extract:\cr
+-- version:  where to retrieve file version.                Default is list(at = 0, n = 6),\cr
 -- text_beg: where to retrieve file text segment beginning. Default is list(at = 10, n = 8),\cr
 -- text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
 -- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
--- data_end: where to retrieve file text segment beginning. Default is list(at = 34, n = 8),\cr
+-- data_end: where to retrieve file text segment end.       Default is list(at = 34, n = 8),\cr
 - apply_scale, whether to apply data scaling. Default is TRUE\cr
 - first_only, whether to extract only first. Default is FALSE}
 
@@ -34,15 +34,15 @@ readFCS(
 \item{...}{other arguments to be passed.}
 }
 \value{
-a list whose elements are lists of each dataset stored within the file.\cr
-each sublist contains:\cr
+a list whose elements are lists for each dataset stored within the file.\cr
+each sub-list contains:\cr
 - header, list of header information corresponding to 'options'\cr
-- delimiter, unique character used to separate keyword / values\cr
+- delimiter, unique character used to separate keyword - values\cr
 - text, list of keywords values,\cr
 - data, data.frame of values.
 }
 \description{
-Parse data from Flow Cytometry Standard compliant files.
+Parse data from Flow Cytometry Standard (FCS) compliant files.
 }
 \details{
 'options' may be tweaked according to file type, instrument and software used to generate it. Default 'options' should allow to read most files.

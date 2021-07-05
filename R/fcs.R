@@ -34,25 +34,25 @@
 
 #' @title FCS File Parser
 #' @description
-#' Parse data from Flow Cytometry Standard compliant files.
+#' Parse data from Flow Cytometry Standard (FCS) compliant files.
 #' @param fileName path to file.
 #' @param options list of options used to parse FCS file. It should contain:\cr
-#' - header, a list whose members define at the position where to read info and n the number of bytes to extract:\cr
-#' -- version: where to retrieve file version. Default is list(at = 0, n = 6),\cr
+#' - header, a list whose members define the "at" position where to start reading info and the "n" number of bytes to extract:\cr
+#' -- version:  where to retrieve file version.                Default is list(at = 0, n = 6),\cr
 #' -- text_beg: where to retrieve file text segment beginning. Default is list(at = 10, n = 8),\cr
 #' -- text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
 #' -- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
-#' -- data_end: where to retrieve file text segment beginning. Default is list(at = 34, n = 8),\cr
+#' -- data_end: where to retrieve file text segment end.       Default is list(at = 34, n = 8),\cr
 #' - apply_scale, whether to apply data scaling. Default is TRUE\cr
 #' - first_only, whether to extract only first. Default is FALSE
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other arguments to be passed.
 #' @details 'options' may be tweaked according to file type, instrument and software used to generate it. Default 'options' should allow to read most files.
 #' @source FCS specifications available at \url{http://murphylab.web.cmu.edu/FCSAPI/FCS3.html}.
-#' @return a list whose elements are lists of each dataset stored within the file.\cr
-#' each sublist contains:\cr
+#' @return a list whose elements are lists for each dataset stored within the file.\cr
+#' each sub-list contains:\cr
 #' - header, list of header information corresponding to 'options'\cr
-#' - delimiter, unique character used to separate keyword / values\cr
+#' - delimiter, unique character used to separate keyword - values\cr
 #' - text, list of keywords values,\cr
 #' - data, data.frame of values.
 #' @export
@@ -81,35 +81,42 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
     raw = rawToChar(raw)
   })
 
-  # now we can extract text segment, the primary text segment has to be in 59 - 99,999,999
+  # now we can extract text segment,
+  # the primary text segment has to be in  within bytes 58 - 99,999,999
   off1 = as.integer(header$text_beg)
   off2 = as.integer(header$text_end)
   seek(toread, off1)
   # first byte of text segment has to be the delimiter
   delimiter = rawToChar(readBin(toread, what = "raw", n = 1))
   text = rawToChar(readBin(toread, what = "raw", n = abs(off2 - off1)))
-  # when same character as delimiter is used within paired keyword-value it has to be
-  # repeated twice, so we 1st look at double delimiter instance and substitute it with delim_esc 
-  delim_esc = "$DELIM_ESC$" # should we use a random one ?
+  # when same character as delimiter is used within keyword-value pair it has to be escaped (repeated twice)
+  # we generate a 20 random characters delim_esc that does not contain delimiter
+  delim_esc = random_name(n = 20)
+  delim_esc = strsplit(x = delim_esc, split = delimiter, fixed = TRUE)[[1]]
+  delim_esc = delim_esc[delim_esc!=""]
+  delim_esc = paste0(delim_esc, collapse="")
+  # we 1st look at double delimiter instance and substitute it with delim_esc 
   text = gsub(pattern = paste0(delimiter,delimiter), replacement = delim_esc, x = text, fixed = TRUE)
   # then text is split with delimiter
   text = strsplit(x = text, split = delimiter, fixed = TRUE)[[1]]
-  # it can happen that splitting results in whitespace only keyword so we remove it
+  # it can happen that splitting results in whitespace(s) only keyword so we remove it
   while(trimws(text[1]) == "") { text = text[-1] }
   # then escaped double delimiter is replaced with only one delimiter
   text = gsub(pattern = delim_esc, replacement = delimiter, x = text, fixed = TRUE)
-  # finally keyword - value pairs are converted to named list
+  # finally keyword-value pairs are converted to named list
   id_val = seq(from = 2, to = length(text), by = 2)
   id_key = id_val-1
   text = structure(as.list(text[id_val]), names = text[id_key])
+  
+  # now we can extract additional text segment
   # we will use text to extract supplemental text segment offsets
   extra_off1 = suppressWarnings(as.integer(text[["$BEGINSTEXT"]]))
   extra_off2 = suppressWarnings(as.integer(text[["$ENDSTEXT"]]))
-
   if((length(extra_off1) != 0) &&
      (length(extra_off2) != 0) &&
      !(extra_off1 == off1 && extra_off2 == off2) 
      && (extra_off2 != extra_off1)) {
+    # we apply same process as for previously (see text segment)
     seek(toread, extra_off1)
     extra_text = rawToChar(readBin(toread, what = "raw", n = abs(extra_off2 - extra_off1)))
     extra_text = gsub(pattern = paste0(delimiter,delimiter), replacement = delim_esc, x = extra_text, fixed = TRUE)
@@ -121,21 +128,16 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
     extra_text = structure(as.list(extra_text[id_val]), names = extra_text[id_key])
     text = c(text, extra_text)
   }
+  
+  # now we can extract data segment
   # we will use text to extract data segment offsets
   off1 = suppressWarnings(na.omit(as.integer(text[["$BEGINDATA"]])))
   off2 = suppressWarnings(na.omit(as.integer(text[["$ENDDATA"]])))
-  
   # if not found in text despite being mandatory, we will use header
   if(length(off1) == 0) off1 = suppressWarnings(as.integer(header$data_beg))
   if(length(off2) == 0) off2 = suppressWarnings(as.integer(header$data_end))
-  
-  # some files register wrong dataend offset resulting in an off-by-one byte
-  # the following should allow to correct it
   data_bytes = abs(off2- off1) + 1
-  if((data_bytes %% 8) %% 2) data_bytes = data_bytes - 1
-  if((data_bytes %% 8) %% 2) data_bytes = data_bytes - 1
-  if((data_bytes %% 8) %% 2) stop("number of data bytes does not respect fcs specification")
-
+  # prepare default returned value for data
   data = data.frame()
   if(off2 != off1) {
     seek(toread, off1)
@@ -161,12 +163,8 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
     if(n_par != length(bit_v)) stop("mismatch between found vs expected number of parameters")
     
     # type "A" is deprecated in newer version of FCS specifications
-    if(type == "A") { # character #remains to be checked: bit_v determines number of bytes to extract
-      # here we correct data_length, if needed
-      if(n_obj * n_par * 1 != data_bytes) warning("number of data bytes have been corrected", call. = FALSE, immediate. = TRUE)
-      data_bytes = n_obj * n_par * 1
+    if(type == "A") {
       if((data_bytes + off1) > file.size(fileName)) stop("data length points to outside of file")
-      
       if(length(unique(bit_v)) == 1) { # no need for conversion when we have to extract same number of bytes
         data = gsub(paste0("(.{",bit_v,"})"), "\\1 ", readBin(toread, what = "character", n = data_bytes))
       } else {
@@ -176,8 +174,9 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
           tryCatch({
             data = sapply(1:n_par, FUN = function(i_par) {
               setPB(pb, value = i_par, title = title_progress, label = "data-type[A]: extracting values")
-              bits = as.integer(text[[paste0("$P",i_par,"B")]])
+              bits = as.integer(text[[paste0("$P",i_par,"B")]]) # each PnB determines number of bytes to extract
               off = (i_par - 1) * n_par
+              if((off + n_obj) > data_bytes) stop("buffer overrun")
               sapply(1:n_obj, FUN = function(i_obj) {
                 as.numeric(readBin(con = raw[i_obj + off], what = "character", n = bits))
               })
@@ -185,8 +184,9 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
           }, finally = endPB(pb))
         } else {
           data = sapply(1:n_par, FUN = function(i_par) {
-            bits = as.integer(text[[paste0("$P",i_par,"B")]])
+            bits = as.integer(text[[paste0("$P",i_par,"B")]]) # each PnB determines number of bytes to extract
             off = (i_par - 1) * n_par
+            if((off + n_obj) > data_bytes) stop("buffer overrun")
             sapply(1:n_obj, FUN = function(i_obj) {
               as.numeric(readBin(con = raw[i_obj + off], what = "character", n = bits))
             })
@@ -194,8 +194,15 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
         }
       }
     } else {
+      # some files register wrong dataend offset resulting in an off-by-one byte
+      # the following should allow to correct it
+      if((data_bytes %% 8) %% 2) data_bytes = data_bytes - 1
+      if((data_bytes %% 8) %% 2) data_bytes = data_bytes - 1
+      if((data_bytes %% 8) %% 2) stop("number of data bytes does not respect fcs specification")
+      
       # extract order
-      # it is not clear from FCS spe if type == "I" can be 8, 16, 32 or 64, so we choose to use byte order
+      # it is not clear from FCS spe if type == "I" can be 8, 16, 32 or 64,
+      # so we choose to use byte order as the most trustable parameter to define number of bytes to extract (bit_n and bit_d)
       # however it is clearly mentioned that "F" has to be 32 and "D" 64 so we throw an error it if byteorder does not match
       b_ord = text[["$BYTEORD"]]
       bit_o = as.integer(strsplit(b_ord, split=",", fixed=TRUE)[[1]])
@@ -224,7 +231,7 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
         }
         bit_v[tmp] <- bit_d
         
-        # it is not clear from FCS spe how to perform tightbit packing
+        # it is not clear how to perform tightbit packing
         # bit_p = xxxxx
         
         # compute bit mask
@@ -318,8 +325,8 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
   # # if not found in text despite being mandatory, we will use header
   # if(length(off1) == 0) off1 = suppressWarnings(as.integer(header$data_beg))
   # if(length(off2) == 0) off2 = suppressWarnings(as.integer(header$data_end))
-  # 
   # anal=raw()
+  
   ans = list(list(header=header,
                   delimiter=delimiter,
                   # anal=raw(),
@@ -339,14 +346,15 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
 
 #' @title FCS File Reader
 #' @description
-#' Extracts data from FCS Files.
-#' @param fileName path(s) of file(s). If multiple files are provided they will be merged and populations will be created to identify them within returned `IFC_data` object.
+#' Extracts data from Flow Cytometry Standard (FCS) Files.
+#' @param fileName path(s) of file(s). If multiple files are provided they will be merged and 
+#' populations will be created to identify each single file within returned `IFC_data` object.
 #' @source FCS specifications available at \url{http://murphylab.web.cmu.edu/FCSAPI/FCS3.html}.
 #' @param ... other arguments to be passed to readFCS function.
 #' @return A named list of class `IFC_data`, whose members are:\cr
 #' -description, a list of descriptive information,\cr
 #' -fileName, path of fileName input,\cr
-#' -fileName_image, path of .cif image fileName is refering to,\cr
+#' -fileName_image, path of .cif image fileName is referring to,\cr
 #' -features, a data.frame of features,\cr
 #' -features_def, a describing how features are defined,\cr
 #' -graphs, a list of graphical elements found,\cr
@@ -532,7 +540,7 @@ ExtractFromFCS <- function(fileName, ...) {
 
 #' @title FCS File Writer
 #' @description
-#' Writes an `IFC_data` object to a fcs file
+#' Writes an `IFC_data` object to a Flow Cytometry Standard (FCS) file.
 #' @param obj an `IFC_data` object extracted with features extracted.
 #' @param write_to pattern used to export file.
 #' Placeholders, like "\%d/\%s_fromR.\%e", will be substituted:\cr
@@ -545,7 +553,7 @@ ExtractFromFCS <- function(fileName, ...) {
 #' Note that if TRUE, it will overwrite exported file if path of 'fileName' and deduced from 'write_to' arguments are different.
 #' Otherwise, you will get an error saying that overwriting source file is not allowed.\cr
 #' Note also that an original file will never be overwritten.
-#' @param delimiter an ASCII character to separate the FCS keyword/value pairs. Default is : "/".
+#' @param delimiter an ASCII character to separate the FCS keyword-value pairs. Default is : "/".
 #' @param cytometer string, if provided it to use to fill $CYT keyword.\cr
 #' However, when missing it will be filled with obj$description$FCS$instrument if found, otherwise "Image Stream" will be used.
 #' @param ... other arguments to be passed.
@@ -623,7 +631,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                 anal_beg = "       0",
                 anal_end = "       0")
   
-  # we modify obj$features to add populations
+  # we modify features to add populations
   all_pops = do.call(what = cbind, args = lapply(obj$pops, FUN = function(p) p$obj))
   colnames(all_pops) = names(obj$pops)
   features = cbind(obj$features[, setdiff(names(obj$features), colnames(all_pops))], all_pops)
