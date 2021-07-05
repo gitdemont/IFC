@@ -246,7 +246,7 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
       # checks transformation
       is_fun = inherits(BasePop_default$densitytrans, what="function") || !inherits(try(suppressWarnings(formals(BasePop_default$densitytrans)), silent = TRUE), what="try-error")
       if(!is_fun) {
-        to_fun = try(eval(parse(text=paste0(deparse(trans), collapse = "\n"))), silent=TRUE)
+        to_fun = try(eval(parse(text=paste0(deparse(BasePop_default$densitytrans), collapse = "\n"))), silent=TRUE)
         if(!inherits(to_fun, "try-error")) BasePop_default$densitytrans = to_fun
       }
     }
