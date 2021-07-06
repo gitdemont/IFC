@@ -198,6 +198,22 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title Int64 to Uint64 64bits Conversion
+#' @name cpp_int64_to_uint64
+#' @description
+#' Converts 64bits integer from signed to unsigned
+#' @param x int64_t.
+#' @keywords internal
+NULL
+
+#' @title Uint64 to Int64 64bits Conversion
+#' @name cpp_uint64_to_int64
+#' @description
+#' Converts 64bits integer from unsigned to signed
+#' @param x uint64_t.
+#' @keywords internal
+NULL
+
 #' @title File Scanner
 #' @name cpp_scanFirst
 #' @description
@@ -519,6 +535,14 @@ cpp_int32_to_uint32 <- function(x) {
 
 cpp_uint32_to_int32 <- function(x) {
     .Call(`_IFC_cpp_uint32_to_int32`, x)
+}
+
+cpp_int64_to_uint64 <- function(x) {
+    .Call(`_IFC_cpp_int64_to_uint64`, x)
+}
+
+cpp_uint64_to_int64 <- function(x) {
+    .Call(`_IFC_cpp_uint64_to_int64`, x)
 }
 
 #' @title Numeric to String Conversion

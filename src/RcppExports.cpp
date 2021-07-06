@@ -221,6 +221,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_int64_to_uint64
+uint64_t cpp_int64_to_uint64(const int64_t x);
+RcppExport SEXP _IFC_cpp_int64_to_uint64(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const int64_t >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_int64_to_uint64(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_uint64_to_int64
+int64_t cpp_uint64_to_int64(const uint64_t x);
+RcppExport SEXP _IFC_cpp_uint64_to_int64(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const uint64_t >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_uint64_to_int64(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_num_to_string
 Rcpp::StringVector cpp_num_to_string(const Rcpp::NumericVector x, const unsigned char precision);
 RcppExport SEXP _IFC_cpp_num_to_string(SEXP xSEXP, SEXP precisionSEXP) {
@@ -446,6 +468,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_inv_smoothLinLog", (DL_FUNC) &_IFC_cpp_inv_smoothLinLog, 4},
     {"_IFC_cpp_int32_to_uint32", (DL_FUNC) &_IFC_cpp_int32_to_uint32, 1},
     {"_IFC_cpp_uint32_to_int32", (DL_FUNC) &_IFC_cpp_uint32_to_int32, 1},
+    {"_IFC_cpp_int64_to_uint64", (DL_FUNC) &_IFC_cpp_int64_to_uint64, 1},
+    {"_IFC_cpp_uint64_to_int64", (DL_FUNC) &_IFC_cpp_uint64_to_int64, 1},
     {"_IFC_cpp_num_to_string", (DL_FUNC) &_IFC_cpp_num_to_string, 2},
     {"_IFC_cpp_scanFirst", (DL_FUNC) &_IFC_cpp_scanFirst, 5},
     {"_IFC_cpp_crop", (DL_FUNC) &_IFC_cpp_crop, 3},

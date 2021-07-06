@@ -352,6 +352,30 @@ int32_t cpp_uint32_to_int32 (const uint32_t x) {
   return hpp_uint32_to_int32 (x);
 }
 
+//' @title Int64 to Uint64 64bits Conversion
+//' @name cpp_int64_to_uint64
+//' @description
+//' Converts 64bits integer from signed to unsigned
+//' @param x int64_t.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+uint64_t cpp_int64_to_uint64 (const int64_t x) {
+  return hpp_int64_to_uint64 (x);
+}
+
+//' @title Uint64 to Int64 64bits Conversion
+//' @name cpp_uint64_to_int64
+//' @description
+//' Converts 64bits integer from unsigned to signed
+//' @param x uint64_t.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+int64_t cpp_uint64_to_int64 (const uint64_t x) {
+  return hpp_uint64_to_int64 (x);
+}
+
 //' @title Numeric to String Conversion
 //' @name cpp_num_to_string
 //' @description
