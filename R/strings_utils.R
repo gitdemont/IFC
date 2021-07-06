@@ -84,16 +84,43 @@ protectn <- function(name) {
 #' @param definition population definition to be splitted
 #' @param all_names the names of all allowed populations
 #' @param operators operators used. Default is c("And", "Or", "Not", "(", ")").
-#' @param splitter the splitter that will be used to help splitting
 #' @keywords internal
-splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(", ")"), splitter = "[`~splitter~`]") {
+splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(", ")")) {
   assert(definition, len=1, typ="character")
-  if(substr(definition, 1, 1) == "|") definition = substr(definition, 2, nchar(definition)) # got a file where graph order start with "|"
   assert(all_names, typ="character")
   assert(operators, typ="character")
-  assert(splitter, len=1, typ="character")
-  # all_names = all_names[order(sapply(all_names, nchar), decreasing = TRUE)]
-  return(gsub(splitter, "", strsplit(gsub(protectn(c(all_names, operators)), paste0(splitter, "\\1", splitter), definition, perl=FALSE), split=paste0(splitter, "|", splitter), fixed = TRUE)[[1]], fixed=TRUE))
+  
+  # we create a mapping between all_names + operators and random names
+  # we also ensure that random names will bot contain any specials and 
+  # will not match with themselves nor with names or operators to substitute
+  # we also order to_substitute by number of character (decreasing) to
+  # be sure that longer words will be substitute first
+  to_substitute = c(all_names, operators)
+  if((length(to_substitute) == 0) || (definition == "")) return(definition)
+  to_substitute = to_substitute[order(nchar(to_substitute), decreasing = TRUE)]
+  replace_with = c()
+  for(i in 1:length(to_substitute)) { 
+    replace_with = c(replace_with, random_name(n=10, special = NULL, forbidden = c(replace_with, to_substitute)))
+  }
+  
+  # we substitute names and operators with random names
+  ans = definition
+  for(i in 1:length(to_substitute)) { 
+    ans = gsub(pattern = to_substitute[i], replacement = replace_with[i], x = ans, fixed = TRUE)
+  }
+  
+  # we can now split the definition with "|" since random names we use
+  # do not contain this special character
+  ans = strsplit(ans, split = "|", fixed = TRUE)[[1]]
+  
+  # finally, can replace random names with their corresponding initial names
+  # from to_substitute (i.e. all_names + operators)
+  ans = sapply(ans, USE.NAMES = FALSE, FUN = function(x) {
+    foo = to_substitute[x == replace_with]
+    if(length(foo) == 0) stop("definition contains unexpected name")
+    return(foo)
+  })
+  return(ans)
 }
 
 #' @title String Decomposition with Placeholders
@@ -262,8 +289,8 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
   if(length(ALPHA)!=0) assert(ALPHA, alw = LETTERS)
   if(length(alpha)!=0) assert(alpha, alw = letters)
   if(length(num)!=0) assert(num, cla="integer", alw = 0L:9L)
-  id = paste0(sample(c(ALPHA, alpha, num,  special), n), collapse = "")
-  while(id %in% forbidden) { id <- random_name(n, ALPHA, alpha, num, special, forbidden) }
+  id = paste0(sample(x = c(ALPHA, alpha, num, special), size = n), collapse = "")
+  while(id %in% forbidden) { id <- random_name(n = n, ALPHA = ALPHA, alpha = alpha, num = num, special = special, forbidden = forbidden) }
   return(id)
 }
 
