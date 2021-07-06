@@ -115,12 +115,14 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
              pop_def_tmp=gsub("^And$","&",pop$split)
              pop_def_tmp=gsub("^Or$","|",pop_def_tmp)
              pop_def_tmp=gsub("^Not$","!", pop_def_tmp)
-             for(i_popn in which(pop_def_tmp%in%pop$names)) {pop_def_tmp[i_popn]=paste0("`",pop_def_tmp[i_popn],"`")}
              comb_tmp=sapply(pops[pop$names], FUN=function(i_pop) i_pop$obj)
              if(obj_number == 1) {
                comb_tmp=all(comb_tmp)
              } else {
-               comb_tmp=eval(parse(text=paste0(pop_def_tmp,collapse=" ")), as.data.frame(comb_tmp, stringsAsFactors = FALSE))
+               replace_with=c()
+               for(i in pop_def_tmp) replace_with=c(replace_with,random_name(n=10,special=NULL,forbidden=c(replace_with,pop_def_tmp)))
+               colnames(comb_tmp)=replace_with
+               comb_tmp=eval(parse(text=paste0(replace_with,collapse=" ")),as.data.frame(comb_tmp,stringsAsFactors=FALSE))
              }
              pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & comb_tmp
            }, 
