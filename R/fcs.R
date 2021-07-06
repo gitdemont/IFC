@@ -615,7 +615,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
     }, error = function(e) {
       stop(paste0(write_to, "\ndoes not seem to be well formatted")) 
     })
-    if(length(fcs[[1]]$text[["$IFC_version"]]) == 0) stop("you are trying to overwrite an original file which is not allowed")
+    if(length(fcs[[1]]$text[["@IFC_version"]]) == 0) stop("you are trying to overwrite an original file which is not allowed")
     tmp_file = normalizePath(tempfile(), winslash = "/", mustWork = FALSE)
     overwritten = TRUE
   }
@@ -679,10 +679,10 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                        "$CYT" = cyt,
                        "$FIL" = obj$fileName_image,
                        "$PAR" = L,
-  "$FILENAME" = write_to,
-  "$GUID" = basename(write_to),
-  "$IFC_version" = pkg_ver,
-  "$IFC_DATE" = now
+                       "$FILENAME" = write_to,
+                       "$GUID" = basename(write_to),
+                       "@IFC_version" = pkg_ver,
+                       "@date" = now
   )
   
   
