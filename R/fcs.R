@@ -298,13 +298,21 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
       } 
     }
     if(type == "I") { # for 32bits and 64bits integers we need to convert signed to unsigned
-      if(bit_n == 4) data = sapply(c(data), cpp_int32_to_uint32)
-      if(bit_n == 8) data = sapply(c(data), cpp_int64_to_uint64)
+      if(bit_n == 4) data = as.integer(sapply(c(data), cpp_int32_to_uint32))
+      if(bit_n == 8) data = as.integer(sapply(c(data), cpp_int64_to_uint64))
     }
     
     # convert data to data.frame
     data = matrix(data, ncol = n_par, nrow = n_obj, byrow = TRUE)
-    data = structure(data.frame(data, check.names = FALSE), names = unlist(text[paste0("$P",1:n_par,"N")]))
+    
+    feat_names = unlist(text[paste0("$P",1:n_par,"N")])
+    feat_alt = unlist(text[paste0("$P",1:n_par,"S")])
+    if(length(feat_names) == length(feat_alt)) {
+      if(!identical(unname(feat_names), unname(feat_alt))) {
+        feat_names = paste(feat_names ,paste0("< ",feat_alt," >"))
+      }
+    }
+    data = structure(data.frame(data, check.names = FALSE), names = feat_names)
     
     # scale data
     if(options$apply_scale) {
