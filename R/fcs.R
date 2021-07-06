@@ -37,8 +37,8 @@
 #' Parse data from Flow Cytometry Standard (FCS) compliant files.
 #' @param fileName path to file.
 #' @param options list of options used to parse FCS file. It should contain:\cr
-#' - header, a list whose members define the "at" position where to start reading info and the "n" number of bytes to extract:\cr
-#' -- version:  where to retrieve file version.                Default is list(at = 0, n = 6),\cr
+#' - header, a list whose members define the "at" offset from header$start$at and the "n" number of bytes to extract:\cr
+#' -- start: where start reading FCS dataset.                  Default is list(at = 0, n = 6),\cr
 #' -- text_beg: where to retrieve file text segment beginning. Default is list(at = 10, n = 8),\cr
 #' -- text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
 #' -- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
@@ -56,7 +56,7 @@
 #' - text, list of keywords values,\cr
 #' - data, data.frame of values.
 #' @export
-readFCS <- function(fileName, options = list(header = list(version = list(at = 0, n = 6),
+readFCS <- function(fileName, options = list(header = list(start = list(at = 0, n = 6),
                                                            text_beg = list(at = 10, n = 8),
                                                            text_end = list(at = 18, n = 8),
                                                            data_beg = list(at = 26, n = 8),
@@ -75,16 +75,16 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
   on.exit(close(toread), add = TRUE)
   
   # we will read offsets from options
-  header = sapply(options$header, simplify = FALSE, FUN = function(x) {
-    seek(toread, x$at)
-    raw = readBin(toread, what = "raw", n = x$n)
-    raw = rawToChar(raw)
+  header = sapply(names(options$header), simplify = FALSE, FUN = function(x) {
+    seek(toread, options$header[[x]]$at[1] + ifelse(x == "start", 0, options$header[["start"]]$at[1]))
+    raw = rawToChar(readBin(toread, what = "raw", n = options$header[[x]]$n))
+    if(x != "start") raw = suppressWarnings(na.omit(as.integer(raw)) + options$header[["start"]]$at[1])
+    raw
   })
-
   # now we can extract text segment,
   # the primary text segment has to be in  within bytes 58 - 99,999,999
-  off1 = as.integer(header$text_beg)
-  off2 = as.integer(header$text_end)
+  off1 = header$text_beg
+  off2 = header$text_end
   seek(toread, off1)
   # first byte of text segment has to be the delimiter
   delimiter = rawToChar(readBin(toread, what = "raw", n = 1))
@@ -107,11 +107,10 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
   id_val = seq(from = 2, to = length(text), by = 2)
   id_key = id_val-1
   text = structure(as.list(text[id_val]), names = text[id_key])
-  
   # now we can extract additional text segment
   # we will use text to extract supplemental text segment offsets
-  extra_off1 = suppressWarnings(as.integer(text[["$BEGINSTEXT"]]))
-  extra_off2 = suppressWarnings(as.integer(text[["$ENDSTEXT"]]))
+  extra_off1 = suppressWarnings(as.integer(text[["$BEGINSTEXT"]])) + options$header[["start"]]$at[1]
+  extra_off2 = suppressWarnings(as.integer(text[["$ENDSTEXT"]])) + options$header[["start"]]$at[1]
   if((length(extra_off1) != 0) &&
      (length(extra_off2) != 0) &&
      !(extra_off1 == off1 && extra_off2 == off2) 
@@ -131,11 +130,12 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
   
   # now we can extract data segment
   # we will use text to extract data segment offsets
-  off1 = suppressWarnings(na.omit(as.integer(text[["$BEGINDATA"]])))
-  off2 = suppressWarnings(na.omit(as.integer(text[["$ENDDATA"]])))
+  off1 = suppressWarnings(na.omit(as.integer(text[["$BEGINDATA"]]))) + options$header[["start"]]$at[1]
+  off2 = suppressWarnings(na.omit(as.integer(text[["$ENDDATA"]]))) + options$header[["start"]]$at[1]
   # if not found in text despite being mandatory, we will use header
-  if(length(off1) == 0) off1 = suppressWarnings(as.integer(header$data_beg))
-  if(length(off2) == 0) off2 = suppressWarnings(as.integer(header$data_end))
+  if(length(off1) == 0) off1 = header$data_beg
+  if(length(off2) == 0) off2 = header$data_end
+
   data_bytes = abs(off2- off1) + 1
   # prepare default returned value for data
   data = data.frame()
@@ -221,7 +221,9 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
       if((data_bytes + off1) > file.size(fileName)) stop("data length points to outside of file")
       
       if(type == "I") { 
-        args = list(what = "integer", size = bit_n, signed = FALSE)
+        # with readBin unsigned integer can only be extracted for 8bits and 16bits. So, 
+        # for 32bits and 64bits we have to extract signed integers and convert them afterwards
+        args = list(what = "integer", size = bit_n, signed = bit_n > 2)
         # force bits depth, shall never be > bit_d
         tmp = bit_v > bit_d
         if(any(tmp)) {
@@ -295,6 +297,10 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
         } 
       } 
     }
+    if(type == "I") { # for 32bits and 64bits integers we need to convert signed to unsigned
+      if(bit_n == 4) data = sapply(c(data), cpp_int32_to_uint32)
+      if(bit_n == 8) data = sapply(c(data), cpp_int64_to_uint64)
+    }
     
     # convert data to data.frame
     data = matrix(data, ncol = n_par, nrow = n_obj, byrow = TRUE)
@@ -335,9 +341,9 @@ readFCS <- function(fileName, options = list(header = list(version = list(at = 0
   
   # extract additionnal FCS set if any
   more = integer()
-  if(!options$first_only) more = suppressWarnings(na.omit(as.integer(text[["$NEXTDATA"]])))
-  if((length(more) != 0) && (more != options$header$version$at)) {
-    options$header$version$at <- more
+  if(!options$first_only) more = suppressWarnings(na.omit(as.integer(text[["$NEXTDATA"]]))) + options$header[["start"]]$at[1]
+  if((length(more) != 0) && !(more %in% options$header$start$at)) {
+    options$header$start$at <- c(more, options$header$start$at)
     ans = c(ans, readFCS(fileName = fileName, options = options,
                          display_progress = display_progress, ...))
   }

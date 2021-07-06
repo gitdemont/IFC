@@ -9,8 +9,8 @@ FCS specifications available at \url{http://murphylab.web.cmu.edu/FCSAPI/FCS3.ht
 \usage{
 readFCS(
   fileName,
-  options = list(header = list(version = list(at = 0, n = 6), text_beg = list(at = 10,
-    n = 8), text_end = list(at = 18, n = 8), data_beg = list(at = 26, n = 8), data_end =
+  options = list(header = list(start = list(at = 0, n = 6), text_beg = list(at = 10, n
+    = 8), text_end = list(at = 18, n = 8), data_beg = list(at = 26, n = 8), data_end =
     list(at = 34, n = 8)), apply_scale = TRUE, first_only = TRUE),
   display_progress = TRUE,
   ...
@@ -20,8 +20,8 @@ readFCS(
 \item{fileName}{path to file.}
 
 \item{options}{list of options used to parse FCS file. It should contain:\cr
-- header, a list whose members define the "at" position where to start reading info and the "n" number of bytes to extract:\cr
--- version:  where to retrieve file version.                Default is list(at = 0, n = 6),\cr
+- header, a list whose members define the "at" offset from header$start$at and the "n" number of bytes to extract:\cr
+-- start: where start reading FCS dataset.                  Default is list(at = 0, n = 6),\cr
 -- text_beg: where to retrieve file text segment beginning. Default is list(at = 10, n = 8),\cr
 -- text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
 -- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
