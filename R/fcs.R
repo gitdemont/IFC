@@ -649,11 +649,13 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   all_pops = do.call(what = cbind, args = lapply(obj$pops, FUN = function(p) p$obj))
   colnames(all_pops) = names(obj$pops)
   features = cbind(obj$features[, setdiff(names(obj$features), colnames(all_pops))], all_pops)
-  features[is.na(features)] <- 0 # need to replace NA values by something IDEAS is using 0 so we use 0 also
+  # need to replace non finite values by something; IDEAS is using 0 so we use 0 also
+  # TODO maybe replace -Inf by features min and +Inf by features max ?
+  features[!is.finite(features)] <- 0 
   
   # determines length of text_segment2
   N = names(features)
-  L = length(features)
+  L = length(N)
   text2_length = 0
   text_segment2 = lapply(1:L, FUN = function(i) {
     # each time we write /$PnN/<feature_name>/$PnB/32/$PnE/0, 0/$PnR/<feature_max_value>
