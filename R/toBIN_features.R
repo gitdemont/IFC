@@ -48,9 +48,9 @@ toBIN_features = function(features, endianness = .Platform$endian,
   assert(title_progress, len = 1, typ = "character")
   
   L = ncol(features)
-  feat_version = packBits(intToBits(1),"raw")
-  feat_number = packBits(intToBits(L),"raw")
-  obj_number = packBits(intToBits(nrow(features)),"raw")
+  feat_version = cpp_uint32_to_raw(1)
+  feat_number = cpp_uint32_to_raw(L)
+  obj_number = cpp_uint32_to_raw(nrow(features))
   if(endianness != .Platform$endian) {
     feat_version = rev(feat_version)
     feat_number = rev(feat_number)
@@ -62,22 +62,22 @@ toBIN_features = function(features, endianness = .Platform$endian,
     if(endianness == .Platform$endian) {
       feat = lapply(1:L, FUN=function(i_feat) {
         setPB(pb, value = i_feat, title = title_progress, label = "converting features values (binary)")
-        c(packBits(intToBits(i_feat-1),"raw"), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
+        c(cpp_uint32_to_raw(i_feat-1), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
       })
     } else {
       feat = lapply(1:L, FUN=function(i_feat) {
         setPB(pb, value = i_feat, title = title_progress, label = "converting features values (binary)")
-        c(rev(packBits(intToBits(i_feat-1),"raw")), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
+        c(rev(cpp_uint32_to_raw(i_feat-1)), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
       })
     }
   } else {
     if(endianness == .Platform$endian) {
       feat = lapply(1:L, FUN=function(i_feat) {
-        c(packBits(intToBits(i_feat-1),"raw"), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
+        c(cpp_uint32_to_raw(i_feat-1), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
       })
     } else {
       feat = lapply(1:L, FUN=function(i_feat) {
-        c(rev(packBits(intToBits(i_feat-1),"raw")), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
+        c(rev(cpp_uint32_to_raw(i_feat-1)), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
       })
     }
   }

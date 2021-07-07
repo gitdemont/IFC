@@ -48,15 +48,16 @@ toBIN_images = function(images, endianness = .Platform$endian,
   assert(title_progress, len = 1, typ = "character")
   
   L = nrow(images)
-  SO_number = packBits(intToBits(L),"raw")
+  SO_number = cpp_uint32_to_raw(L)
   bgm = grep("^bgmean", names(images))
   bgs = grep("^bgstd", names(images))
   satc = grep("^satcount", names(images))
   satp = grep("^satpercent", names(images))
-  n_m = packBits(intToBits(length(bgm)),"raw")
-  n_s = packBits(intToBits(length(bgs)),"raw")
-  n_c = packBits(intToBits(length(satc)),"raw")
-  n_p = packBits(intToBits(length(satp)),"raw")
+  n_m = cpp_uint32_to_raw(length(bgm))
+  n_s = cpp_uint32_to_raw(length(bgs))
+  n_c = cpp_uint32_to_raw(length(satc))
+  n_p = cpp_uint32_to_raw(length(satp))
+  extra = as.raw(c(0x00, 0x00, 0x00, 0x00))
   
   if(display_progress) {
     pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
@@ -64,15 +65,15 @@ toBIN_images = function(images, endianness = .Platform$endian,
     if(endianness == .Platform$endian)  {
       imgs = lapply(1:L, FUN=function(i_image) {
         setPB(pb, value = i_image, title = title_progress, label = "converting images values (binary)")
-        c(packBits(intToBits(images[i_image,"id"]),"raw"), # id
-          c(packBits(intToBits(images[i_image,"imgIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # imgIFD
-          c(packBits(intToBits(images[i_image,"mskIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # mskIFD
-          c(packBits(intToBits(images[i_image,"spIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # spIFD
+        c(cpp_uint32_to_raw(images[i_image,"id"]),
+          c(cpp_uint32_to_raw(images[i_image,"imgIFD"]), extra),
+          c(cpp_uint32_to_raw(images[i_image,"mskIFD"]), extra),
+          c(cpp_uint32_to_raw(images[i_image,"spIFD"]), extra),
           writeBin(images[i_image,"w"], con = raw(), endian = endianness, size = 8), # w
           writeBin(images[i_image,"l"], con = raw(), endian = endianness, size = 8), # l
           writeBin(images[i_image,"fs"], con = raw(), endian = endianness, size = 8), # fs
-          packBits(intToBits(images[i_image,"cl"]),"raw"), # cl
-          packBits(intToBits(images[i_image,"ct"]),"raw"), # ct
+          cpp_uint32_to_raw(images[i_image,"cl"]),
+          cpp_uint32_to_raw(images[i_image,"ct"]),
           writeBin(images[i_image,"objCenterX"], con = raw(), endian = endianness, size = 8), # objCenterX
           writeBin(images[i_image,"objCenterY"], con = raw(), endian = endianness, size = 8), # objCenterY
           n_s, # number of bgstd
@@ -92,15 +93,15 @@ toBIN_images = function(images, endianness = .Platform$endian,
       SO_number = rev(SO_number)
       imgs = lapply(1:L, FUN=function(i_image) {
         setPB(pb, value = i_image, title = title_progress, label = "converting images values (binary)")
-        c(rev(packBits(intToBits(images[i_image,"id"]),"raw")), # id
-          rev(c(packBits(intToBits(images[i_image,"imgIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # imgIFD
-          rev(c(packBits(intToBits(images[i_image,"mskIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # mskIFD
-          rev(c(packBits(intToBits(images[i_image,"spIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # spIFD
+        c(rev(cpp_uint32_to_raw(images[i_image,"id"])),
+          rev(c(cpp_uint32_to_raw(images[i_image,"imgIFD"]), extra)),
+          rev(c(cpp_uint32_to_raw(images[i_image,"mskIFD"]), extra)),
+          rev(c(cpp_uint32_to_raw(images[i_image,"spIFD"]), extra)),
           writeBin(images[i_image,"w"], con = raw(), endian = endianness, size = 8), # w
           writeBin(images[i_image,"l"], con = raw(), endian = endianness, size = 8), # l
           writeBin(images[i_image,"fs"], con = raw(), endian = endianness, size = 8), # fs
-          rev(packBits(intToBits(images[i_image,"cl"]),"raw")), # cl
-          rev(packBits(intToBits(images[i_image,"ct"]),"raw")), # ct
+          rev(cpp_uint32_to_raw(images[i_image,"cl"])),
+          rev(cpp_uint32_to_raw(images[i_image,"ct"])),
           writeBin(images[i_image,"objCenterX"], con = raw(), endian = endianness, size = 8), # objCenterX
           writeBin(images[i_image,"objCenterY"], con = raw(), endian = endianness, size = 8), # objCenterY
           n_s, # number of bgstd
@@ -116,15 +117,15 @@ toBIN_images = function(images, endianness = .Platform$endian,
   } else {
     if(endianness == .Platform$endian)  {
       imgs = lapply(1:L, FUN=function(i_image) {
-        c(packBits(intToBits(images[i_image,"id"]),"raw"), # id
-          c(packBits(intToBits(images[i_image,"imgIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # imgIFD
-          c(packBits(intToBits(images[i_image,"mskIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # mskIFD
-          c(packBits(intToBits(images[i_image,"spIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # spIFD
+        c(cpp_uint32_to_raw(images[i_image,"id"]),
+          c(cpp_uint32_to_raw(images[i_image,"imgIFD"]), extra),
+          c(cpp_uint32_to_raw(images[i_image,"mskIFD"]), extra),
+          c(cpp_uint32_to_raw(images[i_image,"spIFD"]), extra),
           writeBin(images[i_image,"w"], con = raw(), endian = endianness, size = 8), # w
           writeBin(images[i_image,"l"], con = raw(), endian = endianness, size = 8), # l
           writeBin(images[i_image,"fs"], con = raw(), endian = endianness, size = 8), # fs
-          packBits(intToBits(images[i_image,"cl"]),"raw"), # cl
-          packBits(intToBits(images[i_image,"ct"]),"raw"), # ct
+          cpp_uint32_to_raw(images[i_image,"cl"]),
+          cpp_uint32_to_raw(images[i_image,"ct"]),
           writeBin(images[i_image,"objCenterX"], con = raw(), endian = endianness, size = 8), # objCenterX
           writeBin(images[i_image,"objCenterY"], con = raw(), endian = endianness, size = 8), # objCenterY
           n_s, # number of bgstd
@@ -143,15 +144,15 @@ toBIN_images = function(images, endianness = .Platform$endian,
       n_p = rev(n_p)
       SO_number = rev(SO_number)
       imgs = lapply(1:L, FUN=function(i_image) {
-        c(rev(packBits(intToBits(images[i_image,"id"]),"raw")), # id
-          rev(c(packBits(intToBits(images[i_image,"imgIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # imgIFD
-          rev(c(packBits(intToBits(images[i_image,"mskIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # mskIFD
-          rev(c(packBits(intToBits(images[i_image,"spIFD"]),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # spIFD
+        c(rev(cpp_uint32_to_raw(images[i_image,"id"])),
+          rev(c(cpp_uint32_to_raw(images[i_image,"imgIFD"]), extra)),
+          rev(c(cpp_uint32_to_raw(images[i_image,"mskIFD"]), extra)),
+          rev(c(cpp_uint32_to_raw(images[i_image,"spIFD"]), extra)),
           writeBin(images[i_image,"w"], con = raw(), endian = endianness, size = 8), # w
           writeBin(images[i_image,"l"], con = raw(), endian = endianness, size = 8), # l
           writeBin(images[i_image,"fs"], con = raw(), endian = endianness, size = 8), # fs
-          rev(packBits(intToBits(images[i_image,"cl"]),"raw")), # cl
-          rev(packBits(intToBits(images[i_image,"ct"]),"raw")), # ct
+          rev(cpp_uint32_to_raw(images[i_image,"cl"])),
+          rev(cpp_uint32_to_raw(images[i_image,"ct"])),
           writeBin(images[i_image,"objCenterX"], con = raw(), endian = endianness, size = 8), # objCenterX
           writeBin(images[i_image,"objCenterY"], con = raw(), endian = endianness, size = 8), # objCenterY
           n_s, # number of bgstd

@@ -55,11 +55,11 @@ buildIFD <- function(val, typ, tag, endianness = .Platform$endian) {
            },
            { charToRaw(as.character(x)) # 2 ASCII
            },
-           { packBits(intToBits(x),type="raw")[1:2] # 3 SHORT 2 bytes, what happen when endianness is swapped ?
+           { cpp_uint32_to_raw(x)[1:2] # 3 SHORT 2 bytes, what happen when endianness is swapped ?
            },
-           { packBits(intToBits(x),type="raw") # 4 LONG, 4 bytes
+           { cpp_uint32_to_raw(x) # 4 LONG, 4 bytes
            },
-           { packBits(intToBits(x),type="raw") # 5 RATIONAL = 2 LONG
+           { cpp_uint32_to_raw(x) # 5 RATIONAL = 2 LONG
            },
            { x # 6 SBYTE
            },
@@ -78,15 +78,15 @@ buildIFD <- function(val, typ, tag, endianness = .Platform$endian) {
   })
   bytes = length(unlist(val_raw))
   count = bytes / (sizes[typ] * multi[typ])
-  ifd = list(packBits(intToBits(tag),type="raw")[1:2], #tag
-             packBits(intToBits(typ),type="raw")[1:2], #typ
-             packBits(intToBits(count),type="raw")) #count
+  ifd = list(cpp_uint32_to_raw(tag)[1:2], #tag
+             cpp_uint32_to_raw(typ)[1:2], #typ
+             cpp_uint32_to_raw(count)) #count
   if(endianness != .Platform$endian) {
     ifd = lapply(ifd, rev)
     val_raw = lapply(val_raw, rev)
   }
   if(bytes > 4) {
-    ifd = c(ifd, packBits(intToBits(0),type="raw")) #val/offsets
+    ifd = c(ifd, cpp_uint32_to_raw(0)) #val/offsets
     add = val_raw
   } else {
     ifd = c(ifd, sapply(1:4, FUN=function(i) { ifelse(i <= bytes, unlist(val_raw)[i], as.raw(0x00)) }))

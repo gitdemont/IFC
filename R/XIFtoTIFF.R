@@ -440,7 +440,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
         # TODO if we remove mask tags it may be better to use offsets names as tracking object id
         
         # modify object id
-        tmp = packBits(intToBits(floor(obj_id/(XIF_step))),type="raw")
+        tmp = cpp_uint32_to_raw(floor(obj_id/(XIF_step)))
         if(endianness!=r_endian) tmp = rev(tmp)
         
         # TODO ask amnis what to do with 33024
@@ -469,7 +469,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
       
       # write this new offset
       pos = pos + 4
-      tmp = packBits(intToBits(pos + l_add[length(l_add)]), type="raw")
+      tmp = cpp_uint32_to_raw(pos + l_add[length(l_add)])
       if(endianness != r_endian) tmp = rev(tmp)
       writeBin(object = tmp, con = towrite, endian = r_endian)
       
@@ -478,7 +478,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
       
       # modify number of directory entries
       n_entries = length(ifd)
-      tmp = packBits(intToBits(n_entries),type="raw")
+      tmp = cpp_uint32_to_raw(n_entries)
       if(endianness!=r_endian) tmp = rev(tmp)
       
       # write modified number of entries
@@ -488,7 +488,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
       for(i in 1:length(ifd)) {
         la = length(ifd[[i]]$add_content)
         if(la==0) next
-        tmp = packBits(intToBits(pos),type="raw")
+        tmp = cpp_uint32_to_raw(pos)
         if(endianness!=r_endian) tmp = rev(tmp)
         ifd[[i]]$min_content[9:12] <- tmp
         pos = pos + la
@@ -496,7 +496,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
       
       # modify 33080 feature offset to point to features in 33083
       if("33080" %in% names(ifd)) {
-        tmp = packBits(intToBits(l_add["33083"] - length(ifd[["33083"]]$add_content) + 8),type="raw")
+        tmp = cpp_uint32_to_raw(l_add["33083"] - length(ifd[["33083"]]$add_content) + 8)
         if(endianness!=r_endian) tmp = rev(tmp)
         ifd[["33080"]]$min_content[9:12] <- tmp
       }
@@ -506,7 +506,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
       pos = pos + l_min[length(l_min)] + 2
       obj_id = obj_id + 1
     }
-    writeBin(object = packBits(intToBits(0),type="raw"), con = towrite, endian = r_endian)
+    writeBin(object = cpp_uint32_to_raw(0), con = towrite, endian = r_endian)
   }, error = function(e) {
     close(towrite)
     stop(paste0("Can't create 'write_to' file.\n", write_to,

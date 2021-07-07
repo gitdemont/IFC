@@ -298,7 +298,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
         
         if(is_binary) {
           # TODO maybe change endianness reading / writing
-          new_nodes$features = c(new_nodes$features, packBits(intToBits(fid),"raw"), 
+          new_nodes$features = c(new_nodes$features, cpp_uint32_to_raw(fid), 
                                  sapply(feat$val, FUN=function(x) writeBin(object=as.double(x), con=raw(), size = 8, endian = endianness, useBytes = TRUE)))
         } else {
           new_nodes$features = c(new_nodes$features,
@@ -470,7 +470,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     if(!is.null(offset)) {
       seek(towrite, offset)
       # TODO change endianness reading / writing
-      writeBin(object = packBits(intToBits(fid),"raw"), con=towrite, endian = endianness, useBytes = TRUE)
+      writeBin(object = cpp_uint32_to_raw(fid), con=towrite, endian = endianness, useBytes = TRUE)
     }
   }, error = function(e) {
     close(toread)

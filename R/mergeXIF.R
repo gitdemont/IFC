@@ -174,9 +174,9 @@ mergeXIF <- function (fileName, write_to,
   tryCatch(expr = {
     # magic number
     if(r_endian == "little") {
-      writeBin(object = c(packBits(intToBits(18761))[1:2], packBits(intToBits(42))[1:2]), con = towrite, endian = r_endian)
+      writeBin(object = c(cpp_uint32_to_raw(18761)[1:2], cpp_uint32_to_raw(42)[1:2]), con = towrite, endian = r_endian)
     } else {
-      writeBin(object = c(packBits(intToBits(19789))[1:2], rev(packBits(intToBits(42))[1:2])), con = towrite, endian = r_endian)
+      writeBin(object = c(cpp_uint32_to_raw(19789)[1:2], rev(cpp_uint32_to_raw(42)[1:2])), con = towrite, endian = r_endian)
     }
     # define writing position
     pos = 4
@@ -261,7 +261,7 @@ mergeXIF <- function (fileName, write_to,
     
     # write this new offset
     pos = pos + 4
-    tmp = packBits(intToBits(pos + l_add[length(l_add)]), type="raw")
+    tmp = cpp_uint32_to_raw(pos + l_add[length(l_add)])
     if(endianness != r_endian) tmp = rev(tmp)
     writeBin(object = tmp, con = towrite, endian = r_endian)
     
@@ -271,7 +271,7 @@ mergeXIF <- function (fileName, write_to,
     
     # modify number of directory entries
     n_entries = length(ifd)
-    tmp = packBits(intToBits(n_entries),type="raw")
+    tmp = cpp_uint32_to_raw(n_entries)
     if(endianness!=r_endian) tmp = rev(tmp)
     
     # write modified number of entries
@@ -281,7 +281,7 @@ mergeXIF <- function (fileName, write_to,
     for(i in 1:length(ifd)) {
       la = length(ifd[[i]]$add_content)
       if(la==0) next
-      tmp = packBits(intToBits(pos),type="raw")
+      tmp = cpp_uint32_to_raw(pos)
       if(endianness!=r_endian) tmp = rev(tmp)
       ifd[[i]]$min_content[9:12] <- tmp
       pos = pos + la
@@ -366,7 +366,7 @@ mergeXIF <- function (fileName, write_to,
                                 typ = 2, tag = 33094, endianness = r_endian))
           
           # modify object id
-          tmp = packBits(intToBits(floor(cum_obj/XIF_step)),type="raw")
+          tmp = cpp_uint32_to_raw(floor(cum_obj/XIF_step))
           if(endianness!=r_endian) tmp = rev(tmp)
           
           # TODO ask amnis what to do with 33024
@@ -394,7 +394,7 @@ mergeXIF <- function (fileName, write_to,
           
           # write this new offset
           pos = pos + 4
-          tmp = packBits(intToBits(pos + l_add[length(l_add)]), type="raw")
+          tmp = cpp_uint32_to_raw(pos + l_add[length(l_add)])
           if(endianness != r_endian) tmp = rev(tmp)
           writeBin(object = tmp, con = towrite, endian = r_endian)
           
@@ -403,7 +403,7 @@ mergeXIF <- function (fileName, write_to,
           
           # modify number of directory entries
           n_entries = length(ifd)
-          tmp = packBits(intToBits(n_entries),type="raw")
+          tmp = cpp_uint32_to_raw(n_entries)
           if(endianness!=r_endian) tmp = rev(tmp)
           
           # write modified number of entries
@@ -413,7 +413,7 @@ mergeXIF <- function (fileName, write_to,
           for(i in 1:length(ifd)) {
             la = length(ifd[[i]]$add_content)
             if(la==0) next
-            tmp = packBits(intToBits(pos),type="raw")
+            tmp = cpp_uint32_to_raw(pos)
             if(endianness!=r_endian) tmp = rev(tmp)
             ifd[[i]]$min_content[9:12] <- tmp
             pos = pos + la
@@ -430,7 +430,7 @@ mergeXIF <- function (fileName, write_to,
       })
       off_obj = off_obj + obj_count
     }
-    writeBin(object = packBits(intToBits(0),type="raw"), con = towrite, endian = r_endian)
+    writeBin(object = cpp_uint32_to_raw(0), con = towrite, endian = r_endian)
   }, error = function(e) {
     close(towrite)
     stop(paste0("Can't create 'write_to' file.\n", write_to,

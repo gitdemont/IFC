@@ -257,9 +257,9 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
         write_xml(root, file = towrite, encoding = "utf-8")
         seek(con = towrite, where = seek(towrite)-1, origin = "start")
         L = ncol(obj$features)
-        feat_version = packBits(intToBits(1),"raw")
-        feat_number = packBits(intToBits(ncol(obj$features)),"raw")
-        obj_number = packBits(intToBits(nrow(obj$features)),"raw")
+        feat_version = cpp_uint32_to_raw(1)
+        feat_number = cpp_uint32_to_raw(ncol(obj$features))
+        obj_number = cpp_uint32_to_raw(nrow(obj$features))
         if(endianness != .Platform$endian) {
           feat_version = rev(feat_version)
           feat_number = rev(feat_number)
@@ -275,13 +275,13 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
           if(endianness == .Platform$endian) {
             feat = lapply(1:L, FUN=function(i_feat) {
               setPB(pb_feb, value = i_feat, title = title_progress, label = "writing features values (binary)")
-              writeBin(object = packBits(intToBits(i_feat-1),"raw"), con = towrite)
+              writeBin(object = cpp_uint32_to_raw(i_feat-1), con = towrite)
               writeBin(object = obj$features[[i_feat]], con = towrite, size = 8, endian = endianness)
             })
           } else {
             feat = lapply(1:L, FUN=function(i_feat) {
               setPB(pb_feb, value = i_feat, title = title_progress, label = "writing features values (binary)")
-              writeBin(object = rev(packBits(intToBits(i_feat-1),"raw")), con = towrite)
+              writeBin(object = rev(cpp_uint32_to_raw(i_feat-1)), con = towrite)
               writeBin(object = obj$features[[i_feat]], con = towrite, size = 8, endian = endianness)
             })
           }
@@ -291,23 +291,23 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
         } else {
           if(endianness == .Platform$endian) {
             feat = lapply(1:L, FUN=function(i_feat) {
-              writeBin(object = packBits(intToBits(i_feat-1),"raw"), con = towrite)
+              writeBin(object = cpp_uint32_to_raw(i_feat-1), con = towrite)
               writeBin(object = obj$features[[i_feat]], con = towrite, size = 8, endian = endianness)
             })
           } else {
             feat = lapply(1:L, FUN=function(i_feat) {
-              writeBin(object = rev(packBits(intToBits(i_feat-1),"raw")), con = towrite)
+              writeBin(object = rev(cpp_uint32_to_raw(i_feat-1)), con = towrite)
               writeBin(object = obj$features[[i_feat]], con = towrite, size = 8, endian = endianness)
             })
           }
         }
         
         L = nrow(obj$images)
-        n_m = packBits(intToBits(length(bgm)),"raw")
-        n_s = packBits(intToBits(length(bgs)),"raw")
-        n_c = packBits(intToBits(length(satc)),"raw")
-        n_p = packBits(intToBits(length(satp)),"raw")
-        SO_number = packBits(intToBits(L),"raw")
+        n_m = cpp_uint32_to_raw(length(bgm))
+        n_s = cpp_uint32_to_raw(length(bgs))
+        n_c = cpp_uint32_to_raw(length(satc))
+        n_p = cpp_uint32_to_raw(length(satp))
+        SO_number = cpp_uint32_to_raw(L)
         if(endianness != .Platform$endian) {
           n_m = rev(n_m)
           n_s = rev(n_s)
@@ -315,6 +315,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
           n_p = rev(n_p)
           SO_number = rev(SO_number)
         }
+        extra = as.raw(c(0x00, 0x00, 0x00, 0x00))
         
         # writing images
         if(verbose) message("writing images binary values")
@@ -325,15 +326,15 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
           if(endianness == .Platform$endian) {
             imgs = lapply(1:L, FUN=function(i_image) {
               setPB(pb_imb, value = i_image, title = title_progress, label = "writing images values (binary)")
-              writeBin(object = c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"id"])),"raw"),
-                                  c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"imgIFD"])),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # add 4 bytes of extra 0
-                                  c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"mskIFD"])),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # add 4 bytes of extra 0
-                                  c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"spIFD"])),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # add 4 bytes of extra 0
+              writeBin(object = c(cpp_uint32_to_raw(obj$images[i_image,"id"]),
+                                  c(cpp_uint32_to_raw(obj$images[i_image,"imgIFD"]), extra),
+                                  c(cpp_uint32_to_raw(obj$images[i_image,"mskIFD"]), extra),
+                                  c(cpp_uint32_to_raw(obj$images[i_image,"spIFD"]), extra),
                                   writeBin(obj$images[i_image,"w"], con = raw(), endian = endianness, size = 8),
                                   writeBin(obj$images[i_image,"l"], con = raw(), endian = endianness, size = 8),
                                   writeBin(obj$images[i_image,"fs"], con = raw(), endian = endianness, size = 8),
-                                  packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"cl"])),"raw"),
-                                  packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"ct"])),"raw"),
+                                  cpp_uint32_to_raw(obj$images[i_image,"cl"]),
+                                  cpp_uint32_to_raw(obj$images[i_image,"ct"]),
                                   writeBin(obj$images[i_image,"objCenterX"], con = raw(), endian = endianness, size = 8),
                                   writeBin(obj$images[i_image,"objCenterY"], con = raw(), endian = endianness, size = 8),
                                   n_s,
@@ -349,15 +350,15 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
           } else {
             imgs = lapply(1:L, FUN=function(i_image) {
               setPB(pb_imb, value = i_image, title = title_progress, label = "writing images values (binary)")
-              writeBin(object = c(rev(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"id"])),"raw")),
-                                  rev(c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"imgIFD"])),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # add 4 bytes of extra 0
-                                  rev(c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"mskIFD"])),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # add 4 bytes of extra 0
-                                  rev(c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"spIFD"])),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # add 4 bytes of extra 0
+              writeBin(object = c(rev(cpp_uint32_to_raw(obj$images[i_image,"id"])),
+                                  rev(c(cpp_uint32_to_raw(obj$images[i_image,"imgIFD"]), extra)),
+                                  rev(c(cpp_uint32_to_raw(obj$images[i_image,"mskIFD"]), extra)),
+                                  rev(c(cpp_uint32_to_raw(obj$images[i_image,"spIFD"]), extra)),
                                   writeBin(obj$images[i_image,"w"], con = raw(), endian = endianness, size = 8),
                                   writeBin(obj$images[i_image,"l"], con = raw(), endian = endianness, size = 8),
                                   writeBin(obj$images[i_image,"fs"], con = raw(), endian = endianness, size = 8),
-                                  rev(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"cl"])),"raw")),
-                                  rev(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"ct"])),"raw")), 
+                                  rev(cpp_uint32_to_raw(obj$images[i_image,"cl"])),
+                                  rev(cpp_uint32_to_raw(obj$images[i_image,"ct"])), 
                                   writeBin(obj$images[i_image,"objCenterX"], con = raw(), endian = endianness, size = 8),
                                   writeBin(obj$images[i_image,"objCenterY"], con = raw(), endian = endianness, size = 8),
                                   n_s,
@@ -377,15 +378,15 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
         } else {
           if(endianness == .Platform$endian) {
             imgs = lapply(1:L, FUN=function(i_image) {
-              writeBin(object = c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"id"])),"raw"),
-                                  c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"imgIFD"])),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # add 4 bytes of extra 0
-                                  c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"mskIFD"])),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))), # add 4 bytes of extra 0
-                                  c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"spIFD"])),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00))),  # add 4 bytes of extra 0
+              writeBin(object = c(cpp_uint32_to_raw(obj$images[i_image,"id"]),
+                                  c(cpp_uint32_to_raw(obj$images[i_image,"imgIFD"]), extra),
+                                  c(cpp_uint32_to_raw(obj$obj$images[i_image,"mskIFD"]), extra),
+                                  c(cpp_uint32_to_raw(obj$images[i_image,"spIFD"]), extra), # add 4 bytes of extra 0
                                   writeBin(obj$images[i_image,"w"], con = raw(), endian = endianness, size = 8),
                                   writeBin(obj$images[i_image,"l"], con = raw(), endian = endianness, size = 8),
                                   writeBin(obj$images[i_image,"fs"], con = raw(), endian = endianness, size = 8),
-                                  packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"cl"])),"raw"),
-                                  packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"ct"])),"raw"), 
+                                  cpp_uint32_to_raw(obj$images[i_image,"cl"]),
+                                  cpp_uint32_to_raw(obj$images[i_image,"ct"]),
                                   writeBin(obj$images[i_image,"objCenterX"], con = raw(), endian = endianness, size = 8),
                                   writeBin(obj$images[i_image,"objCenterY"], con = raw(), endian = endianness, size = 8),
                                   n_s,
@@ -400,15 +401,14 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
             })
           } else {
             imgs = lapply(1:L, FUN=function(i_image) {
-              writeBin(object = c(rev(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"id"])),"raw")),
-                                  rev(c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"imgIFD"])),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # add 4 bytes of extra 0
-                                  rev(c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"mskIFD"])),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # add 4 bytes of extra 0
-                                  rev(c(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"spIFD"])),"raw"), as.raw(c(0x00, 0x00, 0x00, 0x00)))), # add 4 bytes of extra 0
-                                  writeBin(obj$images[i_image,"w"], con = raw(), endian = endianness, size = 8),
+              writeBin(object = c(rev(cpp_uint32_to_raw(obj$images[i_image,"id"])),
+                                  rev(c(cpp_uint32_to_raw(obj$images[i_image,"imgIFD"]), extra)),
+                                  rev(c(cpp_uint32_to_raw(obj$images[i_image,"mskIFD"]), extra)),
+                                  rev(c(cpp_uint32_to_raw(obj$images[i_image,"spIFD"]), extra)),
                                   writeBin(obj$images[i_image,"l"], con = raw(), endian = endianness, size = 8),
                                   writeBin(obj$images[i_image,"fs"], con = raw(), endian = endianness, size = 8),
-                                  rev(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"cl"])),"raw")),
-                                  rev(packBits(intToBits(cpp_uint32_to_int32(obj$images[i_image,"ct"])),"raw")), 
+                                  rev(cpp_uint32_to_raw(obj$images[i_image,"cl"])),
+                                  rev(cpp_uint32_to_raw(obj$images[i_image,"ct"])),  
                                   writeBin(obj$images[i_image,"objCenterX"], con = raw(), endian = endianness, size = 8),
                                   writeBin(obj$images[i_image,"objCenterY"], con = raw(), endian = endianness, size = 8),
                                   n_s,
