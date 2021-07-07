@@ -39,14 +39,18 @@ toXML2_graphs = function(graphs, verbose = FALSE) {
   if(verbose) message("creating graphs node")
   assert(graphs, cla = "IFC_graphs")
   if(length(graphs)==0) return(xml_new_node(name = "Displays", text = ""))
-  graphs = graphs[sapply(graphs, length) != 0] # to remove empty values (e.g. xtrans, ytrans)
-  graphs = lapply(graphs, FUN=function(i) {
-    i$GraphRegion = lapply(i$GraphRegion, FUN = function(g) g[!grepl("def", names(g))]) # it is mandatory to remove def
-    if(typeof(i) %in% c("integer","double")) {
-      return(num_to_string(i))
-    } else {
-      return(i)
-    }
+  graphs = graphs[sapply(graphs, length) != 0] 
+  graphs = lapply(graphs, FUN=function(g) {
+    g$GraphRegion = lapply(g$GraphRegion, FUN = function(x) x[!grepl("def", names(x))]) # it is mandatory to remove def
+    g = lapply(g, FUN = function(x) {
+      if(typeof(x) %in% c("integer","double")) {
+        return(num_to_string(x))
+      } else {
+        return(x)
+      }
+    })
+    g = g[sapply(g, length) != 0] # to remove empty values (e.g. xtrans, ytrans)
+    g
   })
   xml_new_node(name = "Displays", attrs = list(count = num_to_string(length(graphs)), layout="1", entriesPerRow="12", lightDarkMode="1"),
              .children = lapply(graphs, FUN=function(i_graph) {
