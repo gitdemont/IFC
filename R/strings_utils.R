@@ -90,17 +90,17 @@ splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(",
   assert(all_names, typ="character")
   assert(operators, typ="character")
   
-  # we create a mapping between all_names + operators and random names
-  # we also ensure that random names will bot contain any specials and 
+  # we create a mapping between all_names and random names
+  # we also ensure that random names will not contain any specials and 
   # will not match with themselves nor with names or operators to substitute
   # we also order to_substitute by number of character (decreasing) to
   # be sure that longer words will be substitute first
-  to_substitute = c(all_names, operators)
+  to_substitute = all_names
   if((length(to_substitute) == 0) || (definition == "")) return(definition)
   to_substitute = to_substitute[order(nchar(to_substitute), decreasing = TRUE)]
   replace_with = c()
   for(i in 1:length(to_substitute)) { 
-    replace_with = c(replace_with, random_name(n=10, special = NULL, forbidden = c(replace_with, to_substitute)))
+    replace_with = c(replace_with, random_name(n=max(9,nchar(operators))+1, special = NULL, forbidden = c(replace_with, to_substitute, operators)))
   }
   
   # we substitute names and operators with random names
@@ -117,7 +117,12 @@ splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(",
   # from to_substitute (i.e. all_names + operators)
   ans = sapply(ans, USE.NAMES = FALSE, FUN = function(x) {
     foo = to_substitute[x == replace_with]
-    if(length(foo) == 0) stop("definition contains unexpected name")
+    if(length(foo) == 0) {
+      foo = operators[x == operators]
+      if(length(foo) == 0) {
+        stop("definition contains unexpected name")
+      }
+    }
     return(foo)
   })
   return(ans)
