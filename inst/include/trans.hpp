@@ -107,6 +107,23 @@ Rcpp::NumericVector hpp_inv_smoothLinLog (const Rcpp::NumericVector x,
   }
 }
 
+//' @title Uint32 to Raw Conversion
+//' @name cpp_uint32_to_raw
+//' @description
+//' Converts unsigned 32bits integer to raw
+//' @param x uint32_t.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::RawVector hpp_uint32_to_raw(const uint32_t x) {
+  Rcpp::RawVector out(4);
+  out[3] = (x >> 24) & 0xff;
+  out[2] = (x >> 16) & 0xff;
+  out[1] = (x >>  8) & 0xff;
+  out[0] = (x      ) & 0xff;
+  return out;
+}
+
 //' @title Int32 to Uint32 32bits Conversion
 //' @name cpp_int32_to_uint32
 //' @description

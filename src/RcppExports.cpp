@@ -199,6 +199,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_uint32_to_raw
+Rcpp::RawVector cpp_uint32_to_raw(const uint32_t x);
+RcppExport SEXP _IFC_cpp_uint32_to_raw(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const uint32_t >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_uint32_to_raw(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_int32_to_uint32
 uint32_t cpp_int32_to_uint32(const int32_t x);
 RcppExport SEXP _IFC_cpp_int32_to_uint32(SEXP xSEXP) {
@@ -466,6 +477,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_M_HSV2RGB", (DL_FUNC) &_IFC_cpp_M_HSV2RGB, 3},
     {"_IFC_cpp_smoothLinLog", (DL_FUNC) &_IFC_cpp_smoothLinLog, 4},
     {"_IFC_cpp_inv_smoothLinLog", (DL_FUNC) &_IFC_cpp_inv_smoothLinLog, 4},
+    {"_IFC_cpp_uint32_to_raw", (DL_FUNC) &_IFC_cpp_uint32_to_raw, 1},
     {"_IFC_cpp_int32_to_uint32", (DL_FUNC) &_IFC_cpp_int32_to_uint32, 1},
     {"_IFC_cpp_uint32_to_int32", (DL_FUNC) &_IFC_cpp_uint32_to_int32, 1},
     {"_IFC_cpp_int64_to_uint64", (DL_FUNC) &_IFC_cpp_int64_to_uint64, 1},

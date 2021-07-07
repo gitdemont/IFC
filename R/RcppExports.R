@@ -182,6 +182,14 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title Uint32 to Raw Conversion
+#' @name cpp_uint32_to_raw
+#' @description
+#' Converts unsigned 32bits integer to raw
+#' @param x uint32_t.
+#' @keywords internal
+NULL
+
 #' @title Int32 to Uint32 32bits Conversion
 #' @name cpp_int32_to_uint32
 #' @description
@@ -527,6 +535,10 @@ cpp_smoothLinLog <- function(x, hyper = 1000.0, base = 10.0, lin_comp = 2.302585
 
 cpp_inv_smoothLinLog <- function(x, hyper = 1000.0, base = 10.0, lin_comp = 2.302585) {
     .Call(`_IFC_cpp_inv_smoothLinLog`, x, hyper, base, lin_comp)
+}
+
+cpp_uint32_to_raw <- function(x) {
+    .Call(`_IFC_cpp_uint32_to_raw`, x)
 }
 
 cpp_int32_to_uint32 <- function(x) {

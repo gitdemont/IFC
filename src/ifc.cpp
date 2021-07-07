@@ -328,6 +328,18 @@ Rcpp::NumericVector cpp_inv_smoothLinLog (const Rcpp::NumericVector x,
   return hpp_inv_smoothLinLog (x, hyper, base, lin_comp);
 }
 
+//' @title Uint32 to Raw Conversion
+//' @name cpp_uint32_to_raw
+//' @description
+//' Converts unsigned 32bits integer to raw
+//' @param x uint32_t.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::RawVector cpp_uint32_to_raw (const uint32_t x) {
+  return hpp_uint32_to_raw (x);
+}
+
 //' @title Int32 to Uint32 32bits Conversion
 //' @name cpp_int32_to_uint32
 //' @description
@@ -385,8 +397,8 @@ int64_t cpp_uint64_to_int64 (const uint64_t x) {
 //' @return a string vector.
 //' @keywords internal
 // [[Rcpp::export]]
-Rcpp::StringVector cpp_num_to_string(const Rcpp::NumericVector x, const unsigned char precision = 16) {
-  return hpp_num_to_string(x, precision);
+Rcpp::StringVector cpp_num_to_string (const Rcpp::NumericVector x, const unsigned char precision = 16) {
+  return hpp_num_to_string (x, precision);
 }
 // END trans
 
