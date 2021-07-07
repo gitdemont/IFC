@@ -273,7 +273,7 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
     order_tmp = b_names
     maxpoints = +Inf
   } else {
-    maxpoints = na.omit(maxpoints[maxpoints>0]); assert(maxpoints, len=1)
+    maxpoints = as.numeric(maxpoints); na.omit(maxpoints[maxpoints>0]); assert(maxpoints, len=1)
   }
   if(type=="density") order_tmp = rep(b_names,5)
   if(type=="scatter") {
