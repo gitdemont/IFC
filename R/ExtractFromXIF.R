@@ -351,7 +351,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
       if(length(plots)!=0) {
         plots_tmp=lapply(plots, FUN=function(plot) {
           pat=paste0("//Graph[@xlocation='",plot$xlocation,"'][@ylocation='",plot$ylocation,"']")
-          sapply(c("Legend","BasePop","GraphRegion","ShownPop"), FUN=function(i_subnode){
+          sapply(c("Legend","BasePop","GraphRegion","ShownPop"), simplify=FALSE, FUN=function(i_subnode){
             lapply(xml_attrs(xml_find_all(tmp, paste(pat,i_subnode,sep="//"))), FUN=function(x) as.list(x))
           })
         })
