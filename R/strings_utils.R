@@ -99,8 +99,13 @@ splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(",
   if((length(to_substitute) == 0) || (definition == "")) return(definition)
   to_substitute = to_substitute[order(nchar(to_substitute), decreasing = TRUE)]
   replace_with = c()
-  for(i in 1:length(to_substitute)) { 
-    replace_with = c(replace_with, random_name(n=max(9,nchar(operators))+1, special = NULL, forbidden = c(replace_with, to_substitute, operators)))
+  for(i in 1:length(to_substitute)) {
+    foo = c()
+    while((length(foo) == 0) ||
+          any(unlist(lapply(to_substitute, FUN = function(x) grepl(pattern=x, x=foo, fixed=TRUE))))) {
+      foo = random_name(n=max(9,nchar(operators))+1, special = NULL, forbidden = c(replace_with, to_substitute, operators)) 
+    }
+    replace_with = c(replace_with, foo)
   }
   
   # we substitute names and operators with random names
