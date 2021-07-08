@@ -106,24 +106,8 @@ std::string hpp_checkTIFF (const std::string fname) {
   return "";
 }
 
-//' @title IFC_offsets Computation without Id Determination
-//' @name cpp_getoffsets_noid
-//' @description
-//' Returns offsets of the IFDs (Image Field Directory) within a TIFF file.
-//' @param fname string, path to file.
-//' @param obj_count R_len_t, numbers of objects present in the file. Default is 0.
-//' If obj_count <= 0 then progress_bar is forced to false.
-//' @param display_progress bool, whether to display a progress bar. Default is false.
-//' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
-//' @return an integer vector with offsets of IFDs found.
-//' @keywords internal
-////' @export
-// [[Rcpp::export]]
-Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname, 
-                                        const R_len_t obj_count = 0, 
-                                        const bool display_progress = false,
-                                        const bool verbose = false) {
+Rcpp::IntegerVector hpp_getoffsets_noid_obj_unk(const std::string fname, 
+                                             const bool verbose = false) {
   bool swap = false;
   std::string endianness = hpp_checkTIFF(fname);
   if(endianness == "big") swap = true;
@@ -136,10 +120,97 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
       uint32_t offset = 4; // offsets are uint32 
       std::size_t pos;
       Rcpp::IntegerVector out;
+      char buf_entries [2];
+      char buf_offset [4];
+      uint16_t entries; // entries are uint16
+      
+      if(verbose) Rcout << "Extracting offsets from " << fname << std::endl;
+      fi.seekg(offset, std::ios::beg);
+      fi.read((char*)&buf_offset, sizeof(buf_offset));
+      std::memcpy(&offset, buf_offset, sizeof(offset));
+      
+      if(swap) {
+        offset = bytes_swap(offset);
+        if(!offset) {
+          Rcpp::stop("hpp_getoffsets_noid: No IFD offsets found");
+        }
+        while(offset) {
+          out.push_back(offset);
+          fi.seekg(offset, std::ios::beg);
+          fi.read((char*)buf_entries, sizeof(buf_entries));
+          std::memcpy(&entries, buf_entries, sizeof(entries));
+          entries = bytes_swap(entries);
+          pos = 2 + offset + 12 * entries;
+          if((pos > filesize) || (pos >= 0xffffffff)) { // can't read to more than 4,294,967,295
+            Rcpp::stop("hpp_getoffsets_noid: Buffer overrun");
+          }
+          fi.seekg(pos, std::ios::beg);
+          fi.read((char*)buf_offset, sizeof(buf_offset));
+          std::memcpy(&offset, buf_offset, sizeof(offset));
+          offset = bytes_swap(offset);
+          if(Progress::check_abort()) {
+            Rcpp::stop("hpp_getoffsets_noid: Interrupted by user");
+          }
+        }
+      } else {
+        if(!offset) {
+          Rcpp::stop("hpp_getoffsets_noid: No IFD offsets found");
+        }
+        while(offset) {
+          out.push_back(offset);
+          fi.seekg(offset, std::ios::beg);
+          fi.read((char*)buf_entries, sizeof(buf_entries));
+          std::memcpy(&entries, buf_entries, sizeof(entries));
+          pos = 2 + offset + 12 * entries;
+          if((pos > filesize) || (pos >= 0xffffffff)) { // can't read to more than 4,294,967,295
+            Rcpp::stop("hpp_getoffsets_noid: Buffer overrun");
+          }
+          fi.seekg(pos, std::ios::beg);
+          fi.read((char*)buf_offset, sizeof(buf_offset));
+          std::memcpy(&offset, buf_offset, sizeof(offset));
+          if(Progress::check_abort()) {
+            Rcpp::stop("hpp_getoffsets_noid: Interrupted by user");
+          }
+        }
+      }
+      fi.close();
+      return out;
+    }
+    catch(std::exception &ex) {	
+      fi.close();
+      forward_exception_to_r(ex);
+    }
+    catch(...) { 
+      Rcpp::stop("hpp_getoffsets_noid: c++ exception (unknown reason)"); 
+    }
+  }
+  else {
+    Rcpp::stop("hpp_getoffsets_noid: Unable to open file");
+  }
+  return Rcpp::IntegerVector::create(0);
+}
+
+Rcpp::IntegerVector hpp_getoffsets_noid_obj_ok(const std::string fname, 
+                                            const R_len_t obj_count = 0, 
+                                            const bool display_progress = false,
+                                            const bool verbose = false) {
+  bool swap = false;
+  std::string endianness = hpp_checkTIFF(fname);
+  if(endianness == "big") swap = true;
+  
+  std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+  if (fi.is_open()) {
+    try {
+      fi.seekg(0, std::ios::end);
+      std::size_t filesize = fi.tellg(); // offsets are uint32 so we can't go further
+      uint32_t offset = 4; // offsets are uint32 
+      std::size_t pos;
+      Rcpp::IntegerVector out(obj_count * 2);
       bool show_pb = display_progress;
       if(obj_count <= 0) show_pb = false;
       char buf_entries [2];
       char buf_offset [4];
+      R_len_t i_obj = 0;
       uint16_t entries; // entries are uint16
       
       if(verbose) Rcout << "Extracting offsets from " << fname << std::endl;
@@ -155,7 +226,11 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
         }
         while(offset) {
           p.increment();
-          out.push_back(offset);
+          if(i_obj < obj_count * 2) {
+            out[i_obj++] = offset;
+          } else {
+            out.push_back(offset);
+          }
           fi.seekg(offset, std::ios::beg);
           fi.read((char*)buf_entries, sizeof(buf_entries));
           std::memcpy(&entries, buf_entries, sizeof(entries));
@@ -179,7 +254,11 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
         }
         while(offset) {
           p.increment();
-          out.push_back(offset);
+          if(i_obj < obj_count * 2) {
+            out[i_obj++] = offset;
+          } else {
+            out.push_back(offset);
+          }
           fi.seekg(offset, std::ios::beg);
           fi.read((char*)buf_entries, sizeof(buf_entries));
           std::memcpy(&entries, buf_entries, sizeof(entries));
@@ -212,6 +291,32 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
   }
   return Rcpp::IntegerVector::create(0);
 }
+
+//' @title IFC_offsets Computation without Id Determination
+//' @name cpp_getoffsets_noid
+//' @description
+//' Returns offsets of the IFDs (Image Field Directory) within a TIFF file.
+//' @param fname string, path to file.
+//' @param obj_count R_len_t, numbers of objects present in the file. Default is 0.
+//' If obj_count <= 0 then progress_bar is forced to false.
+//' @param display_progress bool, whether to display a progress bar. Default is false.
+//' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
+//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+//' @return an integer vector with offsets of IFDs found.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname, 
+                                        const R_len_t obj_count = 0, 
+                                        const bool display_progress = false,
+                                        const bool verbose = false) {
+  if(obj_count <= 0) {
+    return hpp_getoffsets_noid_obj_unk(fname, verbose);
+  } else {
+    return hpp_getoffsets_noid_obj_ok(fname, obj_count, display_progress, verbose);
+  }
+}
+
 
 //' @title IFD Tags Extraction
 //' @name cpp_getTAGS
@@ -777,23 +882,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
                               _["next_IFD_offset"] = NA_REAL);
 }
 
-//' @title IFC_offsets Computation with Object Identification
-//' @name cpp_getoffsets_wid
-//' @description
-//' Returns offsets of the IFD (Image Field Directory) within a TIFF file.
-//' @param fname string, path to file.
-//' @param obj_count R_len_t, numbers of objects present in the file. Default is 0.
-//' If obj_count <= 0 then progress_bar is forced to false.
-//' @param display_progress bool, whether to display a progress bar. Default is false.
-//' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
-//' @return a list of integer vectors with OBJECT_ID, TYPE and OFFSET of IFDs found.
-//' @keywords internal
-////' @export
-// [[Rcpp::export]]
-Rcpp::List hpp_getoffsets_wid(const std::string fname, 
-                              const R_len_t obj_count = 0, 
-                              const bool display_progress = false, 
+Rcpp::List hpp_getoffsets_wid_obj_unk(const std::string fname, 
                               const bool verbose = false) {
   bool swap = false;
   std::string endianness = hpp_checkTIFF(fname);
@@ -803,13 +892,10 @@ Rcpp::List hpp_getoffsets_wid(const std::string fname,
   if (fi.is_open()) {
     try{
       fi.seekg(0, std::ios::end);
-      bool show_pb = display_progress;
-      if(obj_count == 0) show_pb = false;
       char buf_offset [4];
       uint32_t offset = 4;
       
       if(verbose) Rcout << "Extracting offsets from " << fname << std::endl;
-      Progress p(obj_count * 2 + 1, show_pb);
       fi.seekg(offset, std::ios::beg);
       fi.read((char*)&buf_offset, sizeof(buf_offset));
       std::memcpy(&offset, buf_offset, sizeof(offset));
@@ -826,7 +912,6 @@ Rcpp::List hpp_getoffsets_wid(const std::string fname,
       // uint32_t trunc_bytes = 8;
       // bool force_trunc = true;
       while(offset){
-        p.increment();
         Rcpp::List IFD = hpp_getTAGS(fname, offset, verbose, 4, true);
         offset = IFD["next_IFD_offset"];
         Rcpp::List infos = IFD["infos"];
@@ -847,6 +932,92 @@ Rcpp::List hpp_getoffsets_wid(const std::string fname,
         // out_obj.push_back(obj[0]);
         // out_typ.push_back(typ[0]);
         out_off.push_back(IFD["curr_IFD_offset"]);
+        
+        if(Progress::check_abort()) {
+          Rcpp::stop("hpp_getoffsets_wid: Interrupted by user");
+        }
+      }
+      Rcpp::List out = Rcpp::List::create(_["OBJECT_ID"] = out_obj,
+                                          _["TYPE"] = out_typ,
+                                          _["OFFSET"] = out_off);
+      fi.close();
+      return out;
+    }
+    catch(std::exception &ex) {	
+      fi.close();
+      forward_exception_to_r(ex);
+    }
+    catch(...) { 
+      Rcpp::stop("hpp_getoffsets_wid: c++ exception (unknown reason)"); 
+    }
+  }
+  else {
+    Rcpp::stop("hpp_getoffsets_wid: Unable to open file");
+  }
+  return Rcpp::List::create(Rcpp::List::create(_["OBJECT_ID"] = NA_INTEGER,
+                                               _["TYPE"] = NA_INTEGER,
+                                               _["OFFSET"] = NA_INTEGER));
+}
+
+Rcpp::List hpp_getoffsets_wid_obj_ok(const std::string fname, 
+                              const R_len_t obj_count = 0, 
+                              const bool display_progress = false, 
+                              const bool verbose = false) {
+  bool swap = false;
+  std::string endianness = hpp_checkTIFF(fname);
+  if(endianness == "big") swap = true;
+  
+  std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+  if (fi.is_open()) {
+    try{
+      fi.seekg(0, std::ios::end);
+      bool show_pb = display_progress;
+      if(obj_count == 0) show_pb = false;
+      char buf_offset [4];
+      uint32_t offset = 4;
+      R_len_t i_obj = 0;
+      
+      if(verbose) Rcout << "Extracting offsets from " << fname << std::endl;
+      Progress p(obj_count * 2 + 1, show_pb);
+      fi.seekg(offset, std::ios::beg);
+      fi.read((char*)&buf_offset, sizeof(buf_offset));
+      std::memcpy(&offset, buf_offset, sizeof(offset));
+      if(swap) offset = bytes_swap(offset);
+      if(!offset) {
+        Rcpp::stop("hpp_getoffsets_wid: No IFD offsets found");
+      }
+      Rcpp::IntegerVector out_obj(obj_count * 2), out_typ(obj_count * 2), out_off(obj_count * 2);
+
+      while(offset){
+        p.increment();
+        Rcpp::List IFD = hpp_getTAGS(fname, offset, verbose, 4, true);
+        offset = IFD["next_IFD_offset"];
+        Rcpp::List infos = IFD["infos"];
+        if(i_obj < obj_count * 2) {
+          if(iNotisNULL(infos["OBJECT_ID"])) {
+            out_obj[i_obj] = infos["OBJECT_ID"];
+          } else {
+            out_obj[i_obj] = NA_INTEGER;
+          }
+          if(iNotisNULL(infos["TYPE"])) {
+            out_typ[i_obj] = infos["TYPE"];
+          } else {
+            out_typ[i_obj] = NA_INTEGER;
+          }
+          out_off[i_obj++] = IFD["curr_IFD_offset"];
+        } else {
+          if(iNotisNULL(infos["OBJECT_ID"])) {
+            out_obj.push_back(infos["OBJECT_ID"]);
+          } else {
+            out_obj.push_back(NA_INTEGER);
+          }
+          if(iNotisNULL(infos["TYPE"])) {
+            out_typ.push_back(infos["TYPE"]);
+          } else {
+            out_typ.push_back(NA_INTEGER);
+          }
+          out_off.push_back(IFD["curr_IFD_offset"]);
+        }
         
         if(Progress::check_abort()) {
           p.cleanup();
@@ -873,6 +1044,32 @@ Rcpp::List hpp_getoffsets_wid(const std::string fname,
   return Rcpp::List::create(Rcpp::List::create(_["OBJECT_ID"] = NA_INTEGER,
                                                _["TYPE"] = NA_INTEGER,
                                                _["OFFSET"] = NA_INTEGER));
+}
+
+
+//' @title IFC_offsets Computation with Object Identification
+//' @name cpp_getoffsets_wid
+//' @description
+//' Returns offsets of the IFD (Image Field Directory) within a TIFF file.
+//' @param fname string, path to file.
+//' @param obj_count R_len_t, numbers of objects present in the file. Default is 0.
+//' If obj_count <= 0 then progress_bar is forced to false.
+//' @param display_progress bool, whether to display a progress bar. Default is false.
+//' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
+//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+//' @return a list of integer vectors with OBJECT_ID, TYPE and OFFSET of IFDs found.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::List hpp_getoffsets_wid(const std::string fname, 
+                              const R_len_t obj_count = 0, 
+                              const bool display_progress = false, 
+                              const bool verbose = false) {
+  if(obj_count <= 0) {
+    return hpp_getoffsets_wid_obj_unk(fname, verbose);
+  } else {
+    return hpp_getoffsets_wid_obj_ok(fname, obj_count, display_progress, verbose);
+  }
 }
 
 //' @title Checksum for RIF/CIF
