@@ -460,6 +460,9 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
         if(length(ifd[["33003"]])!=0) ifd[["33003"]]$min_content[9:12] <- tmp
       } 
       
+      # stop if duplicated names is found
+      if(any(duplicated(names(ifd)))) stop("found duplicated ifd names in ",fileName,", object:",OBJECT_ID," @offset:",IFD$curr_IFD_offset)
+      
       # reorder ifd
       ifd = ifd[order(as.integer(names(ifd)))]
       

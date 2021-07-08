@@ -252,6 +252,9 @@ mergeXIF <- function (fileName, write_to,
     # add extra ifd
     ifd = c(ifd, ifd_time, ifd_user, ifd_obj, ifd_merged, ifd_version, ifd_files, ifd_checksum)
     
+    # stop if duplicated names is found
+    if(any(duplicated(names(ifd)))) stop("found duplicated ifd names in ",file_first,", @offset:first")
+    
     # reorder ifd
     ifd = ifd[order(as.integer(names(ifd)))]
     
@@ -332,7 +335,7 @@ mergeXIF <- function (fileName, write_to,
             # read entry
             min_content = readBin(toread, what = "raw", n = 12, endian = r_endian)
             # remove unwanted tags
-            # if(IFD$tags[[i_tag]]$tag %in% unwanted) return(list(min_content = raw(), add_content = raw()))
+            if(IFD$tags[[i_tag]]$tag %in% unwanted) return(list(min_content = raw(), add_content = raw()))
             # extract extra content when value is an offset
             if(IFD$tags[[i_tag]]$off || (IFD$tags[[i_tag]]$tag %in% off_tags)) {
               # go to this offset in read
@@ -352,7 +355,7 @@ mergeXIF <- function (fileName, write_to,
           names(ifd) = names(IFD$tags)
           
           # remove unwanted tags
-          # ifd = ifd[sapply(1:length(ifd), FUN=function(i_tag) length(ifd[[i_tag]]$min_content)!=0)]
+          ifd = ifd[sapply(1:length(ifd), FUN=function(i_tag) length(ifd[[i_tag]]$min_content)!=0)]
           
           # register current object id in new tag to be able to track it
           ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33093")),
@@ -384,6 +387,9 @@ mergeXIF <- function (fileName, write_to,
           #   ifd[["33003"]]$min_content[9:12] <- tmp
           # }
           if(length(ifd[["33003"]])!=0) ifd[["33003"]]$min_content[9:12] <- tmp
+          
+          # stop if duplicated names is found
+          if(any(duplicated(names(ifd)))) stop("found duplicated ifd names in ",f,", object:",OBJECT_ID," @offset:",IFD$curr_IFD_offset)
           
           # reorder ifd
           ifd = ifd[order(as.integer(names(ifd)))]
