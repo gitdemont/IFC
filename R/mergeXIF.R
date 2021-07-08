@@ -424,6 +424,7 @@ mergeXIF <- function (fileName, write_to,
             ifd[[i]]$min_content[9:12] <- tmp
             pos = pos + la
           }
+          if(pos > 4294967295) stop("file is too big")
           
           # write ifd
           writeBin(object = unlist(lapply(ifd, FUN=function(i_tag) i_tag$min_content)), con = towrite, endian = r_endian)
