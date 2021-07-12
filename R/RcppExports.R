@@ -117,6 +117,17 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title IFD Fast Tags Extraction
+#' @name cpp_fastTAGS
+#' @description
+#' Returns TAGS contained within an IFD (Image Field Directory) entry.
+#' @param fname string, path to file.
+#' @param offset uint32_t, position of the IFD beginning.
+#' @param verbose bool, whether to display information (use for debugging purpose). Default is 'false'.
+#' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+#' @keywords internal
+NULL
+
 #' @title IFC_offsets Computation with Object Identification
 #' @name cpp_getoffsets_wid
 #' @description
@@ -515,6 +526,10 @@ cpp_getoffsets_noid <- function(fname, obj_count = 0L, display_progress = FALSE,
 
 cpp_getTAGS <- function(fname, offset, verbose = FALSE, trunc_bytes = 12L, force_trunc = FALSE) {
     .Call(`_IFC_cpp_getTAGS`, fname, offset, verbose, trunc_bytes, force_trunc)
+}
+
+cpp_fastTAGS <- function(fname, offset, verbose = FALSE) {
+    .Call(`_IFC_cpp_fastTAGS`, fname, offset, verbose)
 }
 
 cpp_getoffsets_wid <- function(fname, obj_count = 0L, display_progress = FALSE, verbose = FALSE) {
