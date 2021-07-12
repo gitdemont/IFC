@@ -227,6 +227,22 @@ Rcpp::List cpp_getTAGS (const std::string fname,
   return hpp_getTAGS (fname, offset, verbose, trunc_bytes, force_trunc); 
 }
 
+//' @title IFD Fast Tags Extraction
+//' @name cpp_fastTAGS
+//' @description
+//' Returns TAGS contained within an IFD (Image Field Directory) entry.
+//' @param fname string, path to file.
+//' @param offset uint32_t, position of the IFD beginning.
+//' @param verbose bool, whether to display information (use for debugging purpose). Default is 'false'.
+//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::List cpp_fastTAGS (const std::string fname, 
+                        const uint32_t offset, 
+                        const bool verbose = false) {
+  return hpp_fastTAGS (fname, offset, verbose); 
+}
 
 //' @title IFC_offsets Computation with Object Identification
 //' @name cpp_getoffsets_wid

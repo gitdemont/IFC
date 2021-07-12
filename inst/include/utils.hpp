@@ -36,6 +36,24 @@ using namespace Rcpp;
 
 static std::string base64_LUT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+// check platform endian
+std::string hpp_getEndian () {
+  std::string out = "";
+  unsigned int foo = 1;
+  char *bar = (char*)&foo;
+  switch(*bar) {
+  case 0: {
+    out = "big";
+  }
+    break;
+  case 1: {
+    out = "little";
+  }
+    break;
+  }
+  return out;
+}
+
 // Ensures NumericVector is not NULL
 bool nNotisNULL(const Rcpp::Nullable<Rcpp::NumericVector> x_ = R_NilValue) {
   if (x_.isNotNull()) {

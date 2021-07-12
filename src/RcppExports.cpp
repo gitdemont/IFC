@@ -133,6 +133,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_fastTAGS
+Rcpp::List cpp_fastTAGS(const std::string fname, const uint32_t offset, const bool verbose);
+RcppExport SEXP _IFC_cpp_fastTAGS(SEXP fnameSEXP, SEXP offsetSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fastTAGS(fname, offset, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_getoffsets_wid
 Rcpp::List cpp_getoffsets_wid(const std::string fname, const R_len_t obj_count, const bool display_progress, const bool verbose);
 RcppExport SEXP _IFC_cpp_getoffsets_wid(SEXP fnameSEXP, SEXP obj_countSEXP, SEXP display_progressSEXP, SEXP verboseSEXP) {
@@ -472,6 +485,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_checkTIFF", (DL_FUNC) &_IFC_cpp_checkTIFF, 1},
     {"_IFC_cpp_getoffsets_noid", (DL_FUNC) &_IFC_cpp_getoffsets_noid, 4},
     {"_IFC_cpp_getTAGS", (DL_FUNC) &_IFC_cpp_getTAGS, 5},
+    {"_IFC_cpp_fastTAGS", (DL_FUNC) &_IFC_cpp_fastTAGS, 3},
     {"_IFC_cpp_getoffsets_wid", (DL_FUNC) &_IFC_cpp_getoffsets_wid, 4},
     {"_IFC_cpp_checksum", (DL_FUNC) &_IFC_cpp_checksum, 1},
     {"_IFC_cpp_M_HSV2RGB", (DL_FUNC) &_IFC_cpp_M_HSV2RGB, 3},
