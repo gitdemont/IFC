@@ -384,6 +384,8 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         for(i in 1:length(regions)) {
           regions[[i]]$color = map_color(regions[[i]]$color)
           regions[[i]]$lightcolor = map_color(regions[[i]]$lightcolor)
+          if(regions[[i]]$color == "0") regions[[i]]$color <- paletteIFC("to_dark", col = regions[[i]]$lightcolor)["color_R"][1]
+          if(regions[[i]]$lightcolor == "0") regions[[i]]$lightcolor <- paletteIFC("to_light", col = regions[[i]]$color)["lightModeColor_R"][1]
         }
       }
       class(regions) <- "IFC_regions"
