@@ -173,51 +173,24 @@ mergeXIF <- function (fileName, write_to,
   write_to = normalizePath(write_to, winslash = "/", mustWork = FALSE)
   tryCatch(expr = {
     # magic number
-    if(r_endian == "little") {
-      writeBin(object = c(cpp_uint32_to_raw(18761)[1:2], cpp_uint32_to_raw(42)[1:2]), con = towrite, endian = r_endian)
-    } else {
-      writeBin(object = c(cpp_uint32_to_raw(19789)[1:2], rev(cpp_uint32_to_raw(42)[1:2])), con = towrite, endian = r_endian)
-    }
+    writeBin(object = c(cpp_uint32_to_raw(18761)[1:2], cpp_uint32_to_raw(42)[1:2]), con = towrite, endian = r_endian)
+    
     # define writing position
     pos = 4
     
+    # compute final object number
+    final_obj = sum(sapply(fileName, FUN = function(f) getFullTag(IFD = getIFD(fileName = f, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE), which = 1, tag = "33018")))
+    
     # extract information from first IFD of first file
     IFD_first = getIFD(fileName = file_first, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE)
-    N = names(IFD_first[[1]]$tags)
-    if(display_progress) pb1 = newPB(session = dots$session, title = title_progress, label = "extracting 1st IFD", min = 0, max = length(IFD_first[[1]]$tags), initial = 0, style = 3)
-    toread = file(description = file_first, open = "rb")
-    tryCatch({
-      # go to IFD start
-      seek(toread, IFD_first[[1]]$curr_IFD_offset)
-      
-      # read number of directory entries
-      # TODO what if n_entries != length(IFD_first[[1]]$tags) ?
-      # n_entries = readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian)
-      # ifd = lapply(1:length(IFD_first[[1]]) , FUN=function(i_tag) {
-      ifd = lapply(1:readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian), FUN=function(i_tag) {
-                     add_content = raw()
-                     # go to entry
-                     seek(toread, IFD_first[[1]]$curr_IFD_offset + (i_tag - 1) * 12 + 2)
-                     # read entry
-                     min_content = readBin(toread, what = "raw", n = 12, endian = r_endian)
-                     # remove unwanted tags
-                     if(IFD_first[[1]]$tags[[i_tag]]$tag %in% unwanted) return(list(min_content = raw(), add_content = raw()))
-                     # extract extra content when value is an offset
-                     if(IFD_first[[1]]$tags[[i_tag]]$off) {
-                       # go to this offset in read
-                       seek(toread, IFD_first[[1]]$tags[[i_tag]]$val)
-                       # extra content
-                       add_content = readBin(toread, what = "raw", n = IFD_first[[1]]$tags[[i_tag]]$byt, endian = r_endian)
-                     }
-                     return(list(min_content = min_content, add_content = add_content))
-                   })
-      names(ifd) = names(IFD_first[[1]]$tags)
-    }, error = function(e) {
-      stop(paste0("can't create first IFD:\n", e$message), call. = FALSE) 
-    }, finally = {
-      if(display_progress) endPB(pb1)
-      close(toread)
-    })
+    toread1 = file(description = file_first, open = "rb")
+    if(display_progress) {
+      pb1 = newPB(session = dots$session, title = title_progress, label = "extracting 1st IFD", min = 0, max = length(IFD_first[[1]]$tags), initial = 0, style = 3)
+      pb2 = newPB(session = dots$session, title = title_progress, label = " ", min = 0, max = final_obj * XIF_step, initial = 0, style = 3)
+      on.exit(endPB(pb2), add = TRUE)
+    }
+    tryCatch(expr = {
+    IFD = cpp_fastTAGS(fname = file_first, offset = IFD_first[[1]]$curr_IFD_offset, verbose = VER)
     
     # set additional IFD
     # 33029 or 33030 names of files that constitute the merge
@@ -231,7 +204,6 @@ mergeXIF <- function (fileName, write_to,
     # 33005 user
     ifd_user = buildIFD(val = "IFC package", typ = 2, tag = 33005, endianness = r_endian)
     # compute final object number
-    final_obj = sum(sapply(fileName, FUN = function(f) getFullTag(IFD = getIFD(fileName = f, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE), which = 1, tag = "33018")))
     ifd_obj = buildIFD(val = final_obj, typ = 4, tag = 33018, endianness = r_endian)
     # 33090 ifc pkg version
     ifd_version = buildIFD(val = paste0(unlist(packageVersion("IFC")), collapse = "."), typ = 2, tag = 33090, endianness = r_endian)
@@ -246,61 +218,21 @@ mergeXIF <- function (fileName, write_to,
                                          collapse = ">"), 
                             typ = 2, tag = 33092, endianness = r_endian)
     
-    # remove unwanted tags
-    ifd = ifd[sapply(1:length(ifd), FUN=function(i_tag) length(ifd[[i_tag]]$min_content)!=0)]
-    
-    # add extra ifd
-    ifd = c(ifd, ifd_time, ifd_user, ifd_obj, ifd_merged, ifd_version, ifd_files, ifd_checksum)
-    
-    # stop if duplicated names is found
-    if(any(duplicated(names(ifd)))) stop("found duplicated ifd names in ",file_first,", @offset:first")
-    
-    # reorder ifd
-    ifd = ifd[order(as.integer(names(ifd)))]
-    
-    # define new offset position of current ifd
-    l_min = cumsum(sapply(ifd, FUN=function(i_tag) length(i_tag$min_content)))
-    l_add = cumsum(sapply(ifd, FUN=function(i_tag) length(i_tag$add_content)))
-    
-    # write this new offset
-    pos = pos + 4
-    tmp = cpp_uint32_to_raw(pos + l_add[length(l_add)])
-    if(endianness != r_endian) tmp = rev(tmp)
-    writeBin(object = tmp, con = towrite, endian = r_endian)
-    
-    # write all additional content
-    # TODO writing all additionnal content can be long, add a progress bar here ?
-    writeBin(object = unlist(lapply(ifd, FUN=function(i_tag) i_tag$add_content)), con = towrite, endian = r_endian)
-    
-    # modify number of directory entries
-    n_entries = length(ifd)
-    tmp = cpp_uint32_to_raw(n_entries)
-    if(endianness!=r_endian) tmp = rev(tmp)
-    
-    # write modified number of entries
-    writeBin(object = tmp[1:2], con = towrite, endian = r_endian)
-    
-    # modify ifd val/offset of minimal content 
-    for(i in 1:length(ifd)) {
-      la = length(ifd[[i]]$add_content)
-      if(la==0) next
-      tmp = cpp_uint32_to_raw(pos)
-      if(endianness!=r_endian) tmp = rev(tmp)
-      ifd[[i]]$min_content[9:12] <- tmp
-      pos = pos + la
-    }
-    
-    # write ifd
-    writeBin(object = unlist(lapply(ifd, FUN=function(i_tag) i_tag$min_content)), con = towrite, endian = r_endian)
-    pos = pos + l_min[length(l_min)] + 2
-    
-    if(display_progress) {
-      pb2 = newPB(session = dots$session, title = title_progress, label = " ", min = 0, max = final_obj * XIF_step, initial = 0, style = 3)
-      on.exit(endPB(pb2), add = TRUE)
-    }
+    pos = writeIFD(ifd = IFD$tags[!(names(IFD$tags) %in% unwanted)],
+                   r_con = toread1, w_con = towrite, pos = pos, 
+                   extra = c(ifd_time, ifd_user, ifd_obj, ifd_merged, ifd_version, ifd_files, ifd_checksum),
+                   endianness = r_endian)
+    }, error = function(e) {
+      stop(e$message)
+    },
+    finally = {
+      if(display_progress) endPB(pb1)
+      close(toread1)
+    })
     
     # initialize object count
     off_obj = 0
+    
     # repeat same process for img / msk data for all files
     for(f in fileName) {
       IFD_first = getIFD(fileName = f, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE)
@@ -314,121 +246,31 @@ mergeXIF <- function (fileName, write_to,
         OBJECT_ID = NULL
         for(i_obj in seq(1 - (XIF_test != 1), to = obj_count - (XIF_test != 1))) {
           cum_obj = i_obj + off_obj
-          setPB(pb = pb2, value = cum_obj, title = title_progress, label = paste0(label_progress, " - merging objects"))
+          if(display_progress) setPB(pb = pb2, value = cum_obj, title = title_progress, label = paste0(label_progress, " - merging objects"))
           # extract IFD
-          IFD = cpp_getTAGS(fname = f, offset = IFD$next_IFD_offset, trunc_bytes = 1, force_trunc = TRUE, verbose = VER)
-          cur_obj = IFD$infos
-          if(cur_obj$TYPE == 2) OBJECT_ID = cur_obj$OBJECT_ID
-          
-          # extract raw content from current IFD
-          # go to IFD start
-          seek(toread, IFD$curr_IFD_offset)
-          
-          # read number of directory entries
-          # TODO what if n_entries != length(IFD$tags) ?
-          # n_entries = readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian)
-          # ifd = lapply(1:length(IFD$tags) , FUN=function(i_tag) {
-          ifd = lapply(1:readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian), FUN=function(i_tag) {
-            add_content = raw()
-            # go to entry
-            seek(toread, IFD$curr_IFD_offset + (i_tag - 1) * 12 + 2)
-            # read entry
-            min_content = readBin(toread, what = "raw", n = 12, endian = r_endian)
-            # remove unwanted tags
-            if(IFD$tags[[i_tag]]$tag %in% unwanted) return(list(min_content = raw(), add_content = raw()))
-            # extract extra content when value is an offset
-            if(IFD$tags[[i_tag]]$off || (IFD$tags[[i_tag]]$tag %in% off_tags)) {
-              # go to this offset in read
-              seek(toread, IFD$tags[[i_tag]]$val)
-              # extra content
-              if(IFD$tags[[i_tag]]$tag == 273) {
-                add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
-              # if(IFD$tags[[i_tag]]$tag %in% off_tags) {
-                # if(IFD$tags[[i_tag]]$tag == 273) add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
-                # if(IFD$tags[[i_tag]]$tag == 324) add_content = readBin(toread, what = "raw", n = IFD$tags[["325"]]$map, endian = r_endian)
-              } else {
-                add_content = readBin(toread, what = "raw", n = IFD$tags[[i_tag]]$byt, endian = r_endian)
-              }
-            }
-            return(list(min_content = min_content, add_content = add_content))
-          })
-          names(ifd) = names(IFD$tags)
-          
-          # remove unwanted tags
-          ifd = ifd[sapply(1:length(ifd), FUN=function(i_tag) length(ifd[[i_tag]]$min_content)!=0)]
-          
-          # register current object id in new tag to be able to track it
-          ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33093")),
-                                               OBJECT_ID),
-                                             collapse = ">"),
-                                typ = 2, tag = 33093, endianness = r_endian))
-          # add origin fileName to allow to track where exported objects are coming from
-          ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33094")),
-                                               f),
-                                             collapse = ">"),
-                                typ = 2, tag = 33094, endianness = r_endian))
+          IFD = cpp_fastTAGS(fname = f, offset = IFD$next_IFD_offset, verbose = VER)
+          TYPE = IFD$tags[["33002"]]$val
+          if(any(TYPE == 2)) OBJECT_ID = IFD$tags[["33003"]]$val
+          ifd = IFD$tags[!(names(IFD$tags) %in% unwanted)]
           
           # modify object id
           tmp = cpp_uint32_to_raw(floor(cum_obj/XIF_step))
-          if(endianness!=r_endian) tmp = rev(tmp)
-          
-          # TODO ask amnis what to do with 33024
-          # if(length(ifd[["33024"]])!=0) {
-          #   if(length(ifd[["33003"]])!=0) {
-          #     ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
-          #   }
-          # }
-          # if(length(ifd[["33003"]])!=0) {
-          #   if(length(ifd[["33024"]])!=0) {
-          #     ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
-          #   } else {
-          #     ifd = c(ifd, buildIFD(val = OBJECT_ID, typ = 4, tag = 33024, endianness = r_endian))
-          #   }
-          #   ifd[["33003"]]$min_content[9:12] <- tmp
-          # }
-          if(length(ifd[["33003"]])!=0) ifd[["33003"]]$min_content[9:12] <- tmp
-          
-          # stop if duplicated names is found
-          if(any(duplicated(names(ifd)))) stop("found duplicated ifd names in ",f,", object:",OBJECT_ID," @offset:",IFD$curr_IFD_offset)
-          
-          # reorder ifd
-          ifd = ifd[order(as.integer(names(ifd)))]
-          
-          # define new offset position of current ifd
-          l_min = cumsum(sapply(ifd, FUN=function(i_tag) length(i_tag$min_content)))
-          l_add = cumsum(sapply(ifd, FUN=function(i_tag) length(i_tag$add_content)))
-          
-          # write this new offset
-          pos = pos + 4
-          tmp = cpp_uint32_to_raw(pos + l_add[length(l_add)])
           if(endianness != r_endian) tmp = rev(tmp)
-          writeBin(object = tmp, con = towrite, endian = r_endian)
+          if(length(ifd[["33003"]])!=0) ifd[["33003"]]$raw[9:12] <- tmp
           
-          # write all additional content
-          writeBin(object = unlist(lapply(ifd, FUN=function(i_tag) i_tag$add_content)), con = towrite, endian = r_endian)
+          extra = c(
+            # register current object id in new tag to be able to track it
+            buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33093")),
+                                    OBJECT_ID),
+                                  collapse = ">"),
+                     typ = 2, tag = 33093, endianness = r_endian),
+            # add origin fileName to allow to track where exported objects are coming from
+            buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33094")),
+                                    f),
+                                  collapse = ">"),
+                     typ = 2, tag = 33094, endianness = r_endian))
           
-          # modify number of directory entries
-          n_entries = length(ifd)
-          tmp = cpp_uint32_to_raw(n_entries)
-          if(endianness!=r_endian) tmp = rev(tmp)
-          
-          # write modified number of entries
-          writeBin(object = tmp[1:2], con = towrite, endian = r_endian)
-          
-          # modify ifd val/offset of minimal content 
-          for(i in 1:length(ifd)) {
-            la = length(ifd[[i]]$add_content)
-            if(la==0) next
-            tmp = cpp_uint32_to_raw(pos)
-            if(endianness!=r_endian) tmp = rev(tmp)
-            ifd[[i]]$min_content[9:12] <- tmp
-            pos = pos + la
-          }
-          if(pos > 4294967295) stop("file is too big")
-          
-          # write ifd
-          writeBin(object = unlist(lapply(ifd, FUN=function(i_tag) i_tag$min_content)), con = towrite, endian = r_endian)
-          pos = pos + l_min[length(l_min)] + 2
+          pos = writeIFD(ifd, r_con = toread, w_con = towrite, pos = pos, extra = extra, endianness = r_endian)
         }
       }, error = function(e) {
         stop(e$message, call. = FALSE)
@@ -437,15 +279,13 @@ mergeXIF <- function (fileName, write_to,
       })
       off_obj = off_obj + obj_count
     }
-    writeBin(object = cpp_uint32_to_raw(0), con = towrite, endian = r_endian)
+    writeBin(object = as.raw(c(0x00,0x00,0x00,0x00)), con = towrite, endian = r_endian)
   }, error = function(e) {
-    close(towrite)
     stop(paste0("Can't create 'write_to' file.\n", write_to,
                 ifelse(overwritten,"\nFile was not modified.\n","\n"),
                 "See pre-file @\n", normalizePath(file_w, winslash = "/", mustWork = FALSE), "\n",
                 e$message), call. = FALSE)
-  })
-  close(towrite)
+  }, finally = close(towrite))
   if(overwritten) {
     mess = paste0("\n######################\n", write_to, "\nhas been successfully overwritten\n")
     if(!suppressWarnings(file.rename(to = write_to, from = file_w))) { # try file renaming which is faster

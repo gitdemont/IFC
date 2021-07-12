@@ -204,6 +204,8 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   # 33083 corresponds to Features values in merged or subset
   # 33090, 33091, 33092, 33093, 33094 corresponds to tags we add to track objects origin
   unwanted = c(33004, 33005, 33018, 33080, 33081, 33082, 33083, 33090, 33091, 33092, 33093, 33094)
+  # TODO ask amnis if we can remove unnecessary tags for masks ?
+  # i.e. only keep: 254, 256, 257, 258, 259, 262, 273, 277, 278, 279, 306, 33002, 33016, 33017
   
   # tags of StripOffsets (273) and TileOffsets (324)
   # off_tags = c(273, 324)
@@ -232,63 +234,24 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
     }
     OBJECT_ID = NULL
     for(i_off in 1:off_number) {
+      extra = list()
       # extract IFD
-      IFD = cpp_getTAGS(fname = fileName, offset = offsets[i_off], trunc_bytes = 8, force_trunc = FALSE, verbose = VER)
-      cur_obj = IFD$infos
-      if((length(cur_obj$TYPE) != 0) && (cur_obj$TYPE == 2)) OBJECT_ID = cur_obj$OBJECT_ID
+      IFD = cpp_fastTAGS(fname = fileName, offset = offsets[i_off], verbose = VER)
+      ifd = IFD$tags[!(names(IFD$tags) %in% unwanted)]
+      TYPE = IFD$tags[["33002"]]$val
+      if(any(TYPE == 2)) OBJECT_ID = IFD$tags[["33003"]]$val
+      # if((length(TYPE) != 0) && (TYPE == 2)) OBJECT_ID = OBJECT_ID
       if(length(OBJECT_ID) == 1) {
         if(fast) {
           expected_obj = as.integer(gsub("^.*_(.*)$", "\\1", names(offsets[i_off])))
-          if(cur_obj$TYPE == 2) if(OBJECT_ID != expected_obj) {
+          if(TYPE == 2) if(OBJECT_ID != expected_obj) {
             warning("Extracted object_id [",OBJECT_ID,"] differs from expected one [",expected_obj,"]", call. = FALSE, immediate. = TRUE)
           }
         }
       }
-      if(display_progress) {
-        setPB(pb1, value = (obj_id+1)/XIF_step, title = title_progress, label = "objects subsetting")
-      }
-      
-      # go to file IFD offset
-      seek(toread, offsets[i_off])
-      
-      # TODO ask amnis if we can remove unnecessary tags for masks ?
-      # i.e. only keep: 254, 256, 257, 258, 259, 262, 273, 277, 278, 279, 306, 33002, 33016, 33017
-      # IFD$tags = IFD$tags[c(254, 256, 257, 258, 259, 262, 273, 277, 278, 279, 306, 33002, 33016, 33017)]
-      # read number of directory entries
-      # TODO what if n_entries != length(IFD$tags) ?
-      # n_entries = readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian)
-      # ifd = lapply(1:length(IFD$tags) , FUN=function(i_tag) {
-      ifd = lapply(1:readBin(toread, what = "int", n = 1, size = 2, signed = FALSE, endian = r_endian), FUN=function(i_tag) {
-        add_content = raw()
-        # go to entry
-        seek(toread, IFD$curr_IFD_offset + (i_tag - 1) * 12 + 2)
-        # read entry
-        min_content = readBin(toread, what = "raw", n = 12, endian = r_endian)
-        # remove unwanted tags
-        if(IFD$tags[[i_tag]]$tag %in% unwanted) return(list(min_content = raw(), add_content = raw()))
-        # extract extra content when value is an offset
-        if(IFD$tags[[i_tag]]$off || (IFD$tags[[i_tag]]$tag %in% off_tags)) {
-          # go to this offset in read
-          seek(toread, IFD$tags[[i_tag]]$val)
-          # extra content
-          if(IFD$tags[[i_tag]]$tag == 273) {
-            add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
-          # if(IFD$tags[[i_tag]]$tag %in% off_tags) {
-            # if(IFD$tags[[i_tag]]$tag == 273) add_content = readBin(toread, what = "raw", n = IFD$tags[["279"]]$map, endian = r_endian)
-            # if(IFD$tags[[i_tag]]$tag == 324) add_content = readBin(toread, what = "raw", n = IFD$tags[["325"]]$map, endian = r_endian)
-          } else {
-            add_content = readBin(toread, what = "raw", n = IFD$tags[[i_tag]]$byt, endian = r_endian)
-          }
-        }
-        return(list(min_content = min_content, add_content = add_content))
-      })
-      names(ifd) = names(IFD$tags)
-      
-      # remove unwanted tags
-      ifd = ifd[sapply(1:length(ifd), FUN=function(i_tag) length(ifd[[i_tag]]$min_content)!=0)]
+      if(display_progress) setPB(pb1, value = (obj_id+1)/XIF_step, title = title_progress, label = "objects subsetting")
       
       # extract features values in 1st IFD
-      # if((length(IFD$infos$TYPE) != 0) && (IFD$infos$TYPE == 1)) {
       if(i_off == 1) {
         features = list()
         if(XIF_test >= 0) {
@@ -371,50 +334,56 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
           if(length(features) != 0) {
             # we were able to extract binary features values so we recreate tags 33080 and 33082
             features = c(writeBin(as.double(L), raw(), size = 4, endian = r_endian), feat_number_r, features)
-            # add back binary feature offset
-            ifd = c(ifd, buildIFD(val = 0, typ = 4, tag = 33080, endianness = r_endian))
-            # recreate feature binary boolean flag
-            ifd = c(ifd, buildIFD(val = 1, typ = 4, tag = 33082, endianness = r_endian))
-            # add back binary feature that corresponds to extracted objects
-            ifd = c(ifd, buildIFD(val = features, typ = 1, tag = 33083, endianness = r_endian))
+            extra = c(extra, 
+                    # add back binary feature offset
+                    buildIFD(val = 0, typ = 4, tag = 33080, endianness = r_endian),
+                    # recreate feature binary boolean flag
+                    buildIFD(val = 1, typ = 4, tag = 33082, endianness = r_endian),
+                    # add back binary feature that corresponds to extracted objects
+                    buildIFD(val = features, typ = 1, tag = 33083, endianness = r_endian)
+            )
           }
         }
-        # change now time
-        ifd = c(ifd, buildIFD(val = format(Sys.time(), "%d-%m-%Y %H:%M:%S %p"), typ = 2, tag = 33004, endianness = r_endian))
-        # change user
-        ifd = c(ifd, buildIFD(val = "IFC package", typ = 2, tag = 33005, endianness = r_endian))
-        # modify total objects count
-        ifd = c(ifd, buildIFD(val = L, typ = 4, tag = 33018, endianness = r_endian))
-        # add pkg version tag /!\ mandatory to prevent overwriting original file
-        ifd = c(ifd, buildIFD(val = paste0(unlist(packageVersion("IFC")), collapse = "."), typ = 2, tag = 33090, endianness = r_endian))
-        # add fileName tag /!\ allow to track where exported objects are coming from
-        ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33091")),
-                                             fileName),
-                                           collapse = ">"),
-                              typ = 2, tag = 33091, endianness = r_endian))
-        # add checksum tag /!\ allow to track where exported objects are coming from
-        ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33092")),
-                                             checksumXIF(fileName)),
-                                           collapse = ">"), 
-                              typ = 2, tag = 33092, endianness = r_endian))
+        extra = c(extra, 
+                  # change now time
+                  buildIFD(val = format(Sys.time(), "%d-%m-%Y %H:%M:%S %p"), typ = 2, tag = 33004, endianness = r_endian),
+                  # change user
+                  buildIFD(val = "IFC package", typ = 2, tag = 33005, endianness = r_endian),
+                  # modify total objects count
+                  buildIFD(val = L, typ = 4, tag = 33018, endianness = r_endian),
+                  # add pkg version tag /!\ mandatory to prevent overwriting original file
+                  buildIFD(val = paste0(unlist(packageVersion("IFC")), collapse = "."), typ = 2, tag = 33090, endianness = r_endian),
+                  # add fileName tag /!\ allow to track where exported objects are coming from
+                  buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33091")),
+                                          fileName),
+                                        collapse = ">"),
+                           typ = 2, tag = 33091, endianness = r_endian),
+                  # add checksum tag /!\ allow to track where exported objects are coming from
+                  buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33092")),
+                                          checksumXIF(fileName)),
+                                        collapse = ">"), 
+                           typ = 2, tag = 33092, endianness = r_endian)
+        )
       } else {
-        # register current object id in new tag to be able to track it
-        ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33093")),
-                                             OBJECT_ID),
-                                           collapse = ">"),
-                              typ = 2, tag = 33093, endianness = r_endian))
-        
-        # register current fil_ori in new tag to be able to track it
-        ifd = c(ifd, buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33094")),
-                                             fileName),
-                                           collapse = ">"), 
-                              typ = 2, tag = 33094, endianness = r_endian))
+        extra = c(extra, 
+                  # register current object id in new tag to be able to track it
+                  buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33093")),
+                                          OBJECT_ID),
+                                        collapse = ">"),
+                           typ = 2, tag = 33093, endianness = r_endian),
+                  
+                  # register current fil_ori in new tag to be able to track it
+                  buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33094")),
+                                          fileName),
+                                        collapse = ">"), 
+                           typ = 2, tag = 33094, endianness = r_endian)
+        )
         
         # TODO if we remove mask tags it may be better to use offsets names as tracking object id
-        
         # modify object id
         tmp = cpp_uint32_to_raw(floor(obj_id/XIF_step))
         if(endianness!=r_endian) tmp = rev(tmp)
+        if(length(ifd[["33003"]])!=0) ifd[["33003"]]$raw[9:12] <- tmp
         
         # TODO ask amnis what to do with 33024
         # if(length(ifd[["33024"]])!=0) {
@@ -430,67 +399,18 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
         #   }
         #   ifd[["33003"]]$min_content[9:12] <- tmp
         # }
-        if(length(ifd[["33003"]])!=0) ifd[["33003"]]$min_content[9:12] <- tmp
       }
       
-      # stop if duplicated names is found
-      if(any(duplicated(names(ifd)))) stop("found duplicated ifd names in ",fileName,", object:",OBJECT_ID," @offset:",IFD$curr_IFD_offset)
-      
-      # reorder ifd
-      ifd = ifd[order(as.integer(names(ifd)))]
-      
-      # define new offset position of current ifd
-      l_min = cumsum(sapply(ifd, FUN=function(i_tag) length(i_tag$min_content)))
-      l_add = cumsum(sapply(ifd, FUN=function(i_tag) length(i_tag$add_content)))
-      
-      # write this new offset
-      pos = pos + 4
-      tmp = cpp_uint32_to_raw(pos + l_add[length(l_add)])
-      if(endianness != r_endian) tmp = rev(tmp)
-      writeBin(object = tmp, con = towrite, endian = r_endian)
-      
-      # write all additional content
-      writeBin(object = unlist(lapply(ifd, FUN=function(i_tag) i_tag$add_content)), con = towrite, endian = r_endian)
-      
-      # modify number of directory entries
-      n_entries = length(ifd)
-      tmp = cpp_uint32_to_raw(n_entries)
-      if(endianness!=r_endian) tmp = rev(tmp)
-      
-      # write modified number of entries
-      writeBin(object = tmp[1:2], con = towrite, endian = r_endian)
-      
-      # modify ifd val/offset of minimal content 
-      for(i in 1:length(ifd)) {
-        la = length(ifd[[i]]$add_content)
-        if(la==0) next
-        tmp = cpp_uint32_to_raw(pos)
-        if(endianness!=r_endian) tmp = rev(tmp)
-        ifd[[i]]$min_content[9:12] <- tmp
-        pos = pos + la
-      }
-      
-      # modify 33080 feature offset to point to features in 33083
-      if("33080" %in% names(ifd)) {
-        tmp = cpp_uint32_to_raw(l_add["33083"] - length(ifd[["33083"]]$add_content) + 8)
-        if(endianness!=r_endian) tmp = rev(tmp)
-        ifd[["33080"]]$min_content[9:12] <- tmp
-      }
-      
-      # write ifd
-      writeBin(object = unlist(lapply(ifd, FUN=function(i_tag) i_tag$min_content)), con = towrite, endian = r_endian)
-      pos = pos + l_min[length(l_min)] + 2
+      pos = writeIFD(ifd, r_con = toread, w_con = towrite, pos = pos, extra = extra, endianness = r_endian)
       obj_id = obj_id + 1
     }
     writeBin(object = cpp_uint32_to_raw(0), con = towrite, endian = r_endian)
   }, error = function(e) {
-    close(towrite)
     stop(paste0("Can't create 'write_to' file.\n", write_to,
                 ifelse(overwritten,"\nFile was not modified.\n","\n"),
                 "See pre-file @\n", normalizePath(file_w, winslash = "/", mustWork = FALSE), "\n",
                 e$message), call. = FALSE)
-  })
-  close(towrite)
+  }, finally = close(towrite))
   if(overwritten) {
     mess = paste0("\n######################\n", write_to, "\nhas been successfully overwritten\n")
     if(!suppressWarnings(file.rename(to = write_to, from = file_w))) { # try file renaming which is faster
