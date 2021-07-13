@@ -234,7 +234,7 @@ getInfo <- function(fileName,
   infos$collectionmode = as.numeric(acquisition$Illumination[["CollectionMode"]])
   infos$magnification = as.numeric(acquisition$Imaging[["Magnification"]])
   infos$coremode = as.numeric(acquisition$Fluidics[["CoreMode"]])
-  infos$evmode = as.numeric(acquisition$Fluidics[["EVModeEnabled"]])
+  infos$evmode = as.numeric(acquisition$Imaging[["EVModeEnabled"]])
   if(from == "analysis" & file_extension != "rif") {
     if(length(IFD[[1]]$tags[["33020"]]$map)!=0) {
       cross = getFullTag(IFD = IFD, which = 1, tag = "33020")
