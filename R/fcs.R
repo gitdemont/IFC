@@ -394,7 +394,7 @@ ExtractFromFCS <- function(fileName, ...) {
                                        "masks" = data.frame()),
                   "fileName" = character(),
                   "fileName_image" = character(),
-                  "features" = structure(.Data = list(), class = c("data.frame", "IFC_feautres")),
+                  "features" = structure(.Data = list(), class = c("data.frame", "IFC_features")),
                   "features_def" = structure(.Data =  list(), class = c("IFC_features_def")),
                   "graphs" = structure(.Data =  list(), class = c("IFC_graphs")),
                   "pops" = structure(.Data =  list(), class = c("IFC_pops")),
@@ -427,7 +427,8 @@ ExtractFromFCS <- function(fileName, ...) {
           out = merge.data.frame(out, dat[[i]], all = TRUE, stringsAsFactors = FALSE, check.names = FALSE)
         }
       }
-      return(list(text = lapply(foo, FUN = function(x) x$text), dat = out))
+      return(list(text = lapply(foo, FUN = function(x) c(list("$FCSversion" = x$header$start), x$text[names(x$text) != "$FCSversion"])), 
+                  dat = out))
     })
   }, error = function(e) {
     stop(e$message, call. = FALSE)
@@ -483,7 +484,7 @@ ExtractFromFCS <- function(fileName, ...) {
     return(tmp)
   })
   FCS_version = sapply(fcs, FUN = function(x) {
-    tmp = x$text[[1]]$FCSversion
+    tmp = x$text[[1]]$`$FCSversion`
     if((length(tmp) == 0) || (tmp == "")) return("unk")
     return(tmp)
   })
