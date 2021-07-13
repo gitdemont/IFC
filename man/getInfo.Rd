@@ -50,6 +50,7 @@ a list of information (open .daf file in an text editor for more details) about 
 -collectionmode, the collection mode,\cr
 -magnification, magnification used,\cr
 -coremode, the core mode,\cr
+-evmode, the high gain mode,\cr
 -CrossTalkMatrix. compensation matrix applied,\cr
 -ChannelPresets, channel preset,\cr
 -ImageDisplaySettings, image display settings,\cr
