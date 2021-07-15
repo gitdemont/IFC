@@ -652,7 +652,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   features = cbind(obj$features[, setdiff(names(obj$features), colnames(all_pops))], all_pops)
   # need to replace non finite values by something; IDEAS is using 0 so we use 0 also
   # TODO maybe replace -Inf by features min and +Inf by features max ?
-  features[!is.finite(features)] <- 0 
+  features = as.data.frame(apply(features, 2, FUN = function(x) {x[!is.finite(x)] <- 0; x}), stringsAsFactors = TRUE)
   
   # determines length of text_segment2
   N = names(features)
@@ -710,16 +710,16 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   # ENDSTEXT
   # determining text_end is tricky since it depends on it own length
   # so we use a function to optimize it
-  f = function(ans = text1_length) {
-    data_beg = ans + 1
+  f = function(x, text_length) {
+    data_beg = x + 1
     if(data_beg >= 1e9) data_beg = 0
-    data_end = ans + data_length - 1
+    data_end = x + data_length - 1
     if(data_end >= 1e9) data_end = 0
-    foo = text1_length + nchar(ans) + nchar(data_beg) + nchar(data_end)
-    if(foo != ans) f(ans = foo)
-    return(foo)
+    ans = text_length + nchar(x) + nchar(data_beg) + nchar(data_end)
+    if(ans != x) ans = f(x = ans, text_length = text_length)
+    return(ans)
   }
-  text_end = f()
+  text_end = f(x = text1_length, text_length = text1_length)
   if(text_end >= 1e9) stop("primary text segment is too big")
   header$text_end = sprintf("%8i", text_end)
   text_segment1 = c(text_segment1, list("$ENDSTEXT" = as.character(text_end)))
