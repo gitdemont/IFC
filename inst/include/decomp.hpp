@@ -99,7 +99,6 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
     uint32_t tile_width = imgWidth / nb_channels;
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (fi.is_open()) {
-      try{
         fi.seekg(0, std::ios::end);
         unsigned int filesize = fi.tellg();
         if(verbose) {
@@ -113,6 +112,7 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
         fi.seekg(offset, std::ios::beg);
         std::vector<char> buf_image(nbytes);
         fi.read(buf_image.data(), nbytes);
+        fi.close();
         
         Rcpp::IntegerMatrix img(imgWidth,imgHeight);
         R_len_t L = imgWidth * imgHeight, runLength = 0, j = 0;
@@ -190,15 +190,6 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
           out[i] = timg(Rcpp::_, Rcpp::Range(tile_width * i, tile_width * (i+1) - 1));
         }
         return out;
-      }
-      catch(std::exception &ex) {	
-        fi.close();
-        forward_exception_to_r(ex);
-      }
-      catch(...) { 
-        Rcpp::stop("hpp_rle_Decomp: c++ exception (unknown reason)"); 
-      }
-      fi.close();
     } else {
       Rcpp::stop("hpp_rle_Decomp: Unable to open file");
     }
@@ -264,7 +255,6 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
     uint32_t tile_width = imgWidth / nb_channels;
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(fi.is_open()) {
-      try {
         fi.seekg(0, std::ios::end);
         std::size_t filesize = fi.tellg();
         if(verbose) {
@@ -280,6 +270,7 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
         fi.seekg(offset, std::ios::beg);
         std::vector<char> buf_image(nbytes);
         fi.read(buf_image.data(), nbytes);
+        fi.close();
         
         Rcpp::IntegerVector lastRow(imgWidth + 1);
         Rcpp::IntegerMatrix img(imgHeight, imgWidth + 1);
@@ -311,15 +302,6 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
           out[i] = img(Rcpp::_, Rcpp::Range(1 + tile_width * i, tile_width * (i + 1)));
         }
         return out;
-      }
-      catch(std::exception &ex) {	
-        fi.close();
-        forward_exception_to_r(ex);
-      }
-      catch(...) { 
-        Rcpp::stop("hpp_gray_Decomp: c++ exception (unknown reason)"); 
-      }
-      fi.close();
     } else {
       Rcpp::stop("hpp_gray_Decomp: Unable to open file");
     }
@@ -456,7 +438,6 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
     Rcpp::RawVector out(imgWidth * imgHeight * bits / 8);
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if(fi.is_open()) {
-      try {
         fi.seekg(0, std::ios::end);
         std::size_t filesize = fi.tellg();
         if(verbose) {
@@ -471,6 +452,7 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
         fi.seekg(offset, std::ios::beg);
         std::vector<char> buf_image(nbytes);
         fi.read(buf_image.data(), nbytes);
+        fi.close();
         
         Rcpp::IntegerVector lastRow(imgWidth + 1);
         Rcpp::IntegerMatrix img(imgHeight, imgWidth + 1);
@@ -554,15 +536,6 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
         }
         if(k != nbytes - odd) Rcpp::stop("hpp_gray_rawDecomp: Bad decompression");
         return out;
-      }
-      catch(std::exception &ex) {	
-        fi.close();
-        forward_exception_to_r(ex);
-      }
-      catch(...) { 
-        Rcpp::stop("hpp_gray_rawDecomp: c++ exception (unknown reason)"); 
-      }
-      fi.close();
     } else {
       Rcpp::stop("hpp_gray_rawDecomp: Unable to open file");
     }
@@ -629,7 +602,6 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
   if(L * nbytes != 0) {
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (fi.is_open()) {
-      try{
         fi.seekg(0, std::ios::end);
         unsigned int filesize = fi.tellg();
         if(verbose) {
@@ -643,6 +615,7 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
         fi.seekg(offset, std::ios::beg);
         std::vector<char> buf_image(nbytes);
         fi.read(buf_image.data(), nbytes);
+        fi.close();
         
         Rcpp::RawVector out(L * bits / 8);
         if(bits == 8) {
@@ -686,15 +659,6 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
         }
         if(L != j) Rcpp::stop("hpp_rle_rawDecomp: Bad decompression");
         return out;
-      }
-      catch(std::exception &ex) {	
-        fi.close();
-        forward_exception_to_r(ex);
-      }
-      catch(...) { 
-        Rcpp::stop("hpp_rle_rawDecomp: c++ exception (unknown reason)"); 
-      }
-      fi.close();
     } else {
       Rcpp::stop("hpp_rle_rawDecomp: Unable to open file");
     }
