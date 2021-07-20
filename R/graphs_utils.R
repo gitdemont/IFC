@@ -503,11 +503,11 @@ convert_to_baseplot = function(obj) {
   if(pkg == "base") {
     x_ticks = base_axis_constr(lim = Xlim, trans = obj$input$trans_x, nint = n_ticks)
     y_ticks = base_axis_constr(lim = Ylim, trans = obj$input$trans_y, nint = n_ticks)
-    x_axis = axis(side = 1, at = x_ticks$at, labels = FALSE, cex.lab = obj$plot$par.settings$par.xlab.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex)
+    x_axis = axis(side = 1, at = x_ticks$at, labels = FALSE)
     text(x = x_axis, y = Ylim[1] - diff(Ylim) * 0.07, labels = x_ticks$labels, xpd=TRUE, adj = c(1, 1),
          cex = obj$plot$par.settings$axis.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex, srt=45)
-    y_axis = axis(side = 2, at = y_ticks$at, labels = FALSE, cex.lab = obj$plot$par.settings$par.xlab.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex)
-    text(y = x_axis, x = Xlim[1] - diff(Xlim) * 0.07, labels = y_ticks$labels, xpd=TRUE, adj = c(1, 0.5),
+    y_axis = axis(side = 2, at = y_ticks$at, labels = FALSE)
+    text(y = y_axis, x = Xlim[1] - diff(Xlim) * 0.07, labels = y_ticks$labels, xpd=TRUE, adj = c(1, 0.5),
          cex = obj$plot$par.settings$axis.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex, las=1)
     box()
   }
