@@ -20,7 +20,7 @@ Reads IFC data from IFC files no matter if they are FCS, DAF, RIF or CIF.
 \details{
 If input 'fileName' is a DAF file \code{\link{ExtractFromDAF}} will be used to read the file.\cr
 If it is a CIF or RIF file \code{\link{readIFC}} will use \code{\link{ExtractFromXIF}}.\cr
-Finally, if file is not a DAF, nor a CIF, nor a RIF \code{\link{readIFC}} will use \code{\link{ExtractFromFCS}}.
+Finally, if 'fileName' is not a DAF, nor a CIF, nor a RIF file \code{\link{readIFC}} will use \code{\link{ExtractFromFCS}}.
 }
 \examples{
 if(requireNamespace("IFCdata", quietly = TRUE)) {

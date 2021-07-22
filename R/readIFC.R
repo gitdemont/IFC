@@ -34,7 +34,7 @@
 #' @param ... arguments to pass to \code{\link{ExtractFromDAF}} or \code{\link{ExtractFromXIF}} or \code{\link{ExtractFromFCS}}.
 #' @details If input 'fileName' is a DAF file \code{\link{ExtractFromDAF}} will be used to read the file.\cr
 #' If it is a CIF or RIF file \code{\link{readIFC}} will use \code{\link{ExtractFromXIF}}.\cr
-#' Finally, if file is not a DAF, nor a CIF, nor a RIF \code{\link{readIFC}} will use \code{\link{ExtractFromFCS}}.
+#' Finally, if 'fileName' is not a DAF, nor a CIF, nor a RIF file \code{\link{readIFC}} will use \code{\link{ExtractFromFCS}}.
 #' @return an object of class `IFC_data`.
 #' @examples
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
@@ -48,13 +48,11 @@
 #' }
 #' @export
 readIFC <- function(fileName, ...) {
-  dots=list(...)
   file_extension = getFileExt(fileName)
-  #assert(file_extension, len = 1, alw = c("daf", "rif", "cif"))
-  switch(file_extension,
-         "rif" = return(ExtractFromXIF(fileName = fileName, ...)),
-         "cif" = return(ExtractFromXIF(fileName = fileName, ...)),
-         "daf" = return(ExtractFromDAF(fileName = fileName, ...)),
-         return(ExtractFromFCS(fileName = fileName, ...))
-  )
+  if(any(file_extension %in% c("daf", "rif", "cif"))) {
+    assert(file_extension, len = 1)
+    if(file_extension == "daf") return(ExtractFromDAF(fileName = fileName, ...))
+    return(ExtractFromXIF(fileName = fileName, ...))
+  } 
+  return(ExtractFromFCS(fileName = fileName, ...))
 }
