@@ -43,7 +43,6 @@
 #' @export
 applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = FALSE, ...) {
   dots = list(...)
-  
   # due to large population and feature names error returned if any can be long
   # so we may need to modify options if error happens, as a consequence we store and return to default on exit
   old_opt = getOption("warning.length")
@@ -60,6 +59,23 @@ applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = F
   }
   class(ans) = class(obj)
   tryCatch({
+    if(length(gating$spillover$spillover) != 0) {
+      compensate <- function(raw, spillover) {
+        ans = as.matrix(raw) %*% solve(t(spillover))
+        colnames(ans) <- colnames(raw)
+        return(ans)
+      }
+      comp_table = gating$spillover$spillover
+      tmp1 = rownames(comp_table) %in% names(ans$features)
+      if(all(tmp1)) {
+        tmp2 = names(ans$features) %in% rownames(comp_table)
+        ans$features[,  tmp2] <- compensate(ans$features[,  tmp2], spillover = comp_table) 
+      } else {
+        warning("spillover can not be applied on 'obj', some feature(s) are missing:\n\t-",
+                paste0(rownames(comp_table)[!tmp1], collapse="\n\t-"), call. = FALSE, immediate. = TRUE)
+      }
+    }
+    
     ans$regions = gating$regions
     ans$graphs = gating$graphs
     ans$pops = gating$pops
@@ -135,7 +151,9 @@ applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = F
     class(ans$graphs) <- "IFC_graphs"
     
     ##### checks that graphs are correctly defined
-    adjustGraph(obj = ans, adjust_graph = FALSE)
+    tryCatch({
+      adjustGraph(obj = ans, adjust_graph = FALSE)
+    }, error = function(e) stop("something went wrong while creating graphs"))
     
     ##### computes stats
     ans$stats = data.frame(stringsAsFactors = FALSE, check.rows = FALSE, check.names = FALSE, t(sapply(names(ans$pops), FUN=function(p) {
@@ -151,7 +169,7 @@ applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = F
     ans$stats[,5] = as.numeric(ans$stats[,5])
   },
   error = function(e) {
-    stop("'can't apply gating strategy:\n", e$message, call. = FALSE)
+    stop("can't apply gating strategy:\n", e$message, call. = FALSE)
   })
   return(ans)
 }

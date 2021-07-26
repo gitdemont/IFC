@@ -32,6 +32,36 @@
 #              inputs and outputs may change in the future                     #
 ################################################################################
 
+#' @title Spillover GatingML Conversion
+#' @description 
+#' Helper to convert spillover to XML nodes in GatingML files.
+#' @param spillover a spillover matrix. It has to have colnames and rownames.
+#' @param name the name to use to identify the node.
+#' @return a xml_node.
+#' @keywords internal
+toXML2_spillover_gs = function(spillover, name) {
+  col_n = colnames(spillover)
+  row_n = rownames(spillover)
+  if(length(setdiff(col_n, "")) != ncol(spillover)) stop("'spillover' should have column names")
+  if(length(setdiff(row_n, "")) != nrow(spillover)) stop("'spillover' should have row names")
+  xml_new_node("_ns_transforms_ns_spectrumMatrix", attrs = list("_ns_transforms_ns_id" = name,
+                                                                "_ns_transforms_ns_matrix-inverted-already"="false"),
+               .children = c(list(xml_new_node("_ns_transforms_ns_fluorochromes",
+                                               .children = lapply(colnames(spillover), FUN = function(x) {
+                                                 xml_new_node("_ns_data-type_ns_fcs-dimension", attrs = list("_ns_data-type_ns_name"=x))
+                                               })),
+                                  xml_new_node("_ns_transforms_ns_detectors",
+                                               .children = lapply(rownames(spillover), FUN = function(x) {
+                                                 xml_new_node("_ns_data-type_ns_fcs-dimension", attrs = list("_ns_data-type_ns_name"=x))
+                                               }))),
+                             apply(spillover, 1, FUN = function(row) {
+                               xml_new_node("_ns_transforms_ns_spectrum", .children = lapply(row, FUN = function(x){
+                                 xml_new_node("_ns_transforms_ns_coefficient", attrs = list("_ns_transforms_ns_value"=num_to_string(x)))
+                               }))
+                             }))) 
+}
+
+
 #' @title IFC_graphs GatingML Conversion
 #' @description 
 #' Helper to convert graphs (`IFC_graphs` object) to XML nodes in GatingML files.
@@ -421,6 +451,23 @@ readGatingML <- function(fileName, ...) {
   regions = list()
   pops = list(buildPopulation(name="All",color="White"))
   plots = list()
+  spillover = list()
+  
+  # extract spillover
+  compensation = suppressWarnings(xml_find_all(gating, "transforms:spectrumMatrix", ns = ns))
+  if(length(compensation) != 0) {
+    to_invert = lapply(compensation, FUN = xml_attr, attr = "transforms:matrix-inverted-already", ns = ns)
+    spillover = lapply(1:length(compensation), FUN = function(i) {
+      foo = to_list_node(compensation[[i]])
+      col_n = unname(unlist(foo$detectors))
+      row_n = unname(unlist(foo$fluorochromes))
+      vals = suppressWarnings(as.numeric(unlist(foo[names(foo) == "spectrum"])))
+      vals = matrix(vals, nrow = length(row_n), ncol = length(col_n), byrow = TRUE, dimnames = list(col_n, row_n))
+      if("true" %in% to_invert[[i]]) vals = solve(t(vals))
+      return(vals)
+    }) 
+    names(spillover) = sapply(compensation, FUN = xml_attr, attr = "transforms:id", ns = ns)
+  }
   
   # types from GatingML specification
   gates_type = c("gating:RectangleGate", "gating:EllipsoidGate", "gating:PolygonGate", "gating:BooleanGate", "gating:QuadrantGate")
@@ -561,7 +608,7 @@ readGatingML <- function(fileName, ...) {
   class(regions) <- "IFC_regions"
   class(pops) <- "IFC_pops"
   # returned ans
-  ans = list("graphs"=plots, "pops"=pops, "regions"=regions)
+  ans = list("spillover"=spillover, "graphs"=plots, "pops"=pops, "regions"=regions)
   attr(ans, "class") <- c("IFC_gating")
   return(ans)
 }

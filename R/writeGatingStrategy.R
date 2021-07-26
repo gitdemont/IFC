@@ -84,6 +84,12 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   if(any(splitp_obj$channel > 0)) message("'write_to' has %c argument but channel information can't be retrieved with writeGatingML()")
   if(any(splitp_obj$object > 0)) message("'write_to' has %o argument but channel information can't be retrieved with writeGatingML()")
   
+  # create root with gratingML namespaces
+  root <- read_xml('
+   <gating:Gating-ML xmlns:gating="http://www.isac-net.org/std/Gating-ML/v2.0/gating" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:transforms="http://www.isac-net.org/std/Gating-ML/v2.0/transformations" xmlns:data-type="http://www.isac-net.org/std/Gating-ML/v2.0/datatypes" xsi:schemaLocation="http://www.isac-net.org/std/Gating-ML/v2.0/gating http://www.isac-net.org/std/Gating-ML/v2.0/transformations http://www.isac-net.org/std/Gating-ML/v2.0/datatypes" >
+   </gating:Gating-ML>
+', encoding = "utf-8")
+  
   overwritten = FALSE
   if(file.exists(write_to)) {
     write_to = normalizePath(write_to, winslash = "/", mustWork = FALSE)
@@ -91,7 +97,8 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
     if(tolower(fileName) == tolower(write_to)) stop("you are trying to overwrite source file which is not allowed")
     xmlEND_export = cpp_scanFirst(fname = write_to, target = "</gating:Gating-ML>", start = 0, end = 0)
     if(xmlEND_export > 0) {
-      xml_export = read_xml(readBin(con = write_to, what = "raw", n = xmlEND_export + nchar("</gating:Gating-ML>") - 1), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+      xml_export = read_xml(readBin(con = write_to, what = "raw", n = xmlEND_export + nchar("</gating:Gating-ML>") - 1),
+                            options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
       tryCatch({
         is_fromR = as.character(na.omit(xml_attr(xml_find_first(xml_export, "//IFC"), attr = "IFC_version")))
       }, finally = rm(xml_export))
@@ -105,9 +112,9 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   dir_name = dirname(write_to)
   if(!dir.exists(dir_name)) if(!dir.create(dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dir_name))
   file_w = ifelse(overwritten, tmp_file, write_to)
-  tryCatch(suppressWarnings({
+  tryCatch({
     towrite = file(description = file_w, open = "wb")
-  }), error = function(e) {
+  }, error = function(e) {
     stop(paste0(ifelse(overwritten,"temp ","'write_to' "), "file: ", file_w, "\ncan't be created: check name ?"))
   })
   close(towrite)
@@ -117,12 +124,6 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
   pkg_ver = paste0(unlist(packageVersion("IFC")), collapse = ".")
   is_fcs = length(obj$description$FCS)!=0
-  
-  # create root with gratingML namespaces
-  root <- read_xml('
-   <gating:Gating-ML xmlns:gating="http://www.isac-net.org/std/Gating-ML/v2.0/gating" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:transforms="http://www.isac-net.org/std/Gating-ML/v2.0/transformations" xmlns:data-type="http://www.isac-net.org/std/Gating-ML/v2.0/datatypes" xsi:schemaLocation="http://www.isac-net.org/std/Gating-ML/v2.0/gating http://www.isac-net.org/std/Gating-ML/v2.0/transformations http://www.isac-net.org/std/Gating-ML/v2.0/datatypes" >
-   </gating:Gating-ML>
-', encoding = "utf-8")
   
   # identify gatingML node
   gating = xml_find_first(root, "//gating:Gating-ML", ns = xml_ns(root))
@@ -155,10 +156,13 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   
   # fill general custom info node with graph nodes
   graph_nodes = toXML2_graphs_gs(obj$graphs)
-  lapply(graph_nodes, FUN =function(node) {
-    custom_plots %>% xml_add_child(node)
-  })
+  lapply(graph_nodes, FUN =function(node) xml_add_child(custom_plots, node))
   
+  # fill spillover if any
+  gatingML_comp = list()
+  if(length(obj$description$spillraw) != 0) gatingML_comp = c(gatingML_comp, list(toXML2_spillover_gs(obj$description$spillraw, name = "spillraw")))
+  if(length(obj$description$spillover) != 0) gatingML_comp = c(gatingML_comp, list(toXML2_spillover_gs(obj$description$spillover, name = "spillover")))
+  lapply(gatingML_comp, FUN = function(gatingML_node) xml_add_child(gating, gatingML_node))
   
   # Now, we fill GatingML with Boolean and Graphical pop + regions (C and G) in gating node
   pop_nodes = lapply(obj$pops, FUN = function(pop) {
@@ -205,6 +209,7 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
       x = gsub("_ns_gating_ns_", "gating:", x)
       x = gsub("_ns_data-type_ns_", "data-type:", x)
       x = gsub("_ns_transformation_ns_", "transformations:", x)
+      x = gsub("_ns_transforms_ns_", "transforms:", x)
     })
     doc = read_xml(paste0(lines[seq_along(lines)[-1]], collapse = ""))
     write_xml(doc, file = file_w, encoding = "utf-8")
