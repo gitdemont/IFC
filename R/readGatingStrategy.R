@@ -32,6 +32,7 @@
 #' Extracts Gating Strategy from files.
 #' @param fileName path to file. It should be a .ast, .cif, .daf, .ist, .rif or .xml file.
 #' @return A named list of class `IFC_gating`, whose members are:\cr
+#' -spillover, a list of spillover matrices found,\cr
 #' -graphs, a list of graphical elements found,\cr
 #' -pops, a list describing populations found,\cr
 #' -regions, a list describing how regions are defined.
