@@ -5,6 +5,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // cpp_align
 Rcpp::NumericMatrix cpp_align(const Rcpp::NumericMatrix mat, const double dx, const double dy);
 RcppExport SEXP _IFC_cpp_align(SEXP matSEXP, SEXP dxSEXP, SEXP dySEXP) {
