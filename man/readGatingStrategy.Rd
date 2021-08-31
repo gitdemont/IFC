@@ -21,3 +21,4 @@ A named list of class `IFC_gating`, whose members are:\cr
 \description{
 Extracts Gating Strategy from files.
 }
+\keyword{internal}

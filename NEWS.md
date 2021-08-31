@@ -38,7 +38,7 @@
 
 - add maxpoints parameter in buildGraph to control the number of cells displayed in 2D graphs
 
-- create read/write/apply GatingStrategy family functions to save/retrieve gating strategy (association of regions / populations and graphs) with partial support for GatingML
+- create experimental read/write/apply GatingStrategy family functions to save/retrieve gating strategy (association of regions / populations and graphs) with partial support for GatingML
 
 - better compute graph dependency in data_rm_ family functions
 

@@ -29,3 +29,4 @@ An error will be thrown if a feature is required to create a population or a gra
 If tagged population(s) is(are) imported, objects from this(these) population(s) outside 'obj' will be discarded.\cr
 If this results in NULL, then all objects will be tagged.
 }
+\keyword{internal}

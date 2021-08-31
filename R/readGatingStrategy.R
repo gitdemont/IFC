@@ -27,6 +27,11 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
+################################################################################
+#             functions described hereunder are experimental                   #
+#              inputs and outputs may change in the future                     #
+################################################################################
+
 #' @title Gating Strategy File Reader
 #' @description
 #' Extracts Gating Strategy from files.
@@ -37,7 +42,7 @@
 #' -pops, a list describing populations found,\cr
 #' -regions, a list describing how regions are defined.
 #' @param ... other arguments to be passed.
-#' @export
+#' @keywords internal
 readGatingStrategy <- function(fileName, ...) {
   dots=list(...)
   if(missing(fileName)) stop("'fileName' can't be missing")

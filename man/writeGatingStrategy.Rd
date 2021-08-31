@@ -50,3 +50,4 @@ GatingML is partly implemented because:\cr
 -Transformation applied in \pkg{IFC} is not part of GatingML.
 Nonetheless, when possible additional information are provided in dedicated custom_info field.
 }
+\keyword{internal}

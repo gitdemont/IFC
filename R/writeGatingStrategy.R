@@ -27,6 +27,11 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
+################################################################################
+#             functions described hereunder are experimental                   #
+#              inputs and outputs may change in the future                     #
+################################################################################
+
 #' @title Gating Strategy File Writer
 #' @description
 #' Writes GatingML from an `IFC_data` object to a xml file
@@ -53,7 +58,7 @@
 #' -Transformation applied in \pkg{IFC} is not part of GatingML.
 #' Nonetheless, when possible additional information are provided in dedicated custom_info field.
 #' @return It invisibly returns full path of exported file.
-#' @export
+#' @keywords internal
 writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
                                display_progress = TRUE, verbose = FALSE, ...) {
   dots = list(...)

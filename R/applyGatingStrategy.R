@@ -27,6 +27,11 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
+################################################################################
+#             functions described hereunder are experimental                   #
+#              inputs and outputs may change in the future                     #
+################################################################################
+
 #' @title Apply Gating Strategy
 #' @description
 #' Applies Gating Strategy to an `IFC_data` object
@@ -40,7 +45,7 @@
 #' If tagged population(s) is(are) imported, objects from this(these) population(s) outside 'obj' will be discarded.\cr
 #' If this results in NULL, then all objects will be tagged.
 #' @return A named list of class `IFC_data` with new regions, pops and graphs
-#' @export
+#' @keywords internal
 applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = FALSE, ...) {
   dots = list(...)
   # due to large population and feature names error returned if any can be long
