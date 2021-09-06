@@ -313,8 +313,24 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
 #' @return a string vector.
 #' @keywords internal
 num_to_string <- function(x, precision = 15) {
-  # return(formatC(x, digits = precision, width = -1, drop0trailing = TRUE))
-  return(cpp_num_to_string(x, precision))
+  precision[precision <= 0] <-  1
+  precision[precision > 20] <- 20
+  ans <- x
+  foo <- is.finite(x)
+  nsmall <- ceiling(log10(abs(x[foo])))
+  nsmall[nsmall <          0] <-  0
+  nsmall[nsmall >= precision] <- precision - 1
+  if(any(foo)) ans[foo] <- format(round(x[foo], precision),
+                                  scientific = FALSE, 
+                                  width = -1,
+                                  drop0trailing = TRUE,
+                                  justified = "none",
+                                  digits = precision,
+                                  trim = TRUE,
+                                  nsmall = nsmall)
+  ans[is.na(x)] <- NaN
+  return(ans)
+  # return(cpp_num_to_string(x, precision))
 }
 
 #' @title Next Component Prediction
