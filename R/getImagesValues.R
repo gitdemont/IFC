@@ -114,7 +114,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
       t(sapply(#getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"), trunc_bytes = 12,
                #        force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = TRUE, ...), FUN = function(ifd) {
         sel[[i]], FUN = function(off) {
-          ifd = cpp_getTAGS(fname = fileName, offset = off, trunc_bytes = 1, force_trunc = TRUE, verbose = FALSE)
+          ifd = cpp_getTAGS(fname = fileName, offset = off, trunc_bytes = 12, force_trunc = TRUE, verbose = FALSE)
           c(ifd$infos$OBJECT_ID, # id
             ifd$curr_IFD_offset, # imgIFD
             ifd$next_IFD_offset, # mskIFD
@@ -137,7 +137,7 @@ getImagesValues <- function(fileName, offsets, objects, display_progress = FALSE
       t(sapply(#getIFD(fileName = fileName, offsets = subsetOffsets(offsets = offsets, objects = sel[[i]], image_type = "img"), trunc_bytes = 12,
                #        force_trunc = FALSE, verbose = FALSE, verbosity = 1, bypass = TRUE, ...), FUN = function(ifd) {
         sel[[i]], FUN = function(off) {
-          ifd = cpp_getTAGS(fname = fileName, offset = off, trunc_bytes = 1, force_trunc = TRUE, verbose = FALSE)
+          ifd = cpp_getTAGS(fname = fileName, offset = off, trunc_bytes = 12, force_trunc = TRUE, verbose = FALSE)
           c(ifd$infos$OBJECT_ID, # id
             ifd$curr_IFD_offset, # imgIFD
             ifd$next_IFD_offset, # mskIFD
