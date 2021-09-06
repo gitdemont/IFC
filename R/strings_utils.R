@@ -313,8 +313,8 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
 #' @return a string vector.
 #' @keywords internal
 num_to_string <- function(x, precision = 15) {
-  return(formatC(x, digits = precision, width = -1, drop0trailing = TRUE))
-  # return(cpp_num_to_string(x, precision))
+  # return(formatC(x, digits = precision, width = -1, drop0trailing = TRUE))
+  return(cpp_num_to_string(x, precision))
 }
 
 #' @title Next Component Prediction
