@@ -344,7 +344,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
       }
       rownames(features) = 0:(nrow(features)-1)
       class(features) <- c(class(features),"IFC_features")
-      class(features_def) <- c(class(features),"IFC_features_def")
+      class(features_def) <- c(class(features_def),"IFC_features_def")
       
       ##### extracts graphs information
       plots=lapply(xml_attrs(xml_find_all(tmp, "//Graph")), FUN=function(x) as.list(x))
