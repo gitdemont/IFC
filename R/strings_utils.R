@@ -314,7 +314,7 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
 #' @keywords internal
 num_to_string <- function(x, precision = 15) {
   precision[precision <= 0] <-  1
-  precision[precision > 20] <- 20
+  precision[precision > 16] <- 16
   ans <- x
   foo <- is.finite(x)
   nsmall <- ceiling(log10(abs(x[foo])))
@@ -328,7 +328,9 @@ num_to_string <- function(x, precision = 15) {
                                   digits = precision,
                                   trim = TRUE,
                                   nsmall = nsmall)
-  ans[is.na(x)] <- NaN
+  foo <- is.infinite(x)
+  ans[foo] <- as.character(x[foo])
+  ans[is.na(x)] <- "NaN"
   return(ans)
   # return(cpp_num_to_string(x, precision))
 }
