@@ -1,5 +1,17 @@
 # NEWS
 ## 0.1.2
+- allow stats export with data_to_DAF and daf creation from rif file reading
+
+- make changes to num_to_string to optimize numeric to string conversion when exporting file
+
+- fix bug with rif reading (ExtractFromXIF) that was also extracting not acquired channels
+
+- fix images values retrieval in getImagesValues (only one channel was retrieved instead of all)
+
+- handle "0" color value
+
+- retrieve "EVmode" information with getInfo
+
 - add experimental FCS reader / writer
 
 - improve axes labels positioning
@@ -51,6 +63,14 @@
 - improve mergeXIF and subsetXIF functions (speed gain + no more dependency on seek for reading current position)
 
 #### This leads to the following visible changes for the user
+*data_to_DAF now allows to create daf file with statistics table*
+
+*data_to_DAF now allows to create daf file from an `IFC_data` object extracted from a rif file*
+
+*ExtractFromXIF does not extract channels that were not acquired anymore*
+
+*getInfo returned object gains an additional `evmode` value*
+
 *buildGraph gains a new `maxpoints` parameter*
 
 *data_rm_ functions gain a new `adjust_graph` parameter*
