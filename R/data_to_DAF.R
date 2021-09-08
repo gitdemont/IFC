@@ -150,6 +150,12 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
   pkg_ver = paste0(unlist(packageVersion("IFC")), collapse = ".")
   channels = obj$description$Images
   is_fcs = length(obj$description$FCS)!=0
+  # TODO ask AMNIS about Raw Number, it seems to be a problem when this feature is part of daf file
+  obj = suppressWarnings(data_rm_features(obj, "Raw Number", list_only = FALSE)) # ensures to remove "Raw Number"
+  # when obj is from rif or cif, number of objects can be different from actual number of collected object
+  # e.g. merged of subset of file, there is no way to link object number and feature value so the only solution
+  # is to remove all features and only keep Object Number
+  obj = checkObj(obj)
   
   if(!is_fcs) {
     if(length(obj$images)==0) stop("please use argument 'extract_images' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that images were correctly extracted")
@@ -247,8 +253,17 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
   } else {
     xml_add_child(root, .value = xml_new_node(name = "SOD", attrs = obj$description$ID, .children = sub_nodes))
   }
-  xml_add_child(root, .value = toXML2_graphs(obj$graphs, verbose = verbose))
-  
+  # add stats
+  stats = dots$stats
+  if(length(stats) == 0) stats = list(list(type="COUNT",title="Count",def=""),
+                                      list(type="PERCENT_GATED",title="%Gated",def=""))
+  yloc = unlist(lapply(obj$graphs, FUN = function(g) g[["ylocation"]]))
+  size = unlist(lapply(obj$graphs, FUN = function(g) g[["ysize"]]))
+  stats = statsCompute(obj, stats, width = 80 * (1 + length(stats)), height = 240, xlocation = 0, ylocation = max(c(yloc + size, 0)))
+  xml_add_child(root, .value =   xml_new_node(name = "Displays", attrs = list(count = num_to_string(1+length(obj$graphs)), 
+                                                                              layout="1", entriesPerRow="12", lightDarkMode="1"),
+                                              .children = c(list(toXML2_stats(stats, verbose = verbose)),
+                                                                 toXML2_graphs(obj$graphs, verbose = verbose))))
   tryCatch({
     if(binary) {
       # directly writes to temp file
