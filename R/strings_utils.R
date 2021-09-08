@@ -222,6 +222,16 @@ formatn <- function(splitp_obj, splitf_obj, channel = "", object = "") {
   return(paste0(splitp_obj$decomp, collapse=""))
 }
 
+#' @title First Letter Only Capitalization
+#' @description
+#' Helper to capitalize the first letter of strings and leave the rest to lower case
+#' @param text a string
+#' @keywords internal
+toCapFirstOnly <- function(text) {
+  x = as.character(text)
+  paste0(toupper(substr(x,1,1)), tolower(substr(x,2,nchar(x))))
+}
+
 #' @title Color Mapping
 #' @name map_color
 #' @description
