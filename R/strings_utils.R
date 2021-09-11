@@ -324,12 +324,12 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
 #' @keywords internal
 num_to_string <- function(x, precision = 22) {
   old <- options("scipen")
-  on.exit(options("scipen" = 999))
+  on.exit(options(old))
+  options("scipen" = 18)
   xx = toupper(as.character(round(x, precision)))
-  xx[is.na(xx)] <- "NaN"
+  xx[is.na(x)] <- "NaN"
   return(xx)
 }
-
 
 #' @title Next Component Prediction
 #' @description
