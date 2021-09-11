@@ -319,35 +319,10 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
 #' @description
 #' Formats numeric to string used for features, images, ... values conversion when exporting to xml.
 #' @param x a numeric vector.
-#' @param precision number of significant decimal digits to keep when abs(x) < 1. Default is 15.
+#' @param precision number of significant decimal digits to keep. Default is 22.
 #' @return a string vector.
 #' @keywords internal
-num_to_string <- function(x, precision = 15) {
-  # option 1
-  # precision[precision <= 0] <-  1
-  # precision[precision > 16] <- 16
-  # ans <- x
-  # foo <- is.finite(x)
-  # nsmall <- ceiling(log10(abs(x[foo])))
-  # nsmall[nsmall <          0] <-  0
-  # nsmall[nsmall >= precision] <- precision - 1
-  # if(any(foo)) ans[foo] <- format(round(x[foo], precision),
-  #                                 scientific = FALSE, 
-  #                                 width = -1,
-  #                                 drop0trailing = TRUE,
-  #                                 justified = "none",
-  #                                 digits = precision,
-  #                                 trim = TRUE,
-  #                                 nsmall = nsmall)
-  # foo <- is.infinite(x)
-  # ans[foo] <- as.character(x[foo])
-  # ans[is.na(x)] <- "NaN"
-  # return(ans)
-  
-  # option 2
-  # return(cpp_num_to_string(x, precision))
-  
-  # option 3
+num_to_string <- function(x, precision = 22) {
   old <- options("scipen")
   on.exit(options("scipen" = 999))
   xx = toupper(as.character(round(x, precision)))
