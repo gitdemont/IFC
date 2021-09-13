@@ -403,19 +403,6 @@ uint64_t cpp_int64_to_uint64 (const int64_t x) {
 int64_t cpp_uint64_to_int64 (const uint64_t x) {
   return hpp_uint64_to_int64 (x);
 }
-
-//' @title Numeric to String Conversion
-//' @name cpp_num_to_string
-//' @description
-//' Formats numeric to string used for features, images, ... values conversion when exporting to xml.
-//' @param x a numeric vector.
-//' @param precision number of significant decimal digits to keep when abs(x) < 1. Default is 15.
-//' @return a string vector.
-//' @keywords internal
-// [[Rcpp::export]]
-Rcpp::StringVector cpp_num_to_string (const Rcpp::NumericVector x, const unsigned char precision = 16) {
-  return hpp_num_to_string (x, precision);
-}
 // END trans
 
 // FROM scan
