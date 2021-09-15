@@ -182,13 +182,15 @@ Rcpp::NumericMatrix hpp_mark (const Rcpp::NumericMatrix A,
                               const bool invert = false) {
   R_len_t bc = B.ncol();
   R_len_t br = B.nrow();
+  R_len_t xxoff = xoff < 0 ? 0 : xoff;
+  R_len_t yyoff = yoff < 0 ? 0 : yoff;
   if((A.ncol() < (bc + xoff)) || (A.nrow() < (br + yoff))) Rcpp::stop("hpp_mark: A should be at least of same dimensions as 'B' + 'offsets'");
   if((mask.ncol() < bc) || (mask.nrow() < br)) Rcpp::stop("hpp_mark: 'mask' should be at least of same dimensions as 'B'");
   Rcpp::NumericMatrix out = Rcpp::clone(A);
   if(invert) {
-    for(R_len_t y = 0; y < br; y++) for(R_len_t x = 0; x < bc; x++) if(mask(y,x)) out(y+yoff,x+xoff) = std::fabs(1-B(y,x));
+    for(R_len_t y = 0; y < br; y++) for(R_len_t x = 0; x < bc; x++) if(mask(y,x)) out(y+yyoff,x+xxoff) = std::fabs(1-B(y,x));
   } else {
-    for(R_len_t y = 0; y < br; y++) for(R_len_t x = 0; x < bc; x++) if(mask(y,x)) out(y+yoff,x+xoff) = B(y,x);
+    for(R_len_t y = 0; y < br; y++) for(R_len_t x = 0; x < bc; x++) if(mask(y,x)) out(y+yyoff,x+xxoff) = B(y,x);
   }
   return out;
 }
