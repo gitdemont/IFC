@@ -39,8 +39,9 @@ print(unlist(strsplit(Sys.getenv("PATH"), ";")))
 Otherwise, try to set it
 
 ```R
+# e.g.
 shell('setx PATH "C:\\Rtools\\bin"')
-# or ('setx PATH "C:\\Rtools\\mingw_32\\bin"')
+shell('setx PATH "C:\\Rtools\\mingw_32\\bin"')
 ```
 
 You may need to reboot to operate changes
