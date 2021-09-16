@@ -48,7 +48,7 @@
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other arguments to be passed.
 #' @details 'options' may be tweaked according to file type, instrument and software used to generate it. Default 'options' should allow to read most files.
-#' @source FCS specifications available at \url{http://murphylab.web.cmu.edu/FCSAPI/FCS3.html}.
+#' @source FCS specifications available at \url{https://murphylab.web.cmu.edu/FCSAPI/FCS3.html}.
 #' @return a list whose elements are lists for each dataset stored within the file.\cr
 #' each sub-list contains:\cr
 #' - header, list of header information corresponding to 'options'\cr
