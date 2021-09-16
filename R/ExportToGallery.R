@@ -393,7 +393,7 @@ ExportToGallery <- function(...,
       id = ids[i]
       d = dim(img[[1]])
       if(objects[i] != id) warning(paste0("Extracted object_ids:", id, " differs from expected one:", objects[i]), call. = FALSE, immediate. = TRUE)
-      if(add_ids > 0) img[[add_ids]] = addText(img[[add_ids]], text = id, col, xoff = 1, yoff = 1)
+      if(add_ids > 0) img[[add_ids]] = addText(img[[add_ids]], text = num_to_string(id), col, xoff = 1, yoff = 1)
       array(do.call(rbind, args = lapply(img, FUN = function(i) { apply(i, 3, rbind)})), dim = c(d[1], d[2] * length(img), 3))
     })
     d = dim(ans[[1]])
