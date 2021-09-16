@@ -82,7 +82,7 @@ buildIFD <- function(val, typ, tag, endianness = .Platform$endian) {
              cpp_uint32_to_raw(typ)[1:2], #typ
              cpp_uint32_to_raw(count)) #count
   if(endianness != .Platform$endian) {
-    ifd = lapply(1:length(ifd), FUN = function(i_tag) rev(ifd[[i_itag]]))
+    ifd = lapply(1:length(ifd), FUN = function(i_tag) rev(ifd[[i_tag]]))
     val_raw = lapply(1:length(val_raw), FUN = function(i_tag) rev(val_raw[[i_tag]]))
   }
   if(bytes > 4) {
