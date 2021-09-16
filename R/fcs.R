@@ -48,7 +48,7 @@
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other arguments to be passed.
 #' @details 'options' may be tweaked according to file type, instrument and software used to generate it. Default 'options' should allow to read most files.
-#' @source FCS specifications available at \url{https://murphylab.web.cmu.edu/FCSAPI/FCS3.html}.
+#' @source FCS specifications available at \url{https://isac-net.org/page/Data-Standards}.
 #' @return a list whose elements are lists for each dataset stored within the file.\cr
 #' each sub-list contains:\cr
 #' - header, list of header information corresponding to 'options'\cr
@@ -363,7 +363,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
 #' Extracts data from Flow Cytometry Standard (FCS) Files.
 #' @param fileName path(s) of file(s). If multiple files are provided they will be merged and 
 #' populations will be created to identify each single file within returned `IFC_data` object.
-#' @source FCS specifications available at \url{https://murphylab.web.cmu.edu/FCSAPI/FCS3.html}.
+#' @source FCS specifications available at \url{https://isac-net.org/page/Data-Standards}.
 #' @param ... other arguments to be passed to readFCS function.
 #' @return A named list of class `IFC_data`, whose members are:\cr
 #' -description, a list of descriptive information,\cr
