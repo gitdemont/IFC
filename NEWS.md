@@ -1,5 +1,7 @@
 # NEWS
 ## 0.1.2
+- fix issue in internal addText() and hpp_mark() when added text does not fit into image.
+
 - allow stats export with data_to_DAF and daf creation from rif file reading
 
 - make changes to num_to_string to optimize numeric to string conversion when exporting file
