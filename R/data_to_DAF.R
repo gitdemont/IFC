@@ -201,7 +201,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
       }
       fileName_image = normalizePath(fileName_image, winslash = "/", mustWork = FALSE) # /!\ ask AMNIS using full path produces error while trying to retrieve compensation
     } else {
-      fileName_image = obj$description$ID$file
+      fileName_image = basename(obj$description$ID$file)
     } 
     obj$description$ID$file <- fileName_image
   } else {

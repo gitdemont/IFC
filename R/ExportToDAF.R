@@ -445,7 +445,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
       }
       cif_name = normalizePath(cif_name, winslash = "/", mustWork = FALSE) # /!\ ask AMNIS using full path produces error while trying to retrieve compensation
     } else {
-      cif_name = cname
+      cif_name = basename(cname)
     } 
     
     # adds pkg version attribute in XML <ASSAY> node /!\ mandatory to prevent overwriting original file
