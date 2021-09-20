@@ -463,12 +463,12 @@ redefine_masks <- function(masks, images, new_images_names = images$name, to_mat
 #' @keywords internal
 feature_namer <- function(feat_def) {
   def_def <- feat_def
-  def_def$def <- gsub("\\|Diameter:\\|1\\|20$", "", def_def$def) # for Ensquared
-  def_def$def <- gsub("\\|Granularity:\\|1\\|20$", "", def_def$def) # for Haralick features
-  def_def$def <- gsub("\\|\\|True\\|.*$", "", def_def$def) # for Spot count
+  def_def$def <- gsub("\\|((Diameter|Granularity):)?\\|1\\|20$", "", def_def$def) # for Haralick features and Ensquared
+  def_def$def <- gsub("\\|\\|(True|False)?\\|.*$", "", def_def$def) # for Spot count and Spot range
   def_def$def <- gsub(paste0("(\\|?)(true)(\\|?)"), paste0("\\1","IntensityWeighted","\\3"), def_def$def) # for Delta centroid features
   def_def$def <- gsub(paste0("(\\|?)(false)(\\|?)"), paste0("\\1","\\3"), def_def$def) # for Delta centroid features
   def_def$def <- gsub(paste0("\\|\\|"), "|", def_def$def) # for Delta centroid features
+  def_def$def <- gsub(paste0("\\|+$"), "", def_def$def) # remove trailing |
   if(feat_def$type == "combined") {
     gsub(" \\)", ")", gsub("\\( ", "(", gsub("|", " ", def_def$def, fixed = TRUE)))
   } else {
