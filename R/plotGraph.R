@@ -59,7 +59,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                      trunc_labels = 38, trans = asinh, bin, viewport = "ideas", ...) {
   dots = list(...)
   # backup last state of graphic device
-  dv <- dev.cur()
+  dv <- dev.list()
+  ret <- list()
   tryCatch({
   # old_ask <- devAskNewPage(ask = FALSE)
   # on.exit(devAskNewPage(ask = old_ask), add = TRUE)
@@ -508,10 +509,6 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   }
   if(any(c("global","both")%in%add_key)) foo = update(foo, key=KEY)
   foo = update(foo, par.settings = lt)
-  if(draw) {
-    plot(foo)
-    dv = dev.cur()
-  }
   if(stats_print) print(stats)
   ret_order = names(D) %in% c("Object Number", "x1", "x2", "y1", "y2")
   displayed = lapply(obj$pops[displayed_n], FUN = function(p) {
@@ -542,8 +539,11 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   return(invisible(ret))
   },
   finally = {
-    while(!all(dv == dev.cur())) {
-      dev.off(which = rev(dev.cur())[1])
+    while(!identical(dv, dev.list())) {
+      dev.off(which = rev(dev.list())[1])
+    }
+    if(draw && length(ret$plot) !=0) {
+      plot(ret$plot)
     }
   })
 }

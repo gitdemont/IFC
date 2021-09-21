@@ -113,7 +113,8 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
   } else {
     bin=na.omit(as.integer(bin)); assert(bin, len=1, typ="integer")
   }
-  plotGraph_args = list(obj=obj, draw=FALSE, color_mode=color_mode, add_key=add_key,
+  plotGraph_args = list(obj=obj, color_mode=color_mode, add_key=add_key,
+                        draw=Sys.info()["sysname"] == "SunOS", 
                         precision=precision, trunc_labels=trunc_labels, viewport=viewport)
   if(length(bin) != 0) plotGraph_args = c(plotGraph_args, list(bin=bin))
   if(!missing(trans)) plotGraph_args = c(plotGraph_args, list(trans=trans))
@@ -214,7 +215,7 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
   gl = length(G)
   
   # backup last state of graphic device
-  dv = dev.cur()
+  dv <- dev.list()
   if(display_progress) pb_gr = newPB(session = dots$session, min = 0, max = gl, initial = 0, style = 3)
   tryCatch({
     suppressWarnings({
@@ -268,21 +269,6 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
         if(pdf_dev) pdf(file=export_to_pdf, width=3*max(lay$x)*2.54, height=3*max(lay$y)*2.54, 
                         family="serif", onefile=TRUE, pagecentre=TRUE, useDingbats=FALSE)
         # TODO add a progress bar
-        # for(i in 1:gl) {
-        #   pos = matrix(NA, ncol = max(lay$x), nrow = max(lay$y))
-        #   pos[lay_mat == lay$N[i]] <- i
-        #   print(pos)
-        #   grid.arrange(grobs = graphs[lay$N[1]], top = title_progress, newpage = TRUE, layout_matrix = lay_mat, as.table = FALSE)
-        #   if(i == 1) {
-        #     plot(graphs[lay$N[i]])
-        #     grid.arrange(grobs = graphs[lay$N[i]], top = title_progress, newpage = TRUE, layout_matrix = pos, as.table = FALSE)
-        #   } else {
-        #     grid.arrange(grobs = graphs[lay$N[i]], newpage = FALSE, layout_matrix = pos, as.table = FALSE)
-        #   }
-        #   if(display_progress) {
-        #     setPB(pb_pdf, value = i, title = title_progress, label = "writing to pdf")
-        #   }
-        # }
         grid.arrange(grobs = graphs[lay$N], top = title_progress, newpage = TRUE, layout_matrix = lay_mat, as.table = FALSE)
       } else {
         if(pdf_dev) pdf(file=export_to_pdf, paper = "a4", onefile = TRUE, pagecentre = TRUE, useDingbats = FALSE, family = "serif")
@@ -302,8 +288,8 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
   },
   finally = {
     if(display_progress) endPB(pb_gr)
-    if(pdf_dev) while(!all(dv == dev.cur())) {
-      dev.off(which = rev(dev.cur())[1])
+    if(pdf_dev) while(!identical(dv, dev.list())) {
+      dev.off(which = rev(dev.list())[1])
     }
   })
 }
@@ -381,7 +367,8 @@ BatchReport <- function(fileName, selection, write_to, overwrite=FALSE,
   } else {
     bin=na.omit(as.integer(bin)); assert(bin, len=1, typ="integer")
   }
-  plotGraph_args=list(draw=FALSE, color_mode=color_mode, add_key=add_key,
+  plotGraph_args=list(color_mode=color_mode, add_key=add_key,
+                      draw=Sys.info()["sysname"] == "SunOS", 
                       precision=precision, trunc_labels=trunc_labels,
                       viewport=viewport)
   if(length(bin) != 0) plotGraph_args = c(plotGraph_args, list(bin=bin))
@@ -463,7 +450,7 @@ BatchReport <- function(fileName, selection, write_to, overwrite=FALSE,
   if(!missing(gating)) apply_gating = TRUE
 
   # backup last state of graphic device
-  dv = dev.cur()
+  dv <- dev.list()
   if(display_progress) pb = newPB(session = dots$session, min = 0, max = length(fileName), initial = 0, style = 3)
   tryCatch({
     grobs = lapply(1:length(fileName), FUN = function(i_file) {
@@ -535,8 +522,8 @@ BatchReport <- function(fileName, selection, write_to, overwrite=FALSE,
   },
   finally = {
     if(display_progress) endPB(pb)
-    while(!all(dv == dev.cur())) {
-      dev.off(which = rev(dev.cur())[1])
+    while(!identical(dv, dev.list())) {
+      dev.off(which = rev(dev.list())[1])
     }
   })
 }
