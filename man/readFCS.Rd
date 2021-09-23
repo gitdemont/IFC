@@ -4,7 +4,7 @@
 \alias{readFCS}
 \title{FCS File Parser}
 \source{
-FCS specifications available at \url{https://isac-net.org/page/Data-Standards}.
+FCS specifications available at \url{https://doi.org/10.1002/cyto.a.20825}.
 }
 \usage{
 readFCS(
