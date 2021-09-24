@@ -4,10 +4,14 @@
 \alias{DisplayReport}
 \title{Graphical and Statistic Report Display}
 \usage{
-DisplayReport(...)
+DisplayReport(obj, display_progress = TRUE, ...)
 }
 \arguments{
-\item{...}{arguments to pass to \code{\link{ExportToReport}} where write_to is inoperative.}
+\item{obj}{an `IFC_data` object extracted with features extracted.}
+
+\item{display_progress}{whether to display a progress bar. Default is TRUE.}
+
+\item{...}{other parameters to be passed.}
 }
 \value{
 It invisibly returns NULL

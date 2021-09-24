@@ -25,7 +25,7 @@ ExportToReport(
 \item{obj}{an `IFC_data` object extracted with features extracted.}
 
 \item{selection}{when provided, indices of desired graphs.\cr
-In such case onepage parameter is set to FALSE.\cr
+In such case 'onepage' parameter is set to FALSE.\cr
 Note that indices are read from left to right, from top to bottom.}
 
 \item{write_to}{pattern used to export file(s).
@@ -41,10 +41,10 @@ Note that if TRUE, it will overwrite file. In addition a warning message will be
 
 \item{onepage}{whether to generate a pdf with all graphs on one page or not. Default is TRUE.}
 
-\item{color_mode}{Whether to extract colors from obj in white or black mode. Default is 'white'.}
+\item{color_mode}{Whether to extract colors from obj in white or black mode. Default is "white".}
 
-\item{add_key}{whether to draw a 'global' key under title or in the first 'panel' or 'both'. Default is 'panel'.\cr
-Accepted values are either: FALSE, 'panel', 'global', 'both' or c('panel', 'global').\cr
+\item{add_key}{whether to draw a "global" key under title or in the first "panel" or "both". Default is "panel".\cr
+Accepted values are either: FALSE, "panel", "global", "both" or c("panel", "global").\cr
 Note that it only applies when display is seen as overlaying populations.}
 
 \item{precision}{when graphs is a 2D scatter with population overlay, this argument controls amount of information displayed. Default is "light".\cr

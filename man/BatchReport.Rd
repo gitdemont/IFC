@@ -51,14 +51,14 @@ If not missing, each file provided in 'fileName' will be extracted by readIFC() 
 
 \item{times}{number of files to add before starting a new row or column (depending on 'byrow').}
 
-\item{color_mode}{Whether to extract colors from obj in white or black mode. Default is 'white'.}
+\item{color_mode}{Whether to extract colors from obj in white or black mode. Default is "white".}
 
-\item{add_key}{whether to draw a 'global' key under title or in the first 'panel' or 'both'. Default is 'panel'.\cr
-Accepted values are either: FALSE, 'panel', 'global', 'both' or c('panel', 'global').\cr
+\item{add_key}{whether to draw a "global" key under title or in the first "panel" or "both". Default is "panel".\cr
+Accepted values are either: FALSE, "panel", "global", "both" or c("panel", "global").\cr
 Note that it only applies when display is seen as overlaying populations.}
 
 \item{precision}{when graphs is a 2D scatter with population overlay, this argument controls amount of information displayed. Default is "light".\cr
--"light", the default, will only display points of same coordinates that are amoung the other layers.\cr
+-"light", the default, will only display points of same coordinates that are among the other layers.\cr
 -"full" will display all the layers.}
 
 \item{trunc_labels}{maximum number of characters to display for labels. Default is 38.}

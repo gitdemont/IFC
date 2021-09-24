@@ -324,7 +324,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                               })
                             }
                           })
-          foo = foo + as.layer(tmp)
+          foo = foo + as.layer(tmp, opposite = FALSE, axes = NULL)
         }
       }
     } else {

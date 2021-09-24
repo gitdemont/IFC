@@ -307,11 +307,6 @@ base_axis_constr = function(lim, trans = "P", nint = 10) {
           } else {
             pretty_lab = round(base^axisTicks(log(range(at), base), log = FALSE, nint = pos_nint),10)
           }
-          # log = log10(at[at %in% pretty_lab])
-          # tmp = (log - floor(log)) == 0
-          # log[!tmp] <- floor(log[!tmp])
-          # mul = at[at %in% pretty_lab] / 10^log
-          # at_lab[at %in% pretty_lab] <- parse(text=sprintf("%i%%.%%10^~~%i", mul, log))
           at_lab[at %in% pretty_lab] = formatC(x = at[at %in% pretty_lab] , format = "g", width = -1, digits = 2, drop0trailing = TRUE) 
         }
       }
@@ -327,10 +322,18 @@ base_axis_constr = function(lim, trans = "P", nint = 10) {
       ticks_at = applyTrans(at, trans_)
       ticks_lab = at
     }
+    ticks_lab = ticks_lab[is.finite(ticks_at)]
+    ticks_at = ticks_at[is.finite(ticks_at)]
+    # trick to fix 
+    # grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y,  : 
+    # polygon edge not found (zero-width or zero-height?)
+    # Calls: <Anonymous> -> heightDetails -> heightDetails.text -> grid.Call
+    ticks_lab[ticks_lab == ""] <- " "
     ord = order(ticks_at)
     return(list("at" = ticks_at[ord], "labels" = ticks_lab[ord]))
   } else {
     at = axisTicks(lim, log = FALSE, nint = nint)
+    at = at[is.finite(at)]
     return(list("at" = at, "labels" = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE)))
   }
 }
