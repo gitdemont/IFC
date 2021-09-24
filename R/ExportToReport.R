@@ -232,20 +232,17 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
         foo = grob(p=g$plot, vp = viewport(x=0.5, y=unit(0.5,"npc")), cl = "lattice")
       }
       stList <<- c(stList, list(stats))
-      if(length(dots$what) !=0) {
-        stats = stats[,!grepl("Qu", colnames(stats)),drop=FALSE]
-        foo_lay = matrix(c(rep(1,9), c(NA,2,NA)), nrow=4, ncol=3, byrow = TRUE)
-        if(onepage) {
-          if(nrow(stats) > 7) {
-            stats = stats[1:8, ]
-            stats[8, ] = "..."
-          }
+      stats = stats[,!grepl("Qu", colnames(stats)),drop=FALSE]
+      foo_lay = matrix(c(rep(1,9), c(NA,2,NA)), nrow=4, ncol=3, byrow = TRUE)
+      if(onepage) {
+        if(nrow(stats) > 7) {
+          stats = stats[1:8, ]
+          stats[8, ] = "..."
         }
-        tab = tableGrob(format(stats, scientific=FALSE, digits=5), theme = ttheme_default(base_size=4, base_family = "serif"))
-        tab$vp <- viewport(x=0.5, y=unit(1,"npc") - 0.5*unit(sum(tab$heights, na.rm=TRUE),"npc"))
-        if(dots$what == "table") foo = tab
-        if(dots$what == "both") foo = arrangeGrob(foo, tab, layout_matrix = foo_lay, respect = TRUE)
       }
+      tab = tableGrob(format(stats, scientific=FALSE, digits=5), theme = ttheme_default(base_size=4, base_family = "serif"))
+      tab$vp <- viewport(x=0.5, y=unit(1,"npc") - 0.5*unit(sum(tab$heights, na.rm=TRUE),"npc"))
+      foo = arrangeGrob(foo, tab, layout_matrix = foo_lay, respect = TRUE)
       return(foo)
     })
   })
