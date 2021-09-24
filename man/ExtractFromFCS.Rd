@@ -4,7 +4,7 @@
 \alias{ExtractFromFCS}
 \title{FCS File Reader}
 \source{
-FCS specifications available at \url{https://doi.org/10.1002/cyto.a.20825}.
+Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \url{https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.20825}.
 }
 \usage{
 ExtractFromFCS(fileName, ...)
