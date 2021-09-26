@@ -57,6 +57,6 @@ Note that it only applies when display is seen as overlaying populations.}
 a list with onepage, layout, layout_matrix, graphs, grobs, and stats.
 }
 \description{
-Generates graph report from `IFC_data` object.
+Generates graph report (plot + statistics) from `IFC_data` object.
 }
 \keyword{internal}

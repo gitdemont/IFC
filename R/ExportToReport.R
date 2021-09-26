@@ -27,7 +27,7 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
-#' @title Checker for Report File Creation
+#' @title Report File Creation
 #' @description
 #' Checks if report files can be created.
 #' @param fileName default fileName path.
@@ -42,7 +42,7 @@
 #' Note that if TRUE, it will overwrite file. In addition a warning message will be sent.
 #' @return a list with path(s) to pdf and csv file and overwritten status
 #' @keywords internal
-CheckReportFileCreation <- function(fileName, write_to, overwrite = FALSE) {
+tryReportFileCreation <- function(fileName, write_to, overwrite = FALSE) {
   if(missing(write_to)) stop("'write_to' can't be missing")
   assert(write_to, typ="character")
   file_extension = getFileExt(write_to)
@@ -58,15 +58,15 @@ CheckReportFileCreation <- function(fileName, write_to, overwrite = FALSE) {
   if(any(file_extension%in%"pdf")) {
     create_pdf = TRUE
     splitp_obj_pdf = splitp(write_to[file_extension=="pdf"])
-    if(any(splitp_obj_pdf$channel > 0)) message("'write_to' (pdf part) has %c argument but channel information can't be retrieved with CheckReportFileCreation()")
-    if(any(splitp_obj_pdf$object > 0)) message("'write_to' (pdf part) has %o argument but channel information can't be retrieved with CheckReportFileCreation()")
+    if(any(splitp_obj_pdf$channel > 0)) message("'write_to' (pdf part) has %c argument but channel information can't be retrieved with tryReportFileCreation()")
+    if(any(splitp_obj_pdf$object > 0)) message("'write_to' (pdf part) has %o argument but channel information can't be retrieved with tryReportFileCreation()")
     export_to_pdf = formatn(splitp_obj_pdf, splitf_obj)
   }
   if(any(file_extension%in%"csv")) {
     create_csv = TRUE
     splitp_obj_csv = splitp(write_to[file_extension=="csv"])
-    if(any(splitp_obj_csv$channel > 0)) message("'write_to', (csv part) has %c argument but channel information can't be retrieved with CheckReportFileCreation()")
-    if(any(splitp_obj_csv$object > 0)) message("'write_to' (csv part) has %o argument but channel information can't be retrieved with CheckReportFileCreation()")
+    if(any(splitp_obj_csv$channel > 0)) message("'write_to', (csv part) has %c argument but channel information can't be retrieved with tryReportFileCreation()")
+    if(any(splitp_obj_csv$object > 0)) message("'write_to' (csv part) has %o argument but channel information can't be retrieved with tryReportFileCreation()")
     export_to_csv = formatn(splitp_obj_csv, splitf_obj)
   }
   write_to = c(export_to_pdf, export_to_csv)
@@ -112,7 +112,7 @@ CheckReportFileCreation <- function(fileName, write_to, overwrite = FALSE) {
 
 #' @title Graph Report Generation
 #' @description
-#' Generates graph report from `IFC_data` object.
+#' Generates graph report (plot + statistics) from `IFC_data` object.
 #' @param obj an `IFC_data` object extracted with features extracted.
 #' @param selection when provided, indices of desired graphs.\cr
 #' In such case 'onepage' parameter is set to FALSE.\cr
@@ -328,7 +328,7 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
   if(missing(bin)) bin = NULL
   
   # check file(s) can be created
-  can_write = CheckReportFileCreation(obj$fileName, write_to, overwrite)
+  can_write = tryReportFileCreation(obj$fileName, write_to, overwrite)
   export_to_csv = can_write$csv
   export_to_pdf = can_write$pdf
   overwritten = can_write$overwritten
@@ -482,7 +482,7 @@ BatchReport <- function(fileName, selection, write_to, overwrite=FALSE,
   suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
   
   # check file(s) can be created
-  can_write = CheckReportFileCreation(fileName[1], write_to, overwrite)
+  can_write = tryReportFileCreation(fileName[1], write_to, overwrite)
   export_to_csv = can_write$csv
   export_to_pdf = can_write$pdf
   overwritten = can_write$overwritten
