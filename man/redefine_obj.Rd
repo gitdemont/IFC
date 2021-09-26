@@ -4,12 +4,12 @@
 \alias{redefine_obj}
 \title{IFC_data Redefinition}
 \usage{
-redefine_obj(obj, new_feat_def)
+redefine_obj(obj, new_feat_def, ...)
 }
 \arguments{
 \item{obj}{an `IFC_data` object. Default is missing.}
 
-\item{new_feat_def}{a list with new definitions from modify_features().}
+\item{new_feat_def}{a list with new definitions from redefine_features_def() or redefine_features_def_msk_img().}
 
 \item{...}{Other arguments to be passed.}
 }
@@ -17,6 +17,6 @@ redefine_obj(obj, new_feat_def)
 an `IFC_data` object.
 }
 \description{
-Helper to modify images, masks, features in a IFC data object when features_def is changed
+Helper to modify images, masks, features, pops, graphs in a `IFC_data` object when features_def is changed.
 }
 \keyword{internal}

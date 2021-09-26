@@ -4,7 +4,13 @@
 \alias{redefine_features_def_msk_img}
 \title{IFC_features_def Mask or Image Redefinition}
 \usage{
-redefine_features_def_msk_img(features_def, masks, images, ...)
+redefine_features_def_msk_img(
+  features_def,
+  masks,
+  images,
+  force_default = FALSE,
+  ...
+)
 }
 \arguments{
 \item{features_def}{an `IFC_features_def` object, or a list containing features definition. Default is missing.}
@@ -12,6 +18,9 @@ redefine_features_def_msk_img(features_def, masks, images, ...)
 \item{masks}{an `IFC_masks` object or a data.frame containing masks definition and name. Default is missing.}
 
 \item{images}{a data.frame containing images definition. Default is missing.}
+
+\item{force_default}{whether to force default names for masks and features.
+This removes custom names and replaces them with default values. Default is FALSE.}
 
 \item{...}{Other arguments to be passed.}
 }
@@ -22,6 +31,6 @@ a list whose members are:\cr
 -images, a data.frame containing images definition.
 }
 \description{
-Helper modify features_def according to masks or images redefinition
+Helper to modify features_def according to masks or images redefinition.
 }
 \keyword{internal}

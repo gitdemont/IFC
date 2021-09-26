@@ -12,18 +12,18 @@ redefine_features_def_feat(
 )
 }
 \arguments{
+\item{features_def}{an `IFC_features_def` object or a list containing features definition. Default is missing.}
+
 \item{to_match_feat}{a string with a features_def name to use for matching 'features_def' names. Default is NULL}
 
 \item{to_replace_feat}{a string of features_def name to use for replacing 'features_def' names. Default is NULL}
 
 \item{...}{Other arguments to be passed.}
-
-\item{masks}{an `IFC_features_def` objector a list containing features definition. Default is missing.}
 }
 \value{
 an `IFC_features_def` object, or a list containing features definition
 }
 \description{
-Helper to rename a feature within IFC_features_def
+Helper to rename a feature within IFC_features_def.
 }
 \keyword{internal}

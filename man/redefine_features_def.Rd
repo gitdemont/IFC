@@ -33,6 +33,6 @@ a list whose members are:\cr
 -images, a data.frame containing images definition.
 }
 \description{
-Helper modify features_def according to masks or images redefinition
+Helper modify features_def according to masks or images redefinition.
 }
 \keyword{internal}

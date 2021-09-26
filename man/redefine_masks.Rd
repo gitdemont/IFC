@@ -32,6 +32,6 @@ a list whose members are:
 -images, a data.frame containing images definition.
 }
 \description{
-Helper to modify features_def according to masks or images redefinition
+Helper to modify features_def according to masks or images redefinition.
 }
 \keyword{internal}

@@ -288,15 +288,16 @@ redefine_masks_mask <- function(masks, images, to_match_mask = NULL, to_replace_
   M = masks
   M$name[M$name == to_match_mask] <- to_replace_mask
   old_names = M$name
-
+  
   masks_names = buildMask(masks, images, definition = FALSE)
-  # at this step if any computed masks_names if "" it means that M$def is not correct
+  # at this step if any computed masks_names is"" it means that M$def is not correct
   tmp = masks_names == ""
   if(any(tmp)) stop("mask",ifelse(sum(tmp) > 1,"s are"," is")," not well defined:\n\t -",paste0(M$def[tmp],collapse="\n\t -"))
   
   # some masks name may have been customized, so we don't want
   # to change them whatever happens, so we store which we can modify
   to_modify = M$name == masks_names
+  # to_modify = rep(T, nrow(M))
   
   M$name <- ""
   M$name[!to_modify]  <- old_names[!to_modify]
@@ -336,34 +337,6 @@ redefine_masks_image <- function(masks, images, new_images_names = images$name, 
   
   dots = list(...)
   
-  # all allowed mask functions, with indication on how they are defined + 
-  # how they are ordered to compose regular name
-  
-  # masks ordering
-  # mask_comp = lapply(M$def, FUN = function(m) {
-  #   all_names = c(sprintf("M%02i", I$physicalChannel), M$name)
-  #   operators = c("And", "Or", "Not", "(", ")")
-  #   split = splitn(definition = m, all_names = all_names , operators = operators)
-  #   split[split %in% all_names]
-  # })
-  # names(mask_comp) = M$name
-  # 
-  # i=1; l=length(mask_comp)
-  # while(i<l) {
-  #   m = mask_comp[[i]]
-  #   index = setdiff(c(sprintf("M%02i", I$physicalChannel), m),"")
-  #   index = unlist(lapply(index, function(x) which(x==names(mask_comp))))
-  #   index = index[index>i]
-  #   if(length(index)!=0) {
-  #     mask_comp = c(mask_comp[index],mask_comp[setdiff(1:l,index)])
-  #     i=1
-  #   } else {
-  #     i=i+1
-  #   }
-  # }
-  # 
-  # M = M[sapply(1:nrow(M), FUN = function(i_row) which(M$name == names(mask_comp)[i_row])), ]
-  
   M = masks
   I = images
   
@@ -378,6 +351,7 @@ redefine_masks_image <- function(masks, images, new_images_names = images$name, 
   # some masks name may have been customized, so we don't want
   # to change them whatever happens, so we store which we can modify
   to_modify = masks$name == masks_names
+  # to_modify = rep(T, nrow(M))
   
   to_match = images$name
   to_replace = new_images_names
@@ -388,10 +362,6 @@ redefine_masks_image <- function(masks, images, new_images_names = images$name, 
     to_replace_image = to_replace[to_keep]
   }
   
-  # -when change_definition is FALSE, the above function f() returns computed mask name
-  # -when change_definition is TRUE, the function returns mask definition
-  ## where images in definition are replaced with to_replace input from the user
-  ## where masks in definition are replaced with to_replace_masks which are changed by looping f(FALSE) f(TRUE)
   if(definition) {
     M$name <- ""
     M$name[!to_modify]  <- old_names[!to_modify]
@@ -434,7 +404,7 @@ redefine_masks_image <- function(masks, images, new_images_names = images$name, 
 
 #' @title IFC_masks Redefinition
 #' @description
-#' Helper to modify features_def according to masks or images redefinition
+#' Helper to modify features_def according to masks or images redefinition.
 #' @param masks an `IFC_masks` object or a data.frame containing masks definition and name. Default is missing.
 #' @param images a data.frame containing images definition. Default is missing.
 #' @param new_images_names a vector of image name to use for replacing 'images' names. Default is images$name
@@ -465,10 +435,10 @@ feature_namer <- function(feat_def) {
   def_def <- feat_def
   def_def$def <- gsub("\\|((Diameter|Granularity):)?\\|1\\|20$", "", def_def$def) # for Haralick features and Ensquared
   def_def$def <- gsub("\\|\\|(True|False)?\\|.*$", "", def_def$def) # for Spot count and Spot range
-  def_def$def <- gsub(paste0("(\\|?)(true)(\\|?)"), paste0("\\1","IntensityWeighted","\\3"), def_def$def) # for Delta centroid features
-  def_def$def <- gsub(paste0("(\\|?)(false)(\\|?)"), paste0("\\1","\\3"), def_def$def) # for Delta centroid features
-  def_def$def <- gsub(paste0("\\|\\|"), "|", def_def$def) # for Delta centroid features
-  def_def$def <- gsub(paste0("\\|+$"), "", def_def$def) # remove trailing |
+  def_def$def <- gsub("(\\|?)(true)(\\|?)", paste0("\\1","IntensityWeighted","\\3"), def_def$def) # for Delta centroid features
+  def_def$def <- gsub("(\\|?)(false)(\\|?)", paste0("\\1","\\3"), def_def$def) # for Delta centroid features
+  def_def$def <- gsub("\\|\\|", "|", def_def$def) # for Delta centroid features
+  def_def$def <- gsub("\\|+$", "", def_def$def) # remove trailing |
   if(feat_def$type == "combined") {
     gsub(" \\)", ")", gsub("\\( ", "(", gsub("|", " ", def_def$def, fixed = TRUE)))
   } else {
@@ -478,8 +448,8 @@ feature_namer <- function(feat_def) {
 
 #' @title IFC_features_def Feature Redefinition
 #' @description
-#' Helper to rename a feature within IFC_features_def
-#' @param masks an `IFC_features_def` objector a list containing features definition. Default is missing.
+#' Helper to rename a feature within IFC_features_def.
+#' @param features_def an `IFC_features_def` object or a list containing features definition. Default is missing.
 #' @param to_match_feat a string with a features_def name to use for matching 'features_def' names. Default is NULL
 #' @param to_replace_feat a string of features_def name to use for replacing 'features_def' names. Default is NULL
 #' @param ... Other arguments to be passed.
@@ -522,7 +492,6 @@ redefine_features_def_feat <- function(features_def, to_match_feat = NULL, to_re
       }
       return(def_def)
     })
-    def
     new_names = sapply(def, FUN = function(def_def) def_def$name)
     if(identical(new_names, cur_names)) break
     cur_names = new_names
@@ -534,18 +503,38 @@ redefine_features_def_feat <- function(features_def, to_match_feat = NULL, to_re
 
 #' @title IFC_features_def Mask or Image Redefinition
 #' @description
-#' Helper modify features_def according to masks or images redefinition
+#' Helper to modify features_def according to masks or images redefinition.
 #' @param features_def an `IFC_features_def` object, or a list containing features definition. Default is missing.
 #' @param masks an `IFC_masks` object or a data.frame containing masks definition and name. Default is missing.
 #' @param images a data.frame containing images definition. Default is missing.
+#' @param force_default whether to force default names for masks and features.
+#' This removes custom names and replaces them with default values. Default is FALSE.
 #' @param ... Other arguments to be passed.
 #' @return a list whose members are:\cr
 #' -features_def, an `IFC_features_def` object, or a list containing features definition\cr
 #' -masks, an `IFC_masks` object or a data.frame containing masks definition and name.\cr
 #' -images, a data.frame containing images definition.
 #' @keywords internal
-redefine_features_def_msk_img <- function(features_def, masks, images, ...) {
+redefine_features_def_msk_img <- function(features_def, masks, images, force_default = FALSE, ...) {
   dots = list(...)
+  force_default=as.logical(force_default); assert(force_default, len=1, alw=c(TRUE,FALSE))
+  
+  if(force_default) { # recover default masks names
+    default_names = sapply(masks, FUN = function(x) buildMask(masks, images, FALSE))
+    to_modify = masks$name[masks$name != default_names[, "name"]]
+    to_modify = setdiff(to_modify, c("MC","None","NMC"))
+    to_replace = default_names[, "name"][masks$name %in% to_modify]
+    obj_default = redefine_features_def_msk_img(features_def = features_def,
+                                                  masks = masks,
+                                                  images = images,
+                                                  to_match_mask = to_modify,
+                                                  to_replace_mask = to_replace,
+                                                  force_default = FALSE)
+    features_def = obj_default$features_def
+    masks = obj_default$masks
+    images = obj_default$images
+  }
+  
   # first we check that masks names are valid with input parameters
   # and recompute new masks names applying these parameters
   foo = do.call(what = redefine_masks, args = c(list(masks = masks, images = images), dots))
@@ -570,15 +559,6 @@ redefine_features_def_msk_img <- function(features_def, masks, images, ...) {
   to_find = to_find[order_]
   to_replace_image = to_replace_image[order_]
   
-  # we store current features names
-  old_names = names(features_def)
-  
-  # some masks name may have been customized, so we don't want
-  # to change them whatever happens, so we compute expected name and compare with actual names
-  # if same, it means that they were not customized and can they be modified
-  exp_names = sapply(features_def, feature_namer)
-  to_modify = old_names == exp_names
-  
   # we modify features definition with new masks and new images
   # in addition we modify $name when original name was not customized
   def = features_def
@@ -593,7 +573,7 @@ redefine_features_def_msk_img <- function(features_def, masks, images, ...) {
       tmp = gsub(to_find[i_pat], to_replace_image[i_pat], x = paste0("|",def_def$def,"|"), fixed = TRUE) 
       def_def$def <<- substr(tmp, 2, nchar(tmp)-1)
     })
-    if(to_modify[i_feat]) def_def$name <- feature_namer(def_def)
+    def_def$name <- feature_namer(def_def)
     def_def
   })
   
@@ -641,7 +621,7 @@ redefine_features_def_msk_img <- function(features_def, masks, images, ...) {
 
 #' @title IFC_features_def Redefinition
 #' @description
-#' Helper modify features_def according to masks or images redefinition
+#' Helper modify features_def according to masks or images redefinition.
 #' @param features_def an `IFC_features_def` object, or a list containing features definition. Default is missing.
 #' @param masks an `IFC_masks` object or a data.frame containing masks definition and name. Default is missing.
 #' @param images a data.frame containing images definition. Default is missing.
@@ -665,15 +645,15 @@ redefine_features_def <- function(features_def, masks, images, to_match_feat = N
 
 #' @title IFC_data Redefinition
 #' @description
-#' Helper to modify images, masks, features in a IFC data object when features_def is changed
+#' Helper to modify images, masks, features, pops, graphs in a `IFC_data` object when features_def is changed.
 #' @param obj an `IFC_data` object. Default is missing.
-#' @param new_feat_def a list with new definitions from modify_features().
+#' @param new_feat_def a list with new definitions from redefine_features_def() or redefine_features_def_msk_img().
 #' @param ... Other arguments to be passed.
 #' @return an `IFC_data` object.
 #' @keywords internal
-redefine_obj <- function(obj, new_feat_def) {
+redefine_obj <- function(obj, new_feat_def, ...) {
   assert(obj, cla = "IFC_data")
-
+  
   # we check which features names have been modified
   old_names = names(obj$features_def)
   new_names = names(new_feat_def$features_def)
@@ -685,6 +665,9 @@ redefine_obj <- function(obj, new_feat_def) {
     if(any(tmp)) return(new_names[tmp][1])
     return(x)
   })
+  
+  # modify features definition
+  obj$features_def <- new_feat_def$features_def
   
   # modify graphs
   K = class(obj$graphs)
@@ -720,8 +703,133 @@ redefine_obj <- function(obj, new_feat_def) {
   })
   class(obj$pops) <- K
   
-  obj$features_def <- new_feat_def$features_def
+  # modify masks
   obj$description$masks <- new_feat_def$masks
+  
+  # modify images
   obj$description$Images <- new_feat_def$images
   return(obj)
+}
+
+#' @title IFC_data Default Naming
+#' @description
+#' Helper to reset masks and features names to their default values in a `IFC_data` object.
+#' @param obj an `IFC_data` object. Default is missing.
+#' @param ... Other arguments to be passed.
+#' @return an `IFC_data` object.
+#' @keywords internal
+usedefault_obj <- function(obj, ...) {
+  assert(obj, cla = "IFC_data")
+  
+  new_feat_def =  redefine_features_def_msk_img(features_def = obj$features_def,
+                                                masks = obj$description$masks,
+                                                images = obj$description$Images,
+                                                force_default = TRUE)
+  return(redefine_obj(obj = obj, new_feat_def = new_feat_def))
+}
+
+#' @title IFC_data Channel Swap
+#' @description
+#' Helper to swap channels in a `IFC_data` object.
+#' @param obj an `IFC_data` object. Default is missing.
+#' @param from,to integer, determining channels to swap
+#' @details it allows to apply all computation based on channel 'from' onto channel 'to', and reversely 
+#' @param ... Other arguments to be passed.
+#' @return an `IFC_data` object.
+#' @keywords internal
+switch_channel <- function(obj, from, to) {
+  assert(obj, cla = "IFC_data")
+  
+  # check that from and to can be found in obj
+  from = as.integer(from); assert(from, len = 1, alw = obj$description$Images$physicalChannel)
+  to = as.integer(to); assert(to, len = 1, alw = obj$description$Images$physicalChannel)
+  from_msk = sprintf("M%02i", from)
+  from_img = obj$description$Images[obj$description$Images$physicalChannel == from, "name"]
+  to_msk = sprintf("M%02i", to)
+  to_img = obj$description$Images[obj$description$Images$physicalChannel == to, "name"]
+  
+  # recover default masks names
+  obj_default = redefine_features_def_msk_img(obj$features_def,
+                                              masks = obj$description$masks,
+                                              images = obj$description$Images,
+                                              force_default = TRUE)
+  has_changed_default = !sapply(1:length(obj$features_def), FUN = function(i) {
+    identical(obj$features_def[[i]]$def, obj_default$features_def[[i]]$def)
+  })
+  
+  # add an extra image and mask to allow mask and image swap
+  obj_default$masks = rbind.data.frame(obj_default$masks[1, ], obj_default$masks, stringsAsFactors = TRUE)
+  obj_default$images = rbind.data.frame(obj_default$images[1, ],obj_default$images, stringsAsFactors = FALSE)
+  obj_default$images[1, "name"] = random_name(forbidden = obj$description$Images$name)
+  obj_default$images[1, "physicalChannel"] = 0
+  
+  # replace all 'to' masks and images by 'from' into obj_default
+  new_images_names = obj_default$images$name
+  new_images_names[new_images_names == to_img] <- from_img
+  obj_default$masks[1, "name"] = to_msk
+  obj_default$masks[1, "def"] = from_msk
+  
+  obj_from = redefine_features_def_msk_img(obj_default$features_def,
+                                           masks = obj_default$masks, 
+                                           images = obj_default$images,
+                                           force_default = FALSE,
+                                           to_match_mask = to_msk,
+                                           to_replace_mask = from_msk,
+                                           new_images_names = new_images_names)
+  has_changed_from_feat = !sapply(1:length(obj_default$features_def), FUN = function(i) {
+    identical(obj_default$features_def[[i]]$def, obj_from$features_def[[i]]$def)
+  })
+  has_changed_from_mask = !sapply(1:nrow(obj_default$masks), FUN = function(i) {
+    identical(obj_default$masks[i, "def"], obj_from$masks[i, "def"])
+  })
+  has_changed_from_img = !sapply(1:nrow(obj_default$images), FUN = function(i) {
+    identical(obj_default$images[i, "name"], obj_from$images[i, "name"])
+  })
+  
+  # replace all 'from' masks and images by 'to' into obj_default
+  new_images_names = obj_default$images$name
+  new_images_names[new_images_names == from_img] <- to_img
+  obj_default$masks[1, "name"] = from_msk
+  obj_default$masks[1, "def"] = to_msk
+  
+  obj_to = redefine_features_def_msk_img(obj_default$features_def,
+                                         masks = obj_default$masks, 
+                                         images = obj_default$images,
+                                         force_default = FALSE,
+                                         to_match_mask = from_msk,
+                                         to_replace_mask = to_msk,
+                                         new_images_names = new_images_names)
+  has_changed_to_feat = !sapply(1:length(obj_default$features_def), FUN = function(i) {
+    identical(obj_default$features_def[[i]]$def, obj_to$features_def[[i]]$def)
+  })
+  has_changed_to_mask = !sapply(1:nrow(obj_default$masks), FUN = function(i) {
+    identical(obj_default$masks[i, "def"], obj_to$masks[i, "def"])
+  })
+  has_changed_to_img = !sapply(1:nrow(obj_default$images), FUN = function(i) {
+    identical(obj_default$images[i, "name"], obj_to$images[i, "name"])
+  })
+  
+  # copy 'to' into 'from'
+  obj_final = obj_from
+  obj_final$features_def[has_changed_to_feat] <- obj_to$features_def[has_changed_to_feat]
+  names(obj_final$features_def)[has_changed_to_feat] <- names(obj_to$features_def)[has_changed_to_feat]
+  obj_final$masks[!(has_changed_from_mask & !has_changed_to_mask), ] <- obj_to$masks[!(has_changed_from_mask & !has_changed_to_mask), ]
+  obj_final$images[(has_changed_from_img & !has_changed_to_img), ] <- obj_to$images[(has_changed_from_img & !has_changed_to_img), ]
+  
+  # recover default masks and images
+  obj_final$images = obj_final$images[-1, ]
+  obj_final$masks = obj_final$masks[-1, ]
+  
+  # CHECK THIS, could it lead to error
+  # when from is the first channel ?
+  obj_final$masks[obj_final$masks$name %in% c("MC","None","NMC"), ] <- obj$description$masks[obj$description$masks$name %in% c("MC","None","NMC"), ]
+  
+  map = list(initial = names(obj$features_def)[has_changed_to_feat],
+             from = names(obj_from$features_def)[has_changed_to_feat],
+             to = names(obj_final$features_def)[has_changed_to_feat],
+             idx = has_changed_to_feat)
+  
+  ret = redefine_obj(obj, obj_final)
+  attr(x = ret, which = "map") <- map
+  return(ret)
 }
