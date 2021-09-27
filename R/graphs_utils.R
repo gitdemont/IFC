@@ -447,7 +447,7 @@ convert_to_baseplot = function(obj) {
                      transformation=obj$input$trans)
       plot(x = obj$input$data$x2[obj$input$subset],
            y = obj$input$data$y2[obj$input$subset],
-           xlim = Xlim , ylim = Ylim ,
+           xlim = Xlim , ylim = Ylim,
            main = obj$input$title,
            xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
            ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
@@ -456,6 +456,7 @@ convert_to_baseplot = function(obj) {
            cex.axis = obj$plot$par.settings$axis.text$cex,
            pch = pch, col = col, 
            axes = FALSE)
+      if(!(inherits(obj$input$trans, what="function") || !inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), what="try-error"))) mtext(side = 3, line = 0.25, at = diff(Xlim)/2, adj = 0.5, obj$input$trans)
     } else {
       if(obj$input$precision == "full") {
         disp = disp_n[length(displayed)]

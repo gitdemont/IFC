@@ -455,15 +455,18 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         xy_subset[sample(x = nrow(D), size = min(g$maxpoints,nrow(D)), replace = FALSE)] <- TRUE
       }
     }
+    xtop = NULL
     if(is_fun) {
       dens_feat = obj$features[data_sub,][xy_subset,]
     } else {
+      xtop = trans
       dens_feat = obj$features[data_sub,][xy_subset,trans]
       dens_ran = range(dens_feat, na.rm = TRUE)
       dens_feat = (dens_feat-dens_ran[1])/diff(dens_ran)
     }
     foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE, xlim = Xlim, ylim = Ylim, 
-                 main = trunc_string(g$title, trunc_labels), groups=groups, subset=xy_subset,
+                 main = trunc_string(g$title, trunc_labels), xlab.top = xtop,
+                 groups=groups, subset=xy_subset,
                  scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)),
                  xlab =  trunc_string(g$xlabel, trunc_labels), ylab = trunc_string(g$ylabel, trunc_labels),
                  panel = function(x, y, groups=NULL, subscripts, ...) {
