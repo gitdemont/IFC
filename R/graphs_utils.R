@@ -456,7 +456,8 @@ convert_to_baseplot = function(obj) {
            cex.axis = obj$plot$par.settings$axis.text$cex,
            pch = pch, col = col, 
            axes = FALSE)
-      if(!(inherits(obj$input$trans, what="function") || !inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), what="try-error"))) mtext(side = 3, line = 0.25, at = diff(Xlim)/2, adj = 0.5, obj$input$trans)
+      if(!(inherits(obj$input$trans, what="function") || 
+           !inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), what="try-error"))) mtext(side = 3, line = 0.25, adj = 0.5, obj$input$trans)
     } else {
       if(obj$input$precision == "full") {
         disp = disp_n[length(displayed)]
