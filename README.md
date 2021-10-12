@@ -95,7 +95,7 @@ install.packages("IFCdata", repos = "https://gitdemont.github.io/IFCdata/", type
 
 use: **readIFC()** or **ExtractFromDAF()** or **ExtractFromXIF()**
 
-This allows retrieving several information from files like: 
+This allows retrieving several information from files like at `single cell` level: 
 
 `features` defined and their values
 
@@ -126,6 +126,8 @@ Once data are parsed and treated new elements can be used to subset or merge raw
 
 - Scale up productivity; here are several (among others) functions that have been created:
 
+**ExtractFromFCS** or **ExportToFCS**, to read FCS and create FCS files,
+
 **DisplayGallery()**, displays cells / gallery of cells in R,
 
 **ExtractImages_toFile()**, extracts cells (with desired channels) to image files (tiff, png, jpeg, …),
@@ -146,7 +148,11 @@ Accessing images allows to pass them to deep learning frameworks like tensorflow
 
 **objectExtract()** for extracting individual image or mask within .rif or .cif file,
 
-**plotGraph()** and  **autoplot()** for displaying graphical elements of analysis worksheet.
+**plotGraph()** and  **autoplot()** for displaying graphical elements of analysis worksheet,
+
+**data_add_*** and **data_rm_*** functions for data object manipulation,
+
+**data_to_DAF** to export object manipulated in R to .daf file.
 
 ## DISCLAMER
 
