@@ -6,12 +6,12 @@
 \alias{IFC}
 \title{Tools for Imaging Flow Cytometry}
 \description{
-Contains several tools to treat Imaging Flow Cytometry data from ImageStream(R) and FlowSight(R) cytometers (Amnis(R), part of Luminex(R)). Provides an easy and simple way to read or write .rif, .cif and .daf files. Information such as masks, features, regions and populations set within these files can be retrieved. In addition, raw data such as images stored can also be accessed. Users, may hopefully increase their productivity thanks to dedicated functions to extract, visualize and export IFC data.
+Contains several tools to treat Imaging Flow Cytometry data from ImageStream(R) and FlowSight(R) cytometers (Amnis(R), part of Luminex(R)). Provides an easy and simple way to read or write .fcs, .rif, .cif and .daf files. Information such as masks, features, regions and populations set within these files can be retrieved for each single cell. In addition, raw data such as images stored can also be accessed. Users, may hopefully increase their productivity thanks to dedicated functions to extract, visualize, manipulate and export IFC data.
 }
 \details{
 The IFC package provides several categories of functions:\cr
 - to read / write / export / visualize:\cr
-\code{\link{readIFC}}, \code{\link{writeIFC}}, \code{\link{ExtractFromDAF}}, \code{\link{ExportToDAF}}, \code{\link{data_to_DAF}}, \code{\link{ExtractFromXIF}}, \code{\link{ExportToXIF}}, \code{\link{ExportToBATCH}}, \code{\link{ExportToReport}}, \code{\link{ExportToGallery}}, \code{\link{ExportToNumpy}}, \code{\link{DisplayGallery}}, \code{\link{ExtractImages_toBase64}}, \code{\link{ExtractImages_toFile}}, \code{\link{ExtractImages_toMatrix}}, \code{\link{ExtractMasks_toMatrix}}, \code{\link{objectExtract}}, \code{\link{popsNetwork}}, \code{\link{plotGraph}}, \code{\link{paletteIFC}}, \code{\link{autoplot}}\cr
+\code{\link{readIFC}}, \code{\link{writeIFC}}, \code{\link{ExtractFromDAF}}, \code{\link{ExportToDAF}}, \code{\link{data_to_DAF}}, \code{\link{ExtractFromXIF}}, \code{\link{ExportToXIF}}, \code{\link{ExtractFromFCS}}, \code{\link{ExportToFCS}}, \code{\link{ExportToBATCH}}, \code{\link{ExportToReport}}, \code{\link{ExportToGallery}}, \code{\link{ExportToNumpy}}, \code{\link{DisplayGallery}}, \code{\link{ExtractImages_toBase64}}, \code{\link{ExtractImages_toFile}}, \code{\link{ExtractImages_toMatrix}}, \code{\link{ExtractMasks_toMatrix}}, \code{\link{objectExtract}}, \code{\link{popsNetwork}}, \code{\link{plotGraph}}, \code{\link{paletteIFC}}, \code{\link{autoplot}}\cr
 - to transform features values\cr
 \code{\link{smoothLinLog}}, \code{\link{inv_smoothLinLog}}\cr
 - to deeply extract information from files:\cr
