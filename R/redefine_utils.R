@@ -583,6 +583,7 @@ redefine_features_def_msk_img <- function(features_def, masks, images, force_def
   
   # we extract names
   new_names = sapply(def, FUN = function(def_def) def_def$name)
+  old_names = names(features_def)
   cur_names = rep("", LL)
   while(any("" == cur_names)) {
     def = lapply(1:LL, FUN = function(i_feat) {
