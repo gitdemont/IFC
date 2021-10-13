@@ -1,5 +1,9 @@
 # NEWS
 ## 0.1.2
+- add color-gradient based on 3rd feature in density plot + add this 3rd feature as subtitle
+
+- fix issue with axis tick labels on Solaris (polygon edge not found (zero-width or zero-height?))
+
 - fix issue in internal addText() and hpp_mark() when added text does not fit into image.
 
 - allow stats export with data_to_DAF and daf creation from rif file reading
