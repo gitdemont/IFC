@@ -464,12 +464,12 @@ Rcpp::List hpp_extract (const std::string fname,
       std::string cur_chan = as<std::string>(physicalChannel[chan_idx]);
       switch(removal[chan_idx]) {
       case 0: {
-        masks.hasAttribute("status") ? msk.attr("removal") = masks.attr("status"):"none";
+        msk.attr("removal") = "none";
         break;
       }
       case 1: {
         msk = Rcpp::clone(Rcpp::as<Rcpp::IntegerMatrix>(masks[cur_chan]));
-        masks.hasAttribute("status") ? msk.attr("removal") = masks.attr("status"):"raw";
+        msk.attr("removal") = "raw";
         break;
       }
       case 2: {
@@ -477,7 +477,7 @@ Rcpp::List hpp_extract (const std::string fname,
         for(R_len_t i_row = 0; i_row < iml; i_row ++) {
           msk(i_row, Rcpp::_) = CUR_M(i_row, Rcpp::_) > 1;
         }
-        masks.hasAttribute("status") ? msk.attr("removal") = masks.attr("status"):"clipped";
+        msk.attr("removal") = "clipped";
         break;
       }
       case 3: {
@@ -485,15 +485,16 @@ Rcpp::List hpp_extract (const std::string fname,
         for(R_len_t i_row = 0; i_row < iml; i_row ++) {
           msk(i_row, Rcpp::_) = CUR_M(i_row, Rcpp::_) != 1;
         }
-        masks.hasAttribute("status") ? msk.attr("removal") = masks.attr("status"):"masked";
+        msk.attr("removal") = "masked";
         break;
       }
       case 4: {
         msk = MC;
-        masks.hasAttribute("status") ? msk.attr("removal") = masks.attr("status"):"MC";
+        msk.attr("removal") = "MC";
         break;
       }
       }
+      if(masks.hasAttribute("status")) msk.attr("removal") = "invalid";
       
       out[i] = hpp_transform(img[chan_idx],
                              colors[chan_idx],
