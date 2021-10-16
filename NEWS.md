@@ -1,5 +1,10 @@
 # NEWS
+## 0.1.3
+- don't send error on partial mask retrieval, flag removal with "invalid" instead
+
 ## 0.1.2
+- CRAN release
+
 - add color-gradient based on 3rd feature in density plot + add this 3rd feature as subtitle
 
 - fix issue with axis tick labels on Solaris (polygon edge not found (zero-width or zero-height?))
