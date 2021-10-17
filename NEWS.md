@@ -1,6 +1,6 @@
 # NEWS
 ## 0.1.3
-- don't send error on partial mask retrieval, flag removal with "invalid" instead
+- don't send error on partial mask retrieval
 
 ## 0.1.2
 - CRAN release

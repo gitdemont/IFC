@@ -185,7 +185,7 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
         }
         }
         // if(L != j) Rcpp::stop("hpp_rle_Decomp: Bad decompression");
-        if(L != j) out.attr("status") = "invalid";
+        // if(L != j) out.attr("status") = "invalid";
         Rcpp::IntegerMatrix timg = Rcpp::transpose(img);
         for(uint32_t i = 0; i < nb_channels; i++) {
           out[i] = timg(Rcpp::_, Rcpp::Range(tile_width * i, tile_width * (i+1) - 1));

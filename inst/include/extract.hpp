@@ -494,7 +494,7 @@ Rcpp::List hpp_extract (const std::string fname,
         break;
       }
       }
-      if(masks.hasAttribute("status")) msk.attr("removal") = "invalid";
+      // if(masks.hasAttribute("status")) msk.attr("removal") = "invalid";
       
       out[i] = hpp_transform(img[chan_idx],
                              colors[chan_idx],
