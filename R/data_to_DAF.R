@@ -238,7 +238,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
   # adds attributes to root node
   IDEAS_version = obj$description$Assay$IDEAS_version
   if(binary) {
-    if(length(IDEAS_version) == 0) IDEAS_version = "6.2.183.0"
+    if(length(IDEAS_version) == 0) IDEAS_version = "6.2.64.0"
     root %>% xml_set_attrs(value = c(IFC_version = pkg_ver, date = now, IDEAS_version = IDEAS_version, binaryfeatures = "True"))
   } else {
     if(length(IDEAS_version) == 0) IDEAS_version = "6.1.822.0"
