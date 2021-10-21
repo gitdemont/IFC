@@ -21,7 +21,7 @@ readFCS(
 
 \item{options}{list of options used to parse FCS file. It should contain:\cr
 - header, a list whose members define the "at" offset from header$start$at and the "n" number of bytes to extract:\cr
--- start: where start reading FCS dataset.                  Default is list(at = 0, n = 6),\cr
+-- start: where start reading FCS dataset.                  Default is list(at = 0,  n = 6),\cr
 -- text_beg: where to retrieve file text segment beginning. Default is list(at = 10, n = 8),\cr
 -- text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
 -- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr

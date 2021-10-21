@@ -38,7 +38,7 @@
 #' @param fileName path to file.
 #' @param options list of options used to parse FCS file. It should contain:\cr
 #' - header, a list whose members define the "at" offset from header$start$at and the "n" number of bytes to extract:\cr
-#' -- start: where start reading FCS dataset.                  Default is list(at = 0, n = 6),\cr
+#' -- start: where start reading FCS dataset.                  Default is list(at = 0,  n = 6),\cr
 #' -- text_beg: where to retrieve file text segment beginning. Default is list(at = 10, n = 8),\cr
 #' -- text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
 #' -- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
@@ -68,6 +68,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   
   if(missing(fileName)) stop("'fileName' can't be missing")
   assert(display_progress, len = 1, alw = c(TRUE,FALSE))
+  assert(fileName, len = 1)
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
   title_progress = basename(fileName)
   
@@ -81,6 +82,11 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
     if(x != "start") raw = suppressWarnings(na.omit(as.integer(raw)) + options$header[["start"]]$at[1])
     raw
   })
+  
+  # check if we can find options arguments in dots
+  if("first_only" %in% names(dots)) options$first_only <- dots$first_only
+  if("apply_scale" %in% names(dots)) options$apply_scale <- dots$apply_scale
+  
   # now we can extract text segment,
   # the primary text segment has to be in  within bytes 58 - 99,999,999
   off1 = header$text_beg
@@ -127,6 +133,10 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
     extra_text = structure(as.list(extra_text[id_val]), names = extra_text[id_key])
     text = c(text, extra_text)
   }
+  if(!any("$FIL" == names(text))) text[["$FIL"]] <- fileName
+  text[["$FIL"]] <- basename(text[["$FIL"]])
+  text[["$FCSversion"]] <- header$start
+  text[["#DATASET"]] <- length(options$header$start$at)
   
   # now we can extract data segment
   # we will use text to extract data segment offsets
@@ -355,18 +365,141 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
     ans = c(ans, readFCS(fileName = fileName, options = options,
                          display_progress = display_progress, ...))
   }
-  return(ans)
+  return(structure(ans, class = "IFC_fcs", fileName = fileName))
 }
 
-#' @title FCS File Reader
+#' @title FCS Object Data Sets Merging
 #' @description
-#' Extracts data from Flow Cytometry Standard (FCS) Files.
-#' @param fileName path(s) of file(s). If multiple files are provided they will be merged and 
-#' populations will be created to identify each single file within returned `IFC_data` object.
-#' @source Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \url{https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.20825}.
-#' @param ... other arguments to be passed to readFCS function.
+#' Merges FCS data object with various data sets.
+#' @param fcs `IFC_fcs` object as extracted by readFCS().
+#' @param ... other arguments to be passed.
+#' @details in data can contain extra columns named 'import_file' and 'import_subfile' intended to allow file/dataset identification
+#' @return a list of list containing:\cr
+#' - header, list of header information corresponding to 'options'\cr
+#' - delimiter, unique character used to separate keyword - values\cr
+#' - text, list of keywords values,\cr
+#' - data, data.frame of values.
+#' @keywords internal
+FCS_merge_dataset <- function(fcs, ...) {
+  dots = list(...)
+  display_progress = dots$display_progress
+  if(length(display_progress) == 0) display_progress = TRUE
+  assert(display_progress, len=1, alw = c(TRUE, FALSE))
+  
+  L = length(fcs)
+  if(L > 1) {
+    if(display_progress) {
+      pb = newPB(session = dots$session, label = "FCS", min = 0, max = L)
+      on.exit(endPB(pb))
+    }
+    features = Reduce(function(x, y) {
+      Nx = names(x)
+      Ny = names(y)
+      com <- Nx[Nx %in% Ny]
+      Nxx <- Nx[!Nx %in% Ny]
+      Nyy <- Ny[!Ny %in% Nx]
+      xx = x[, Nxx, drop = FALSE]
+      xx = cbind.data.frame(xx, matrix(NA, nrow = nrow(xx), ncol = length(Nyy)))
+      names(xx) = c(Nxx, Nyy)
+      yy = y[, Nyy, drop = FALSE]
+      yy = cbind.data.frame(yy, matrix(NA, nrow = nrow(yy), ncol = length(Nxx)))
+      names(yy) = c(Nyy, Nxx)
+      aa = rbind.data.frame(xx[, c(Nxx, Nyy), drop = FALSE], yy[, c(Nxx, Nyy), drop = FALSE], make.row.names = FALSE)
+      if(length(com) != 0) aa = structure(cbind.data.frame(aa, rbind.data.frame(x[, com, drop = FALSE],
+                                                                                y[, com, drop = FALSE],
+                                                                                make.row.names = FALSE)),
+                                          names = c(Nxx, Nyy, com))
+      aa
+    },
+    lapply(1:L, FUN = function(i) {
+      if(display_progress) setPB(pb, value = i, title = "FCS", label = "Merging Data Sets")
+      dat = fcs[[i]]$data
+      if(!any("import_file" == names(dat))) dat = cbind.data.frame(dat, "import_file"=rep(fcs[[i]]$text[["$FIL"]], nrow(dat)))
+      if(!any("import_subfile" == names(dat))) dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["#DATASET"]], nrow(dat)))
+      dat
+    }))
+  } else {
+    features = fcs[[1]]$data
+    if(!any("import_file" == names(features))) features = cbind.data.frame(features, "import_file"=rep(fcs[[1]]$text[["$FIL"]], nrow(features)))
+    if(!any("import_subfile" == names(features))) features = cbind.data.frame(features, "import_subfile"=rep(1, nrow(features)))
+  }
+  
+  ans = list(list(header=fcs[[1]]$header,
+                  delimiter=fcs[[1]]$delimiter,
+                  text=fcs[[1]]$text, 
+                  data = features))
+  class(ans) <- "IFC_fcs"
+  attr(ans, "fileName") <- attr(fcs, "fileName")
+  bar <- unique(features[, "import_file"])
+  if(length(bar) > 1) attr(ans, "Merged_fcs") <- bar
+  ans
+}
+
+#' @title FCS Object Samples Merging
+#' @description
+#' Merges FCS data object with various samples.
+#' @param fcs `IFC_fcs` object as extracted by readFCS().
+#' @param ... other arguments to be passed.
+#' @details in data can contain extra columns named 'import_file' and 'import_subfile' intended to allow file/dataset identification
+#' @return a list of list containing:\cr
+#' - header, list of header information corresponding to 'options'\cr
+#' - delimiter, unique character used to separate keyword - values\cr
+#' - text, list of keywords values,\cr
+#' - data, data.frame of values.
+#' @keywords internal
+FCS_merge_sample <- function(fcs, ...) {
+  dots = list(...)
+  display_progress = dots$display_progress
+  if(length(display_progress) == 0) display_progress = TRUE
+  assert(display_progress, len=1, alw = c(TRUE, FALSE))
+  
+  L = length(fcs)
+  if(L > 1) {
+    if(display_progress) {
+      pb = newPB(session = dots$session, label = "FCS", min = 0, max = L)
+      on.exit(endPB(pb))
+    }
+    features = Reduce(function(x, y) {
+      Nx = names(x)
+      Ny = names(y)
+      if(sum(nchar(Nx)) > sum(nchar(Ny))) {N = Nx} else {N = Ny}
+      names(x) = N
+      names(y) = N
+      rbind.data.frame(x, y, make.row.names = FALSE)
+    },
+    lapply(1:L, FUN = function(i) {
+      if(display_progress) setPB(pb, value = i, title = "FCS", label = "Merging Samples")
+      dat = fcs[[i]]$data
+      if(!any("import_file" == names(dat))) dat = cbind.data.frame(dat, "import_file"=rep(fcs[[i]]$text[["$FIL"]], nrow(dat)))
+      if(!any("import_subfile" == names(dat))) dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["#DATASET"]], nrow(dat)))
+      dat
+    }))
+  } else {
+    features = fcs[[1]]$data
+    if(!any("import_file" == names(features))) features = cbind.data.frame(features, "import_file"=rep(fcs[[1]]$text[["$FIL"]], nrow(features)))
+    if(!any("import_subfile" == names(features))) features = cbind.data.frame(features, "import_subfile"=rep(1, nrow(features)))
+  }
+  
+  ans = list(list(header=fcs[[1]]$header,
+                  delimiter=fcs[[1]]$delimiter,
+                  text=fcs[[1]]$text, 
+                  data = features))
+  class(ans) <- "IFC_fcs"
+  attr(ans, "fileName") <- attr(fcs, "fileName")
+  bar <- unique(features[, "import_file"])
+  if(length(bar) > 1) attr(ans, "Merged_fcs") <- bar
+  ans
+}
+
+#' @title FCS Object Converter
+#' @description
+#' Converts FCS data object to `IFC_data` object.
+#' @param fcs `IFC_fcs` object as extracted by readFCS().
+#' @param ... other arguments to be passed.
+#' @details in data can contain extra columns named 'import_file' and 'import_subfile' intended to allow file/dataset identification
 #' @return A named list of class `IFC_data`, whose members are:\cr
 #' -description, a list of descriptive information,\cr
+#' -Merged_fcs, character vector of path of files used to create fcs, if input was a merged,\cr
 #' -fileName, path of fileName input,\cr
 #' -fileName_image, path of .cif image fileName is referring to,\cr
 #' -features, a data.frame of features,\cr
@@ -378,20 +511,20 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
 #' -offsets, an integer vector of images and masks IFDs offsets,\cr
 #' -stats, a data.frame describing populations count and percentage to parent and total population,\cr
 #' -checksum, a checksum integer.
-#' @export
-ExtractFromFCS <- function(fileName, ...) {
+#' @keywords internal
+FCS_to_data <- function(fcs, ...) {
   # create structure
   dots = list(...)
   display_progress = dots$display_progress
   if(length(display_progress) == 0) display_progress = TRUE
   assert(display_progress, len=1, alw = c(TRUE, FALSE))
-  fileName = normalizePath(path = fileName, winslash = "/")
   min_data = list("description" = list("Assay" = data.frame("date" = NULL, "IDEAS_version" = NULL, "binaryfeatures" = NULL),
                                        "ID" = data.frame("file" = NULL, "creation" = NULL, "objcount" = NULL, "checksum" = NULL),
                                        "Images" = data.frame("name" = NULL, "color" = NULL, "physicalChannel" = NULL, "xmin" = NULL,
                                                              "xmax" = NULL, "xmid" = NULL, "ymid"= NULL, "scalemin"= NULL, "scalemax"= NULL,
                                                              "tokens"= NULL, "baseimage"= NULL, "function"= NULL),
                                        "masks" = data.frame()),
+                  "Merged_fcs" = character(),
                   "fileName" = character(),
                   "fileName_image" = character(),
                   "features" = structure(.Data = list(), class = c("data.frame", "IFC_features")),
@@ -408,52 +541,12 @@ ExtractFromFCS <- function(fileName, ...) {
   # define features categories which requires no param
   No_Param = c("Time", "Object Number", "Raw Centroid X", "Raw Centroid Y",  "Flow Speed", "Camera Line Number", "Camera Timer", "Objects per mL", "Objects per sec")
   
-  # read the fcs file and extract features and description
-  L = length(fileName)
-  if(display_progress) pb = newPB(session = dots$session, label = "reading files", min = 0, max = L)
-  tryCatch({
-    fcs = lapply(1:L, FUN = function(i_file) {
-      if(display_progress) setPB(pb, value = i_file, title = "Extracting FCS", label = "reading files")
-      foo = readFCS(fileName = fileName[[i_file]], ...)
-      dat = lapply(1:length(foo), FUN = function(i) {
-        df = data.frame(foo[[i]]$data, stringsAsFactors = FALSE, check.names = FALSE)
-        df$import_file = basename(fileName[[i_file]])
-        df$import_subfile = sprintf("dataset_%03i", i)
-        return(df)
-      })
-      out = dat[[1]]
-      if(length(dat) > 1) {
-        for(i in 2:length(dat)) {
-          out = merge.data.frame(out, dat[[i]], all = TRUE, stringsAsFactors = FALSE, check.names = FALSE)
-        }
-      }
-      return(list(text = lapply(foo, FUN = function(x) c(list("$FCSversion" = x$header$start), x$text[names(x$text) != "$FCSversion"])), 
-                  dat = out))
-    })
-  }, error = function(e) {
-    stop(e$message, call. = FALSE)
-  }, finally = {
-    if(display_progress) endPB(pb)
-  })
+  features = FCS_merge_sample(fcs, ...)[[1]]$data
   
-  # merge all features
-  features = fcs[[1]]$dat
-  L = length(fcs)
-  if(L > 1) {
-    if(display_progress) pb = newPB(session = dots$session, label = "merging files", min = 1, max = L)
-    tryCatch({
-      for(i in 2:L) {
-        if(display_progress) setPB(pb, value = i, title = "Extracting FCS", label = "merging files")
-        features = merge.data.frame(features, fcs[[i]]$dat, all = TRUE,  stringsAsFactors = FALSE, check.names = FALSE)
-      }
-    }, error = function(e) {
-      stop(e$message, call. = FALSE)
-    }, finally = {
-      if(display_progress) endPB(pb)
-    })
-  }
   identif = names(features) %in% c("import_file", "import_subfile")
-  idx = features[, identif]
+  idx = features[, identif, drop = FALSE]
+  if(!"import_file" %in% names(idx)) idx$import_file = fcs[[1]][["$FIL"]]
+  if(!"import_subfile" %in% names(idx)) idx$import_subfile = 1
   obj_count = as.integer(nrow(features))
   
   multiple = prod(length(unique(idx[, 1])), length(unique(idx[, 2]))) > 1
@@ -462,7 +555,11 @@ ExtractFromFCS <- function(fileName, ...) {
     idx$count = 1:obj_count
     all_obj = rep(FALSE, obj_count)
     pops = by(idx, idx[, c("import_file", "import_subfile")], FUN = function(x) {
-      name = paste(unique(x$import_file), unique(x$import_subfile), sep = "_")
+      if(length(unique(idx[, "import_subfile"])) == 1) {
+        name = unique(x$import_file)
+      } else {
+        name = paste(unique(x$import_file), "dataset", unique(x$import_subfile), sep = "_")
+      }
       obj = all_obj
       obj[x$count] <- TRUE
       buildPopulation(name = name, type = "T", color = "White", lightModeColor = "Black", obj = obj)
@@ -479,17 +576,17 @@ ExtractFromFCS <- function(fileName, ...) {
   
   # fill min object
   instrument = sapply(fcs, FUN = function(x) {
-    tmp = x$text[[1]]$`$CYT`
+    tmp = x$text$`$CYT`
     if((length(tmp) == 0) || (tmp == "")) return("unk")
     return(tmp)
   })
   FCS_version = sapply(fcs, FUN = function(x) {
-    tmp = x$text[[1]]$`$FCSversion`
+    tmp = x$text$`$FCSversion`
     if((length(tmp) == 0) || (tmp == "")) return("unk")
     return(tmp)
   })
   spillover = lapply(fcs, FUN = function(x) {
-    tmp = x$text[[1]][c("SPILL","spillover","$SPILLOVER")]
+    tmp = x$text[c("SPILL","spillover","$SPILLOVER")]
     tmp = tmp[sapply(tmp, length) != 0]
     if(length(tmp) == 0) return(NULL)
     return(tmp)
@@ -502,10 +599,12 @@ ExtractFromFCS <- function(fileName, ...) {
   #   return(tmp)
   # })
   
-  min_data$fileName = normalizePath(fileName[1], winslash = "/")
-  min_data$description$Assay = data.frame(date = file.info(fileName[1])$mtime, FCS_version = paste0(FCS_version, collapse = ", "), stringsAsFactors = FALSE)
-  min_data$description$ID = data.frame(file = fileName[1],
-                                       creation = format(file.info(fileName[1])$ctime, format = "%d-%b-%y %H:%M:%S"),
+  min_data$fileName = normalizePath(attr(fcs, "fileName"), winslash = "/", mustWork = FALSE)
+  bar <- unique(idx[, "import_file"])
+  if(length(bar) > 1) min_data$Merged_fcs <- bar
+  min_data$description$Assay = data.frame(date = file.info(min_data$fileName)$mtime, FCS_version = paste0(FCS_version, collapse = ", "), stringsAsFactors = FALSE)
+  min_data$description$ID = data.frame(file = min_data$fileName,
+                                       creation = format(file.info(min_data$fileName)$ctime, format = "%d-%b-%y %H:%M:%S"),
                                        objcount = obj_count,
                                        stringsAsFactors = FALSE)
   min_data$description$FCS = min_data$description$ID
@@ -551,6 +650,50 @@ ExtractFromFCS <- function(fileName, ...) {
   stats[, 5] = as.numeric(stats[, 5])
   min_data$stats = stats
   return(min_data)
+}
+
+#' @title FCS File Reader
+#' @description
+#' Extracts data from Flow Cytometry Standard (FCS) Files.
+#' @param fileName path(s) of file(s). If multiple files are provided they will be merged and 
+#' populations will be created to identify each single file within returned `IFC_data` object.
+#' @source Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \url{https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.20825}.
+#' @param ... other arguments to be passed to readFCS function.
+#' @return A named list of class `IFC_data`, whose members are:\cr
+#' -description, a list of descriptive information,\cr
+#' -Merged_fcs, character vector of path of files used to create fcs, if input was a merged,\cr
+#' -fileName, path of fileName input,\cr
+#' -fileName_image, path of .cif image fileName is referring to,\cr
+#' -features, a data.frame of features,\cr
+#' -features_def, a describing how features are defined,\cr
+#' -graphs, a list of graphical elements found,\cr
+#' -pops, a list describing populations found,\cr
+#' -regions, a list describing how regions are defined,\cr
+#' -images, a data.frame describing information about images,\cr
+#' -offsets, an integer vector of images and masks IFDs offsets,\cr
+#' -stats, a data.frame describing populations count and percentage to parent and total population,\cr
+#' -checksum, a checksum integer.
+#' @export
+ExtractFromFCS <- function(fileName, ...) {
+  # create structure
+  dots = list(...)
+  display_progress = dots$display_progress
+  if(length(display_progress) == 0) display_progress = TRUE
+  assert(display_progress, len=1, alw = c(TRUE, FALSE))
+  fileName = normalizePath(path = fileName, winslash = "/", mustWork = TRUE)
+  
+  # read the fcs file and extract features and description
+  L = length(fileName)
+  if(display_progress) {
+    pb = newPB(session = dots$session, label = "reading files", min = 0, max = L)
+    on.exit(endPB(pb))
+  }
+  fcs = lapply(1:L, FUN = function(i_file) {
+    if(display_progress) setPB(pb, value = i_file, title = "Extracting FCS", label = "reading files")
+    FCS_merge_dataset(readFCS(fileName = fileName[[i_file]], ...))[[1]]
+  })
+  attr(fcs, "fileName") <- fileName[1]
+  FCS_to_data(fcs, ...)
 }
 
 #' @title FCS File Writer
