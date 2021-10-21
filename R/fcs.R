@@ -541,7 +541,7 @@ FCS_to_data <- function(fcs, ...) {
   # define features categories which requires no param
   No_Param = c("Time", "Object Number", "Raw Centroid X", "Raw Centroid Y",  "Flow Speed", "Camera Line Number", "Camera Timer", "Objects per mL", "Objects per sec")
   
-  features = FCS_merge_sample(fcs, ...)[[1]]$data
+  features = FCS_merge_dataset(fcs, ...)[[1]]$data
   
   identif = names(features) %in% c("import_file", "import_subfile")
   idx = features[, identif, drop = FALSE]
