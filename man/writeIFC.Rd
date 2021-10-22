@@ -9,7 +9,7 @@ writeIFC(fileName, ...)
 \arguments{
 \item{fileName}{path to file.}
 
-\item{...}{arguments to pass to \code{\link{ExportToDAF}} or \code{\link{ExportToXIF}}.}
+\item{...}{arguments to pass to \code{\link{ExportToDAF}}, \code{\link{ExportToXIF}}, \code{\link{ExportToFCS}}, or \code{\link{data_to_DAF}}.}
 }
 \value{
 it invisible returns the path of exported file.
@@ -18,7 +18,8 @@ it invisible returns the path of exported file.
 Writes IFC data to DAF and subsets or merges RIF/CIF Files.
 }
 \details{
-If 'fileName' is a DAF file \code{\link{ExportToDAF}} will be used to write file whereas if it is a RIF or CIF file \code{\link{writeIFC}} will use \code{\link{ExportToXIF}}.
+If an `IFC_data` object is provided as 'fileName' or in '...' \code{\link{ExportToFCS}} or \code{\link{data_to_DAF}} will be used to export object.
+Otherwise, if 'fileName' is a DAF file \code{\link{ExportToDAF}} will be used to write file whereas if it is RIF or CIF file(s) \code{\link{writeIFC}} will use \code{\link{ExportToXIF}}.
 }
 \examples{
 if(requireNamespace("IFCdata", quietly = TRUE)) {

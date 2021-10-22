@@ -31,8 +31,9 @@
 #' @description
 #' Writes IFC data to DAF and subsets or merges RIF/CIF Files.
 #' @param fileName path to file.
-#' @param ... arguments to pass to \code{\link{ExportToDAF}} or \code{\link{ExportToXIF}}.
-#' @details If 'fileName' is a DAF file \code{\link{ExportToDAF}} will be used to write file whereas if it is a RIF or CIF file \code{\link{writeIFC}} will use \code{\link{ExportToXIF}}.
+#' @param ... arguments to pass to \code{\link{ExportToDAF}}, \code{\link{ExportToXIF}}, \code{\link{ExportToFCS}}, or \code{\link{data_to_DAF}}.
+#' @details If an `IFC_data` object is provided as 'fileName' or in '...' \code{\link{ExportToFCS}} or \code{\link{data_to_DAF}} will be used to export object.
+#' Otherwise, if 'fileName' is a DAF file \code{\link{ExportToDAF}} will be used to write file whereas if it is RIF or CIF file(s) \code{\link{writeIFC}} will use \code{\link{ExportToXIF}}.
 #' @return it invisible returns the path of exported file.
 #' @examples
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
@@ -55,8 +56,22 @@
 #' @export
 writeIFC <- function(fileName, ...) {
   dots=list(...)
-  file_extension = getFileExt(fileName)
-  assert(file_extension, alw = c("daf", "rif", "cif"))
-  if((length(file_extension) == 1) && (file_extension == "daf")) return(ExportToDAF(fileName = fileName, ...))
-  return(ExportToXIF(fileName = fileName, ...))
+  input = whoami(entries=as.list(match.call()), search=list(obj = "IFC_data"))
+  fileName = input$fileName
+  write_to = dots$write_to
+  if(length(write_to) == 0) stop("'write_to' can't be missing")
+  splitp_obj <- splitp(write_to)
+  splitf_obj <- splitf(ifelse(length(obj) == 0, normalizePath(fileName[1], winslash="/", mustWork=TRUE), obj$fileName))
+  file_extension <- getFileExt(formatn(splitp_obj, splitf_obj))
+  if(length(input$obj) == 0) {
+    assert(file_extension, alw = c("daf","rif","cif"))
+    if(file_extension == "daf") return(ExportToDAF(fileName=fileName, ...))
+    return(ExportToXIF(fileName=fileName, ...)) 
+  } else {
+    to_remove <- (attr(input,"was")[(attr(input,"was")>1)] - as.integer(length(fileName) != 0))
+    if(length(to_remove) != 0) dots=dots[-to_remove]
+    assert(file_extension, alw = c("daf","fcs"))
+    if(file_extension == "daf") return(do.call(what=data_to_DAF, args=c(dots, list(obj=input$obj))))
+    return(do.call(what=ExportToFCS, args=c(dots, list(obj=input$obj))))
+  }
 }
