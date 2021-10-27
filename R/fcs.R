@@ -47,7 +47,9 @@
 #' - first_only, whether to extract only first. Default is FALSE
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other arguments to be passed.
-#' @details 'options' may be tweaked according to file type, instrument and software used to generate it. Default 'options' should allow to read most files.
+#' @details 'options' may be tweaked according to file type, instrument and software used to generate it.\cr
+#' Default 'options' should allow to read most files.\cr
+#' 'apply_scale' and 'first_only' can also be passed to 'options' thanks to ...
 #' @source Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \url{https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.20825}.
 #' @return a list whose elements are lists for each dataset stored within the file.\cr
 #' each sub-list contains:\cr
@@ -462,6 +464,7 @@ FCS_merge_sample <- function(fcs, ...) {
     features = Reduce(function(x, y) {
       Nx = names(x)
       Ny = names(y)
+      # FIXME should we add a check_names argument to ensure that each fcs sample have exactly the same names ?
       if(sum(nchar(Nx)) > sum(nchar(Ny))) {N = Nx} else {N = Ny}
       names(x) = N
       names(y) = N

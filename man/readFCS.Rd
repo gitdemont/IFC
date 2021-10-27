@@ -45,5 +45,7 @@ each sub-list contains:\cr
 Parse data from Flow Cytometry Standard (FCS) compliant files.
 }
 \details{
-'options' may be tweaked according to file type, instrument and software used to generate it. Default 'options' should allow to read most files.
+'options' may be tweaked according to file type, instrument and software used to generate it.\cr
+Default 'options' should allow to read most files.\cr
+'apply_scale' and 'first_only' can also be passed to 'options' thanks to ...
 }
