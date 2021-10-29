@@ -459,7 +459,9 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     if(is_fun) {
       dens_feat = obj$features[data_sub,][xy_subset,]
     } else {
-      xtop = trans
+      if((length(g$BasePop[[base_o[1]]][["densitylevel"]]) == 0) || (g$BasePop[[base_o[1]]][["densitylevel"]] == "")) {
+        xtop = trans
+      } 
       dens_feat = obj$features[data_sub,][xy_subset,trans]
       dens_ran = range(dens_feat, na.rm = TRUE)
       dens_feat = (dens_feat-dens_ran[1])/diff(dens_ran)
@@ -471,7 +473,45 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                  xlab =  trunc_string(g$xlabel, trunc_labels), ylab = trunc_string(g$ylabel, trunc_labels),
                  panel = function(x, y, groups=NULL, subscripts, ...) {
                    if(any(c("panel","both")%in%add_key)) if(g$type=="scatter") pan_key(key=c(KEY,"background"="lightgrey","alpha.background"=0.8), x = 0.02)
-                   if(g$type == "density") panel.xyplot(x=x, y=y, pch=".", col=densCols(x=structure(x, features=dens_feat), y=y,colramp=colorRampPalette(colConv(g$BasePop[[base_o[1]]][c("densitycolorsdarkmode","densitycolorslightmode")][[color_mode]])),nbin=nbin, transformation=trans))
+                   if(g$type == "density") {
+                     colramp=colorRampPalette(colConv(g$BasePop[[base_o[1]]][c("densitycolorsdarkmode","densitycolorslightmode")][[color_mode]]))
+                     args = g$BasePop[[base_o[1]]][["densitylevel"]]
+                     if((length(args) != 0) && (args != "")) {
+                       col = densCols(x=structure(x, features=dens_feat), y=y, colramp=colramp, nbin=nbin, transformation=function(x) {x})
+                       args=strsplit(args,split="|",fixed=TRUE)[[1]]
+                       fill = args[1] == "true"
+                       dolines = args[2] == "true"
+                       nlevels = as.integer(args[3])
+                       lowest = as.numeric(args[4])
+                       z  = attr(col, "matrix")
+                       zz = as.vector(z$fhat)
+                       dd = attr(col, "density")
+                       at_probs = seq(from=lowest, to=1, length.out=1+nlevels+(lowest!=0))
+                       at = quantile(dd, probs = at_probs, na.rm = TRUE, names = FALSE)
+                       low=0
+                       if(lowest != 0) {
+                         low = at[1]; at = at[-1]
+                         panel.xyplot(x=x[dd<low], y=y[dd<low], pch=".", col=c("white","black")[color_mode]) #col[dd<low])
+                       }
+                       contour_cols = colramp(length(at))
+                       if(fill) {
+                         # FIXME when filled the graph is pixelated
+                         panel.levelplot(x=rep(z$x1, times=nbin), y=rep(z$x2, each=nbin), z=zz, 
+                                           at=c(low, at), col.regions=c(NA,colramp(length(at)-1)),
+                                           subscripts=seq_along(as.vector(zz)),
+                                           border = "transparent", border.lty = 1, border.lwd = 0,
+                                           region=TRUE, contour=FALSE)
+                       } 
+                       if(dolines) {
+                         lines = contourLines(x=z$x1, y=z$x2, z=z$fhat, nlevels=length(at), levels=at)
+                         if(fill) contour_cols = rep(c("white","black")[color_mode], length(lines))
+                         lapply(1:length(lines), FUN = function(i_l) do.call(panel.lines, args = c(lines[i_l], list(col=contour_cols[lines[[i_l]]$level == at])))) 
+                       }
+                     } else {
+                       col = densCols(x=structure(x, features=dens_feat), y=y, colramp=colramp, nbin=nbin, transformation=trans)
+                       panel.xyplot(x=x,y=y,pch=".", col=col)
+                     }
+                   }
                    if(g$type == "scatter") {
                      if(is.null(groups[subscripts])) {
                        panel.xyplot(x=x[1], y=y[1], pch="", alpha=0)

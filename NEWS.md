@@ -1,6 +1,15 @@
 # NEWS
 ## 0.1.3
+- now handle `levelplot`
+
+- improve .fcs input / output internally
+
 - don't send error on partial mask retrieval
+
+#### This leads to the following visible changes for the user
+*buildGraph gains a new 'densitylevel' entry in BasePop controlling `levelplot` when 'type' is "density"*
+
+*when fcs is imported $FIL, $FCSversion, and $DATASET are automatically filled*
 
 ## 0.1.2
 - CRAN release

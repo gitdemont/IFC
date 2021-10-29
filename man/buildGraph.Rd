@@ -151,17 +151,22 @@ The sublist members are:\cr
 -"name", "linestyle", "fill",\cr
 and only when 'type' is "density"\cr
 -"densitybincount", "densitymin", "densitymax",\cr
--"densitycolors", "densitycolorslightmode", "densitycolorsdarkmode", "densitytrans".\cr
+-"densitycolors", "densitycolorslightmode", "densitycolorsdarkmode",\cr
+-"densitylevel", "densitytrans".\cr
 Each sub-list will be created automatically with the following default values (except if explicitly provided):\cr
--linestyle='Solid',\cr
--fill='true',\cr
--densitybincount='128',densitymin='0',densitymax='0',\cr
--densitycolors='-16776961|-13447886|-256|-23296|-65536|',\cr
--densitycolorslightmode='-16776961|-13447886|-256|-23296|-65536|',\cr
--densitycolorsdarkmode='-16776961|-13447886|-256|-23296|-65536|'\cr
--densitytrans='asinh'\cr
+-linestyle="Solid",\cr
+-fill="true",\cr
+-densitybincount="128",densitymin="0",densitymax="0",\cr
+-densitycolors="-16776961|-13447886|-256|-23296|-65536|",\cr
+-densitycolorslightmode="-16776961|-13447886|-256|-23296|-65536|",\cr
+-densitycolorsdarkmode="-16776961|-13447886|-256|-23296|-65536|",\cr
+-densitylevel="",\cr
+  *when provided it has to be in a format of "fill[true,false]|lines[true,false]|nlevels[integer>1]|lowest[numeric[0-1[]|"
+  *describing how the levelplot should be drawn.\cr
+  *Besides, 'densitrans' will not be used.
+-densitytrans="asinh"\cr
   *it can take a function to be applied to the 2D local densities\cr
   *or a name of a feature within `IFC_data` object to draw a gradient against this feature\cr
 Note that when 'type' is "density", 'BasePop' should be of length one.\cr
-and fill will be overwritten to 'true'.
+and fill will be overwritten to "true".
 }

@@ -138,7 +138,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   if(!any("$FIL" == names(text))) text[["$FIL"]] <- fileName
   text[["$FIL"]] <- basename(text[["$FIL"]])
   text[["$FCSversion"]] <- header$start
-  text[["#DATASET"]] <- length(options$header$start$at)
+  text[["$DATASET"]] <- length(options$header$start$at)
   
   # now we can extract data segment
   # we will use text to extract data segment offsets
@@ -417,7 +417,7 @@ FCS_merge_dataset <- function(fcs, ...) {
       if(display_progress) setPB(pb, value = i, title = "FCS", label = "Merging Data Sets")
       dat = fcs[[i]]$data
       if(!any("import_file" == names(dat))) dat = cbind.data.frame(dat, "import_file"=rep(fcs[[i]]$text[["$FIL"]], nrow(dat)))
-      if(!any("import_subfile" == names(dat))) dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["#DATASET"]], nrow(dat)))
+      if(!any("import_subfile" == names(dat))) dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["$DATASET"]], nrow(dat)))
       dat
     }))
   } else {
@@ -474,7 +474,7 @@ FCS_merge_sample <- function(fcs, ...) {
       if(display_progress) setPB(pb, value = i, title = "FCS", label = "Merging Samples")
       dat = fcs[[i]]$data
       if(!any("import_file" == names(dat))) dat = cbind.data.frame(dat, "import_file"=rep(fcs[[i]]$text[["$FIL"]], nrow(dat)))
-      if(!any("import_subfile" == names(dat))) dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["#DATASET"]], nrow(dat)))
+      if(!any("import_subfile" == names(dat))) dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["$DATASET"]], nrow(dat)))
       dat
     }))
   } else {

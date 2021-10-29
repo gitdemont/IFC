@@ -93,19 +93,24 @@
 #' -"name", "linestyle", "fill",\cr
 #' and only when 'type' is "density"\cr
 #' -"densitybincount", "densitymin", "densitymax",\cr
-#' -"densitycolors", "densitycolorslightmode", "densitycolorsdarkmode", "densitytrans".\cr
+#' -"densitycolors", "densitycolorslightmode", "densitycolorsdarkmode",\cr
+#' -"densitylevel", "densitytrans".\cr
 #' Each sub-list will be created automatically with the following default values (except if explicitly provided):\cr
-#' -linestyle='Solid',\cr
-#' -fill='true',\cr
-#' -densitybincount='128',densitymin='0',densitymax='0',\cr
-#' -densitycolors='-16776961|-13447886|-256|-23296|-65536|',\cr
-#' -densitycolorslightmode='-16776961|-13447886|-256|-23296|-65536|',\cr
-#' -densitycolorsdarkmode='-16776961|-13447886|-256|-23296|-65536|'\cr
-#' -densitytrans='asinh'\cr
+#' -linestyle="Solid",\cr
+#' -fill="true",\cr
+#' -densitybincount="128",densitymin="0",densitymax="0",\cr
+#' -densitycolors="-16776961|-13447886|-256|-23296|-65536|",\cr
+#' -densitycolorslightmode="-16776961|-13447886|-256|-23296|-65536|",\cr
+#' -densitycolorsdarkmode="-16776961|-13447886|-256|-23296|-65536|",\cr
+#' -densitylevel="",\cr
+#'   *when provided it has to be in a format of "fill[true,false]|lines[true,false]|nlevels[integer>1]|lowest[numeric[0-1[]|"
+#'   *describing how the levelplot should be drawn.\cr
+#'   *Besides, 'densitrans' will not be used.
+#' -densitytrans="asinh"\cr
 #'   *it can take a function to be applied to the 2D local densities\cr
 #'   *or a name of a feature within `IFC_data` object to draw a gradient against this feature\cr
 #' Note that when 'type' is "density", 'BasePop' should be of length one.\cr
-#' and fill will be overwritten to 'true'.
+#' and fill will be overwritten to "true".
 #' @param ... Other arguments to be passed.
 #' @return a list containing all graph information.
 #' @export
@@ -165,7 +170,7 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   stats_alw = c("Count","%Total","%Gated","%Plotted","Objects/mL","Mean","Median","Std. Dev.","MAD","CV","Minimum","Maximum","Geo. Mean","Mode","Variance","NaN")
   assert(xstats, len=1, typ="character"); stopifnot(strsplit(xstats, split="|", fixed=TRUE)[[1]] %in% stats_alw)
   assert(ystats, len=1, typ="character"); stopifnot(xstats == ystats, strsplit(ystats, split="|", fixed=TRUE)[[1]] %in% stats_alw)
-  BasePop_name_alw = c("name", "linestyle", "fill", "densitybincount", "densitymin", "densitymax", "densitycolors", "densitycolorslightmode", "densitycolorsdarkmode", "densitytrans")
+  BasePop_name_alw = c("name", "linestyle", "fill", "densitybincount", "densitymin", "densitymax", "densitycolors", "densitycolorslightmode", "densitycolorsdarkmode", "densitylevel", "densitytrans")
   
   # starts building args
   args=list(type=type, xlocation=xlocation, ylocation=ylocation, f1=f1)
@@ -203,13 +208,11 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
         BasePop = BasePop[1]
         order = paste0(rep(BasePop[[1]]$name, 5), collapse = "|")
         warning("Density graphs can only display one BasePop population", call.=FALSE, immediate.=TRUE)
-        # stop("Density graphs can only display one BasePop population", call.=FALSE)
       }
       if(length(ShownPop)!=0) if(length(ShownPop[[1]])>0) {
         ShownPop = list(list())
         order = paste0(rep(BasePop[[1]]$name, 5), collapse = "|")
         warning("Density graphs can't display ShownPop population", call.=FALSE, immediate.=TRUE)
-        # stop("Density graphs can't display ShownPop population", call.=FALSE)
       }
     } else {
       if(type=="histogram") if(length(ShownPop)!=0) if(length(ShownPop[[1]])>0) stop("Histogram graphs can't display ShownPop population", call.=FALSE)
@@ -224,6 +227,7 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
                          densitycolors="-16776961|-13447886|-256|-23296|-65536|",
                          densitycolorslightmode="-16776961|-13447886|-256|-23296|-65536|",
                          densitycolorsdarkmode="-16776961|-13447886|-256|-23296|-65536|",
+                         densitylevel="",
                          densitytrans="asinh")
   if(type!="density") BasePop_default = BasePop_default[1:3]
   BasePop = lapply(BasePop, FUN=function(x) {
@@ -243,6 +247,15 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
       })
       # overwrites fill
       BasePop_default$fill = "true"
+      # checks levelplot
+      if(BasePop_default$densitylevel != "") {
+        densitylevel = strsplit(BasePop_default$densitylevel, split="|", fixed=TRUE)[[1]]
+        assert(densitylevel, len = 4)
+        levelplot.fill = densitylevel[1]; assert(levelplot.fill,alw=c("true","false"))
+        levelplot.lines = densitylevel[2]; assert(levelplot.fill,alw=c("true","false"))
+        levelplot.nlevels = as.integer(densitylevel[3]); levelplot.nlevels=na.omit(levelplot.nlevels[levelplot.nlevels>0]); assert(levelplot.nlevels,len=1)
+        levelplot.lowest = as.numeric(densitylevel[4]); levelplot.lowest=na.omit(levelplot.lowest[levelplot.lowest >=0 & levelplot.lowest < 1]); assert(levelplot.lowest,len=1)
+      }
       # checks transformation
       is_fun = inherits(BasePop_default$densitytrans, what="function") || !inherits(try(suppressWarnings(formals(BasePop_default$densitytrans)), silent = TRUE), what="try-error")
       if(!is_fun) {

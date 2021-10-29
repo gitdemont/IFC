@@ -69,22 +69,24 @@ densCols=function (x, y = NULL, nbin = 128, bandwidth, colramp = colorRampPalett
   mkBreaks <- function(u) u - diff(range(u))/(length(u) - 1)/2
   xbin <- cut(x[, 1], mkBreaks(map$x1), labels = FALSE)
   ybin <- cut(x[, 2], mkBreaks(map$x2), labels = FALSE)
-  dens <- map$fhat[cbind(xbin, ybin)]
   check_fun <- try(suppressWarnings(formals(transformation)), silent = TRUE)
   if(!inherits(check_fun, what="try-error")) {
     if("features" %in% names(check_fun)) {
       args = list(features = x_features)
     } else {
-      args = list(x = dens)
+      args = list(x = map$fhat[cbind(xbin, ybin)])
     }
-    dens <- do.call(what = transformation, args = args)  
+    dens <- do.call(what = transformation, args = args)
   } else {
-    dens = x_features
+    ran <- range(x_features, finite = TRUE)
+    dens <- ((x_features - ran[1]) / diff(ran))
   }
   dens[is.na(dens)] <- 0
   colpal <- cut(dens, length(dens), labels = FALSE)
   cols <- rep(NA_character_, length(select))
   cols[select] <- colramp(length(dens))[colpal]
+  attr(cols, "matrix") <- map
+  attr(cols, "density") <- dens
   cols
 }
 
@@ -407,30 +409,41 @@ convert_to_baseplot = function(obj) {
   Xlim = obj$input$xlim
   Ylim = obj$input$ylim
   disp_n = names(displayed)
+  
+  # common plot args
+  args_plot = list(xlim = obj$input$xlim, ylim = obj$input$ylim, 
+                   main = trunc_string(obj$input$title, obj$input$trunc_labels), 
+                   xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
+                   ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+                   cex.lab = obj$plot$par.settings$par.xlab.text$cex,
+                   cex.main = obj$plot$par.settings$par.main.text$cex,
+                   cex.axis = obj$plot$par.settings$axis.text$cex,
+                   axes = FALSE)
+  
   # draw plot
   if(obj$input$type %in% c("percent", "count")) {
     # 1D
     br = do.breaks(Xlim, obj$input$bin)
-    hist(D[, "x2"], xlim = Xlim, ylim = Ylim, 
-         main = trunc_string(obj$input$title, obj$input$trunc_labels), 
-         xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
-         ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
-         cex.lab = obj$plot$par.settings$par.xlab.text$cex,
-         cex.main = obj$plot$par.settings$par.main.text$cex,
-         cex.axis = obj$plot$par.settings$axis.text$cex,
-         col = "transparent", border = "transparent", freq = obj$input$type == "count",
-         breaks = br, axes = FALSE)
+    do.call(args = c(list(x = D[, "x2"],
+                          border = "transparent",
+                          freq = obj$input$type == "count",
+                          breaks = br,
+                          col = "transparent"),
+                     args_plot),
+            what = hist)
     if(length(displayed) > 0) {
       for(disp in disp_n) {
         if(any(D[,disp]))
-          base_hist_constr( D[D[,disp], "x2"], br = br, type = obj$input$type, 
-                            normalize = obj$input$normalize, 
-                            smooth = obj$input$histogramsmoothingfactor,
-                            fill = basepop[[obj$input$order[disp]]]$fill=="true",
-                            alpha = 0.8, lwd=1,
-                            col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
-                            border = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
-                            lty = c(1,2,3,4,6)[match(basepop[[obj$input$order[disp]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])
+          base_hist_constr(x = D[D[,disp], "x2"],
+                           br = br,
+                           type = obj$input$type, 
+                           normalize = obj$input$normalize, 
+                           smooth = obj$input$histogramsmoothingfactor,
+                           fill = basepop[[obj$input$order[disp]]]$fill=="true",
+                           alpha = 0.8, lwd=1,
+                           col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
+                           border = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
+                           lty = c(1,2,3,4,6)[match(basepop[[obj$input$order[disp]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])
         
       }
     }
@@ -438,41 +451,74 @@ convert_to_baseplot = function(obj) {
     # 2D
     if(obj$input$type == "density") {
       pch=16
-      col = "white"
-      if((nrow(obj$input$data) > 0) && any(obj$input$subset)) if(nrow(obj$input$data[obj$input$subset,]) > 0) 
-        col=densCols(x = structure(obj$input$data$x2[obj$input$subset], features=attr(obj$input$data,"features")),
-                     y = obj$input$data$y2[obj$input$subset],
-                     colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[obj$input$mode]])),
-                     nbin=obj$input$bin,
-                     transformation=obj$input$trans)
-      plot(x = obj$input$data$x2[obj$input$subset],
-           y = obj$input$data$y2[obj$input$subset],
-           xlim = Xlim , ylim = Ylim,
-           main = obj$input$title,
-           xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
-           ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
-           cex.lab = obj$plot$par.settings$par.xlab.text$cex,
-           cex.main = obj$plot$par.settings$par.main.text$cex,
-           cex.axis = obj$plot$par.settings$axis.text$cex,
-           pch = pch, col = col, 
-           axes = FALSE)
+      col=c("black","white")[obj$input$mode]
+      hasdata=FALSE
+      colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[obj$input$mode]]))
+      if((nrow(obj$input$data) > 0) && any(obj$input$subset) && (nrow(obj$input$data[obj$input$subset,]) > 0)) hasdata <- TRUE
+      args_level = basepop[[1]][["densitylevel"]]
+      if((length(args_level) != 0) && (args_level != "") && hasdata) {
+        col = densCols(x = structure(obj$input$data$x2[obj$input$subset], features=attr(obj$input$data,"features")),
+                       y = obj$input$data$y2[obj$input$subset],
+                       colramp=colramp,
+                       nbin=obj$input$bin,
+                       transformation=function(x) {x})
+        args_level = strsplit(args_level,split="|",fixed=TRUE)[[1]]
+        fill = args_level[1] == "true"
+        dolines = args_level[2] == "true"
+        nlevels = as.integer(args_level[3])
+        lowest = as.numeric(args_level[4])
+        z = attr(col, "matrix")
+        dd = attr(col, "density")
+        zz = as.vector(z$fhat)
+        at_probs = seq(from=lowest, to=1, length.out=1+nlevels+(lowest!=0))
+        at = quantile(dd, at_probs, na.rm = TRUE, names = FALSE)
+        do.call(args = c(list(x = obj$input$data$x2[obj$input$subset][1],
+                              y = obj$input$data$y2[obj$input$subset][1],
+                              pch = pch,
+                              col = c("black","white")[obj$input$mode]),
+                         args_plot),
+                what = plot)
+        low=0
+        if(lowest != 0) {
+          low = at[1]; at = at[-1]
+          points(x=obj$input$data$x2[obj$input$subset][dd<low], y=obj$input$data$y2[obj$input$subset][dd<low], pch=".", col=c("white","black")[obj$input$mode]) #col[dd<low])
+        }
+        if(fill) {
+          .filled.contour(x=z$x1, y=z$x2, z$fhat, levels=c(low, at), col=c(NA,colramp(length(at)-1)))
+        } 
+        if(dolines) {
+          if(fill) {
+            contour_cols = c("white","black")[obj$input$mode]
+          } else {
+            contour_cols = colramp(length(at))
+          }
+          contour(x=z$x1, y=z$x2, z$fhat, levels=at, col=contour_cols, drawlabels = FALSE, add = TRUE)
+        }
+      } else {
+        if(hasdata) col = densCols(x = structure(obj$input$data$x2[obj$input$subset], features=attr(obj$input$data,"features")),
+                                   y = obj$input$data$y2[obj$input$subset],
+                                   colramp = colramp,
+                                   nbin = obj$input$bin,
+                                   transformation = obj$input$trans)
+        do.call(args = c(list(x = obj$input$data$x2[obj$input$subset],
+                              y = obj$input$data$y2[obj$input$subset],
+                              pch = pch,
+                              col = col),
+                         args_plot),
+                what = plot)
+      }
+      if((length(args_level) == 0) || (args_level == ""))
       if(!(inherits(obj$input$trans, what="function") || 
            !inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), what="try-error"))) mtext(side = 3, line = 0.25, adj = 0.5, obj$input$trans)
     } else {
       if(obj$input$precision == "full") {
         disp = disp_n[length(displayed)]
-        plot(x = obj$input$data[obj$input$data[,disp], "x2"][obj$input$subset],
-             y = obj$input$data[obj$input$data[,disp], "y2"][obj$input$subset],
-             xlim = Xlim , ylim = Ylim ,
-             main = obj$input$title,
-             xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
-             ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
-             cex.lab = obj$plot$par.settings$par.xlab.text$cex,
-             cex.main = obj$plot$par.settings$par.main.text$cex,
-             cex.axis = obj$plot$par.settings$axis.text$cex,
-             pch = displayed[[disp]]$style, 
-             col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
-             axes = FALSE)
+        do.call(args = c(list(x = obj$input$data[obj$input$data[,disp], "x2"][obj$input$subset],
+                              y = obj$input$data[obj$input$data[,disp], "y2"][obj$input$subset],
+                              pch = displayed[[disp]]$style, 
+                              col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]]),
+                         args_plot),
+                what = plot)
         if(length(displayed) > 1) {
           for(disp in rev(disp_n)[-1]) {
             points(x = obj$input$data[obj$input$data[,disp], "x2"][obj$input$subset],
@@ -489,17 +535,12 @@ convert_to_baseplot = function(obj) {
         })
         pch = sapply(groups, FUN = function(disp) displayed[[disp]]$style)
         col = sapply(groups, FUN = function(disp) displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
-        plot(x = obj$input$data$x2[obj$input$subset],
-             y = obj$input$data$y2[obj$input$subset],
-             xlim = Xlim, ylim = Ylim,
-             main = obj$input$title,
-             xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
-             ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
-             cex.lab = obj$plot$par.settings$par.xlab.text$cex,
-             cex.main = obj$plot$par.settings$par.main.text$cex,
-             cex.axis = obj$plot$par.settings$axis.text$cex,
-             pch = pch, col = col,
-             axes = FALSE)
+        do.call(args = c(list(x = obj$input$data$x2[obj$input$subset],
+                              y = obj$input$data$y2[obj$input$subset],
+                              pch = sapply(groups, FUN = function(disp) displayed[[disp]]$style),
+                              col = sapply(groups, FUN = function(disp) displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])),
+                         args_plot),
+                what = plot)
       }
     }
   }
@@ -564,16 +605,17 @@ convert_to_baseplot = function(obj) {
   if(pkg != "base") plot(foo)
   
   # key
+  args_key = list("topleft",inset = 0.025, 
+                  col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
+                  legend=disp_n,cex=obj$plot$par.settings$add.text$cex * 0.5,bg="#ADADAD99",pt.cex=1,bty="o",box.lty=0)
   if(obj$input$type %in% c("percent", "count")) {
-    legend("topleft", inset = 0.025, 
-           lty = sapply(disp_n, FUN=function(p) c(1,2,3,4,6)[match(basepop[[obj$input$order[p]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))]),
-           col = sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
-           legend = disp_n, cex = obj$plot$par.settings$add.text$cex * 0.5, bg = "#ADADAD99", pt.cex = 1, bty ="o", box.lty = 0)
+    do.call(args=c(list(lty=sapply(disp_n, FUN=function(p) c(1,2,3,4,6)[match(basepop[[obj$input$order[p]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])),
+                   args_key),
+            what=legend)
   } else {
-    legend("topleft", inset = 0.025, 
-           pch = sapply(displayed, FUN=function(p) p$style),
-           col = sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
-           legend = disp_n, cex = obj$plot$par.settings$add.text$cex * 0.5, bg = "#ADADAD99", pt.cex = 1, bty ="o", box.lty = 0)
+    do.call(args=c(list(pch=sapply(displayed, FUN=function(p) p$style)),
+                   args_key),
+            what=legend)
   }
 }
 
