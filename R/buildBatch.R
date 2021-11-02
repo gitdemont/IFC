@@ -193,7 +193,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
   }
   if(!missing(compensation)) {
     if(c_Ext == "daf") {
-      toskip = cpp_scanFirst(fname = compensation, target = "</Assay>", start = 0, end = 0)
+      toskip = cpp_scanFirst(fname = compensation, target = '</Assay>', start = 0, end = 0)
       if(toskip == 0) stop(paste0(compensation, "\ndoes not seem to be well formatted: </Assay> not found")) 
       toskip = toskip + nchar("</Assay>") - 1
       tmp_comp = read_xml(readBin(compensation, what = "raw", n = toskip), options = c("HUGE", "RECOVER", "NOENT", "NOBLANKS", "NSCLEAN"))
@@ -247,7 +247,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
                       return(paste0(gsub("^(.*)\\.rif$","\\1",basename(x$fileName_image)),foo,suffix,".daf"))
                     })), FUN=function(n) xml_new_node(name="statfile", attrs = list(name=n)))))
   if(!missing(analysis)) {
-    target = ifelse(a_Ext=="daf", "</Assay>", "</AssayTemplate>")
+    target = ifelse(a_Ext=="daf", '</Assay>', '</AssayTemplate>')
     toskip = cpp_scanFirst(fname = analysis, target = target, start = 0, end = 0)
     if(toskip == 0) {
       if(a_Ext=="daf") {

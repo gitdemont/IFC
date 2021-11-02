@@ -121,7 +121,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
     write_to = normalizePath(write_to, winslash = "/", mustWork = FALSE)
     if(!overwrite) stop(paste0("file ",write_to," already exists"))
     if(tolower(fileName) == tolower(write_to)) stop("you are trying to overwrite source file which is not allowed")
-    xmlEND_export = cpp_scanFirst(fname = write_to, target = "</Assay>", start = 0, end = 0)
+    xmlEND_export = cpp_scanFirst(fname = write_to, target = '</Assay>', start = 0, end = 0)
     if(xmlEND_export > 0) {
       xml_export = read_xml(readBin(con = write_to, what = "raw", n = xmlEND_export + nchar("</Assay>") - 1), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
       tryCatch({
