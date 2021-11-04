@@ -43,7 +43,7 @@
 #' -- text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
 #' -- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
 #' -- data_end: where to retrieve file text segment end.       Default is list(at = 34, n = 8),\cr
-#' - apply_scale, whether to apply data scaling. Default is TRUE\cr
+#' - apply_scale, whether to apply data scaling. It only applies when fcs file is stored as DATATYPE "I". Default is TRUE.\cr
 #' - first_only, whether to extract only first. Default is FALSE
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other arguments to be passed.
@@ -91,7 +91,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   # we will read offsets from options
   header = sapply(names(options$header), simplify = FALSE, FUN = function(x) {
     seek(toread, options$header[[x]]$at[1] + ifelse(x == "start", 0, at))
-    raw = rawToChar(readBin(toread, what = "raw", n = options$header[[x]]$n))
+    raw = trimws(x = rawToChar(readBin(toread, what = "raw", n = options$header[[x]]$n)))
     if(x != "start") raw = suppressWarnings(na.omit(as.integer(raw) + at))
     raw
   })
@@ -181,7 +181,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
     type = text[["$DATATYPE"]]
     if(!(type %in% c("A","I","F","D"))) stop("non-compatible data type:", type)
     mode = text[["$MODE"]]
-    if(mode != "L") stop("data stored in mode[",mode,"] are not supported")
+    if(mode != "L") stop("data stored in mode[",mode,"] are not supported") # mode "C" and "U" have been deprecated in FCS spe
     n_obj = as.integer(text[["$TOT"]])
     n_par = as.integer(text[["$PAR"]])
     features_names = grep("^\\$P\\d*N$", names(text), value = TRUE)
@@ -276,12 +276,14 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
         bit_r = sapply(text[paste0("$P",1:n_par,"R")], FUN = function(x) suppressWarnings(ceiling(log2(as.integer(x)))))
         bit_m = unlist(lapply(1:n_par, FUN = function(i_par) packBits(as.raw(sapply(1:bit_d, FUN = function(i) i <= min(bit_r[i_par],bit_v[i_par]))))))
       } else {
+        # fcs spe mentions:
+        # No bit mask shall be applied when reading type "F" or "D" data
         if(bit_d != ifelse(type == "F", 32L, 64L)) stop("mismatch between bytes order and bits depth")
         # force bits depth, shall always be max allowed depth
         tmp = bit_v != bit_d
         if(any(tmp)) {
           warning(paste0("some 'PnB' keyword(s) has been forced to ", bit_d, ":\n",
-                                    paste0(paste0("\t- ", names(bit_v)[tmp]), collapse = "\n")), call. = FALSE, immediate. = TRUE)
+                         paste0(paste0("\t- ", names(bit_v)[tmp]), collapse = "\n")), call. = FALSE, immediate. = TRUE)
           for(i in names(bit_v)[tmp]) text[[i]] <- as.character(bit_d)
         }
         bit_v <- bit_d 
@@ -350,21 +352,20 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
     }
     data = structure(data.frame(data, check.names = FALSE), names = feat_names)
     
-    # scale data
-    if(options$apply_scale) {
+    # scale data only for type I, ISAC spe mentions:
+    # When linear scale is used, $PnE/0,0/ shall be entered if the floating point data type is used i.e. "F" or "D"
+    # meaning that no scaling shall be used for type "F" and "D". Besides type "A" is deprecated
+    if(options$apply_scale && (type == "I")) {
       sapply(1:n_par, FUN = function(i) {
         PnE = paste0("$P",i,"E")
         PnR = paste0("$P",i,"R")
         trans = text[[PnE]]
-        ran = as.numeric(text[[PnR]])
-        if((length(trans) == 0 )|| (length(ran) == 0)) return(NULL) # no scaling info
-        trans = as.numeric(strsplit(trans, split = ",", fixed = TRUE)[[1]])
-        if(any(trans == 0)) return(NULL)
-        data[,i] <<- (10^((data[,i]/ran) * trans[1]) * trans[2])
-        text[[PnE]] <<- "0,0"
-        bar = max(data[,i], na.rm = TRUE)
-        if(ceiling(bar) == bar) bar = bar + 1 # if range is 0-1023, PnR = 1024
-        text[[PnR]] <<- num_to_string(ceiling(bar))
+        ran = na.omit(as.numeric(text[[PnR]]))
+        # FIXME should we warn user when scaling values are not valid ?
+        if((length(trans) == 0) || (length(ran) == 0)) return(NULL) # no scaling info
+        trans = na.omit(as.numeric(strsplit(trans, split = ",", fixed = TRUE)[[1]]))
+        if((length(trans) != 2) || any(trans == 0)) return(NULL) # invalid PnE info
+        data[,i] <<- 10^(trans[1] * data[,i] / ran) * trans[2]
         return(NULL)
       })
     }
@@ -832,8 +833,10 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   text2_length = 0
   text_segment2 = lapply(1:L, FUN = function(i) {
     # each time we write /$PnN/<feature_name>/$PnB/32/$PnE/0, 0/$PnR/<feature_max_value>
+    # since we write type "F" this has no importance
     bar = max(features[, i], na.rm = TRUE)
-    if(ceiling(bar) == bar) bar = bar + 1
+    # if(ceiling(bar) == bar) bar = bar + 1
+    # FIXME shall we use 262144, as it is commonly used ?
     foo = c("", paste0("$P",i,"N"), N[i], paste0("$P",i,"B"), "32", paste0("$P",i,"E"), "0, 0", paste0("$P",i,"R"), ceiling(bar))
     foo = gsub(pattern = delimiter, x = foo, replacement = delimiter_esc, fixed=TRUE)
     foo = charToRaw(paste(foo, collapse = delimiter))
@@ -877,7 +880,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                                                   gsub(delimiter, delimiter_esc, text_segment1[[i]], fixed=TRUE)), # delimiter if present in value should be escaped
                                                 collapse = delimiter)))
                        }), text2_length,    1, # 1 for additional delimiters, to terminate text2
-                                           57  # 57 for size of header
+                                           57  # 57 for end of header
   ))
   
   # compute missing offsets 

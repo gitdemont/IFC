@@ -26,7 +26,7 @@ readFCS(
 -- text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
 -- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
 -- data_end: where to retrieve file text segment end.       Default is list(at = 34, n = 8),\cr
-- apply_scale, whether to apply data scaling. Default is TRUE\cr
+- apply_scale, whether to apply data scaling. It only applies when fcs file is stored as DATATYPE "I". Default is TRUE.\cr
 - first_only, whether to extract only first. Default is FALSE}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
