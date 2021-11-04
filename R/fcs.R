@@ -142,8 +142,9 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   extra_off2 = suppressWarnings(na.omit(as.integer(text[["$ENDSTEXT"]])   + at))
   if((length(extra_off1) != 0) &&
      (length(extra_off2) != 0) &&
-     !(extra_off1 == off1 && extra_off2 == off2) 
-     && (extra_off2 > extra_off1)) {
+     (extra_off1 != off1) && 
+     (extra_off2 != off2) &&
+     (extra_off2 > extra_off1)) {
     # we apply same process as for previously (see text segment)
     seek(toread, extra_off1)
     extra_text = rawToChar(readBin(toread, what = "raw", n = extra_off2 - extra_off1))
@@ -154,7 +155,9 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
     id_val = seq(from = 2, to = length(extra_text), by = 2)
     id_key = id_val-1
     extra_text = structure(as.list(extra_text[id_val]), names = extra_text[id_key])
-    text = c(text, extra_text)
+    tmp = names(extra_text) %in% names(text)
+    if(any(tmp)) warning("supplemental text segment contains keyword(s) already found in text", call. = FALSE, immediate. = TRUE)
+    text = c(text, extra_text[!tmp])
   }
   if(!any("$FIL" == names(text))) text[["$FIL"]] <- fileName
   text[["$FIL"]] <- basename(text[["$FIL"]])
