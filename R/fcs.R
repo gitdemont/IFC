@@ -74,35 +74,55 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
   title_progress = basename(fileName)
   
+  # ensure options names are valid
+  if(!identical(sort(names(options)), c("apply_scale", "first_only", "header"))) stop("'options' should be a named list containing \"header\", \"apply_scale\", and \"first_only\" entries")
+  if(!identical(sort(names(options$header)), c("data_beg", "data_end", "start", "text_beg", "text_end"))) stop("'options$header' should be a named list containing \"start\", \"text_beg\", \"text_end\", \"data_beg\", and \"data_end\" entries")
+  if(!(all(sapply(options$header, FUN = function(x) identical(sort(names(x)), c("at","n")))))) stop("each 'options$header' members should be a named list containing \"at\" and \"n\" entries")
+  
+  # ensure start at is valid
+  at = suppressWarnings(as.integer(options$header[["start"]]$at[1]))
+  at = na.omit(at[at >=0 & at < file.size(fileName)])
+  assert(at, len=1)
+  
+  # create connection binary reading
   toread = file(description = fileName, open = "rb")
   on.exit(close(toread), add = TRUE)
   
   # we will read offsets from options
   header = sapply(names(options$header), simplify = FALSE, FUN = function(x) {
-    seek(toread, options$header[[x]]$at[1] + ifelse(x == "start", 0, options$header[["start"]]$at[1]))
+    seek(toread, options$header[[x]]$at[1] + ifelse(x == "start", 0, at))
     raw = rawToChar(readBin(toread, what = "raw", n = options$header[[x]]$n))
-    if(x != "start") raw = suppressWarnings(na.omit(as.integer(raw)) + options$header[["start"]]$at[1])
+    if(x != "start") raw = suppressWarnings(na.omit(as.integer(raw) + at))
     raw
   })
+  
+  # FIXME, should we validate each header entry ?
+  # e.g. header$start == FCSx.x
+  # and so on ...
   
   # check if we can find options arguments in dots
   if("first_only" %in% names(dots)) options$first_only <- dots$first_only
   if("apply_scale" %in% names(dots)) options$apply_scale <- dots$apply_scale
   
   # now we can extract text segment,
-  # the primary text segment has to be in  within bytes 58 - 99,999,999
+  # the primary text segment has to be in within bytes 58 - 99,999,999
   off1 = header$text_beg
   off2 = header$text_end
   seek(toread, off1)
   # first byte of text segment has to be the delimiter
   delimiter = rawToChar(readBin(toread, what = "raw", n = 1))
-  text = rawToChar(readBin(toread, what = "raw", n = abs(off2 - off1)))
+  text = rawToChar(readBin(toread, what = "raw", n = off2 - off1))
   # when same character as delimiter is used within keyword-value pair it has to be escaped (repeated twice)
   # we generate a 20 random characters delim_esc that does not contain delimiter
-  delim_esc = random_name(n = 20)
-  delim_esc = strsplit(x = delim_esc, split = delimiter, fixed = TRUE)[[1]]
-  delim_esc = delim_esc[delim_esc!=""]
-  delim_esc = paste0(delim_esc, collapse="")
+  # we also ensure that this delim is not found elsewhere in the file
+  found = 1
+  while(found) {
+    delim_esc = random_name(n = 20)
+    delim_esc = strsplit(x = delim_esc, split = delimiter, fixed = TRUE)[[1]]
+    delim_esc = delim_esc[delim_esc!=""]
+    delim_esc = paste0(delim_esc, collapse="")
+    found = cpp_scanFirst(fileName, delim_esc)
+  }
   # we 1st look at double delimiter instance and substitute it with delim_esc 
   text = gsub(pattern = paste0(delimiter,delimiter), replacement = delim_esc, x = text, fixed = TRUE)
   # then text is split with delimiter
@@ -115,17 +135,18 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   id_val = seq(from = 2, to = length(text), by = 2)
   id_key = id_val-1
   text = structure(as.list(text[id_val]), names = text[id_key])
+  
   # now we can extract additional text segment
   # we will use text to extract supplemental text segment offsets
-  extra_off1 = suppressWarnings(as.integer(text[["$BEGINSTEXT"]])) + options$header[["start"]]$at[1]
-  extra_off2 = suppressWarnings(as.integer(text[["$ENDSTEXT"]])) + options$header[["start"]]$at[1]
+  extra_off1 = suppressWarnings(na.omit(as.integer(text[["$BEGINSTEXT"]]) + at))
+  extra_off2 = suppressWarnings(na.omit(as.integer(text[["$ENDSTEXT"]])   + at))
   if((length(extra_off1) != 0) &&
      (length(extra_off2) != 0) &&
      !(extra_off1 == off1 && extra_off2 == off2) 
-     && (extra_off2 != extra_off1)) {
+     && (extra_off2 > extra_off1)) {
     # we apply same process as for previously (see text segment)
     seek(toread, extra_off1)
-    extra_text = rawToChar(readBin(toread, what = "raw", n = abs(extra_off2 - extra_off1)))
+    extra_text = rawToChar(readBin(toread, what = "raw", n = extra_off2 - extra_off1))
     extra_text = gsub(pattern = paste0(delimiter,delimiter), replacement = delim_esc, x = extra_text, fixed = TRUE)
     extra_text = strsplit(x = extra_text, split = delimiter, fixed = TRUE)[[1]]
     while(trimws(extra_text[1]) == "") { extra_text = extra_text[-1] }
@@ -142,16 +163,16 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   
   # now we can extract data segment
   # we will use text to extract data segment offsets
-  off1 = suppressWarnings(na.omit(as.integer(text[["$BEGINDATA"]]))) + options$header[["start"]]$at[1]
-  off2 = suppressWarnings(na.omit(as.integer(text[["$ENDDATA"]]))) + options$header[["start"]]$at[1]
+  off1 = suppressWarnings(na.omit(as.integer(text[["$BEGINDATA"]]) + at))
+  off2 = suppressWarnings(na.omit(as.integer(text[["$ENDDATA"]])   + at))
   # if not found in text despite being mandatory, we will use header
   if(length(off1) == 0) off1 = header$data_beg
   if(length(off2) == 0) off2 = header$data_end
 
-  data_bytes = abs(off2- off1) + 1
+  data_bytes = off2 - off1 + 1
   # prepare default returned value for data
   data = data.frame()
-  if(off2 != off1) {
+  if(off2 > off1) {
     seek(toread, off1)
     # retrieve info to extract data
     type = text[["$DATATYPE"]]
@@ -338,7 +359,9 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
         if(any(trans == 0)) return(NULL)
         data[,i] <<- (10^((data[,i]/ran) * trans[1]) * trans[2])
         text[[PnE]] <<- "0,0"
-        text[[PnR]] <<- as.character(ceiling(max(data[,i], na.rm = TRUE)))
+        bar = max(data[,i], na.rm = TRUE)
+        if(ceiling(bar) == bar) bar = bar + 1 # if range is 0-1023, PnR = 1024
+        text[[PnR]] <<- num_to_string(ceiling(bar))
         return(NULL)
       })
     }
@@ -359,9 +382,9 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
                   text=text, 
                   data=data))
   
-  # extract additionnal FCS set if any
+  # extract additional FCS set if any
   more = integer()
-  if(!options$first_only) more = suppressWarnings(na.omit(as.integer(text[["$NEXTDATA"]]))) + options$header[["start"]]$at[1]
+  if(!options$first_only) more = suppressWarnings(na.omit(as.integer(text[["$NEXTDATA"]]) + at))
   if((length(more) != 0) && !(more %in% options$header$start$at)) {
     options$header$start$at <- c(more, options$header$start$at)
     ans = c(ans, readFCS(fileName = fileName, options = options,
@@ -806,7 +829,9 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   text2_length = 0
   text_segment2 = lapply(1:L, FUN = function(i) {
     # each time we write /$PnN/<feature_name>/$PnB/32/$PnE/0, 0/$PnR/<feature_max_value>
-    foo = c("", paste0("$P",i,"N"), N[i], paste0("$P",i,"B"), "32", paste0("$P",i,"E"), "0, 0", paste0("$P",i,"R"), ceiling(max(features[, i], na.rm = TRUE)))
+    bar = max(features[, i], na.rm = TRUE)
+    if(ceiling(bar) == bar) bar = bar + 1
+    foo = c("", paste0("$P",i,"N"), N[i], paste0("$P",i,"B"), "32", paste0("$P",i,"E"), "0, 0", paste0("$P",i,"R"), ceiling(bar))
     foo = gsub(pattern = delimiter, x = foo, replacement = delimiter_esc, fixed=TRUE)
     foo = charToRaw(paste(foo, collapse = delimiter))
     text2_length <<- text2_length + length(foo)
