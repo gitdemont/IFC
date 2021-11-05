@@ -2,7 +2,7 @@
 % Please edit documentation in R/strings_utils.R
 \name{remove_ext}
 \alias{remove_ext}
-\title{File Extenstion Removal}
+\title{File Extension Removal}
 \usage{
 remove_ext(x)
 }

@@ -40,7 +40,7 @@ trunc_string = function(x, n=22) {
   return(x)
 }
 
-#' @title File Extenstion Removal
+#' @title File Extension Removal
 #' @description Remove file extension from file path
 #' @param x a file path
 #' @details file extension will be removed
@@ -49,6 +49,35 @@ remove_ext <- function(x) {
   x = as.character(x)
   ext = getFileExt(x)
   gsub(paste0("\\.",ext,"$"), "", x)
+}
+
+#' @title Reverse String
+#' @description Reverses string.
+#' @param x a character vector.
+#' @keywords internal
+rev_string <- function(x) {
+  if(length(x) == 0) return(x)
+  xx <- strsplit(as.character(x), split = "", fixed = TRUE)
+  sapply(xx, FUN = function(i) paste0(rev(i), collapse=""))
+}
+
+#' @title FCS Name Parser
+#' @description 
+#' Separates names and alt-names from FCS features names.
+#' @param x a character vector of FCS features names.
+#' @details when created FCS features names are formatted as 'PnN < PnS >'.
+#' The current function allows the separation between PnN and PnS.
+#' @return a 2 columns data.frame of names (PnN) and alt-names (PnS).
+#' @keywords internal
+parseFCSname <- function(x) {
+  if(length(x) == 0) return(structure(as.data.frame(matrix(character(), ncol=2, nrow=0)), names = c("PnN", "PnS")))
+  foo = strsplit(rev_string(x), split = " < ", fixed = TRUE)
+  structure(as.data.frame(t(sapply(foo, FUN = function(x) {
+    if(length(x) < 2) return(c(rev_string(x), ""))
+    bar = c(paste0(x[-1], collapse=" < "), sub(pattern = "> ", "", x[1]))
+    if(bar[1] == bar[2]) return(c(rev_string(bar[1]), ""))
+    rev_string(bar)
+  })), stringsAsFactors = FALSE), names = c("PnN", "PnS"))
 }
 
 #' @title Special Character Replacement
