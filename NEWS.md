@@ -9,7 +9,8 @@
 #### This leads to the following visible changes for the user
 *buildGraph gains a new 'densitylevel' entry in BasePop controlling `levelplot` when 'type' is "density"*
 
-*when fcs is imported $FIL, $FCSversion, and $DATASET are automatically filled*
+*when fcs is imported @IFC_date, @IFC_file, @IFC_fileName, @IFC_dataset, @IFC_version, and @IFC_FCSversion are automatically filled. $FIL is not filled if found. $CYT is not filled if found except if user requires it.*
+
 
 ## 0.1.2
 - CRAN release

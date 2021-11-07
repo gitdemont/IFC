@@ -160,9 +160,11 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
     text = c(text, extra_text[!tmp])
   }
   if(!any("$FIL" == names(text))) text[["$FIL"]] <- fileName
-  text[["$FIL"]] <- basename(text[["$FIL"]])
-  text[["$FCSversion"]] <- header$start
-  text[["$DATASET"]] <- length(options$header$start$at)
+  text[["@IFC_file"]] <- basename(text[["$FIL"]]) # internal filename if found, otherwise fileName
+  text[["@IFC_fileName"]] <- fileName
+  text[["@IFC_dataset"]] <- length(options$header$start$at)
+  text[["@IFC_version"]] <- paste0(unlist(packageVersion("IFC")), collapse = ".")
+  text[["@IFC_FCSversion"]] <- header$start
   
   # now we can extract data segment
   # we will use text to extract data segment offsets
@@ -443,13 +445,13 @@ FCS_merge_dataset <- function(fcs, ...) {
     lapply(1:L, FUN = function(i) {
       if(display_progress) setPB(pb, value = i, title = "FCS", label = "Merging Data Sets")
       dat = fcs[[i]]$data
-      if(!any("import_file" == names(dat))) dat = cbind.data.frame(dat, "import_file"=rep(fcs[[i]]$text[["$FIL"]], nrow(dat)))
-      if(!any("import_subfile" == names(dat))) dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["$DATASET"]], nrow(dat)))
+      if(!any("import_file" == names(dat))) dat = cbind.data.frame(dat, "import_file"=rep(fcs[[i]]$text[["@IFC_file"]], nrow(dat)))
+      if(!any("import_subfile" == names(dat))) dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["@IFC_dataset"]], nrow(dat)))
       dat
     }))
   } else {
     features = fcs[[1]]$data
-    if(!any("import_file" == names(features))) features = cbind.data.frame(features, "import_file"=rep(fcs[[1]]$text[["$FIL"]], nrow(features)))
+    if(!any("import_file" == names(features))) features = cbind.data.frame(features, "import_file"=rep(fcs[[1]]$text[["@IFC_file"]], nrow(features)))
     if(!any("import_subfile" == names(features))) features = cbind.data.frame(features, "import_subfile"=rep(1, nrow(features)))
   }
   
@@ -500,13 +502,13 @@ FCS_merge_sample <- function(fcs, ...) {
     lapply(1:L, FUN = function(i) {
       if(display_progress) setPB(pb, value = i, title = "FCS", label = "Merging Samples")
       dat = fcs[[i]]$data
-      if(!any("import_file" == names(dat))) dat = cbind.data.frame(dat, "import_file"=rep(fcs[[i]]$text[["$FIL"]], nrow(dat)))
-      if(!any("import_subfile" == names(dat))) dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["$DATASET"]], nrow(dat)))
+      if(!any("import_file" == names(dat))) dat = cbind.data.frame(dat, "import_file"=rep(fcs[[i]]$text[["@IFC_file"]], nrow(dat)))
+      if(!any("import_subfile" == names(dat))) dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["@IFC_dataset"]], nrow(dat)))
       dat
     }))
   } else {
     features = fcs[[1]]$data
-    if(!any("import_file" == names(features))) features = cbind.data.frame(features, "import_file"=rep(fcs[[1]]$text[["$FIL"]], nrow(features)))
+    if(!any("import_file" == names(features))) features = cbind.data.frame(features, "import_file"=rep(fcs[[1]]$text[["@IFC_file"]], nrow(features)))
     if(!any("import_subfile" == names(features))) features = cbind.data.frame(features, "import_subfile"=rep(1, nrow(features)))
   }
   
@@ -575,7 +577,7 @@ FCS_to_data <- function(fcs, ...) {
   
   identif = names(features) %in% c("import_file", "import_subfile")
   idx = features[, identif, drop = FALSE]
-  if(!"import_file" %in% names(idx)) idx$import_file = fcs[[1]][["$FIL"]]
+  if(!"import_file" %in% names(idx)) idx$import_file = fcs[[1]][["@IFC_file"]]
   if(!"import_subfile" %in% names(idx)) idx$import_subfile = 1
   obj_count = as.integer(nrow(features))
   
@@ -611,12 +613,12 @@ FCS_to_data <- function(fcs, ...) {
     return(tmp)
   })
   FCS_version = sapply(fcs, FUN = function(x) {
-    tmp = x$text$`$FCSversion`
+    tmp = x$text[["@IFC_FCSversion"]]
     if((length(tmp) == 0) || (tmp == "")) return("unk")
     return(tmp)
   })
   spillover = lapply(fcs, FUN = function(x) {
-    tmp = x$text[c("SPILL","spillover","$SPILLOVER")]
+    tmp = x$text[c("$SPILLOVER","SPILL","spillover")]
     tmp = tmp[sapply(tmp, length) != 0]
     if(length(tmp) == 0) return(NULL)
     return(tmp)
@@ -846,23 +848,26 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   cyt = obj$description$FCS$instrument
   if((length(cyt) == 0 ) || (cyt == "")) cyt = "Image Stream"
   if(!missing(cytometer)) cyt = cytometer
+  if(length(obj$fileName_image) == 0) obj$fileName_image = ""
   
-  # init text segment with mandatory + custom parameters
-  text_segment1 = list("$BEGINSTEXT" = "58",
-                       "$BEGINANALYSIS" = "0",
-                       "$ENDANALYSIS" = "0",
-                       "$BYTEORD" = c("4,3,2,1", "1,2,3,4")[(.Platform$endian == "little") + 1],
-                       "$DATATYPE" = "F",
-                       "$MODE" = "L",
-                       "$NEXTDATA" = "0",
-                       "$TOT" = obj$description$ID$objcount,
+  # init text segment with mandatory + custom parameters #* = mandatory
+  text_segment1 = list("$BEGINSTEXT" = "0",                                                      #*
+                       "$ENDSTEXT" = "0",                                                        #*
+                       "$BEGINANALYSIS" = "0",                                                   #*
+                       "$ENDANALYSIS" = "0",                                                     #*
+                       "$BYTEORD" = c("4,3,2,1", "1,2,3,4")[(.Platform$endian == "little") + 1], #*
+                       "$DATATYPE" = "F",                                                        #*
+                       "$MODE" = "L",                                                            #*
+                       "$NEXTDATA" = "0",                                                        #*
+                       "$TOT" = obj$description$ID$objcount,                                     #*
+                       "$PAR" = L,                                                               #*
+                       #* BEGINDATA and ENDDATA are also mandatory and will be added afterwards
+                       #* PnB, PnE, PnN, and PnR are also mandatory and are part of text_segment2
                        "$CYT" = cyt,
-                       "$FIL" = obj$fileName_image,
-                       "$PAR" = L,
-                       "$FILENAME" = write_to,
-                       "$GUID" = basename(write_to),
+                       "@IFC_fileName" = obj$fileName,
+                       "@IFC_fileName_image" = obj$fileName_image,
                        "@IFC_version" = pkg_ver,
-                       "@date" = now
+                       "@IFC_date" = now
   )
   
   
@@ -871,8 +876,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   
   # determines length of mandatory param
   N = names(text_segment1)
-  text1_length = sum(c(nchar("$ENDSTEXT"),  2, # 2 for additional delimiters
-                       nchar("$BEGINDATA"), 2, # 2 for additional delimiters
+  text1_length = sum(c(nchar("$BEGINDATA"), 2, # 2 for additional delimiters
                        nchar("$ENDDATA"),   2, # 2 for additional delimiters, there is already one at the beg of text2
                        sapply(1:length(text_segment1), FUN = function(i) {
                          length(charToRaw(paste(c("",
@@ -892,14 +896,13 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
     if(data_beg >= 1e9) data_beg = 0
     data_end = x + data_length - 1
     if(data_end >= 1e9) data_end = 0
-    ans = text_length + nchar(x) + nchar(data_beg) + nchar(data_end)
+    ans = text_length + nchar(data_beg) + nchar(data_end) 
     if(ans != x) ans = f(x = ans, text_length = text_length)
     return(ans)
   }
   text_end = f(x = text1_length, text_length = text1_length)
   if(text_end >= 1e9) stop("primary text segment is too big")
   header$text_end = sprintf("%8i", text_end)
-  text_segment1 = c(text_segment1, list("$ENDSTEXT" = as.character(text_end)))
   
   # BEGINDATA
   data_beg = text_end + 1 # +1 because data start just after text segment end
