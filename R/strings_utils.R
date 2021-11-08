@@ -73,9 +73,8 @@ parseFCSname <- function(x) {
   if(length(x) == 0) return(structure(as.data.frame(matrix(character(), ncol=2, nrow=0)), names = c("PnN", "PnS")))
   foo = strsplit(rev_string(x), split = " < ", fixed = TRUE)
   structure(as.data.frame(t(sapply(foo, FUN = function(x) {
-    if(length(x) < 2) return(c(rev_string(x), ""))
-    bar = c(paste0(x[-1], collapse=" < "), sub(pattern = "> ", "", x[1]))
-    if(bar[1] == bar[2]) return(c(rev_string(bar[1]), ""))
+    if((length(x) < 2) || (substr(x[1], 1, 2) != "> ")) return(c(rev_string(paste0(x, collapse = " < ")), ""))
+    bar = c(paste0(x[-1], collapse=" < "), substr(x[1], 3, nchar(x[1])))
     rev_string(bar)
   })), stringsAsFactors = FALSE), names = c("PnN", "PnS"))
 }
