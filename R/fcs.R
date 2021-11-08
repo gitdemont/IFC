@@ -523,6 +523,28 @@ FCS_merge_sample <- function(fcs, ...) {
   ans
 }
 
+#' @title Spillover Converter
+#' @description
+#' Converts spillover matrix to spillover keyword and reversely
+#' @param spillover either a spillover matrix or a spillover keyword
+#' @return if 'spillover' is a matrix, it returns a string. If 'spillover' is a string, it returns a matrix. In all cases if spillover is of length 0, it will return NULL.
+#' @keywords internal
+convert_spillover <- function(spillover) {
+  if(length(spillover) == 0) return(NULL)
+  if(is.matrix(spillover)) {
+    if(length(rownames(spillover)) == 0) stop("'spillover' should have rownames")
+    feat_n = parseFCSname(rownames(spillover))
+    return(paste(ncol(spillover), paste0(feat_n$PnN, collapse=","), paste0(as.vector(spillover), collapse=","), sep=","))
+  } else {
+    foo = strsplit(spillover, split=",", fixed=TRUE)[[1]]
+    feat_l = as.integer(foo[1])
+    feat_n = foo[2:(feat_l+1)]
+    vals = foo[-(1:(feat_l+1))]
+    if(length(vals) != feat_l^2) stop("'spillover' keyword does not fulfill fcs specifications")
+    return(matrix(as.numeric(vals), ncol=feat_l, nrow=feat_l, dimnames=list(NULL, feat_n)))
+  }
+}
+
 #' @title FCS Object Converter
 #' @description
 #' Converts FCS data object to `IFC_data` object.
@@ -623,8 +645,16 @@ FCS_to_data <- function(fcs, ...) {
     if(length(tmp) == 0) return(NULL)
     return(tmp)
   })
-  if(length(spillover) == 1) spillover = spillover[[1]]
-  if(length(spillover) == 1) spillover = spillover[[1]]
+  if(is.list(spillover) && length(spillover) == 1) spillover = spillover[[1]]
+  if(is.list(spillover) && length(spillover) == 1) spillover = spillover[[1]]
+  if(!is.list(spillover) && length(spillover) == 1 && spillover == "") spillover = NULL
+  if(length(spillover) != 0) {
+    features_names = parseFCSname(names(features))
+    spillover = convert_spillover(spillover)
+    rownames(spillover) <- names(features)[apply(sapply(colnames(spillover), FUN = function(x) {
+      x==features_names$PnN
+    }), 2, FUN = function(i) which(i)[1])]
+  }
   # checksum = sapply(fcs, FUN = function(x) {
   #   tmp = x$description[[1]]$`$ENDDATA`
   #   if((length(tmp) == 0) || (tmp == "")) return("unk")
