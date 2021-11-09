@@ -349,6 +349,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
       N = text[[paste0("$P",i,"N")]]
       S = text[[paste0("$P",i,"S")]]
       if(length(S) != 0) return(paste(N , paste0("< ",S," >")))
+      return(N)
     })
     data = structure(data.frame(data, check.names = FALSE), names = feat_names)
     
