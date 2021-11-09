@@ -344,14 +344,12 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
     
     # convert data to data.frame
     data = matrix(data, ncol = n_par, nrow = n_obj, byrow = TRUE)
+    feat_names = sapply(1:n_par, FUN = function(i) {
+      N = text[[paste0("$P",1:n_par,"N")]]
+      S = text[[paste0("$P",1:n_par,"S")]]
+      if(length(S) != 0) return(paste(N , paste0("< ",S," >")))
+    })
     
-    feat_names = unlist(text[paste0("$P",1:n_par,"N")])
-    feat_alt = unlist(text[paste0("$P",1:n_par,"S")])
-    if(length(feat_names) == length(feat_alt)) {
-      if(!identical(unname(feat_names), unname(feat_alt))) {
-        feat_names = paste(feat_names ,paste0("< ",feat_alt," >"))
-      }
-    }
     data = structure(data.frame(data, check.names = FALSE), names = feat_names)
     
     # scale data only for type I, ISAC spe mentions:
@@ -866,12 +864,13 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   L = length(N)
   text2_length = 0
   text_segment2 = lapply(1:L, FUN = function(i) {
-    # each time we write /$PnN/<feature_name>/$PnS/<feature_alt-name>/$PnB/32/$PnE/0, 0/$PnR/<feature_max_value>
+    # each time we write /$PnN/<feature_name>/$PnB/32/$PnE/0, 0/$PnR/<feature_max_value> and /$PnS/<feature_alt-name> if PnS is not empty
     # since we write type "F" this has no importance
     bar = max(features[, i], na.rm = TRUE)
     # if(ceiling(bar) == bar) bar = bar + 1
     # FIXME shall we use 262144, as it is commonly used ?
-    foo = c("", paste0("$P",i,"N"), N[i], paste0("$P",i,"S"), S[i], paste0("$P",i,"B"), "32", paste0("$P",i,"E"), "0, 0", paste0("$P",i,"R"), ceiling(bar))
+    foo = c("", paste0("$P",i,"N"), N[i], paste0("$P",i,"B"), "32", paste0("$P",i,"E"), "0, 0", paste0("$P",i,"R"), ceiling(bar))
+    if(S[i] != "") foo = c(foo, paste0("$P",i,"S"), S[i])
     foo = gsub(pattern = delimiter, x = foo, replacement = delimiter_esc, fixed=TRUE)
     foo = charToRaw(paste(foo, collapse = delimiter))
     text2_length <<- text2_length + length(foo)
