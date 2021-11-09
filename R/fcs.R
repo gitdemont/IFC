@@ -860,16 +860,18 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   features = as.data.frame(apply(features, 2, FUN = function(x) {x[!is.finite(x)] <- 0; x}), stringsAsFactors = TRUE)
   
   # determines length of text_segment2
-  N = names(features)
+  feat_names = parseFCSname(names(features))
+  N = feat_names$PnN
+  S = feat_names$PnS
   L = length(N)
   text2_length = 0
   text_segment2 = lapply(1:L, FUN = function(i) {
-    # each time we write /$PnN/<feature_name>/$PnB/32/$PnE/0, 0/$PnR/<feature_max_value>
+    # each time we write /$PnN/<feature_name>/$PnS/<feature_alt-name>/$PnB/32/$PnE/0, 0/$PnR/<feature_max_value>
     # since we write type "F" this has no importance
     bar = max(features[, i], na.rm = TRUE)
     # if(ceiling(bar) == bar) bar = bar + 1
     # FIXME shall we use 262144, as it is commonly used ?
-    foo = c("", paste0("$P",i,"N"), N[i], paste0("$P",i,"B"), "32", paste0("$P",i,"E"), "0, 0", paste0("$P",i,"R"), ceiling(bar))
+    foo = c("", paste0("$P",i,"N"), N[i], paste0("$P",i,"S"), S[i], paste0("$P",i,"B"), "32", paste0("$P",i,"E"), "0, 0", paste0("$P",i,"R"), ceiling(bar))
     foo = gsub(pattern = delimiter, x = foo, replacement = delimiter_esc, fixed=TRUE)
     foo = charToRaw(paste(foo, collapse = delimiter))
     text2_length <<- text2_length + length(foo)
@@ -903,8 +905,8 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   # adds extra keywords from ...
   # removes keywords that are already in text_segment1 or that are named session or that have no name
   extra_keywords = setdiff(names(dots), c(names(text_segment1), "session", ""))
-  # removes keywords that are already in text_segment2 ($PnN, $PnB, $PnE, $PnR)
-  extra_keywords = grep("^\\$P\\d.*[N|B|E|R|]$", extra_keywords, value = TRUE, invert = TRUE)
+  # removes keywords that are already in text_segment2 ($PnN, $PnS, $PnB, $PnE, $PnR)
+  extra_keywords = grep("^\\$P\\d.*[N|S|B|E|R|]$", extra_keywords, value = TRUE, invert = TRUE)
   # gets keywords in dots
   extra_keywords = dots[extra_keywords]
   # removes keywords whose values are NULL
