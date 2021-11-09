@@ -186,7 +186,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
     if(mode != "L") stop("data stored in mode[",mode,"] are not supported") # mode "C" and "U" have been deprecated in FCS spe
     n_obj = as.integer(text[["$TOT"]])
     n_par = as.integer(text[["$PAR"]])
-    features_names = grep("^\\$P\\d*N$", names(text), value = TRUE)
+    features_names = grep("^\\$P\\d.*N$", names(text), value = TRUE)
     
     # hereafter we create several bit_* variables
     # bit_v : PnB, bits depth of the value
