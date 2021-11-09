@@ -857,6 +857,8 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   # need to replace non finite values by something; IDEAS is using 0 so we use 0 also
   # TODO maybe replace -Inf by features min and +Inf by features max ?
   features = as.data.frame(apply(features, 2, FUN = function(x) {x[!is.finite(x)] <- 0; x}), stringsAsFactors = TRUE)
+  # comma (=,) is not allowed in features names according to fcs specification so it is replaced by _
+  names(features) = gsub(",","_",names(features),fixed=TRUE)
   
   # determines length of text_segment2
   feat_names = parseFCSname(names(features))
