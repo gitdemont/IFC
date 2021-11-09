@@ -774,9 +774,9 @@ ExtractFromFCS <- function(fileName, ...) {
 #' Otherwise, you will get an error saying that overwriting source file is not allowed.\cr
 #' Note also that an original file will never be overwritten.
 #' @param delimiter an ASCII character to separate the FCS keyword-value pairs. Default is : "/".
-#' @param cytometer string, if provided it to use to fill $CYT keyword.\cr
-#' However, when missing it will be filled with obj$description$FCS$instrument if found, otherwise "Image Stream" will be used.
-#' @param ... other arguments to be passed.
+#' @param cytometer string, if provided it will be used to fill $CYT keyword.\cr
+#' However, when missing $CYT will be filled with obj$description$FCS$instrument if found, or "Image Stream" otherwise.
+#' @param ... other arguments to be passed. keyword-value pairs can be passed here.
 #' @return invisibly returns full path of exported file.
 #' @export
 ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytometer = "Image Stream", ...) {
@@ -900,8 +900,19 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                        "@IFC_date" = now
   )
   
+  # adds extra keywords from ...
+  # removes keywords that are already in text_segment1 or that are named session or that have no name
+  extra_keywords = setdiff(names(dots), c(names(text_segment1, "session", "")))
+  # removes keywords that are already in text_segment2 ($PnN, $PnB, $PnE, $PnR)
+  extra_keywords = grep("^\\$P\\d.*[N|B|E|R|]$", extra_keywords, value = TRUE, invert = TRUE)
+  # gets keywords in dots
+  extra_keywords = dots[extra_keywords]
+  # removes keywords whose values are NULL
+  extra_keywords = extra_keywords[sapply(extra_keywords, length) != 0]
+  # adds to text_segment1
+  text_segment1 = c(text_segment1, extra_keywords)
   
-  #determines length of data
+  # determines length of data
   data_length = 4 * L * nrow(features)
   
   # determines length of mandatory param

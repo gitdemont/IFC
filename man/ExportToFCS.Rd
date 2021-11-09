@@ -31,10 +31,10 @@ Note also that an original file will never be overwritten.}
 
 \item{delimiter}{an ASCII character to separate the FCS keyword-value pairs. Default is : "/".}
 
-\item{cytometer}{string, if provided it to use to fill $CYT keyword.\cr
-However, when missing it will be filled with obj$description$FCS$instrument if found, otherwise "Image Stream" will be used.}
+\item{cytometer}{string, if provided it will be used to fill $CYT keyword.\cr
+However, when missing $CYT will be filled with obj$description$FCS$instrument if found, or "Image Stream" otherwise.}
 
-\item{...}{other arguments to be passed.}
+\item{...}{other arguments to be passed. keyword-value pairs can be passed here.}
 }
 \value{
 invisibly returns full path of exported file.
