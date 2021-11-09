@@ -344,18 +344,18 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
     
     # convert data to data.frame
     data = matrix(data, ncol = n_par, nrow = n_obj, byrow = TRUE)
-    feat_names = sapply(1:n_par, FUN = function(i) {
-      N = text[[paste0("$P",1:n_par,"N")]]
-      S = text[[paste0("$P",1:n_par,"S")]]
+    feat_names = NULL
+    if(n_par > 0) feat_names = sapply(1:n_par, FUN = function(i) {
+      N = text[[paste0("$P",i,"N")]]
+      S = text[[paste0("$P",i,"S")]]
       if(length(S) != 0) return(paste(N , paste0("< ",S," >")))
     })
-    
     data = structure(data.frame(data, check.names = FALSE), names = feat_names)
     
     # scale data only for type I, ISAC spe mentions:
     # When linear scale is used, $PnE/0,0/ shall be entered if the floating point data type is used i.e. "F" or "D"
     # meaning that no scaling shall be used for type "F" and "D". Besides type "A" is deprecated
-    if(options$apply_scale && (type == "I")) {
+    if(options$apply_scale && (type == "I") && (n_par > 0)) {
       sapply(1:n_par, FUN = function(i) {
         PnE = paste0("$P",i,"E")
         PnR = paste0("$P",i,"R")
