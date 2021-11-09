@@ -10,7 +10,7 @@ remove_ext(x)
 \item{x}{a file path}
 }
 \description{
-Remove file extension from file path
+Removes file extension from file path
 }
 \details{
 file extension will be removed

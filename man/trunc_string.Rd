@@ -12,7 +12,7 @@ trunc_string(x, n = 22)
 \item{n}{desired length}
 }
 \description{
-Truncs character strings
+Truncates character strings
 }
 \details{
 x will be truncated according to 'n' parameter. If x is longer than n '...' are appended.
