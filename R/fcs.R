@@ -905,8 +905,8 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   )
   
   # adds extra keywords from ...
-  # removes keywords that are already in text_segment1 or that are named session or that have no name
-  extra_keywords = setdiff(names(dots), c(names(text_segment1), "session", ""))
+  # removes keywords that are already in text_segment1 or that are named "session", "$BEGINDATA", "$ENDDATA" or that have no name
+  extra_keywords = setdiff(names(dots), c(names(text_segment1), "$BEGINDATA", "$ENDDATA", "session", ""))
   # removes keywords that are already in text_segment2 ($PnN, $PnS, $PnB, $PnE, $PnR)
   extra_keywords = grep("^\\$P\\d.*[N|S|B|E|R|]$", extra_keywords, value = TRUE, invert = TRUE)
   # gets keywords in dots
