@@ -94,9 +94,11 @@ applyGatingStrategy = function(obj, gating, keep, display_progress = TRUE, verbo
     
     if(length(keep) != 0) {
       tmp = keep %in% names(obj$pops)
-      warning("population(s) listed in 'keep' can't be found in 'obj':\n\t-",
-              paste0(keep[!tmp], collapse="\n\t-"), call. = FALSE, immediate. = TRUE)
-      keep = keep[tmp]
+      if(!all(tmp)) {
+        warning("population(s) listed in 'keep' can't be found in 'obj':\n\t-",
+                paste0(keep[!tmp], collapse="\n\t-"), call. = FALSE, immediate. = TRUE)
+        keep = keep[tmp]
+      }
     }
     ans$pops = ans$pops[!(names(ans$pops) %in% setdiff(keep, c("All", "")))]
     
