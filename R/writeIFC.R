@@ -61,7 +61,7 @@ writeIFC <- function(fileName, ...) {
   write_to = dots$write_to
   if(length(write_to) == 0) stop("'write_to' can't be missing")
   splitp_obj <- splitp(write_to)
-  splitf_obj <- splitf(ifelse(length(obj) == 0, normalizePath(fileName[1], winslash="/", mustWork=TRUE), obj$fileName))
+  splitf_obj <- splitf(ifelse(length(input$obj) == 0, normalizePath(fileName[1], winslash="/", mustWork=TRUE), input$obj$fileName))
   file_extension <- getFileExt(formatn(splitp_obj, splitf_obj))
   if(length(input$obj) == 0) {
     assert(file_extension, alw = c("daf","rif","cif"))
@@ -69,6 +69,7 @@ writeIFC <- function(fileName, ...) {
     return(ExportToXIF(fileName=fileName, ...)) 
   } else {
     to_remove <- (attr(input,"was")[(attr(input,"was")>1)] - as.integer(length(fileName) != 0))
+    to_remove <- c(to_remove, na.omit(which(names(dots) == "obj")))
     if(length(to_remove) != 0) dots=dots[-to_remove]
     assert(file_extension, alw = c("daf","fcs"))
     if(file_extension == "daf") return(do.call(what=data_to_DAF, args=c(dots, list(obj=input$obj))))
