@@ -4,12 +4,21 @@
 \alias{applyGatingStrategy}
 \title{Apply Gating Strategy}
 \usage{
-applyGatingStrategy(obj, gating, display_progress = TRUE, verbose = FALSE, ...)
+applyGatingStrategy(
+  obj,
+  gating,
+  keep,
+  display_progress = TRUE,
+  verbose = FALSE,
+  ...
+)
 }
 \arguments{
 \item{obj}{an `IFC_data` object extracted with features extracted.}
 
 \item{gating}{an `IFC_gating` object extracted by \code{\link{readGatingStrategy}}.}
+
+\item{keep}{names of population(s) present in 'obj' that should not be overwritten using 'gating'.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
@@ -24,9 +33,9 @@ A named list of class `IFC_data` with new regions, pops and graphs
 Applies Gating Strategy to an `IFC_data` object
 }
 \details{
-/!\ Please note that all former gating strategy (i.e. regions, pops, graphs and stats) will be removed from returned object.\cr
+/!\ Please note that all former gating strategy (i.e. regions, pops, graphs and stats) will be removed from returned object, with the exception of population(s) described in 'keep'.\cr
 An error will be thrown if a feature is required to create a population or a graph but can't be found in 'obj'.\cr
-If tagged population(s) is(are) imported, objects from this(these) population(s) outside 'obj' will be discarded.\cr
+When tagged population(s) is(are) imported, objects from this(these) population(s) outside 'obj' will be discarded.\cr
 If this results in NULL, then all objects will be tagged.
 }
 \keyword{internal}

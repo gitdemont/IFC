@@ -37,16 +37,17 @@
 #' Applies Gating Strategy to an `IFC_data` object
 #' @param obj an `IFC_data` object extracted with features extracted.
 #' @param gating an `IFC_gating` object extracted by \code{\link{readGatingStrategy}}.
+#' @param keep names of population(s) present in 'obj' that should not be overwritten using 'gating'.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param ... other arguments to be passed.
-#' @details /!\ Please note that all former gating strategy (i.e. regions, pops, graphs and stats) will be removed from returned object.\cr
+#' @details /!\ Please note that all former gating strategy (i.e. regions, pops, graphs and stats) will be removed from returned object, with the exception of population(s) described in 'keep'.\cr
 #' An error will be thrown if a feature is required to create a population or a graph but can't be found in 'obj'.\cr
-#' If tagged population(s) is(are) imported, objects from this(these) population(s) outside 'obj' will be discarded.\cr
+#' When tagged population(s) is(are) imported, objects from this(these) population(s) outside 'obj' will be discarded.\cr
 #' If this results in NULL, then all objects will be tagged.
 #' @return A named list of class `IFC_data` with new regions, pops and graphs
 #' @keywords internal
-applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = FALSE, ...) {
+applyGatingStrategy = function(obj, gating, keep, display_progress = TRUE, verbose = FALSE, ...) {
   dots = list(...)
   # due to large population and feature names error returned if any can be long
   # so we may need to modify options if error happens, as a consequence we store and return to default on exit
@@ -56,6 +57,8 @@ applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = F
   # check mandatory param
   assert(obj, cla = "IFC_data")
   assert(gating, cla = "IFC_gating")
+  if(missing(keep)) keep = NULL
+  keep = as.character(keep); assert(keep, typ = "character")
   to_remove = grepl("^regions$|^pops$|^graphs$|^stats$", names(obj))
   if(!all(to_remove)) {
     ans = obj[!to_remove]
@@ -86,8 +89,16 @@ applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = F
     ans$pops = gating$pops
     if(length(ans$pops) == 0) {
       ans$pops = obj$pops["All"]
-      class(ans$pops) <- "IFC_pops"
     }
+    names(ans$pops) = sapply(ans$pops, FUN = function(p) p$name)
+    
+    if(length(keep) != 0) {
+      tmp = keep %in% names(obj$pops)
+      warning("population(s) listed in 'keep' can't be found in 'obj':\n\t-",
+              paste0(keep[!tmp], collapse="\n\t-"), call. = FALSE, immediate. = TRUE)
+      keep = keep[tmp]
+    }
+    ans$pops = ans$pops[!(names(ans$pops) %in% setdiff(keep, c("All", "")))]
     
     tmp1 = NULL
     tmp2 = NULL
@@ -128,6 +139,12 @@ applyGatingStrategy = function(obj, gating, display_progress = TRUE, verbose = F
       }
       return(p)
     })
+    
+    ##### uses pops from obj that are listed in keep
+    if(length(keep) != 0) {
+      ans$pops <- c(ans$pops, obj$pops[keep])
+    }
+    class(ans$pops) <- "IFC_pops"
     
     ##### determines which object belongs to each population and changes styles and colors
     ans$pops = popsCompute(pops = ans$pops, regions = ans$regions, features = ans$features,
