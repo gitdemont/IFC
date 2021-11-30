@@ -176,4 +176,38 @@ int64_t hpp_uint64_to_int64 (const uint64_t x) {
   return out;
 }
 
+//' @title Vectorize Int32 to Uint32 32bits Conversion
+//' @name cpp_v_int32_to_uint32
+//' @description
+//' Converts 32bits vector of integers from unsigned to signed
+//' @param V a NumericVector
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::NumericVector> hpp_v_int32_to_uint32 (Rcpp::Nullable<Rcpp::NumericVector> V = R_NilValue) {
+  if(nNotisNULL(V)) {
+    Rcpp::NumericVector out(V.get());
+    for(R_len_t i = 0; i < out.size(); i++) out(i) = hpp_int32_to_uint32(out(i));
+    return out;
+  }
+  return V;
+}
+
+//' @title Vectorize Int64 to Uint64 64bits Conversion
+//' @name cpp_v_int64_to_uint64
+//' @description
+//' Converts 64bits vector of integers from unsigned to signed
+//' @param V a NumericVector
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::NumericVector> hpp_v_int64_to_uint64 (Rcpp::Nullable<Rcpp::NumericVector> V = R_NilValue) {
+  if(nNotisNULL(V)) {
+    Rcpp::NumericVector out(V.get());
+    for(R_len_t i = 0; i < out.size(); i++) out(i) = hpp_int64_to_uint64(out(i));
+    return out;
+  }
+  return V;
+}
+
 #endif

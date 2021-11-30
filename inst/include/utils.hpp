@@ -76,6 +76,55 @@ bool iNotisNULL(const Rcpp::Nullable<Rcpp::IntegerVector> x_ = R_NilValue) {
   return false;
 }
 
+//' @title Get Bytes Order
+//' @name cpp_get_bytes_order
+//' @description
+//' This function expands bytes order to the whole data.
+//' @param obj number of objects in the data.
+//' @param byt_ IntegerVector of number of bytes to take from 'ord_'.
+//' @param ord_ IntegerVector bytes order.
+//' @param rev bool whether to reverse order or not. Default is false.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::IntegerVector> hpp_get_bytes_order (const R_len_t obj = 0,
+                                                         const Rcpp::Nullable<Rcpp::IntegerVector> byt_ = R_NilValue,
+                                                         const Rcpp::Nullable<Rcpp::IntegerVector> ord_ = R_NilValue,
+                                                         const bool rev = false) {
+  if(iNotisNULL(byt_) & iNotisNULL(ord_) & (obj > 0)) {
+    Rcpp::IntegerVector byt(byt_.get());
+    Rcpp::IntegerVector ord(ord_.get());
+    Rcpp::IntegerVector alw = Rcpp::IntegerVector::create(1,2,3,4,5,6,7,8);
+    R_len_t n = 0;
+    Rcpp::List L(byt.size());
+    for(R_len_t i = 0; i < byt.size(); i++) {
+      if(!is_true(any(byt[i] == alw))) Rcpp::stop("hpp_get_bytes_order: 'byt' contains not allowed value:");
+      if(byt[i] > ord.size()) Rcpp::stop("hpp_get_bytes_order: required 'byt' length is larger than provided 'ord'");
+      Rcpp::IntegerVector v = Rcpp::no_init(byt[i]); 
+      if(rev) {
+        for(R_len_t j = ord.size() - byt[i]; j < ord.size(); j++) v[j - (ord.size() - byt[i])] = ord[j];
+      } else {
+        for(R_len_t j = 0; j < byt[i]; j++) v[j] = ord[j];
+      }
+      L[i] = v;
+      n += byt[i];
+    }
+    Rcpp::IntegerVector out = Rcpp::no_init(obj * n);
+    R_len_t k = 0;
+    for(R_len_t g = 0; g < obj; g++) {
+      for(R_len_t i = 0; i < byt.size(); i++) {
+        Rcpp::IntegerVector v = L(i);
+        for(R_len_t j = 0; j < v.size(); j++) {
+          out[k + j] = v[j] + k;
+        }
+        k += byt[i];
+      }
+    }
+    return out;
+  }
+  return R_NilValue;
+}
+
 // converts unsigned short to string
 std::string to_string(const uint16_t x) {
   std::string out;

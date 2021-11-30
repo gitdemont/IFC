@@ -65,6 +65,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_get_bytes_order
+Rcpp::Nullable<Rcpp::IntegerVector> cpp_get_bytes_order(const R_len_t obj, const Rcpp::Nullable<Rcpp::IntegerVector> byt_, const Rcpp::Nullable<Rcpp::IntegerVector> ord_, const bool rev);
+RcppExport SEXP _IFC_cpp_get_bytes_order(SEXP objSEXP, SEXP byt_SEXP, SEXP ord_SEXP, SEXP revSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const R_len_t >::type obj(objSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::IntegerVector> >::type byt_(byt_SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::IntegerVector> >::type ord_(ord_SEXP);
+    Rcpp::traits::input_parameter< const bool >::type rev(revSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_get_bytes_order(obj, byt_, ord_, rev));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_computeGamma
 double cpp_computeGamma(const Rcpp::NumericVector V);
 RcppExport SEXP _IFC_cpp_computeGamma(SEXP VSEXP) {
@@ -272,6 +286,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_v_int32_to_uint32
+Rcpp::Nullable<Rcpp::NumericVector> cpp_v_int32_to_uint32(Rcpp::Nullable<Rcpp::NumericVector> V);
+RcppExport SEXP _IFC_cpp_v_int32_to_uint32(SEXP VSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericVector> >::type V(VSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_v_int32_to_uint32(V));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_v_int64_to_uint64
+Rcpp::Nullable<Rcpp::NumericVector> cpp_v_int64_to_uint64(Rcpp::Nullable<Rcpp::NumericVector> V);
+RcppExport SEXP _IFC_cpp_v_int64_to_uint64(SEXP VSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::Nullable<Rcpp::NumericVector> >::type V(VSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_v_int64_to_uint64(V));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_scanFirst
 std::size_t cpp_scanFirst(const std::string fname, const std::string target, const std::size_t start, const std::size_t end, const uint8_t buf_size);
 RcppExport SEXP _IFC_cpp_scanFirst(SEXP fnameSEXP, SEXP targetSEXP, SEXP startSEXP, SEXP endSEXP, SEXP buf_sizeSEXP) {
@@ -472,6 +508,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_assert", (DL_FUNC) &_IFC_cpp_assert, 6},
     {"_IFC_cpp_ell_coord", (DL_FUNC) &_IFC_cpp_ell_coord, 2},
     {"_IFC_cpp_pnt_in_gate", (DL_FUNC) &_IFC_cpp_pnt_in_gate, 4},
+    {"_IFC_cpp_get_bytes_order", (DL_FUNC) &_IFC_cpp_get_bytes_order, 4},
     {"_IFC_cpp_computeGamma", (DL_FUNC) &_IFC_cpp_computeGamma, 1},
     {"_IFC_cpp_base64_encode", (DL_FUNC) &_IFC_cpp_base64_encode, 1},
     {"_IFC_cpp_writeBMP", (DL_FUNC) &_IFC_cpp_writeBMP, 1},
@@ -489,6 +526,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_uint32_to_int32", (DL_FUNC) &_IFC_cpp_uint32_to_int32, 1},
     {"_IFC_cpp_int64_to_uint64", (DL_FUNC) &_IFC_cpp_int64_to_uint64, 1},
     {"_IFC_cpp_uint64_to_int64", (DL_FUNC) &_IFC_cpp_uint64_to_int64, 1},
+    {"_IFC_cpp_v_int32_to_uint32", (DL_FUNC) &_IFC_cpp_v_int32_to_uint32, 1},
+    {"_IFC_cpp_v_int64_to_uint64", (DL_FUNC) &_IFC_cpp_v_int64_to_uint64, 1},
     {"_IFC_cpp_scanFirst", (DL_FUNC) &_IFC_cpp_scanFirst, 5},
     {"_IFC_cpp_crop", (DL_FUNC) &_IFC_cpp_crop, 3},
     {"_IFC_cpp_resize", (DL_FUNC) &_IFC_cpp_resize, 6},

@@ -127,6 +127,24 @@ Rcpp::LogicalVector cpp_pnt_in_gate (const Rcpp::NumericMatrix pnts,
 // END gate
 
 // FROM utils
+//' @title Get Bytes Order
+//' @name cpp_get_bytes_order
+//' @description
+//' This function expands bytes order to the whole data.
+//' @param obj number of objects in the data.
+//' @param byt_ IntegerVector of number of bytes to take from 'ord_'.
+//' @param ord_ IntegerVector bytes order. 
+//' @param rev bool whether to reverse order or not. Default is false.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::IntegerVector> cpp_get_bytes_order (const R_len_t obj = 0,
+                                                         const Rcpp::Nullable<Rcpp::IntegerVector> byt_ = R_NilValue,
+                                                         const Rcpp::Nullable<Rcpp::IntegerVector> ord_ = R_NilValue,
+                                                         const bool rev = false) {
+  return hpp_get_bytes_order (obj, byt_, ord_, rev);
+}
+
 //' @title Gamma Computation
 //' @name cpp_computeGamma
 //' @description
@@ -402,6 +420,30 @@ uint64_t cpp_int64_to_uint64 (const int64_t x) {
 // [[Rcpp::export]]
 int64_t cpp_uint64_to_int64 (const uint64_t x) {
   return hpp_uint64_to_int64 (x);
+}
+
+//' @title Vectorize Int32 to Uint32 32bits Conversion
+//' @name cpp_v_int32_to_uint32
+//' @description
+//' Converts 32bits vector of integers from unsigned to signed
+//' @param V a NumericVector
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::NumericVector> cpp_v_int32_to_uint32 (Rcpp::Nullable<Rcpp::NumericVector> V = R_NilValue) {
+  return hpp_v_int32_to_uint32(V);
+}
+
+//' @title Vectorize Int64 to Uint64 64bits Conversion
+//' @name cpp_v_int64_to_uint64
+//' @description
+//' Converts 64bits vector of integers from unsigned to signed
+//' @param V a NumericVector
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::NumericVector> cpp_v_int64_to_uint64 (Rcpp::Nullable<Rcpp::NumericVector> V = R_NilValue) {
+  return hpp_v_int64_to_uint64(V);
 }
 // END trans
 
