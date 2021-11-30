@@ -1,8 +1,16 @@
 # NEWS
-## 0.1.3
+## 0.1.2.100
+- allow to pass `IFC_data` object in writeIFC()
+
 - now handle `levelplot`
 
 - improve .fcs input / output internally
+
+speed gain and better accuracy notably for files stored with DATATYPE "I"
+
+can handle files with non R standard bits length (i.e. not 1,2,4,8)
+
+fix bug with large PnR e.g. "4294967296" which resulted in NA
 
 - don't send error on partial mask retrieval
 
@@ -10,6 +18,8 @@
 *buildGraph gains a new 'densitylevel' entry in BasePop controlling `levelplot` when 'type' is "density"*
 
 *when fcs is imported @IFC_date, @IFC_file, @IFC_fileName, @IFC_dataset, @IFC_version, and @IFC_FCSversion are automatically filled. $FIL is not filled if found. $CYT is not filled if found except if user requires it.*
+
+*readFCS gains a new 'force_header' entry in 'options' argument to allow user to control if data offset(s) should be taken from header only*
 
 
 ## 0.1.2
