@@ -51,6 +51,17 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title Get Bytes Order
+#' @name cpp_get_bytes_order
+#' @description
+#' This function expands bytes order to the whole data.
+#' @param obj number of objects in the data.
+#' @param byt_ IntegerVector of number of bytes to take from 'ord_'.
+#' @param ord_ IntegerVector bytes order. 
+#' @param rev bool whether to reverse order or not. Default is false.
+#' @keywords internal
+NULL
+
 #' @title Gamma Computation
 #' @name cpp_computeGamma
 #' @description
@@ -230,6 +241,22 @@ NULL
 #' @description
 #' Converts 64bits integer from unsigned to signed
 #' @param x uint64_t.
+#' @keywords internal
+NULL
+
+#' @title Vectorize Int32 to Uint32 32bits Conversion
+#' @name cpp_v_int32_to_uint32
+#' @description
+#' Converts 32bits vector of integers from unsigned to signed
+#' @param V a NumericVector
+#' @keywords internal
+NULL
+
+#' @title Vectorize Int64 to Uint64 64bits Conversion
+#' @name cpp_v_int64_to_uint64
+#' @description
+#' Converts 64bits vector of integers from unsigned to signed
+#' @param V a NumericVector
 #' @keywords internal
 NULL
 
@@ -504,6 +531,10 @@ cpp_pnt_in_gate <- function(pnts, gate, algorithm = 1L, epsilon = 0.000000000001
     .Call(`_IFC_cpp_pnt_in_gate`, pnts, gate, algorithm, epsilon)
 }
 
+cpp_get_bytes_order <- function(obj = 0L, byt_ = NULL, ord_ = NULL, rev = FALSE) {
+    .Call(`_IFC_cpp_get_bytes_order`, obj, byt_, ord_, rev)
+}
+
 cpp_computeGamma <- function(V) {
     .Call(`_IFC_cpp_computeGamma`, V)
 }
@@ -570,6 +601,14 @@ cpp_int64_to_uint64 <- function(x) {
 
 cpp_uint64_to_int64 <- function(x) {
     .Call(`_IFC_cpp_uint64_to_int64`, x)
+}
+
+cpp_v_int32_to_uint32 <- function(V = NULL) {
+    .Call(`_IFC_cpp_v_int32_to_uint32`, V)
+}
+
+cpp_v_int64_to_uint64 <- function(V = NULL) {
+    .Call(`_IFC_cpp_v_int64_to_uint64`, V)
 }
 
 cpp_scanFirst <- function(fname, target, start = 0L, end = 0L, buf_size = 64L) {
