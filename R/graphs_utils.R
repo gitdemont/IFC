@@ -64,22 +64,25 @@ densCols=function (x, y = NULL, nbin = 128, bandwidth, colramp = colorRampPalett
   x_features = attr(x, "features")
   xy <- xy.coords(x, y)
   select <- is.finite(xy$x) & is.finite(xy$y)
-  x <- cbind(xy$x, xy$y)[select, ]
-  map <- calcDensity(x, nbin, bandwidth)
-  mkBreaks <- function(u) u - diff(range(u))/(length(u) - 1)/2
-  xbin <- cut(x[, 1], mkBreaks(map$x1), labels = FALSE)
-  ybin <- cut(x[, 2], mkBreaks(map$x2), labels = FALSE)
   check_fun <- try(suppressWarnings(formals(transformation)), silent = TRUE)
-  if(!inherits(check_fun, what="try-error")) {
-    if("features" %in% names(check_fun)) {
+  if (!inherits(check_fun, what = "try-error")) {
+    x <- cbind(xy$x, xy$y)[select, ]
+    map <- calcDensity(x, nbin, bandwidth)
+    mkBreaks <- function(u) u - diff(range(u))/(length(u) - 1)/2
+    xbin <- cut(x[, 1], mkBreaks(map$x1), labels = FALSE)
+    ybin <- cut(x[, 2], mkBreaks(map$x2), labels = FALSE)
+    if ("features" %in% names(check_fun)) {
       args = list(features = x_features)
-    } else {
+    }
+    else {
       args = list(x = map$fhat[cbind(xbin, ybin)])
     }
     dens <- do.call(what = transformation, args = args)
-  } else {
+  }
+  else {
     ran <- range(x_features, finite = TRUE)
-    dens <- ((x_features - ran[1]) / diff(ran))
+    dens <- ((x_features - ran[1])/diff(ran))
+    map = NULL
   }
   dens[is.na(dens)] <- 0
   colpal <- cut(dens, length(dens), labels = FALSE)
@@ -389,16 +392,14 @@ base_hist_constr = function(x, type, br, normalize, fill, smooth, lwd, lty, col,
   }
 }
 
-#' @title IFC Graph Conversion to 'base' Plot
-#' @name convert_to_baseplot
+#' @title `IFC_plot` Conversion to 'base' Plot
+#' @name plot_base
 #' @description Helper to convert `IFC_plot` to 'base' plot.
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
 #' @keywords internal
-convert_to_baseplot = function(obj) {
+plot_base = function(obj) {
   # variables for future use
   n_ticks = 10
-  pkg = "base"
-  
   # check obj is `IFC_plot`
   assert(obj, cla = "IFC_plot")
   
@@ -546,17 +547,15 @@ convert_to_baseplot = function(obj) {
   }
   
   # axis
-  if(pkg == "base") {
-    x_ticks = base_axis_constr(lim = Xlim, trans = obj$input$trans_x, nint = n_ticks)
-    y_ticks = base_axis_constr(lim = Ylim, trans = obj$input$trans_y, nint = n_ticks)
-    x_axis = axis(side = 1, at = x_ticks$at, labels = FALSE)
-    text(x = x_axis, y = Ylim[1] - diff(Ylim) * 0.07, labels = x_ticks$labels, xpd=TRUE, adj = c(1, 1),
-         cex = obj$plot$par.settings$axis.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex, srt=45)
-    y_axis = axis(side = 2, at = y_ticks$at, labels = FALSE)
-    text(y = y_axis, x = Xlim[1] - diff(Xlim) * 0.07, labels = y_ticks$labels, xpd=TRUE, adj = c(1, 0.5),
-         cex = obj$plot$par.settings$axis.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex, las=1)
-    box()
-  }
+  x_ticks = base_axis_constr(lim = Xlim, trans = obj$input$trans_x, nint = n_ticks)
+  y_ticks = base_axis_constr(lim = Ylim, trans = obj$input$trans_y, nint = n_ticks)
+  x_axis = axis(side = 1, at = x_ticks$at, labels = FALSE)
+  text(x = x_axis, y = Ylim[1] - diff(Ylim) * 0.07, labels = x_ticks$labels, xpd=TRUE, adj = c(1, 1),
+       cex = obj$plot$par.settings$axis.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex, srt=45)
+  y_axis = axis(side = 2, at = y_ticks$at, labels = FALSE)
+  text(y = y_axis, x = Xlim[1] - diff(Xlim) * 0.07, labels = y_ticks$labels, xpd=TRUE, adj = c(1, 0.5),
+       cex = obj$plot$par.settings$axis.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex, las=1)
+  box()
   
   # regions
   for(reg in obj$input$regions) {
@@ -569,16 +568,8 @@ convert_to_baseplot = function(obj) {
     if(reg$type=="line") {
       if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
       if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
-      switch(pkg,
-             "lattice" = {
-               foo = foo +
-                 layer(panel.text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex)) +
-                 layer(panel.lines(x=coords$x, y=coords$y*diff(Ylim),col=k))
-             },
-             "base" = {
-               text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex)
-               polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
-             })
+      text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex)
+      polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
     } else {
       trans_y = parseTrans(obj$input$trans_y)
       coords$y = applyTrans(coords$y, trans_y)
@@ -590,20 +581,11 @@ convert_to_baseplot = function(obj) {
       if(reg$type=="oval") {
         coords = toEllipse(coords)
       }
-      switch(pkg,
-             "lattice" = {
-               foo = foo +
-                 layer(panel.text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex)) +
-                 layer(panel.polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1))
-             },
-             "base" = {
-               text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex) 
-               polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
-             })
+      text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex) 
+      polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
     }
   }
-  if(pkg != "base") plot(foo)
-  
+
   # key
   args_key = list("topleft",inset = 0.025, 
                   col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
@@ -617,6 +599,336 @@ convert_to_baseplot = function(obj) {
                    args_key),
             what=legend)
   }
+}
+
+#' @title `IFC_plot` Conversion to 'lattice' Plot
+#' @name plot_lattice
+#' @description Helper to convert `IFC_plot` to 'lattice' plot.
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @keywords internal
+plot_lattice <- function(obj) {
+  # check obj is `IFC_plot`
+  assert(obj, cla = "IFC_plot")
+  
+  # short names
+  xy_subset = obj$input$subset
+  P = obj$input$displayed
+  R = obj$input$regions
+  D = obj$input$data[xy_subset,,drop=FALSE]
+  nbin = obj$input$bin
+  basepop = obj$input$base
+  Xlim = obj$input$xlim
+  Ylim = obj$input$ylim
+  Xtrans = obj$input$trans_x
+  Ytrans = obj$input$trans_y
+  trans_x = parseTrans(Xtrans)
+  trans_y = parseTrans(Ytrans)
+  reg_n = names(R)
+  displayed = P
+  displayed_n = names(P)
+  displayed_o = obj$input$order
+  type = obj$input$type
+  normalize = obj$input$normalize
+  color_mode = obj$input$mode
+  trans = obj$input$trans
+  precision = obj$input$precision
+  add_key = obj$input$add_key
+  lt = obj$plot$par.settings
+  histogramsmoothingfactor = obj$input$histogramsmoothingfactor
+  
+  trunc_labels = obj$input$trunc_labels
+  main = trunc_string(obj$input$title, trunc_labels) 
+  xlab = trunc_string(obj$input$xlab, trunc_labels)
+  ylab = trunc_string(obj$input$ylab, trunc_labels)
+  
+  if(type %in% c("percent", "count")) {
+    # define legend
+    KEY = list("text"=list(displayed_n),
+               "cex"=lt$add.text$cex * 0.5,
+               "lines"=list(col = sapply(displayed_n, FUN=function(p) P[[p]][c("color","lightModeColor")][[color_mode]]),
+                            lty = sapply(displayed_n, FUN=function(r) c(1,2,3,4,6)[match(basepop[[displayed_o[r]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])))
+    # make histogram
+    if(nrow(D) > 0) {
+      br = do.breaks(Xlim, nbin)
+      foo = histogram(~ D[,"x2"], auto.key=FALSE,
+                      xlim = Xlim, ylim = Ylim, main = main, xlab = xlab,
+                      ylab = obj$input$ylab,
+                      scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)),
+                      border = "transparent", nint = nbin, type = type, breaks = br, normalize = normalize,
+                      panel = function(x, ...) { })
+      for(l in length(displayed_n):1) {
+        disp = displayed_n[l]
+        if(any(D[,disp])) { # adds layer only if there is at least one point
+          tmp = histogram(~ D[,"x2"], auto.key=FALSE, subset = D[,disp], alpha = 0.8,
+                          col = P[[disp]][c("color","lightModeColor")][[color_mode]], border="transparent",
+                          fill = as.logical(basepop[[displayed_o[disp]]]$fill=="true"),
+                          lty = c(1,2,3,4,6)[match(basepop[[displayed_o[disp]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))],
+                          nint = nbin, type = type, breaks = br, normalize = normalize, Ylim = Ylim,
+                          panel = function(x, type, breaks, normalize, fill, nint, border, col, alpha, lty, Ylim = Ylim, ...) {
+                            if(histogramsmoothingfactor > 0) {
+                              pan_smooth(x=x, type=type, br=breaks, normalize=normalize, fill=fill, lwd=1, lty=lty, col=col, alpha=alpha, ylim=Ylim, bin=nint, border=border, factor=histogramsmoothingfactor)
+                            } else {
+                              pan_hist(x=x, type=type, br=breaks, normalize=normalize, fill=fill, lwd=1, lty=1, col=col, alpha=alpha, ylim=Ylim, bin=nint, border=border)
+                            }
+                            if(l == 1) {
+                              if(any(c("panel","both")%in%add_key)) pan_key(key=c(KEY,"background"="lightgrey","alpha.background"=0.8), x = 0.02)
+                              lapply(reg_n, FUN=function(r) {
+                                reg = R[[r]] 
+                                col = reg[c("color","lightcolor")][[color_mode]]
+                                coords = reg[c("x","y")]
+                                coords$x = applyTrans(coords$x, trans_x)
+                                reg$cx = applyTrans(reg$cx, trans_x)
+                                lab =  trunc_string(reg$label, trunc_labels)
+                                if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
+                                if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
+                                panel.text(x=reg$cx, y=reg$cy*diff(Ylim), col=col, labels=lab, pos=4)
+                                panel.lines(x=coords$x, y=coords$y*diff(Ylim),col=col)
+                              })
+                            }
+                          })
+          foo = foo + as.layer(tmp, opposite = FALSE, axes = NULL)
+        }
+      }
+    } else {
+      foo = histogram(0 ~ 0, auto.key=FALSE,
+                      xlim = Xlim, ylim = Ylim, main = main, xlab = xlab,
+                      ylab = obj$input$ylab,
+                      scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)), border = "transparent",
+                      nint = nbin, type = type, normalize = normalize, Ylim = Ylim,
+                      panel = function(x, Ylim = Ylim, ...) {
+                        if(any(c("panel","both")%in%add_key)) pan_key(key=c(KEY,"background"="lightgrey","alpha.background"=0.8), x = 0.02)
+                        lapply(reg_n, FUN=function(r) {
+                          reg = R[[r]] 
+                          col = reg[c("color","lightcolor")][[color_mode]]
+                          coords = reg[c("x","y")]
+                          coords$x = applyTrans(coords$x, trans_x)
+                          reg$cx = applyTrans(reg$cx, trans_x)
+                          lab = trunc_string(reg$label, trunc_labels)
+                          if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
+                          if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
+                          panel.text(x=reg$cx, y=reg$cy*diff(Ylim), col=col, labels=lab, pos=4)
+                          panel.lines(x=coords$x, y=coords$y*diff(Ylim), col=col)
+                        })
+                      })
+    }
+  } else {
+    # define legend
+    KEY = list("text"=list(rev(displayed_n)),
+               "cex"=lt$add.text$cex * 0.5,
+               "points"=list(col = sapply(P[rev(displayed_n)], FUN=function(p) p[c("color","lightModeColor")][[color_mode]]),
+                             pch = sapply(P[rev(displayed_n)], FUN=function(p) p$style)))
+    # identify groups
+    groups = NULL
+    if(nrow(D)>0) if(type == "scatter") if(precision=="light") groups=apply(as.data.frame(D[,displayed_n]), 1, FUN=function(x) {
+      tmp = which(x)[1]
+      if(is.na(tmp)) return(NA)
+      return(displayed_n[which(x)[1]])
+    })
+    # make xyplot
+    xtop = NULL
+    if(type == "density") {
+      args_level = basepop[[1]][["densitylevel"]]
+      if((length(args_level) == 0) || (args_level == ""))
+        if(!(inherits(trans, what="function") || 
+             !inherits(try(suppressWarnings(formals(trans)), silent = TRUE), what="try-error"))) xtop = trans
+    }
+    foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE,
+                 xlim = Xlim, ylim = Ylim, 
+                 main = main, xlab = xlab, ylab = ylab,
+                 xlab.top = xtop,
+                 groups=groups, subset=xy_subset,
+                 scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)),
+                 panel = function(x, y, groups=NULL, subscripts, ...) {
+                   if(any(c("panel","both")%in%add_key)) if(type=="scatter") pan_key(key=c(KEY,"background"="lightgrey","alpha.background"=0.8), x = 0.02)
+                   if(type == "density") {
+                     colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[color_mode]]))
+                     args_level = basepop[[1]][["densitylevel"]]
+                     if((length(args_level) != 0) && (args_level != "")) {
+                       col = densCols(x=structure(x, features=attr(obj$input$data,"features")), y=y, colramp=colramp, nbin=nbin, transformation=function(x) {x})
+                       args_level=strsplit(args_level,split="|",fixed=TRUE)[[1]]
+                       fill = args_level[1] == "true"
+                       dolines = args_level[2] == "true"
+                       nlevels = as.integer(args_level[3])
+                       lowest = as.numeric(args_level[4])
+                       z  = attr(col, "matrix")
+                       zz = as.vector(z$fhat)
+                       dd = attr(col, "density")
+                       at_probs = seq(from=lowest, to=1, length.out=1+nlevels+(lowest!=0))
+                       at = quantile(dd, probs = at_probs, na.rm = TRUE, names = FALSE)
+                       low=0
+                       if(lowest != 0) {
+                         low = at[1]; at = at[-1]
+                         panel.xyplot(x=x[dd<low], y=y[dd<low], pch=".", col=c("white","black")[color_mode]) #col[dd<low])
+                       }
+                       contour_cols = colramp(length(at))
+                       if(fill) {
+                         # FIXME when filled the graph is pixelated
+                         panel.levelplot(x=rep(z$x1, times=nbin), y=rep(z$x2, each=nbin), z=zz, 
+                                         at=c(low, at), col.regions=c(NA,colramp(length(at)-1)),
+                                         subscripts=seq_along(as.vector(zz)),
+                                         border = "transparent", border.lty = 1, border.lwd = 0,
+                                         region=TRUE, contour=FALSE)
+                       } 
+                       if(dolines) {
+                         lines = contourLines(x=z$x1, y=z$x2, z=z$fhat, nlevels=length(at), levels=at)
+                         if(fill) contour_cols = rep(c("white","black")[color_mode], length(lines))
+                         lapply(1:length(lines), FUN = function(i_l) do.call(panel.lines, args = c(lines[i_l], list(col=contour_cols[lines[[i_l]]$level == at])))) 
+                       }
+                     } else {
+                       col = densCols(x=structure(x, features=attr(obj$input$data,"features")), y=y, colramp=colramp, nbin=nbin, transformation=trans)
+                       panel.xyplot(x=x,y=y,pch=".", col=col)
+                     }
+                   }
+                   if(type == "scatter") {
+                     if(is.null(groups[subscripts])) {
+                       panel.xyplot(x=x[1], y=y[1], pch="", alpha=0)
+                     } else {
+                       by(data.frame("x"=x,"y"=y,"g"=groups[subscripts], stringsAsFactors=FALSE), groups[subscripts], FUN=function(d) {
+                         disp = unique(d$g)
+                         panel.xyplot(x=d$x, y=d$y, pch=P[[disp]]$style, col = P[[disp]][c("color","lightModeColor")][[color_mode]])
+                       })
+                     }
+                   }
+                   lapply(reg_n, FUN=function(r) {
+                     reg = R[[r]]
+                     k = reg[c("color","lightcolor")][[color_mode]]
+                     coords = reg[c("x","y")]
+                     coords$x = applyTrans(coords$x, trans_x)
+                     reg$cx = applyTrans(reg$cx, trans_x)
+                     coords$y = applyTrans(coords$y, trans_y)
+                     reg$cy = applyTrans(reg$cy, trans_y)
+                     if(reg$type=="rect") {
+                       coords$x=c(coords$x[1],coords$x[1],coords$x[2],coords$x[2])
+                       coords$y=c(coords$y[1],coords$y[2],coords$y[2],coords$y[1])
+                     }
+                     if(reg$type=="oval") {
+                       coords = toEllipse(coords)
+                     }
+                     lab =  trunc_string(reg$label, trunc_labels)
+                     panel.text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4) 
+                     panel.polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
+                   })
+                 })
+    if(nrow(D) > 0) if(precision=="full") if(type == "scatter") for(l in L:1) {
+      disp = displayed_n[l]
+      if(any(D[,disp] & xy_subset)) { # adds layer only if there is at least one point
+        tmp = xyplot(D[,"y2"] ~ D[,"x2"], pch = P[[disp]]$style, col = P[[disp]][c("color","lightModeColor")][[color_mode]], subset = D[,disp] & xy_subset)
+        foo = foo + as.layer(tmp)
+      }
+    }
+  }
+  if(any(c("global","both")%in%add_key)) foo = update(foo, key=KEY)
+  foo = update(foo, par.settings = lt)
+}
+
+#' @title `IFC_plot` Statistics Extraction
+#' @name plot_stats
+#' @description Helper to extract `IFC_plot` statistics.
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @keywords internal
+plot_stats <- function(obj) {
+  # check obj is `IFC_plot`
+  assert(obj, cla = "IFC_plot")
+  xy_subset = obj$input$subset
+  R = obj$input$regions
+  D = obj$input$data[xy_subset,,drop=FALSE]
+  basepop = obj$input$base
+  Xlim = obj$input$xlim
+  Ylim = obj$input$ylim
+  Xtrans = obj$input$trans_x
+  Ytrans = obj$input$trans_y
+  trans_x = parseTrans(Xtrans)
+  trans_y = parseTrans(Ytrans)
+  reg_n = names(R)
+  displayed = obj$input$displayed
+  displayed_n = names(displayed)
+  displayed_o = obj$input$order
+  type = obj$input$type
+  
+  base_n = unlist(lapply(basepop, FUN=function(x) x$name))
+  base_o = sapply(base_n, FUN=function(x) which(displayed_n%in%x))
+  base_n = base_n[order(base_o)]
+  graph_n = obj$input$graphical
+  shown_n = setdiff(rev(displayed_n), c(base_n, graph_n))
+  
+  stats = NULL
+  if(type %in% c("count","percent")) {
+    coln_stats = c("count","perc","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
+    stats = structure(matrix(numeric(), ncol = length(coln_stats), nrow = 0), dimnames = list(character(), coln_stats))
+    base_s = lapply(base_n, FUN=function(d) {
+      np = sum(D[,d])
+      if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
+      p = c("count"=np, "perc"=100, summary(na.omit(D[D[,d],"x1"])))
+    })
+    kids_s = lapply(shown_n, FUN=function(s) {
+      do.call(what = "rbind", args = lapply(base_n, FUN=function(d) {
+        np = sum(D[,d])
+        if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
+        isin = D[,d] & D[,s]
+        n = sum(isin)
+        c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])))
+      }))
+    })
+    kids_r = lapply(reg_n, FUN=function(r) {
+      do.call(what = "rbind", args = lapply(base_n, FUN=function(d) {
+        alg = 3
+        reg = R[[r]]
+        coords = reg["x"]
+        coords$x = applyTrans(coords$x, trans_x)
+        np = sum(D[,d])
+        if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
+        isin = D[D[,d],"x2"]
+        isin = (isin >= min(coords$x)) & (isin <= max(coords$x))
+        n = sum(isin)
+        c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])))
+      }))
+    })
+    stats = do.call(what=rbind, args=c(base_s, kids_s, kids_r))
+    rnames = base_n
+    if(length(reg_n) > 0) rnames = c(rnames, unlist(t(sapply(base_n, FUN = function(b) {if(b == "All") {graph_n} else {paste(reg_n, b, sep = " & ") }}))))
+    rownames(stats) = rnames
+    colnames(stats) = c(coln_stats[1:2], paste0("x-",coln_stats[3:8]))
+  } else {
+    coln_stats = c("count","perc","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
+    stats = structure(matrix(numeric(), ncol = length(coln_stats), nrow = 0), dimnames = list(character(), coln_stats))
+    base_s = lapply(base_n, FUN=function(d) {
+      np = sum(D[,d])
+      if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
+      p = c("count"=np, "perc"=100, summary(na.omit(D[D[,d],"x1"])), summary(na.omit(D[D[,d],"y1"])))
+    })
+    kids_s = lapply(shown_n, FUN=function(s) {
+      do.call(what = "rbind", args = lapply(base_n, FUN=function(d) {
+        np = sum(D[,d])
+        if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
+        isin = D[,d] & D[,s]
+        n = sum(isin)
+        c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])), summary(na.omit(D[isin,"y1"])))
+      }))
+    })
+    kids_r = lapply(reg_n, FUN=function(r) {
+      alg = 1
+      reg = R[[r]]
+      coords = reg[c("x","y")]
+      coords$x = applyTrans(coords$x, trans_x)
+      coords$y = applyTrans(coords$y, trans_y)
+      if(reg$type=="oval") alg = 3
+      if(reg$type=="rect") alg = 2
+      do.call(what = "rbind", args = lapply(base_n, FUN=function(d) {
+        np = sum(D[,d])
+        if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
+        isin = cpp_pnt_in_gate(pnts = cbind(D[D[,d],"x2"],D[D[,d],"y2"]), gate = cbind(coords$x,coords$y), algorithm = alg)
+        n = sum(isin)
+        c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])), summary(na.omit(D[isin,"y1"])))
+      }))
+    })
+    stats = do.call(what=rbind, args=c(base_s, kids_r, kids_s))
+    rnames = base_n
+    if(length(reg_n) > 0) rnames = c(rnames, unlist(t(sapply(base_n, FUN = function(b) {if(b == "All") {reg_n} else {paste(reg_n, b, sep = " & ") }}))))
+    if(length(shown_n) > 0) rnames = c(rnames, unlist(sapply(shown_n, FUN = function(s) paste(base_n, s, sep = " & "))))
+    rownames(stats) = rnames
+    colnames(stats) = c(coln_stats[1:2], paste0("x-",coln_stats[3:8]), paste0("y-",coln_stats[9:14]))
+  }
+  as.table(stats)
 }
 
 #' @title IFC Graph Adjustment

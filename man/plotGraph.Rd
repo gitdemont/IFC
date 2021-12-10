@@ -53,8 +53,8 @@ Note that it only applies when display is seen as overlaying populations.}
 }
 \value{
 it invisibly returns a list whose members are:\cr
--plot, "trellis" object that can be displayed using plot,\cr
--stats, a table of statistics computed for the graph,\cr
+-plot, "trellis" object that can be displayed using plot, if 'draw' was TRUE,\cr
+-stats, a table of statistics computed for the graph, if 'stats_print' was TRUE,\cr
 -input, a list with input parameters.
 }
 \description{
