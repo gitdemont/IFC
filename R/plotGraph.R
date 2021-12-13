@@ -341,7 +341,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     }
     if(draw) {
       tryCatch({
-        ret$plot = plot_latticeplot(ret)
+        ret$plot = plot_lattice(ret)
         plot(ret$plot)
       })
     }
