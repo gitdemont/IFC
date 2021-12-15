@@ -691,6 +691,7 @@ plot_raster = function(obj) {
   
   # determines population order
   disp = unique(names(obj$input$order)[order(obj$input$order)])
+  disp = c(setdiff(names(obj$input$displayed), disp), disp)
   
   # create data specific list for raster plot
   data = sapply(rev(disp), simplify = FALSE, USE.NAMES = TRUE, FUN = function(p) {
