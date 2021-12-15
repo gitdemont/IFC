@@ -717,7 +717,7 @@ plot_raster = function(obj) {
     list(size = size,
          pch = obj$input$displayed[[p]]$style,
          col = rbind(col2rgb(col), 255),
-         coords = coord_to_px(coord=coords[sub_], coordmap=coordmap))
+         coords = coord_to_px(coord=coords[sub_,,drop=FALSE], coordmap=coordmap))
   })
   
   # call c part to produce image raster
