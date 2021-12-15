@@ -516,10 +516,19 @@ FCS_merge_dataset <- function(fcs, ...) {
       yy = cbind.data.frame(yy, matrix(NA, nrow = nrow(yy), ncol = length(Nxx)))
       names(yy) = c(Nyy, Nxx)
       aa = rbind.data.frame(xx[, c(Nxx, Nyy), drop = FALSE], yy[, c(Nxx, Nyy), drop = FALSE], make.row.names = FALSE)
-      if(length(com) != 0) aa = structure(cbind.data.frame(aa, rbind.data.frame(x[, com, drop = FALSE],
-                                                                                y[, com, drop = FALSE],
-                                                                                make.row.names = FALSE)),
-                                          names = c(Nxx, Nyy, com))
+      if(length(com) != 0) {
+        if(length(c(Nxx, Nyy)) == 0) {
+          aa = structure(rbind.data.frame(x[, com, drop = FALSE],
+                                          y[, com, drop = FALSE],
+                                          make.row.names = FALSE),
+                         names = com)
+        } else {
+          aa = structure(cbind.data.frame(aa, rbind.data.frame(x[, com, drop = FALSE],
+                                                               y[, com, drop = FALSE],
+                                                               make.row.names = FALSE)),
+                         names = c(Nxx, Nyy, com))
+        }
+      }
       aa
     },
     lapply(1:L, FUN = function(i) {
