@@ -725,15 +725,20 @@ FCS_to_data <- function(fcs, ...) {
     if(length(tmp) == 0) return(NULL)
     return(tmp)
   })
+  spillover = spillover[sapply(spillover, length) != 0]
   if(is.list(spillover) && length(spillover) == 1) spillover = spillover[[1]]
   if(is.list(spillover) && length(spillover) == 1) spillover = spillover[[1]]
   if(!is.list(spillover) && length(spillover) == 1 && spillover == "") spillover = NULL
   if(length(spillover) != 0) {
     features_names = parseFCSname(names(features))
-    spillover = convert_spillover(spillover)
-    rownames(spillover) <- names(features)[apply(sapply(colnames(spillover), FUN = function(x) {
-      x==features_names$PnN
-    }), 2, FUN = function(i) which(i)[1])]
+    spillover = try(convert_spillover(spillover), silent = TRUE)
+    if(inherits(spillover, "try-error")) {
+      spillover = NULL
+    } else {
+      rownames(spillover) <- names(features)[apply(sapply(colnames(spillover), FUN = function(x) {
+        x==features_names$PnN
+      }), 2, FUN = function(i) which(i)[1])]
+    }
   }
   # checksum = sapply(fcs, FUN = function(x) {
   #   tmp = x$description[[1]]$`$ENDDATA`
