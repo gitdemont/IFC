@@ -41,6 +41,7 @@
 #include "../inst/include/decomp.hpp"
 #include "../inst/include/extract.hpp"
 #include "../inst/include/resize.hpp"
+#include "../inst/include/plot.hpp"
 using namespace Rcpp;
 
 // FROM align
@@ -475,6 +476,61 @@ std::size_t cpp_scanFirst(const std::string fname,
 }
 // END scan
 
+// FROM plot
+//' @title Draw Shape to Image
+//' @name cpp_drawat
+//' @description low-level function to add shape on image
+//' @param img an IntegerVector. A non null array of dimensions [nrow, ncol, 4].
+//' @param coords an IntegerMatrix whose rows are points to draw and with:\cr
+//' - 1st column being img col coordinate in px,\cr
+//' - 2nd column being img row coordinate in px,\cr
+//' - 3rd column determining if point should be drawn or not.
+//' @param mask a LogicalMatrix where every true value will be added to the image.
+//' @param color, a length 4 IntegerMatrix specifying rgba, from 0 to 255. Only first row will be used.
+//' @details shape according to 'mask' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true
+//' and every pixels being part of the shape will be filled with 'color'.
+//' If only one 'color' is provided, this 'color' will be used for each points.
+//' If more than one 'color' is provided, then if number of colors (ncol) equals the number of points 'color' will be used as is for each single point.
+//' Otherwise, 'color' will be considered as a color-gradient and density will be computed.
+//' /!\ please note that IFC:::densCols() is faster to compute color based on density for n < 20000 points, so it's worth using it when number of points are lower.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::IntegerVector cpp_drawat(const Rcpp::IntegerVector img,
+                               const Rcpp::IntegerMatrix coords = Rcpp::IntegerMatrix(1,2),
+                               const Rcpp::LogicalMatrix mask = Rcpp::LogicalMatrix(1),
+                               const Rcpp::IntegerMatrix color = Rcpp::IntegerMatrix(4,1)) {
+  return hpp_drawat(img, coords, mask, color);
+}
+//' @title Raster Image
+//' @name cpp_raster
+//' @description low-level function to create plot raster
+//' @param width a uint16_t determining the returned image width.
+//' @param height a uint16_t determining the returned image height.
+//' @param obj a List containing drawing information:\cr
+//' - pch, an integer specifying a symbol to draw. Handled are 0,1,2,3,4,5,15,17,18,20. Otherwise only a pixel will be drawn.\cr
+//' - size, an integer specifying the size in pixel of the shape, from 1 to 255.\cr
+//' - color an IntegerMatrix (rgba) of the color used to draw the shape.\cr
+//' - coords, an IntegerMatrix whose rows are points to draw and with:\cr
+//' -* 1st column being img col coordinate in px,\cr
+//' -* 2nd column being img row coordinate in px,\cr
+//' -* 3rd column determining if point should be drawn or not.
+//' @details shape according to 'pch' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true
+//' and every pixels being part of the shape will be filled with 'color'.
+//' If only one 'color' is provided, this 'color' will be used for each points.
+//' If more than one 'color' is provided, then if number of colors (ncol) equals the number of points 'color' will be used as is for each single point.
+//' Otherwise, 'color' will be considered as a color-gradient and density will be computed.
+//' /!\ please note that IFC:::densCols() is faster to compute color based on density for n < 20000 points, so it's worth using it when number of points are lower.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::IntegerVector cpp_raster(const uint16_t width,
+                               const uint16_t height,
+                               const Rcpp::List obj) {
+  return hpp_raster(width, height, obj);
+}
+// END plot
+
 
 // FROM resize
 //' @title Matrix Cropping
@@ -491,7 +547,7 @@ std::size_t cpp_scanFirst(const std::string fname,
 Rcpp::NumericMatrix cpp_crop (Rcpp::NumericMatrix mat,
                               const R_len_t new_height = 0,
                               const R_len_t new_width = 0) {
-  return hpp_crop (mat, new_height, new_width);
+  return hpp_crop(mat, new_height, new_width);
 }
 
 //' @title Matrix Resizing

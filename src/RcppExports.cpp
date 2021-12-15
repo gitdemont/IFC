@@ -323,6 +323,33 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_drawat
+Rcpp::IntegerVector cpp_drawat(const Rcpp::IntegerVector img, const Rcpp::IntegerMatrix coords, const Rcpp::LogicalMatrix mask, const Rcpp::IntegerMatrix color);
+RcppExport SEXP _IFC_cpp_drawat(SEXP imgSEXP, SEXP coordsSEXP, SEXP maskSEXP, SEXP colorSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type img(imgSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix >::type coords(coordsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::LogicalMatrix >::type mask(maskSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix >::type color(colorSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_drawat(img, coords, mask, color));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_raster
+Rcpp::IntegerVector cpp_raster(const uint16_t width, const uint16_t height, const Rcpp::List obj);
+RcppExport SEXP _IFC_cpp_raster(SEXP widthSEXP, SEXP heightSEXP, SEXP objSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const uint16_t >::type width(widthSEXP);
+    Rcpp::traits::input_parameter< const uint16_t >::type height(heightSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List >::type obj(objSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_raster(width, height, obj));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_crop
 Rcpp::NumericMatrix cpp_crop(Rcpp::NumericMatrix mat, const R_len_t new_height, const R_len_t new_width);
 RcppExport SEXP _IFC_cpp_crop(SEXP matSEXP, SEXP new_heightSEXP, SEXP new_widthSEXP) {
@@ -529,6 +556,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_v_int32_to_uint32", (DL_FUNC) &_IFC_cpp_v_int32_to_uint32, 1},
     {"_IFC_cpp_v_int64_to_uint64", (DL_FUNC) &_IFC_cpp_v_int64_to_uint64, 1},
     {"_IFC_cpp_scanFirst", (DL_FUNC) &_IFC_cpp_scanFirst, 5},
+    {"_IFC_cpp_drawat", (DL_FUNC) &_IFC_cpp_drawat, 4},
+    {"_IFC_cpp_raster", (DL_FUNC) &_IFC_cpp_raster, 3},
     {"_IFC_cpp_crop", (DL_FUNC) &_IFC_cpp_crop, 3},
     {"_IFC_cpp_resize", (DL_FUNC) &_IFC_cpp_resize, 6},
     {"_IFC_cpp_decomp", (DL_FUNC) &_IFC_cpp_decomp, 9},

@@ -392,6 +392,70 @@ base_hist_constr = function(x, type, br, normalize, fill, smooth, lwd, lty, col,
   }
 }
 
+#' @title Device Raw Coordinates
+#' @name get_coordmap_raw
+#' @description Helper to extract current device plotting region
+#' @source computes drawing region in a similar way as shiny:::getPrevPlotCoordmap()
+#' @keywords internal
+get_coordmap_raw <- function() {
+  usr <- graphics::par("usr")
+  list(domain = list(left = usr[1], 
+                     right = usr[2],
+                     bottom = usr[3],
+                     top = usr[4]), 
+       range = list(left = graphics::grconvertX(usr[1], "user", "ndc"),
+                    right = graphics::grconvertX(usr[2], "user", "ndc"),
+                    bottom = graphics::grconvertY(usr[3], "user", "ndc"),
+                    top = graphics::grconvertY(usr[4], "user", "ndc")))
+}
+
+#' @title Device Adjusted Coordinates
+#' @name get_coordmap_adjusted
+#' @description Helper to extract current device plotting region adjusted to device size
+#' @param coordmap current device plotting region. Default is missing.
+#' @param width current device height in pixel. Default is grDevices::dev.size("px")[1].
+#' @param height current device width in pixel. Default is grDevices::dev.size("px")[2].
+#' @param ratio current device ratio. Default is graphics::par('din') / graphics::par('pin').
+#' @source computes drawing region in a similar way as shiny:::getPrevPlotCoordmap()
+#' @keywords internal
+get_coordmap_adjusted <- function(coordmap,
+                                  width = grDevices::dev.size("px")[1],
+                                  height = grDevices::dev.size("px")[2],
+                                  ratio = graphics::par('din') / graphics::par('pin')) {
+  if(missing(coordmap)) coordmap = get_coordmap_raw()
+  range = list(left = coordmap$range$left * width * ratio[1],
+               right = coordmap$range$right * width * ratio[1],
+               bottom = (1 - coordmap$range$bottom) * height * ratio[2] - 1,
+               top = (1 - coordmap$range$top) * height * ratio[2] - 1)
+  return(list(domain=coordmap$domain, range=range, width = width, height = height, ratio=list(x=ratio[1],y=ratio[2])))
+}
+
+#' @title User's Coordinates to Pixels Conversion
+#' @name get_coordmap_adjusted
+#' @description Helper to extract current device plotting region adjusted to device size
+#' @param coord coordinates in user system. A matrix where rows are points and with at least 2 columns named "x" and "y" for x and y coordinates, respectively.
+#' @param coordmap current device adjusted coordinates. Default is missing.
+#' @param height current device width in pixel. Default is grDevices::dev.size("px")[2].
+#' @param ratio current device ratio. Default is graphics::par('din') / graphics::par('pin').
+#' @return a 3-columns matrix with "x" and "y" coordinates and a "draw" column specifying if point is within drawing region limits
+#' @keywords internal
+
+coord_to_px <- function (coord, coordmap) {
+  if(missing(coordmap)) coordmap = get_coordmap_adjusted()
+  ran_x = range(coordmap$domain$left, coordmap$domain$right)
+  dx = coordmap$domain$right - coordmap$domain$left
+  ran_y = range(coordmap$domain$bottom, coordmap$domain$top)
+  dy = coordmap$domain$top - coordmap$domain$bottom
+  ran_img_width = range(coordmap$range$right, coordmap$range$left)
+  width = diff(ran_img_width)
+  ran_img_height = range(coordmap$range$bottom, coordmap$range$top)
+  height = diff(ran_img_height)
+  return(cbind(x = ((coord$x - coordmap$domain$left)/dx * width + ran_img_width[1])     /coordmap$ratio$x,
+               y = (ran_img_height[2] - (coord$y - coordmap$domain$bottom)/dy * height) /coordmap$ratio$y, 
+               draw = (coord$x <= ran_x[2]) & (coord$x >= ran_x[1]) & 
+                 (coord$y <= ran_y[2]) & (coord$y >= ran_y[1])))
+}
+
 #' @title `IFC_plot` Conversion to 'base' Plot
 #' @name plot_base
 #' @description Helper to convert `IFC_plot` to 'base' plot.
@@ -599,6 +663,68 @@ plot_base = function(obj) {
                    args_key),
             what=legend)
   }
+}
+
+#' @title `IFC_plot` Conversion to 'raster' Plot
+#' @name plot_raster
+#' @description Helper to convert `IFC_plot` to 'raster' plot.
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @keywords internal
+plot_raster = function(obj) {
+  if(obj$input$type %in% c("count", "percent")) return(plot_base(obj))
+  if(obj$input$type == "density") {
+    basepop = obj$input$base
+    args_level = basepop[[1]][["densitylevel"]]
+    if((length(args_level) != 0) && (args_level != "")) return(plot_base(obj))
+  }
+  
+  # copy obj and empty data
+  graph = obj
+  graph$input$data <- graph$input$data[rep(FALSE, nrow(graph$input$data)),,drop = FALSE]
+  graph$input$precision <- "full"
+  
+  # create empty plot
+  plot_base(graph)
+  
+  # determines current device plotting region
+  coordmap = get_coordmap_adjusted()
+  
+  # determines population order
+  disp = unique(names(obj$input$order)[order(obj$input$order)])
+  
+  # create data specific list for raster plot
+  data = sapply(rev(disp), simplify = FALSE, USE.NAMES = TRUE, FUN = function(p) {
+    sub_ = obj$input$data[, p] & obj$input$subset
+    if(sum(sub_) == 0) return(NULL)
+    coords = obj$input$data[, c("x2","y2")]
+    colnames(coords) = c("x","y")
+    if(obj$input$type == "scatter") {
+      size = 9
+      col = map_color(obj$input$displayed[[p]]$lightModeColor)
+    } else {
+      size = 7
+      colramp = colorRampPalette(colConv(obj$input$base[[1]][c("densitycolorsdarkmode", "densitycolorslightmode")][[obj$input$mode]]))
+      if((sum(sub_) < 20000) || inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), "try-error")) {
+        col = densCols(x = structure(coords[sub_,"x"], features=attr(obj$input$data,"features")),
+                       y = coords[sub_,"y"],
+                       colramp = colramp,
+                       nbin = obj$input$bin,
+                       transformation = obj$input$trans)
+      } else {
+        col = colramp(255)
+      }
+    }
+    list(size = size,
+         pch = obj$input$displayed[[p]]$style,
+         col = rbind(col2rgb(col), 255),
+         coords = coord_to_px(coord=coords[sub_], coordmap=coordmap))
+  })
+  
+  # call c part to produce image raster
+  bar = cpp_raster(width = grDevices::dev.size("px")[1], height = grDevices::dev.size("px")[2], data)
+  
+  # add image to plot
+  grid::grid.raster(bar/255, interpolate = FALSE)
 }
 
 #' @title `IFC_plot` Conversion to 'lattice' Plot
