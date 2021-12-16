@@ -189,7 +189,6 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
       off2 = header$data_end
     }
   }
-  
   data_bytes = off2 - off1 + 1
   # prepare default returned value for data
   data = data.frame()
@@ -951,7 +950,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   features = cbind(obj$features[, setdiff(names(obj$features), colnames(all_pops))], all_pops)
   # need to replace non finite values by something; IDEAS is using 0 so we use 0 also
   # TODO maybe replace -Inf by features min and +Inf by features max ?
-  features = as.data.frame(apply(features, 2, FUN = function(x) {x[!is.finite(x)] <- 0; x}), stringsAsFactors = TRUE)
+  features = as.data.frame(apply(features, 2, cpp_replace_non_finite), stringsAsFactors = TRUE)
   # comma (=,) is not allowed in features names according to fcs specification so it is replaced by _
   names(features) = gsub(",","_",names(features),fixed=TRUE)
   
@@ -1010,7 +1009,6 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   extra_keywords = extra_keywords[sapply(extra_keywords, length) != 0]
   # adds to text_segment1
   text_segment1 = c(text_segment1, extra_keywords)
-  
   # determines length of data
   data_length = 4 * L * nrow(features)
   
@@ -1033,20 +1031,20 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   # so we use a function to optimize it
   f = function(x, text_length) {
     data_beg = x + 1
-    if(data_beg >= 1e9) data_beg = 0
+    if(data_beg >= 1e8) data_beg = 0
     data_end = x + data_length - 1
-    if(data_end >= 1e9) data_end = 0
+    if(data_end >= 1e8) data_end = 0
     ans = text_length + nchar(data_beg) + nchar(data_end) 
     if(ans != x) ans = f(x = ans, text_length = text_length)
     return(ans)
   }
   text_end = f(x = text1_length, text_length = text1_length)
-  if(text_end >= 1e9) stop("primary text segment is too big")
+  if(text_end >= 1e8) stop("primary text segment is too big")
   header$text_end = sprintf("%8i", text_end)
   
   # BEGINDATA
   data_beg = text_end + 1 # +1 because data start just after text segment end
-  if(data_beg >= 1e9) {
+  if(data_beg >= 1e8) {
     header$data_beg = sprintf("%8i", 0)
   } else {
     header$data_beg = sprintf("%8i", data_beg)
@@ -1055,7 +1053,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   
   # ENDDATA
   data_end = data_beg + data_length - 1 #-1 because last data byte is at minus one from total length
-  if(data_end >= 1e9) {
+  if(data_end >= 1e8) {
     header$data_end = sprintf("%8i", 0)
   } else {
     header$data_end = sprintf("%8i", data_end)

@@ -79,6 +79,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_replace_non_finite
+Rcpp::Nullable<Rcpp::NumericVector> cpp_replace_non_finite(const Rcpp::Nullable<Rcpp::NumericVector> V_, const double by);
+RcppExport SEXP _IFC_cpp_replace_non_finite(SEXP V_SEXP, SEXP bySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::NumericVector> >::type V_(V_SEXP);
+    Rcpp::traits::input_parameter< const double >::type by(bySEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_replace_non_finite(V_, by));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_computeGamma
 double cpp_computeGamma(const Rcpp::NumericVector V);
 RcppExport SEXP _IFC_cpp_computeGamma(SEXP VSEXP) {
@@ -536,6 +548,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_ell_coord", (DL_FUNC) &_IFC_cpp_ell_coord, 2},
     {"_IFC_cpp_pnt_in_gate", (DL_FUNC) &_IFC_cpp_pnt_in_gate, 4},
     {"_IFC_cpp_get_bytes_order", (DL_FUNC) &_IFC_cpp_get_bytes_order, 4},
+    {"_IFC_cpp_replace_non_finite", (DL_FUNC) &_IFC_cpp_replace_non_finite, 2},
     {"_IFC_cpp_computeGamma", (DL_FUNC) &_IFC_cpp_computeGamma, 1},
     {"_IFC_cpp_base64_encode", (DL_FUNC) &_IFC_cpp_base64_encode, 1},
     {"_IFC_cpp_writeBMP", (DL_FUNC) &_IFC_cpp_writeBMP, 1},

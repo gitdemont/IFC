@@ -134,13 +134,39 @@ std::string to_string(const uint16_t x) {
   return out;
 }
 
+//' @title Non Finite Values Replacement
+//' @name cpp_replace_non_finite
+//' @description
+//' This function replaces non finite values (NA, NaN -Inf and +Inf)
+//' @param V a NumericVector.
+//' @param by a double used as replcaement value. Default is 0.0
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::NumericVector> hpp_replace_non_finite(const Rcpp::Nullable<Rcpp::NumericVector> V_ = R_NilValue,
+                                                           const double by = 0.0) {
+  if(nNotisNULL(V_)) {
+    Rcpp::NumericVector V(V_.get());
+    Rcpp::NumericVector out(V.size());
+    Rcpp::LogicalVector a = is_infinite(V);
+    Rcpp::LogicalVector b = is_nan(V);
+    for(R_len_t i = 0; i < V.size(); i++) {
+      out[i] = (a[i] | b[i]) ? by : V[i];
+    }
+    return out;
+  }
+  return V_;
+}
+
 // determines range of a numeric vector AND ensures that it is of finite values.
 // minimal value will be clipped to -4095.0
 Rcpp::NumericVector hpp_check_range(const Rcpp::NumericVector x) {
   double Min = R_PosInf, Max = R_NegInf;
   if(nNotisNULL(x)) {
+    Rcpp::LogicalVector a = is_infinite(x);
+    Rcpp::LogicalVector b = is_nan(x);
     for(R_len_t i = 0; i < x.size(); i++) {
-      if(!Rcpp::traits::is_finite<REALSXP>(x[i])) Rcpp::stop("hpp_check_range: 'x' contains non-finite values");
+      if(a[i] | b[i]) Rcpp::stop("hpp_check_range: 'x' contains non-finite values");
       if((x[i] < Min) && (x[i] > -4095.0)) Min = x[i];
       if(x[i] > Max) Max = x[i];
     }

@@ -62,6 +62,15 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title Non Finite Values Replacement
+#' @name cpp_replace_non_finite
+#' @description
+#' This function replaces non finite values (NA, NaN -Inf and +Inf)
+#' @param V_ a NumericVector.
+#' @param by a double used as replcaement value. Default is 0.0
+#' @keywords internal
+NULL
+
 #' @title Gamma Computation
 #' @name cpp_computeGamma
 #' @description
@@ -574,6 +583,10 @@ cpp_pnt_in_gate <- function(pnts, gate, algorithm = 1L, epsilon = 0.000000000001
 
 cpp_get_bytes_order <- function(obj = 0L, byt_ = NULL, ord_ = NULL, rev = FALSE) {
     .Call(`_IFC_cpp_get_bytes_order`, obj, byt_, ord_, rev)
+}
+
+cpp_replace_non_finite <- function(V_ = NULL, by = 0.0) {
+    .Call(`_IFC_cpp_replace_non_finite`, V_, by)
 }
 
 cpp_computeGamma <- function(V) {

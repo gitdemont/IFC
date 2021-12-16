@@ -146,6 +146,20 @@ Rcpp::Nullable<Rcpp::IntegerVector> cpp_get_bytes_order (const R_len_t obj = 0,
   return hpp_get_bytes_order (obj, byt_, ord_, rev);
 }
 
+//' @title Non Finite Values Replacement
+//' @name cpp_replace_non_finite
+//' @description
+//' This function replaces non finite values (NA, NaN -Inf and +Inf)
+//' @param V_ a NumericVector.
+//' @param by a double used as replcaement value. Default is 0.0
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::NumericVector> cpp_replace_non_finite(const Rcpp::Nullable<Rcpp::NumericVector> V_ = R_NilValue,
+                                                           const double by = 0.0) {
+  return hpp_replace_non_finite (V_, by);
+}
+
 //' @title Gamma Computation
 //' @name cpp_computeGamma
 //' @description
