@@ -54,7 +54,7 @@ myScales=function(x=list(), y=list()) {
 #' @name calcDensity
 #' @description Helper to compute density plot
 #' @keywords internal
-calcDensity <- getFromNamespace(x = ".smoothScatterCalcDensity", ns = "grDevices")
+calcDensity=getFromNamespace(x = ".smoothScatterCalcDensity", ns = "grDevices")
 
 #' @title Colors for Smooth Density Plots
 #' @description Helper to map density to colors
@@ -119,7 +119,7 @@ inv_colConv=function(col){
 #' @name hist_constr
 #' @description Helper to construct histogram 
 #' @keywords internal
-hist_constr <- getFromNamespace(x = "hist.constructor", ns = "lattice")
+hist_constr=getFromNamespace(x = "hist.constructor", ns = "lattice")
 
 #' @title Histogram Type Constructor
 #' @description Helper to construct histogram 
@@ -142,7 +142,7 @@ val_constr=function(x, h, type) {
 #' @description Helper to smooth histogram
 #' @source derived from \pkg{lattice} from Deepayan Sarkar
 #' @keywords internal
-pan_smooth = function(x, type, br, normalize, fill, lwd, lty, col, alpha, ylim, bin, border, include.lowest=TRUE, right=TRUE, factor=0) {
+pan_smooth=function(x, type, br, normalize, fill, lwd, lty, col, alpha, ylim, bin, border, include.lowest=TRUE, right=TRUE, factor=0) {
   h=hist_constr(x, br, include.lowest=include.lowest, right=right, plot = FALSE)
   xx=val_constr(x, h, "mids")
   yy=density(x, n=bin, na.rm=TRUE, from=min(br), to=max(br))$y
@@ -220,7 +220,7 @@ toEllipse=function(gate, theta=2*pi, npoints=100) {
 #' @param trans transformation applied. Defaut is "P".
 #' @param nint positive integer value indicating (approximately) the desired number of intervals. Default is 10.
 #' @keywords internal
-base_axis_constr = function(lim, trans = "P", nint = 10) {
+base_axis_constr=function(lim, trans = "P", nint = 10) {
   nint = na.omit(as.integer(nint)); assert(nint, len = 1, typ = "integer")
   assert(trans, len = 1)
   trans_ = parseTrans(trans)
@@ -356,7 +356,7 @@ base_axis_constr = function(lim, trans = "P", nint = 10) {
 #' @param include.lowest logical; if TRUE, an x[i] equal to the breaks value will be included in the first (or last, for right = FALSE) bar. This will be ignored (with a warning) unless breaks is a vector.
 #' @param right logical; if TRUE, the histogram cells are right-closed (left open) intervals.
 #' @keywords internal
-base_hist_constr = function(x, type, br, normalize, fill, smooth, lwd, lty, col, alpha, border, include.lowest=TRUE, right=TRUE){
+base_hist_constr=function(x, type, br, normalize, fill, smooth, lwd, lty, col, alpha, border, include.lowest=TRUE, right=TRUE){
   assert(type, len = 1, alw = c("count", "percent"))
   normalize = as.logical(normalize); assert(normalize, len = 1, alw = c(TRUE, FALSE))
   fill = as.logical(fill); assert(fill, len = 1, alw = c(TRUE, FALSE))
@@ -397,7 +397,7 @@ base_hist_constr = function(x, type, br, normalize, fill, smooth, lwd, lty, col,
 #' @description Helper to extract current device plotting region
 #' @source computes drawing region in a similar way as shiny:::getPrevPlotCoordmap()
 #' @keywords internal
-get_coordmap_raw <- function() {
+get_coordmap_raw=function() {
   usr <- graphics::par("usr")
   list(domain = list(left = usr[1], 
                      right = usr[2],
@@ -418,7 +418,7 @@ get_coordmap_raw <- function() {
 #' @param ratio current device ratio. Default is graphics::par('din') / graphics::par('pin').
 #' @source computes drawing region in a similar way as shiny:::getPrevPlotCoordmap()
 #' @keywords internal
-get_coordmap_adjusted <- function(coordmap,
+get_coordmap_adjusted=function(coordmap,
                                   width = grDevices::dev.size("px")[1],
                                   height = grDevices::dev.size("px")[2],
                                   ratio = graphics::par('din') / graphics::par('pin')) {
@@ -440,7 +440,7 @@ get_coordmap_adjusted <- function(coordmap,
 #' @return a 3-columns matrix with "x" and "y" coordinates and a "draw" column specifying if point is within drawing region limits
 #' @keywords internal
 
-coord_to_px <- function (coord, coordmap) {
+coord_to_px=function (coord, coordmap) {
   if(missing(coordmap)) coordmap = get_coordmap_adjusted()
   ran_x = range(coordmap$domain$left, coordmap$domain$right)
   dx = coordmap$domain$right - coordmap$domain$left
@@ -461,7 +461,9 @@ coord_to_px <- function (coord, coordmap) {
 #' @description Helper to convert `IFC_plot` to 'base' plot.
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
 #' @keywords internal
-plot_base = function(obj) {
+plot_base=function(obj) {
+  old_mar = par("mar")
+  on.exit(par("mar" = old_mar), add = TRUE)
   # variables for future use
   n_ticks = 10
   # check obj is `IFC_plot`
@@ -474,10 +476,16 @@ plot_base = function(obj) {
   Xlim = obj$input$xlim
   Ylim = obj$input$ylim
   disp_n = names(displayed)
+  main = obj$input$title
+  subtitle = FALSE
+  if(any(obj$input$add_key %in% c("global", "both"))) {
+    par("mar" = c(old_mar[1:2],old_mar[3]+length(displayed) * obj$plot$par.settings$add.text$cex * 0.5 - 1,old_mar[4]))
+    main = ""
+  }
   
   # common plot args
   args_plot = list(xlim = obj$input$xlim, ylim = obj$input$ylim, 
-                   main = trunc_string(obj$input$title, obj$input$trunc_labels), 
+                   main = trunc_string(main, obj$input$trunc_labels), 
                    xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
                    ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
                    cex.lab = obj$plot$par.settings$par.xlab.text$cex,
@@ -514,12 +522,12 @@ plot_base = function(obj) {
     }
   } else {
     # 2D
+    hasdata=FALSE
+    pch=16
+    if((nrow(obj$input$data) > 0) && any(obj$input$subset) && (nrow(obj$input$data[obj$input$subset,]) > 0)) hasdata <- TRUE
     if(obj$input$type == "density") {
-      pch=16
       col=c("black","white")[obj$input$mode]
-      hasdata=FALSE
       colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[obj$input$mode]]))
-      if((nrow(obj$input$data) > 0) && any(obj$input$subset) && (nrow(obj$input$data[obj$input$subset,]) > 0)) hasdata <- TRUE
       args_level = basepop[[1]][["densitylevel"]]
       if((length(args_level) != 0) && (args_level != "") && hasdata) {
         col = densCols(x = structure(obj$input$data$x2[obj$input$subset], features=attr(obj$input$data,"features")),
@@ -573,8 +581,8 @@ plot_base = function(obj) {
                 what = plot)
       }
       if((length(args_level) == 0) || (args_level == ""))
-      if(!(inherits(obj$input$trans, what="function") || 
-           !inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), what="try-error"))) mtext(side = 3, line = 0.25, adj = 0.5, obj$input$trans)
+        if(!(inherits(obj$input$trans, what="function") || 
+           !inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), what="try-error"))) subtitle = TRUE
     } else {
       if(obj$input$precision == "full") {
         disp = disp_n[length(displayed)]
@@ -593,17 +601,21 @@ plot_base = function(obj) {
           }
         }
       } else {
-        groups = apply(as.data.frame(D[obj$input$subset,disp_n]), 1, FUN=function(x) {
-          tmp = which(x)[1]
-          if(is.na(tmp)) return(NA)
-          return(disp_n[tmp])
-        })
-        pch = sapply(groups, FUN = function(disp) displayed[[disp]]$style)
-        col = sapply(groups, FUN = function(disp) displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
+        if(hasdata) {
+          groups = apply(as.data.frame(D[obj$input$subset,disp_n]), 1, FUN=function(x) {
+            tmp = which(x)[1]
+            if(is.na(tmp)) return(NA)
+            return(disp_n[tmp])
+          })
+          pch = sapply(groups, FUN = function(disp) displayed[[disp]]$style)
+          col = sapply(groups, FUN = function(disp) displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
+        } else {
+          col = NA 
+        }
         do.call(args = c(list(x = obj$input$data$x2[obj$input$subset],
                               y = obj$input$data$y2[obj$input$subset],
-                              pch = sapply(groups, FUN = function(disp) displayed[[disp]]$style),
-                              col = sapply(groups, FUN = function(disp) displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])),
+                              pch = pch,
+                              col = col),
                          args_plot),
                 what = plot)
       }
@@ -649,20 +661,25 @@ plot_base = function(obj) {
       polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
     }
   }
-
-  # key
-  args_key = list("topleft",inset = 0.025, 
-                  col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
-                  legend=disp_n,cex=obj$plot$par.settings$add.text$cex * 0.5,bg="#ADADAD99",pt.cex=1,bty="o",box.lty=0)
-  if(obj$input$type %in% c("percent", "count")) {
-    do.call(args=c(list(lty=sapply(disp_n, FUN=function(p) c(1,2,3,4,6)[match(basepop[[obj$input$order[p]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])),
-                   args_key),
-            what=legend)
-  } else {
-    do.call(args=c(list(pch=sapply(displayed, FUN=function(p) p$style)),
-                   args_key),
-            what=legend)
+  
+  # key / subtitle / title
+  args_sub = list(text = obj$input$trans, side = 3, line = 0.2, adj = 0.5, font = 3, cex = obj$plot$par.settings$par.main.text$cex * 0.8)
+  if(any(obj$input$add_key %in% c("panel","global","both"))) {
+    args_key = list(x="topleft",inset=0.025,
+                    col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
+                    legend=disp_n,cex=obj$plot$par.settings$add.text$cex * 0.5,bg="#ADADAD99",pt.cex=1,bty="o",box.lty=0)
+    if(obj$input$add_key %in% c("panel","both")) do.call(args=c(list(pch=sapply(displayed, FUN=function(p) p$style)), args_key), what=legend)
+    if(obj$input$add_key %in% c("global","both")) {
+      args_key$x = "top"
+      args_key$inset = -graphics::grconvertY(1+ length(displayed), "chars", "nfc")
+      args_key$xpd = TRUE
+      do.call(args=c(list(pch=sapply(displayed, FUN=function(p) p$style)), args_key), what=legend)
+      mtext(side = 3, line = 2 + length(displayed) * obj$plot$par.settings$add.text$cex * 0.5, adj = 0.5, trunc_string(obj$input$title, obj$input$trunc_labels), font = 2)
+      args_sub$line = 1.1 + length(displayed) * obj$plot$par.settings$par.main.text$cex * 0.8
+    } 
   }
+  # subtitle
+  if(subtitle) do.call(args = args_sub, what = mtext)
 }
 
 #' @title `IFC_plot` Conversion to 'raster' Plot
@@ -670,37 +687,59 @@ plot_base = function(obj) {
 #' @description Helper to convert `IFC_plot` to 'raster' plot.
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
 #' @keywords internal
-plot_raster = function(obj) {
+plot_raster=function(obj) {
   if(obj$input$type %in% c("count", "percent")) return(plot_base(obj))
   if(obj$input$type == "density") {
     basepop = obj$input$base
     args_level = basepop[[1]][["densitylevel"]]
     if((length(args_level) != 0) && (args_level != "")) return(plot_base(obj))
   }
+  # determines population order
+  basepop = obj$input$base
+  displayed = obj$input$displayed
+  disp_n = names(displayed)
+  
+  old_mar = par("mar")
+  on.exit(par("mar" = old_mar), add = TRUE)
   
   # copy obj and empty data
+  subtitle = FALSE
   graph = obj
   graph$input$data <- graph$input$data[rep(FALSE, nrow(graph$input$data)),,drop = FALSE]
   graph$input$precision <- "full"
-  
+  graph$input$regions <- list()
+  graph$input$add_key <- FALSE
+  if(any(obj$input$add_key %in% c("global", "both"))) {
+    par("mar" = c(old_mar[1:2],old_mar[3]+length(displayed) * obj$plot$par.settings$add.text$cex * 0.5 - 1,old_mar[4]))
+    graph$input$title = ""
+    graph$input$trans = ""
+  }
+  if(!(inherits(obj$input$trans, what="function") || 
+     !inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), what="try-error"))) subtitle = TRUE
+
   # create empty plot
   plot_base(graph)
   
   # determines current device plotting region
   coordmap = get_coordmap_adjusted()
   
-  # determines population order
-  disp = unique(names(obj$input$order)[order(obj$input$order)])
-  disp = c(setdiff(names(obj$input$displayed), disp), disp)
-  
   # create data specific list for raster plot
-  data = sapply(rev(disp), simplify = FALSE, USE.NAMES = TRUE, FUN = function(p) {
-    sub_ = obj$input$data[, p] & obj$input$subset
+  if(obj$input$precision == "light") {
+    set = disp_n[apply(obj$input$data[,disp_n, drop = FALSE], 1, FUN = function(x) {
+      foo = which(x)[1]
+    })]
+  }
+  data = sapply(rev(disp_n), simplify = FALSE, USE.NAMES = TRUE, FUN = function(p) {
+    if(obj$input$precision == "light") {
+      sub_ = obj$input$data[, p] & obj$input$subset & (set == p)
+    } else {
+      sub_ = obj$input$data[, p] & obj$input$subset
+    } 
     if(sum(sub_) == 0) return(NULL)
     coords = obj$input$data[, c("x2","y2")]
     colnames(coords) = c("x","y")
     if(obj$input$type == "scatter") {
-      size = 9
+      size = 7
       col = map_color(obj$input$displayed[[p]]$lightModeColor)
     } else {
       size = 7
@@ -720,12 +759,68 @@ plot_raster = function(obj) {
          col = rbind(col2rgb(col), 255),
          coords = coord_to_px(coord=coords[sub_,,drop=FALSE], coordmap=coordmap))
   })
+  data = data[sapply(data, length) != 0]
+  if(length(data) != 0) {
+    zoom = 1
+    # image is zoom fold more the size of the device and then raster size is zoom fold less, this should allow antialaising
+    # however this could lead to much more longer computation times
+    # call c part to produce image raster
+    bar = cpp_raster(width = zoom * grDevices::dev.size("px")[1], height = zoom * grDevices::dev.size("px")[2], data)
+    # add image to plot
+    grid::grid.raster(x = 0, y = 1,
+                      just = c(0, 1),
+                      height = zoom, width = zoom,
+                      image = bar/255, interpolate = FALSE)
+  }
+  # redraw regions
+  for(reg in obj$input$regions) {
+    k = reg[c("color","lightcolor")][[obj$input$mode]]
+    coords = reg[c("x","y")]
+    trans_x = parseTrans(obj$input$trans_x)
+    coords$x = applyTrans(coords$x, trans_x)
+    reg$cx = applyTrans(reg$cx, trans_x)
+    lab =  trunc_string(reg$label, obj$input$trunc_labels)
+    if(reg$type=="line") {
+      Ylim = obj$input$ylim
+      if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
+      if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
+      text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex)
+      polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
+    } else {
+      trans_y = parseTrans(obj$input$trans_y)
+      coords$y = applyTrans(coords$y, trans_y)
+      reg$cy = applyTrans(reg$cy, trans_y)
+      if(reg$type=="rect") {
+        coords$x=c(coords$x[1],coords$x[1],coords$x[2],coords$x[2])
+        coords$y=c(coords$y[1],coords$y[2],coords$y[2],coords$y[1])
+      }
+      if(reg$type=="oval") {
+        coords = toEllipse(coords)
+      }
+      text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex) 
+      polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
+    }
+  }
   
-  # call c part to produce image raster
-  bar = cpp_raster(width = grDevices::dev.size("px")[1], height = grDevices::dev.size("px")[2], data)
-  
-  # add image to plot
-  grid::grid.raster(bar/255, interpolate = FALSE)
+  # redraw key / subtitle / title
+  args_sub = list(text = obj$input$trans, side = 3, line = 0.2, adj = 0.5, font = 3, cex = obj$plot$par.settings$par.main.text$cex * 0.8)
+  if(any(obj$input$add_key %in% c("panel","global","both"))) {
+    args_key = list(x="topleft",inset=0.025,
+                    col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
+                    legend=disp_n,cex=obj$plot$par.settings$add.text$cex * 0.5,bg="#ADADAD99",pt.cex=1,bty="o",box.lty=0)
+    if(obj$input$add_key %in% c("panel","both")) do.call(args=c(list(pch=sapply(displayed, FUN=function(p) p$style)), args_key), what=legend)
+    if(obj$input$add_key %in% c("global","both")) {
+      args_key$x = "top"
+      args_key$inset = -graphics::grconvertY(1+ length(displayed), "chars", "nfc")
+      args_key$xpd = TRUE
+      do.call(args=c(list(pch=sapply(displayed, FUN=function(p) p$style)), args_key), what=legend)
+      mtext(side = 3, line = 2 + length(displayed) * obj$plot$par.settings$add.text$cex * 0.5, adj = 0.5, trunc_string(obj$input$title, obj$input$trunc_labels), font = 2)
+      args_sub$line = 1.1 + length(displayed) * obj$plot$par.settings$par.main.text$cex * 0.8
+    } 
+  }
+  # subtitle
+  if(subtitle) do.call(args = args_sub, what = mtext)
+  box()
 }
 
 #' @title `IFC_plot` Conversion to 'lattice' Plot
@@ -733,7 +828,7 @@ plot_raster = function(obj) {
 #' @description Helper to convert `IFC_plot` to 'lattice' plot.
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
 #' @keywords internal
-plot_lattice <- function(obj) {
+plot_lattice=function(obj) {
   # check obj is `IFC_plot`
   assert(obj, cla = "IFC_plot")
   
@@ -863,6 +958,7 @@ plot_lattice <- function(obj) {
                  xlim = Xlim, ylim = Ylim, 
                  main = main, xlab = xlab, ylab = ylab,
                  xlab.top = xtop,
+                 xlab.top.font = 3,
                  groups=groups, subset=xy_subset,
                  scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)),
                  panel = function(x, y, groups=NULL, subscripts, ...) {
@@ -953,7 +1049,7 @@ plot_lattice <- function(obj) {
 #' @description Helper to extract `IFC_plot` statistics.
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
 #' @keywords internal
-plot_stats <- function(obj) {
+plot_stats=function(obj) {
   # check obj is `IFC_plot`
   assert(obj, cla = "IFC_plot")
   xy_subset = obj$input$subset
@@ -1067,7 +1163,7 @@ plot_stats <- function(obj) {
 #' @param adjust_graph whether to try to adjust graph when possible. Default is TRUE.
 #' @param ... other arguments to be passed.
 #' @keywords internal
-adjustGraph = function(obj, selection, adjust_graph = TRUE, ...) {
+adjustGraph=function(obj, selection, adjust_graph = TRUE, ...) {
   dots = list(...)
   assert(obj, cla = "IFC_data")
   G = obj$graphs
