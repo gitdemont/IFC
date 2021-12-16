@@ -46,11 +46,12 @@
 #' - apply_scale, whether to apply data scaling. It only applies when fcs file is stored as DATATYPE "I". Default is TRUE.\cr
 #' - first_only, whether to extract only first. Default is TRUE.\cr
 #' - force_header, whether to force the use of header position for data segment. Default is FALSE.
+#' - text_only, whether to only extract text segment. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other arguments to be passed.
 #' @details 'options' may be tweaked according to file type, instrument and software used to generate it.\cr
 #' Default 'options' should allow to read most files.\cr
-#' 'apply_scale', 'force_header', and 'first_only' can also be passed to 'options' thanks to ...
+#' 'apply_scale', 'force_header', 'first_only', and 'textt_only' can also be passed to 'options' thanks to ...
 #' @source Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \url{https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.20825}.
 #' @return a list whose elements are lists for each dataset stored within the file.\cr
 #' each sub-list contains:\cr
@@ -66,7 +67,8 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
                                                            data_end = list(at = 34, n = 8)),
                                              apply_scale = TRUE,
                                              first_only = TRUE,
-                                             force_header = FALSE),
+                                             force_header = FALSE,
+                                             text_only = FALSE),
                     display_progress = TRUE, ...) {
   dots = list(...)
   
@@ -77,7 +79,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   title_progress = basename(fileName)
   
   # ensure options names are valid
-  if(!identical(sort(names(options)), c("apply_scale", "first_only", "force_header", "header"))) stop("'options' should be a named list containing \"header\", \"apply_scale\", \"first_only\", and \"force_header\" entries")
+  if(!identical(sort(names(options)), c("apply_scale", "first_only", "force_header", "header", "text_only"))) stop("'options' should be a named list containing \"header\", \"apply_scale\", \"first_only\", \"force_header\", and \"text_only\" entries")
   if(!identical(sort(names(options$header)), c("data_beg", "data_end", "start", "text_beg", "text_end"))) stop("'options$header' should be a named list containing \"start\", \"text_beg\", \"text_end\", \"data_beg\", and \"data_end\" entries")
   if(!(all(sapply(options$header, FUN = function(x) identical(sort(names(x)), c("at","n")))))) stop("each 'options$header' members should be a named list containing \"at\" and \"n\" entries")
   
@@ -103,9 +105,14 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   # and so on ...
   
   # check if we can find options arguments in dots
+  if("text_only" %in% names(dots)) options$text_only <- dots$text_only
   if("first_only" %in% names(dots)) options$first_only <- dots$first_only
   if("apply_scale" %in% names(dots)) options$apply_scale <- dots$apply_scale
   if("force_header" %in% names(dots)) options$force_header <- dots$force_header
+  assert(options[["text_only"]], len = 1, alw = c(TRUE, FALSE))
+  assert(options[["first_only"]], len = 1, alw = c(TRUE, FALSE))
+  assert(options[["apply_scale"]], len = 1, alw = c(TRUE, FALSE))
+  assert(options[["force_header"]], len = 1, alw = c(TRUE, FALSE))
   
   # now we can extract text segment,
   # the primary text segment has to be in within bytes 58 - 99,999,999
@@ -192,7 +199,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   data_bytes = off2 - off1 + 1
   # prepare default returned value for data
   data = data.frame()
-  if(off2 > off1) {
+  if(!options$text_only && (off2 > off1)) {
     seek(toread, off1)
     # retrieve info to extract data
     type = text[["$DATATYPE"]]
@@ -813,7 +820,7 @@ FCS_to_data <- function(fcs, ...) {
 #' @param fileName path(s) of file(s). If multiple files are provided they will be merged and 
 #' populations will be created to identify each single file within returned `IFC_data` object.
 #' @source Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \url{https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.20825}.
-#' @param ... other arguments to be passed to readFCS function.
+#' @param ... other arguments to be passed to readFCS function, with the exception of 'options$text_only'.
 #' @return A named list of class `IFC_data`, whose members are:\cr
 #' -description, a list of descriptive information,\cr
 #' -Merged_fcs, character vector of path of files used to create fcs, if input was a merged,\cr
@@ -832,6 +839,7 @@ FCS_to_data <- function(fcs, ...) {
 ExtractFromFCS <- function(fileName, ...) {
   # create structure
   dots = list(...)
+  dots = dots[names(dots) != "text_only"]
   display_progress = dots$display_progress
   if(length(display_progress) == 0) display_progress = TRUE
   assert(display_progress, len=1, alw = c(TRUE, FALSE))
@@ -845,7 +853,7 @@ ExtractFromFCS <- function(fileName, ...) {
   }
   fcs = lapply(1:L, FUN = function(i_file) {
     if(display_progress) setPB(pb, value = i_file, title = "Extracting FCS", label = "reading files")
-    FCS_merge_dataset(readFCS(fileName = fileName[[i_file]], ...))[[1]]
+    FCS_merge_dataset(do.call(what = readFCS,  args=c(dots, list(fileName = fileName[[i_file]]))))[[1]]
   })
   attr(fcs, "fileName") <- fileName[1]
   FCS_to_data(fcs, ...)
@@ -910,7 +918,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
     if(!overwrite) stop(paste0("file ",write_to," already exists"))
     if(tolower(fileName) == tolower(write_to)) stop("you are trying to overwrite source file which is not allowed")
     tryCatch({
-      fcs = readFCS(fileName = write_to)
+      fcs = readFCS(fileName = write_to, text_only = TRUE)
     }, error = function(e) {
       stop(paste0(write_to, "\ndoes not seem to be well formatted")) 
     })

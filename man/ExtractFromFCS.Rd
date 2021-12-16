@@ -13,7 +13,7 @@ ExtractFromFCS(fileName, ...)
 \item{fileName}{path(s) of file(s). If multiple files are provided they will be merged and 
 populations will be created to identify each single file within returned `IFC_data` object.}
 
-\item{...}{other arguments to be passed to readFCS function.}
+\item{...}{other arguments to be passed to readFCS function, with the exception of 'options$text_only'.}
 }
 \value{
 A named list of class `IFC_data`, whose members are:\cr

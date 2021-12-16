@@ -11,7 +11,8 @@ readFCS(
   fileName,
   options = list(header = list(start = list(at = 0, n = 6), text_beg = list(at = 10, n
     = 8), text_end = list(at = 18, n = 8), data_beg = list(at = 26, n = 8), data_end =
-    list(at = 34, n = 8)), apply_scale = TRUE, first_only = TRUE, force_header = FALSE),
+    list(at = 34, n = 8)), apply_scale = TRUE, first_only = TRUE, force_header = FALSE,
+    text_only = FALSE),
   display_progress = TRUE,
   ...
 )
@@ -28,7 +29,8 @@ readFCS(
 -- data_end: where to retrieve file text segment end.       Default is list(at = 34, n = 8),\cr
 - apply_scale, whether to apply data scaling. It only applies when fcs file is stored as DATATYPE "I". Default is TRUE.\cr
 - first_only, whether to extract only first. Default is TRUE.\cr
-- force_header, whether to force the use of header position for data segment. Default is FALSE.}
+- force_header, whether to force the use of header position for data segment. Default is FALSE.
+- text_only, whether to only extract text segment. Default is FALSE.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
@@ -48,5 +50,5 @@ Parse data from Flow Cytometry Standard (FCS) compliant files.
 \details{
 'options' may be tweaked according to file type, instrument and software used to generate it.\cr
 Default 'options' should allow to read most files.\cr
-'apply_scale', 'force_header', and 'first_only' can also be passed to 'options' thanks to ...
+'apply_scale', 'force_header', 'first_only', and 'textt_only' can also be passed to 'options' thanks to ...
 }
