@@ -162,8 +162,14 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   } else {
     bin=na.omit(as.integer(bin)); assert(bin, len=1, typ="integer")
   }
-  if(!"draw" %in% names(dots)) dots$draw = FALSE
-  if(!"stats_print" %in% names(dots)) dots$stats_print = FALSE
+  if(!"draw" %in% names(dots)) dots$draw = TRUE
+  do_stats = na.omit(dots$stats_print)
+  if(length(do_stats) != 1 || do_stats != FALSE) {
+    do_stats = TRUE
+  } else {
+    do_stats = FALSE
+  }
+  dots$stats_print = FALSE
   plotGraph_args = c(dots, list(obj=obj, color_mode=color_mode, add_key=add_key,
                         precision=precision, trunc_labels=trunc_labels, viewport=viewport))
   if(length(bin) != 0) plotGraph_args = c(plotGraph_args, list(bin=bin))
@@ -208,29 +214,31 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
     pb_gr = newPB(session = dots$session, min = 0, max = gl, initial = 0, style = 3)
     on.exit(endPB(pb_gr), add = TRUE)
   }
+  default_stats_1D = matrix(NA, nrow = 1, ncol = 8)
+  colnames(default_stats_1D) = c("count","perc",
+                                 "x-Min.","x-1st Qu.","x-Median","x-Mean","x-3rd Qu.","x-Max.")
+  default_stats_2D = matrix(NA, nrow = 1, ncol = 14)
+  colnames(default_stats_2D) = c("count","perc",
+                                 "x-Min.","x-1st Qu.","x-Median","x-Mean","x-3rd Qu.","x-Max.",
+                                 "y-Min.","y-1st Qu.","y-Median","y-Mean","y-3rd Qu.","y-Max.")
   suppressWarnings({
     stList = list()
     grList = lapply(1:gl, FUN=function(i) {
       if(display_progress) setPB(pb = pb_gr, value = i, title = title_progress, label = "computing graphs and stats")
       g = try(do.call(what = plotGraph, args = c(plotGraph_args, list(graph = G[[i]]))), silent = TRUE)
-      if(inherits(x = g, what = "try-error")) {
-        foo = arrangeGrob(grid.text(label = paste0("Error: ", attr(x = g, which = "condition")$message), gp=gpar(col="red"), draw = FALSE),
-                          top = textGrob(paste0("\n",G[[i]]$title), gp = gpar(fontsize = 8, font=2, lineheight=0.5)))
-        if(G[[i]]$type=="histogram") {
-          stats = matrix(NA, nrow = 1, ncol = 8)
-          colnames(stats) = c("count","perc",
-                              "x-Min.","x-1st Qu.","x-Median","x-Mean","x-3rd Qu.","x-Max.")
-        } else {
-          stats = matrix(NA, nrow = 1, ncol = 14)
-          colnames(stats) = c("count","perc",
-                              "x-Min.","x-1st Qu.","x-Median","x-Mean","x-3rd Qu.","x-Max.",
-                              "y-Min.","y-1st Qu.","y-Median","y-Mean","y-3rd Qu.","y-Max.")
-        }
-        rownames(stats) = paste0("Error: ", G[[i]]$title)
+      if(G[[i]]$type=="histogram") {
+        stats = default_stats_1D
       } else {
-        stats = g$stats
+        stats = default_stats_2D
+      }
+      rownames(stats) = paste0("Error: ", G[[i]]$title)
+      if((length(g$plot) == 1) || inherits(x = g, what = "try-error")) {
+        foo = arrangeGrob(grid.text(label = paste0(ifelse(length(g$plot) == 1,"'draw' is set to FALSE ","Error: "), attr(x = g, which = "condition")$message), gp=gpar(col="red"), draw = FALSE),
+                          top = textGrob(paste0("\n",G[[i]]$title), gp = gpar(fontsize = 8, font=2, lineheight=0.5)))
+      } else {
         foo = grob(p=g$plot, vp = viewport(x=0.5, y=unit(0.5,"npc")), cl = "lattice")
       }
+      if(do_stats) try({stats = plot_stats(g)}, silent = TRUE)
       stList <<- c(stList, list(stats))
       stats = stats[,!grepl("Qu", colnames(stats)),drop=FALSE]
       foo_lay = matrix(c(rep(1,9), c(NA,2,NA)), nrow=4, ncol=3, byrow = TRUE)
@@ -240,9 +248,11 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
           stats[8, ] = "..."
         }
       }
-      tab = tableGrob(format(stats, scientific=FALSE, digits=5), theme = ttheme_default(base_size=4, base_family = "serif"))
-      tab$vp <- viewport(x=0.5, y=unit(1,"npc") - 0.5*unit(sum(tab$heights, na.rm=TRUE),"npc"))
-      foo = arrangeGrob(foo, tab, layout_matrix = foo_lay, respect = TRUE)
+      if(do_stats) {
+        tab = tableGrob(format(stats, scientific=FALSE, digits=5), theme = ttheme_default(base_size=4, base_family = "serif"))
+        tab$vp <- viewport(x=0.5, y=unit(1,"npc") - 0.5*unit(sum(tab$heights, na.rm=TRUE),"npc"))
+        foo = arrangeGrob(foo, tab, layout_matrix = foo_lay, respect = TRUE)
+      }
       return(foo)
     })
   })
