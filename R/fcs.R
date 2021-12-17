@@ -71,7 +71,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
                                              text_only = FALSE),
                     display_progress = TRUE, ...) {
   dots = list(...)
-  
+  on.exit(gc(verbose = FALSE), add = TRUE)
   if(missing(fileName)) stop("'fileName' can't be missing")
   assert(display_progress, len = 1, alw = c(TRUE,FALSE))
   assert(fileName, len = 1)
@@ -499,6 +499,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
 #' @keywords internal
 FCS_merge_dataset <- function(fcs, ...) {
   dots = list(...)
+  on.exit(gc(verbose = FALSE), add = TRUE)
   display_progress = dots$display_progress
   if(length(display_progress) == 0) display_progress = TRUE
   assert(display_progress, len=1, alw = c(TRUE, FALSE))
@@ -575,6 +576,7 @@ FCS_merge_dataset <- function(fcs, ...) {
 #' @keywords internal
 FCS_merge_sample <- function(fcs, ...) {
   dots = list(...)
+  on.exit(gc(verbose = FALSE), add = TRUE)
   display_progress = dots$display_progress
   if(length(display_progress) == 0) display_progress = TRUE
   assert(display_progress, len=1, alw = c(TRUE, FALSE))
@@ -664,6 +666,7 @@ convert_spillover <- function(spillover) {
 FCS_to_data <- function(fcs, ...) {
   # create structure
   dots = list(...)
+  on.exit(gc(verbose = FALSE), add = TRUE)
   display_progress = dots$display_progress
   if(length(display_progress) == 0) display_progress = TRUE
   assert(display_progress, len=1, alw = c(TRUE, FALSE))
@@ -884,7 +887,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   dots = list(...)
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
-  on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
+  on.exit(suppressWarnings({Sys.setlocale("LC_ALL", locale = locale_back); gc(verbose = FALSE)}), add = TRUE)
   suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
   now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
   
@@ -944,11 +947,11 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   
   # init header
   header = list(version  = "FCS3.0",
-                space    =  "    ",
+                space    = "    ",
                 text_beg = "      58",
-                text_end = character(),
-                data_beg = character(),
-                data_end = character(),
+                text_end = "        ",
+                data_beg = "        ",
+                data_end = "        ",
                 anal_beg = "       0",
                 anal_end = "       0")
   
@@ -1029,8 +1032,8 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                                                   gsub(delimiter, delimiter_esc, N[i], fixed=TRUE), # FIXME should we escape keyword ?
                                                   gsub(delimiter, delimiter_esc, text_segment1[[i]], fixed=TRUE)), # delimiter if present in value should be escaped
                                                 collapse = delimiter)))
-                       }), text2_length,    1, # 1 for additional delimiters, to terminate text2
-                                           57  # 57 for end of header
+                       }), text2_length,
+                       nchar(paste0(header, collapse = ""))
   ))
   
   # compute missing offsets 
@@ -1039,10 +1042,8 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   # so we use a function to optimize it
   f = function(x, text_length) {
     data_beg = x + 1
-    if(data_beg >= 1e8) data_beg = 0
-    data_end = x + data_length - 1
-    if(data_end >= 1e8) data_end = 0
-    ans = text_length + nchar(data_beg) + nchar(data_end) 
+    data_end = x + data_beg + data_length - 1
+    ans = text_length + nchar(num_to_string(data_beg)) + nchar(num_to_string(data_end))
     if(ans != x) ans = f(x = ans, text_length = text_length)
     return(ans)
   }
