@@ -837,6 +837,7 @@ plot_lattice=function(obj) {
   P = obj$input$displayed
   R = obj$input$regions
   D = obj$input$data[xy_subset,,drop=FALSE]
+  #browser()
   nbin = obj$input$bin
   basepop = obj$input$base
   Xlim = obj$input$xlim
@@ -862,7 +863,6 @@ plot_lattice=function(obj) {
   main = trunc_string(obj$input$title, trunc_labels) 
   xlab = trunc_string(obj$input$xlab, trunc_labels)
   ylab = trunc_string(obj$input$ylab, trunc_labels)
-  
   if(type %in% c("percent", "count")) {
     # define legend
     KEY = list("text"=list(displayed_n),
@@ -955,11 +955,10 @@ plot_lattice=function(obj) {
              !inherits(try(suppressWarnings(formals(trans)), silent = TRUE), what="try-error"))) xtop = trans
     }
     foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE,
-                 xlim = Xlim, ylim = Ylim, 
+                 xlim = Xlim, ylim = Ylim,
                  main = main, xlab = xlab, ylab = ylab,
                  xlab.top = xtop,
-                 xlab.top.font = 3,
-                 groups=groups, subset=xy_subset,
+                 groups=groups,
                  scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)),
                  panel = function(x, y, groups=NULL, subscripts, ...) {
                    if(any(c("panel","both")%in%add_key)) if(type=="scatter") pan_key(key=c(KEY,"background"="lightgrey","alpha.background"=0.8), x = 0.02)
@@ -986,16 +985,16 @@ plot_lattice=function(obj) {
                        contour_cols = colramp(length(at))
                        if(fill) {
                          # FIXME when filled the graph is pixelated
-                         panel.levelplot(x=rep(z$x1, times=nbin), y=rep(z$x2, each=nbin), z=zz, 
+                         panel.levelplot(x=rep(z$x1, times=nbin), y=rep(z$x2, each=nbin), z=zz,
                                          at=c(low, at), col.regions=c(NA,colramp(length(at)-1)),
                                          subscripts=seq_along(as.vector(zz)),
                                          border = "transparent", border.lty = 1, border.lwd = 0,
                                          region=TRUE, contour=FALSE)
-                       } 
+                       }
                        if(dolines) {
                          lines = contourLines(x=z$x1, y=z$x2, z=z$fhat, nlevels=length(at), levels=at)
                          if(fill) contour_cols = rep(c("white","black")[color_mode], length(lines))
-                         lapply(1:length(lines), FUN = function(i_l) do.call(panel.lines, args = c(lines[i_l], list(col=contour_cols[lines[[i_l]]$level == at])))) 
+                         lapply(1:length(lines), FUN = function(i_l) do.call(panel.lines, args = c(lines[i_l], list(col=contour_cols[lines[[i_l]]$level == at]))))
                        }
                      } else {
                        col = densCols(x=structure(x, features=attr(obj$input$data,"features")), y=y, colramp=colramp, nbin=nbin, transformation=trans)
@@ -1028,13 +1027,13 @@ plot_lattice=function(obj) {
                        coords = toEllipse(coords)
                      }
                      lab =  trunc_string(reg$label, trunc_labels)
-                     panel.text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4) 
+                     panel.text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4)
                      panel.polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
                    })
                  })
     if(nrow(D) > 0) if(precision=="full") if(type == "scatter") for(l in L:1) {
       disp = displayed_n[l]
-      if(any(D[,disp] & xy_subset)) { # adds layer only if there is at least one point
+      if(any(D[,disp])) { # adds layer only if there is at least one point
         tmp = xyplot(D[,"y2"] ~ D[,"x2"], pch = P[[disp]]$style, col = P[[disp]][c("color","lightModeColor")][[color_mode]], subset = D[,disp] & xy_subset)
         foo = foo + as.layer(tmp)
       }
