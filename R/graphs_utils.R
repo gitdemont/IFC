@@ -1031,10 +1031,10 @@ plot_lattice=function(obj) {
                      panel.polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
                    })
                  })
-    if(nrow(D) > 0) if(precision=="full") if(type == "scatter") for(l in L:1) {
+    if(nrow(D) > 0) if(precision=="full") if(type == "scatter") for(l in length(displayed_n):1) {
       disp = displayed_n[l]
       if(any(D[,disp])) { # adds layer only if there is at least one point
-        tmp = xyplot(D[,"y2"] ~ D[,"x2"], pch = P[[disp]]$style, col = P[[disp]][c("color","lightModeColor")][[color_mode]], subset = D[,disp] & xy_subset)
+        tmp = xyplot(D[,"y2"] ~ D[,"x2"], pch = P[[disp]]$style, col = P[[disp]][c("color","lightModeColor")][[color_mode]], subset = D[,disp])
         foo = foo + as.layer(tmp)
       }
     }
