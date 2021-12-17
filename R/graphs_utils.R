@@ -602,11 +602,15 @@ plot_base=function(obj) {
         }
       } else {
         if(hasdata) {
-          groups = apply(as.data.frame(D[obj$input$subset,disp_n]), 1, FUN=function(x) {
-            tmp = which(x)[1]
-            if(is.na(tmp)) return(NA)
-            return(disp_n[tmp])
-          })
+          if(length(disp_n) > 1) {
+            groups = apply(as.data.frame(D[obj$input$subset,disp_n]), 1, FUN=function(x) {
+              tmp = which(x)[1]
+              if(is.na(tmp)) return(NA)
+              return(disp_n[tmp])
+            })
+          } else {
+            groups = disp_n
+          }
           pch = sapply(groups, FUN = function(disp) displayed[[disp]]$style)
           col = sapply(groups, FUN = function(disp) displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
         } else {
@@ -724,13 +728,13 @@ plot_raster=function(obj) {
   coordmap = get_coordmap_adjusted()
   
   # create data specific list for raster plot
-  if(obj$input$precision == "light") {
+  if((obj$input$precision == "light") && (length(disp_n) > 1)) {
     set = disp_n[apply(obj$input$data[,disp_n, drop = FALSE], 1, FUN = function(x) {
       foo = which(x)[1]
     })]
   }
   data = sapply(rev(disp_n), simplify = FALSE, USE.NAMES = TRUE, FUN = function(p) {
-    if(obj$input$precision == "light") {
+    if((obj$input$precision == "light") && (length(disp_n) > 1)) {
       sub_ = obj$input$data[, p] & obj$input$subset & (set == p)
     } else {
       sub_ = obj$input$data[, p] & obj$input$subset
@@ -765,12 +769,12 @@ plot_raster=function(obj) {
     # image is zoom fold more the size of the device and then raster size is zoom fold less, this should allow antialaising
     # however this could lead to much more longer computation times
     # call c part to produce image raster
-    bar = cpp_raster(width = zoom * grDevices::dev.size("px")[1], height = zoom * grDevices::dev.size("px")[2], data)
+    img = cpp_raster(width = zoom * grDevices::dev.size("px")[1], height = zoom * grDevices::dev.size("px")[2], data)
     # add image to plot
     grid::grid.raster(x = 0, y = 1,
                       just = c(0, 1),
                       height = zoom, width = zoom,
-                      image = bar/255, interpolate = FALSE)
+                      image = img/255, interpolate = FALSE)
   }
   # redraw regions
   for(reg in obj$input$regions) {
@@ -821,6 +825,7 @@ plot_raster=function(obj) {
   # subtitle
   if(subtitle) do.call(args = args_sub, what = mtext)
   box()
+  return(invisible(img))
 }
 
 #' @title `IFC_plot` Conversion to 'lattice' Plot
@@ -941,11 +946,17 @@ plot_lattice=function(obj) {
                              pch = sapply(P[rev(displayed_n)], FUN=function(p) p$style)))
     # identify groups
     groups = NULL
-    if(nrow(D)>0) if(type == "scatter") if(precision=="light") groups=apply(as.data.frame(D[,displayed_n]), 1, FUN=function(x) {
-      tmp = which(x)[1]
-      if(is.na(tmp)) return(NA)
-      return(displayed_n[which(x)[1]])
-    })
+    if(nrow(D) > 0) if(type == "scatter") if(precision=="light") {
+      if(length(displayed_n) > 1) {
+        groups=apply(as.data.frame(D[,displayed_n]), 1, FUN=function(x) {
+          tmp = which(x)[1]
+          if(is.na(tmp)) return(NA)
+          return(displayed_n[which(x)[1]])
+        })
+      } else {
+        groups = rep(displayed_n, nrow(D))
+      }
+    }
     # make xyplot
     xtop = NULL
     if(type == "density") {
@@ -1006,7 +1017,7 @@ plot_lattice=function(obj) {
                        panel.xyplot(x=x[1], y=y[1], pch="", alpha=0)
                      } else {
                        by(data.frame("x"=x,"y"=y,"g"=groups[subscripts], stringsAsFactors=FALSE), groups[subscripts], FUN=function(d) {
-                         disp = unique(d$g)
+                         disp = d$g[1]
                          panel.xyplot(x=d$x, y=d$y, pch=P[[disp]]$style, col = P[[disp]][c("color","lightModeColor")][[color_mode]])
                        })
                      }
