@@ -187,17 +187,18 @@ Rcpp::IntegerVector hpp_getoffsets_noid_obj_ok(const std::string fname,
                                                const bool display_progress = false,
                                                const bool verbose = false) {
   bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
+  Rcpp::IntegerVector out(obj_count * 2);
+  bool show_pb = display_progress;
+  if(obj_count <= 0) show_pb = false;
   
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (fi.is_open()) {
+    Progress p(obj_count * 2 + 1, show_pb);
     try {
       fi.seekg(0, std::ios::end);
       std::size_t filesize = fi.tellg(); // offsets are uint32 so we can't go further
       uint32_t offset = 4; // offsets are uint32 
       std::size_t pos;
-      Rcpp::IntegerVector out(obj_count * 2);
-      bool show_pb = display_progress;
-      if(obj_count <= 0) show_pb = false;
       char buf_entries [2];
       char buf_offset [4];
       R_len_t i_obj = 0;
@@ -208,7 +209,6 @@ Rcpp::IntegerVector hpp_getoffsets_noid_obj_ok(const std::string fname,
       fi.read((char*)&buf_offset, sizeof(buf_offset));
       std::memcpy(&offset, buf_offset, sizeof(offset));
       
-      Progress p(obj_count * 2 + 1, show_pb);
       if(swap) {
         offset = bytes_swap(offset);
         if(!offset) {
@@ -1056,19 +1056,19 @@ Rcpp::List hpp_getoffsets_wid_obj_ok(const std::string fname,
                                      const bool display_progress = false,
                                      const bool verbose = false) {
   bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
+  bool show_pb = display_progress;
+  if(obj_count == 0) show_pb = false;
   
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (fi.is_open()) {
+    Progress p(obj_count * 2 + 1, show_pb);
     try{
       fi.seekg(0, std::ios::end);
-      bool show_pb = display_progress;
-      if(obj_count == 0) show_pb = false;
       char buf_offset [4];
       uint32_t offset = 4;
       R_len_t i_obj = 0;
       
       if(verbose) Rcout << "Extracting offsets from " << fname << std::endl;
-      Progress p(obj_count * 2 + 1, show_pb);
       fi.seekg(offset, std::ios::beg);
       fi.read((char*)&buf_offset, sizeof(buf_offset));
       std::memcpy(&offset, buf_offset, sizeof(offset));
