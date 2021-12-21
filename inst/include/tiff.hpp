@@ -146,9 +146,6 @@ Rcpp::IntegerVector hpp_getoffsets_noid_obj_unk(const std::string fname,
           fi.read((char*)buf_offset, sizeof(buf_offset));
           std::memcpy(&offset, buf_offset, sizeof(offset));
           offset = bytes_swap(offset);
-          if(Progress::check_abort()) {
-            Rcpp::stop("hpp_getoffsets_noid: Interrupted by user");
-          }
         }
       } else {
         if(!offset) {
@@ -166,9 +163,6 @@ Rcpp::IntegerVector hpp_getoffsets_noid_obj_unk(const std::string fname,
           fi.seekg(pos, std::ios::beg);
           fi.read((char*)buf_offset, sizeof(buf_offset));
           std::memcpy(&offset, buf_offset, sizeof(offset));
-          if(Progress::check_abort()) {
-            Rcpp::stop("hpp_getoffsets_noid: Interrupted by user");
-          }
         }
       }
       fi.close();
@@ -188,10 +182,10 @@ Rcpp::IntegerVector hpp_getoffsets_noid_obj_unk(const std::string fname,
   return Rcpp::IntegerVector::create(0);
 }
 
-Rcpp::IntegerVector hpp_getoffsets_noid_obj_ok(const std::string fname, 
-                                            const R_len_t obj_count = 0, 
-                                            const bool display_progress = false,
-                                            const bool verbose = false) {
+Rcpp::IntegerVector hpp_getoffsets_noid_obj_ok(const std::string fname,
+                                               const R_len_t obj_count = 0,
+                                               const bool display_progress = false,
+                                               const bool verbose = false) {
   bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
   
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -240,7 +234,6 @@ Rcpp::IntegerVector hpp_getoffsets_noid_obj_ok(const std::string fname,
           std::memcpy(&offset, buf_offset, sizeof(offset));
           offset = bytes_swap(offset);
           if(Progress::check_abort()) {
-            p.cleanup();
             Rcpp::stop("hpp_getoffsets_noid: Interrupted by user");
           }
         }
@@ -266,15 +259,16 @@ Rcpp::IntegerVector hpp_getoffsets_noid_obj_ok(const std::string fname,
           fi.read((char*)buf_offset, sizeof(buf_offset));
           std::memcpy(&offset, buf_offset, sizeof(offset));
           if(Progress::check_abort()) {
-            p.cleanup();
             Rcpp::stop("hpp_getoffsets_noid: Interrupted by user");
           }
         }
       }
+      p.cleanup();
       fi.close();
       return out;
     }
     catch(std::exception &ex) {	
+      p.cleanup();
       fi.close();
       forward_exception_to_r(ex);
     }
@@ -986,8 +980,8 @@ Rcpp::List hpp_fastTAGS (const std::string fname,
 }
 
 
-Rcpp::List hpp_getoffsets_wid_obj_unk(const std::string fname, 
-                              const bool verbose = false) {
+Rcpp::List hpp_getoffsets_wid_obj_unk(const std::string fname,
+                                      const bool verbose = false) {
   bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
   
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -1034,10 +1028,6 @@ Rcpp::List hpp_getoffsets_wid_obj_unk(const std::string fname,
         // out_obj.push_back(obj[0]);
         // out_typ.push_back(typ[0]);
         out_off.push_back(IFD["curr_IFD_offset"]);
-        
-        if(Progress::check_abort()) {
-          Rcpp::stop("hpp_getoffsets_wid: Interrupted by user");
-        }
       }
       Rcpp::List out = Rcpp::List::create(_["OBJECT_ID"] = out_obj,
                                           _["TYPE"] = out_typ,
@@ -1061,10 +1051,10 @@ Rcpp::List hpp_getoffsets_wid_obj_unk(const std::string fname,
                                                _["OFFSET"] = NA_INTEGER));
 }
 
-Rcpp::List hpp_getoffsets_wid_obj_ok(const std::string fname, 
-                              const R_len_t obj_count = 0, 
-                              const bool display_progress = false, 
-                              const bool verbose = false) {
+Rcpp::List hpp_getoffsets_wid_obj_ok(const std::string fname,
+                                     const R_len_t obj_count = 0,
+                                     const bool display_progress = false,
+                                     const bool verbose = false) {
   bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
   
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -1120,17 +1110,18 @@ Rcpp::List hpp_getoffsets_wid_obj_ok(const std::string fname,
         }
         
         if(Progress::check_abort()) {
-          p.cleanup();
           Rcpp::stop("hpp_getoffsets_wid: Interrupted by user");
         }
       }
       Rcpp::List out = Rcpp::List::create(_["OBJECT_ID"] = out_obj,
                                           _["TYPE"] = out_typ,
                                           _["OFFSET"] = out_off);
+      p.cleanup();
       fi.close();
       return out;
     }
     catch(std::exception &ex) {	
+      p.cleanup();
       fi.close();
       forward_exception_to_r(ex);
     }
