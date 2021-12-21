@@ -117,7 +117,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     write_to = normalizePath(write_to, winslash = "/")
     if(!overwrite) stop(paste0("file ",write_to," already exists"))
     if(tolower(fileName) == tolower(write_to)) stop("you are trying to overwrite source file which is not allowed")
-    xmlEND_export = cpp_scanFirst(fname = write_to, target = '</Assay>', start = 0, end = 0)
+    xmlEND_export = cpp_scanFirst(write_to, charToRaw('</Assay>'), start = 0, end = 0)
     if(xmlEND_export > 0) {
       xml_export = read_xml(readBin(con = write_to, what = "raw", n = xmlEND_export + nchar("</Assay>") - 1), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
       tryCatch({
@@ -134,7 +134,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
   dir_name = dirname(write_to)
   if(!dir.exists(dir_name)) if(!dir.create(dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dir_name))
   file_w = ifelse(overwritten, tmp_file, write_to)
-  xmlEND = cpp_scanFirst(fname = fileName, target = '</Assay>', start = 0, end = 0)
+  xmlEND = cpp_scanFirst(fileName, charToRaw('</Assay>'), start = 0, end = 0)
   if(xmlEND == 0) stop(paste0(fileName, "\ndoes not seem to be well formatted: </Assay> not found")) 
   xmlEND = xmlEND + nchar("</Assay>") - 1
   xml_tmp = read_xml(readBin(con = fileName, what = "raw", n = xmlEND), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
@@ -216,19 +216,19 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     }
 
     # finds offsets in existing daf
-    toskip=c("masks"=cpp_scanFirst(fname = fileName, target = '</masks>', start = 0, end = xmlEND),
-             "features_def"=cpp_scanFirst(fileName, '</DefinedFeatures>', start = 0, end = xmlEND), 
-             "pops"=cpp_scanFirst(fileName, '</Pops>', start = 0, end = xmlEND), 
-             "regions"=cpp_scanFirst(fileName, '</Regions>', start = 0, end = xmlEND),
-             "graphs"=cpp_scanFirst(fileName, '</Displays>', start = 0, end = xmlEND))-1
-    if(toskip["graphs"] < 0) toskip["graphs"] = cpp_scanFirst(fileName, '<Displays', start = 0, end = xmlEND)-1 # when there is no graphs <Displays node is closed with /> and not </Displays>
+    toskip=c("masks"=cpp_scanFirst(fileName, charToRaw('</masks>'), start = 0, end = xmlEND),
+             "features_def"=cpp_scanFirst(fileName, charToRaw('</DefinedFeatures>'), start = 0, end = xmlEND), 
+             "pops"=cpp_scanFirst(fileName, charToRaw('</Pops>'), start = 0, end = xmlEND), 
+             "regions"=cpp_scanFirst(fileName, charToRaw('</Regions>'), start = 0, end = xmlEND),
+             "graphs"=cpp_scanFirst(fileName, charToRaw('</Displays>'), start = 0, end = xmlEND))-1
+    if(toskip["graphs"] < 0) toskip["graphs"] = cpp_scanFirst(fileName, charToRaw('<Displays'), start = 0, end = xmlEND)-1 # when there is no graphs <Displays node is closed with /> and not </Displays>
     tmp = (toskip <= 0)
     if(any(tmp)) stop(paste0(fileName, "\ndoes not seem to be well formatted: [",paste0(names(toskip)[tmp], collapse="|"),"] not found")) 
     if(is_binary) {
       toskip=c(toskip,"feat_count"=xmlEND+7)
       toskip=c(toskip,"features"=xmlEND+(fid)*(obj_number*8+4)+15)
     } else {
-      toskip=c(toskip,"features"=cpp_scanFirst(fileName, '</FeatureValues>', start = 0, end = xmlEND)-1)
+      toskip=c(toskip,"features"=cpp_scanFirst(fileName, charToRaw('</FeatureValues>'), start = 0, end = xmlEND)-1)
     }
     toskip=toskip[order(toskip)]
   }, error = function(e) { 
@@ -406,10 +406,10 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     seek(toread, 0)
     beg = readBin(toread, what="raw", n=toskip[1], endian = endianness)
 
-    ass_beg = cpp_scanFirst(fname = fileName, target = '<Assay', start = 0, end = xmlEND)+nchar("<Assay")
-    date_beg = cpp_scanFirst(fname = fileName, target = 'date=', start = ass_beg, end = xmlEND)-1
-    name_beg = cpp_scanFirst(fname = fileName, target = 'file=', start = date_beg, end = xmlEND)+nchar("file=")
-    name_end = cpp_scanFirst(fname = fileName, target = ' creation=', start = name_beg , end = xmlEND)-1
+    ass_beg = cpp_scanFirst(fileName, charToRaw('<Assay'), start = 0, end = xmlEND)+nchar("<Assay")
+    date_beg = cpp_scanFirst(fileName, charToRaw('date='), start = ass_beg, end = xmlEND)-1
+    name_beg = cpp_scanFirst(fileName, charToRaw('file='), start = date_beg, end = xmlEND)+nchar("file=")
+    name_end = cpp_scanFirst(fileName, charToRaw(' creation='), start = name_beg , end = xmlEND)-1
     
     cname = rawToChar(beg[(name_beg+1):(name_end-1)])
     if(fullname) {
@@ -452,8 +452,8 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     pkg_ver = paste0(unlist(packageVersion("IFC")), collapse = ".")
     pkg_ver = charToRaw(paste0("IFC_version=\"",pkg_ver,"\""))
     if(viewing_pop %in% pops_alw) {
-      pop_beg = cpp_scanFirst(fname = fileName, target = 'population=', start = name_end , end = xmlEND)+nchar("population=")
-      pop_end = cpp_scanFirst(fname = fileName, target = ' showMasks=', start = pop_beg , end = xmlEND)-1
+      pop_beg = cpp_scanFirst(fileName, charToRaw('population='), start = name_end , end = xmlEND)+nchar("population=")
+      pop_end = cpp_scanFirst(fileName, charToRaw(' showMasks='), start = pop_beg , end = xmlEND)-1
       writeBin(object = c(beg[1:ass_beg], pkg_ver, beg[date_beg:name_beg], charToRaw(cif_name),beg[name_end:pop_beg]), con=towrite, endian = endianness)
       writeBin(object = c(charToRaw(viewing_pop),beg[(pop_end):length(beg)]), con=towrite, endian = endianness)
     } else {

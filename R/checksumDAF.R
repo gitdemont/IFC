@@ -44,7 +44,7 @@ checksumDAF <- function(fileName, endianness = .Platform$endian, ...) {
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
   assert(endianness, len = 1, alw= c("big", "little"))
   fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
-  toskip=cpp_scanFirst(fname = fileName, target = '</Assay>', start = 0, end = 0)
+  toskip=cpp_scanFirst(fileName, charToRaw('</Assay>'), start = 0, end = 0)
   if(toskip == 0) stop(paste0(fileName, "\ndoes not seem to be well formatted: </Assay> not found")) 
   toskip = toskip + nchar("</Assay>") - 1
   tmp=read_xml(readBin(con = fileName, what = "raw", n = toskip), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))

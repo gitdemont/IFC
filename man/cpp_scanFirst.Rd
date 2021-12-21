@@ -6,7 +6,7 @@
 \arguments{
 \item{fname}{string, path to file.}
 
-\item{target}{string, exact string to be searched for. At least 1 character and should not exceed 1024 characters.}
+\item{raw}{a Rcpp::RawVector, exact target to be searched for. When converted to string it should be of at least 1 character and not exceed 1024 characters.}
 
 \item{start}{size_t, position where to begin search.
 It can't be superior or equal than file size or end (when end is different from 0 and inferior than file size).}

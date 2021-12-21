@@ -131,7 +131,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
     delim_esc = strsplit(x = delim_esc, split = delimiter, fixed = TRUE)[[1]]
     delim_esc = delim_esc[delim_esc!=""]
     delim_esc = paste0(delim_esc, collapse="")
-    found = cpp_scanFirst(fileName, delim_esc)
+    found = cpp_scanFirst(fileName, charToRaw(delim_esc))
   }
   # we 1st look at double delimiter instance and substitute it with delim_esc 
   text = gsub(pattern = paste0(delimiter,delimiter), replacement = delim_esc, x = text, fixed = TRUE)

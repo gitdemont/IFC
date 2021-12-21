@@ -321,17 +321,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_scanFirst
-std::size_t cpp_scanFirst(const std::string fname, const std::string target, const std::size_t start, const std::size_t end, const uint8_t buf_size);
-RcppExport SEXP _IFC_cpp_scanFirst(SEXP fnameSEXP, SEXP targetSEXP, SEXP startSEXP, SEXP endSEXP, SEXP buf_sizeSEXP) {
+std::size_t cpp_scanFirst(const std::string fname, const Rcpp::RawVector raw, const std::size_t start, const std::size_t end, const uint8_t buf_size);
+RcppExport SEXP _IFC_cpp_scanFirst(SEXP fnameSEXP, SEXP rawSEXP, SEXP startSEXP, SEXP endSEXP, SEXP buf_sizeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
-    Rcpp::traits::input_parameter< const std::string >::type target(targetSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::RawVector >::type raw(rawSEXP);
     Rcpp::traits::input_parameter< const std::size_t >::type start(startSEXP);
     Rcpp::traits::input_parameter< const std::size_t >::type end(endSEXP);
     Rcpp::traits::input_parameter< const uint8_t >::type buf_size(buf_sizeSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_scanFirst(fname, target, start, end, buf_size));
+    rcpp_result_gen = Rcpp::wrap(cpp_scanFirst(fname, raw, start, end, buf_size));
     return rcpp_result_gen;
 END_RCPP
 }

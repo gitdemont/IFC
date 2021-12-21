@@ -111,7 +111,7 @@ getInfo <- function(fileName,
   if(ntry < 0) ntry = 0
   if(warn & file_extension == "rif" & from == "analysis") warning("Only information from 'acquisition' can be retrieved from 'rif' file", call. = FALSE, immediate. = TRUE)
   if(file_extension == "daf") {
-    toskip = cpp_scanFirst(fname = fileName, target = '</Assay>', start = 0, end = 0)
+    toskip = cpp_scanFirst(fileName, charToRaw('</Assay>'), start = 0, end = 0)
     if(toskip == 0) stop(paste0(fileName, "\ndoes not seem to be well formatted: </Assay> not found")) 
     toskip = toskip + nchar("</Assay>") - 1
     tmp_daf = read_xml(readBin(con = fileName, what = "raw", n = toskip), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))

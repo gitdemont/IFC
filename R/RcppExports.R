@@ -276,7 +276,7 @@ NULL
 #' If found, it returns the position in bytes of the target.
 #' Otherwise, it returns 0.
 #' @param fname string, path to file.
-#' @param target string, exact string to be searched for. At least 1 character and should not exceed 1024 characters.
+#' @param raw a Rcpp::RawVector, exact target to be searched for. When converted to string it should be of at least 1 character and not exceed 1024 characters.
 #' @param start size_t, position where to begin search.
 #' It can't be superior or equal than file size or end (when end is different from 0 and inferior than file size).
 #' @param end size_t, position where to stop searching. Default is 0.
@@ -665,8 +665,8 @@ cpp_v_int64_to_uint64 <- function(V = NULL) {
     .Call(`_IFC_cpp_v_int64_to_uint64`, V)
 }
 
-cpp_scanFirst <- function(fname, target, start = 0L, end = 0L, buf_size = 64L) {
-    .Call(`_IFC_cpp_scanFirst`, fname, target, start, end, buf_size)
+cpp_scanFirst <- function(fname, raw, start = 0L, end = 0L, buf_size = 64L) {
+    .Call(`_IFC_cpp_scanFirst`, fname, raw, start, end, buf_size)
 }
 
 cpp_drawat <- function(img, coords = matrix(1,2), mask = matrix(1), color = matrix(4,1)) {

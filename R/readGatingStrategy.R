@@ -57,7 +57,7 @@ readGatingStrategy <- function(fileName, ...) {
     assay = switch(file_extension,
                    daf = "/Assay",
                    ast = "/AssayTemplate")
-    toskip=cpp_scanFirst(fname = fileName, target = paste0('<',assay,'>'), start = 0, end = 0)
+    toskip=cpp_scanFirst(fileName, charToRaw(paste0('<',assay,'>')), start = 0, end = 0)
     if(toskip==0) stop(paste0(fileName, "\ndoes not seem to be well formatted: <",assay,"> not found"))
     toskip = toskip + nchar(paste0("<",assay,">")) - 1
     tmp=read_xml(readBin(con = fileName, what = "raw", n = toskip), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))

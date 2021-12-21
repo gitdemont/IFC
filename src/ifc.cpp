@@ -470,7 +470,7 @@ Rcpp::Nullable<Rcpp::NumericVector> cpp_v_int64_to_uint64 (Rcpp::Nullable<Rcpp::
 //' If found, it returns the position in bytes of the target.
 //' Otherwise, it returns 0.
 //' @param fname string, path to file.
-//' @param target string, exact string to be searched for. At least 1 character and should not exceed 1024 characters.
+//' @param raw a Rcpp::RawVector, exact target to be searched for. When converted to string it should be of at least 1 character and not exceed 1024 characters.
 //' @param start size_t, position where to begin search.
 //' It can't be superior or equal than file size or end (when end is different from 0 and inferior than file size).
 //' @param end size_t, position where to stop searching. Default is 0.
@@ -482,11 +482,11 @@ Rcpp::Nullable<Rcpp::NumericVector> cpp_v_int64_to_uint64 (Rcpp::Nullable<Rcpp::
 ////' @export
 // [[Rcpp::export]]
 std::size_t cpp_scanFirst(const std::string fname, 
-                          const std::string target, 
+                          const Rcpp::RawVector raw, 
                           const std::size_t start = 0, 
                           const std::size_t end = 0, 
                           const uint8_t buf_size = 64) {
-  return hpp_scanFirst(fname, target, start, end, buf_size); 
+  return hpp_scanFirst(fname, raw, start, end, buf_size); 
 }
 // END scan
 
