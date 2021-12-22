@@ -39,7 +39,7 @@ expand_list = function(x, max = 5) {
   ans = lapply(x, FUN=function(n) {
     foo = attributes(n)
     bar = (names(foo) == "names")
-    if(length(bar) == 0) return(unlist(n))
+    if(sum(bar) == 0) return(unlist(n))
     if(max < 0) return(foo)
     c(foo[!bar], expand_list(n[bar], max = max))
   })
