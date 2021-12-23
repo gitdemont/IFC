@@ -157,7 +157,8 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
      (extra_off2 > extra_off1)) {
     # we apply same process as for previously (see text segment)
     seek(toread, extra_off1)
-    extra_text = tryCatch({
+    text_bck = text
+    tryCatch({
       extra_text = rawToChar(readBin(toread, what = "raw", n = extra_off2 - extra_off1))
       extra_text = gsub(pattern = paste0(delimiter,delimiter), replacement = delim_esc, x = extra_text, fixed = TRUE)
       extra_text = strsplit(x = extra_text, split = delimiter, fixed = TRUE)[[1]]
@@ -166,12 +167,13 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
       id_val = seq(from = 2, to = length(extra_text), by = 2)
       id_key = id_val-1
       extra_text = structure(as.list(extra_text[id_val]), names = extra_text[id_key])
+      tmp = names(extra_text) %in% names(text)
+      if(any(tmp)) warning("supplemental text segment contains keyword(s) already found in text", call. = FALSE, immediate. = TRUE)
+      text = c(text, extra_text[!tmp])
     }, error = function(e) {
+      text = text_bck
       warning("supplemental text segment is not readable:\n", e$message, call. = FALSE, immediate. = TRUE)
     })
-    tmp = names(extra_text) %in% names(text)
-    if(any(tmp)) warning("supplemental text segment contains keyword(s) already found in text", call. = FALSE, immediate. = TRUE)
-    text = c(text, extra_text[!tmp])
   }
   
   if(!any("$FIL" == names(text))) text[["$FIL"]] <- fileName
