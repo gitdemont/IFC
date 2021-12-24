@@ -480,7 +480,7 @@ plot_base=function(obj) {
   subtitle = FALSE
   if(any(obj$input$add_key %in% c("global", "both"))) {
     par("mar" = c(old_mar[1:2],old_mar[3]+length(displayed) * obj$plot$par.settings$add.text$cex * 0.5 - 1,old_mar[4]))
-    main = ""
+    main = " "
   }
   
   # common plot args
@@ -492,6 +492,9 @@ plot_base=function(obj) {
                    cex.main = obj$plot$par.settings$par.main.text$cex,
                    cex.axis = obj$plot$par.settings$axis.text$cex,
                    axes = FALSE)
+  if(args_plot$main == "") args_plot$main = " "
+  if(args_plot$xlab == "") args_plot$xlab = " "
+  if(args_plot$ylab == "") args_plot$ylab = " "
   
   # draw plot
   if(obj$input$type %in% c("percent", "count")) {
@@ -667,7 +670,9 @@ plot_base=function(obj) {
   }
   
   # key / subtitle / title
-  args_sub = list(text = obj$input$trans, side = 3, line = 0.2, adj = 0.5, font = 3, cex = obj$plot$par.settings$par.main.text$cex * 0.8)
+  sub_lab = obj$input$trans
+  if(sub_lab == "") sub_lab = " "
+  args_sub = list(text = sub_lab, side = 3, line = 0.2, adj = 0.5, font = 3, cex = obj$plot$par.settings$par.main.text$cex * 0.8)
   if(any(obj$input$add_key %in% c("panel","global","both"))) {
     args_key = list(x="topleft",inset=0.025,
                     col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
@@ -678,7 +683,7 @@ plot_base=function(obj) {
       args_key$inset = -graphics::grconvertY(1+ length(displayed), "chars", "nfc")
       args_key$xpd = TRUE
       do.call(args=c(list(pch=sapply(displayed, FUN=function(p) p$style)), args_key), what=legend)
-      mtext(side = 3, line = 2 + length(displayed) * obj$plot$par.settings$add.text$cex * 0.5, adj = 0.5, trunc_string(obj$input$title, obj$input$trunc_labels), font = 2)
+      mtext(side = 3, line = 2 + length(displayed) * obj$plot$par.settings$add.text$cex * 0.5, adj = 0.5, args_plot$main, font = 2)
       args_sub$line = 1.1 + length(displayed) * obj$plot$par.settings$par.main.text$cex * 0.8
     } 
   }
@@ -812,7 +817,11 @@ plot_raster=function(obj) {
   }
   
   # redraw key / subtitle / title
-  args_sub = list(text = obj$input$trans, side = 3, line = 0.2, adj = 0.5, font = 3, cex = obj$plot$par.settings$par.main.text$cex * 0.8)
+  main = trunc_string(obj$input$title, obj$input$trunc_labels)
+  if(main == "") main = " "
+  sub_lab = obj$input$trans
+  if(sub_lab == "") sub_lab = " "
+  args_sub = list(text = sub_lab, side = 3, line = 0.2, adj = 0.5, font = 3, cex = obj$plot$par.settings$par.main.text$cex * 0.8)
   if(any(obj$input$add_key %in% c("panel","global","both"))) {
     args_key = list(x="topleft",inset=0.025,
                     col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
@@ -823,7 +832,7 @@ plot_raster=function(obj) {
       args_key$inset = -graphics::grconvertY(1+ length(displayed), "chars", "nfc")
       args_key$xpd = TRUE
       do.call(args=c(list(pch=sapply(displayed, FUN=function(p) p$style)), args_key), what=legend)
-      mtext(side = 3, line = 2 + length(displayed) * obj$plot$par.settings$add.text$cex * 0.5, adj = 0.5, trunc_string(obj$input$title, obj$input$trunc_labels), font = 2)
+      mtext(side = 3, line = 2 + length(displayed) * obj$plot$par.settings$add.text$cex * 0.5, adj = 0.5, text = main, font = 2)
       args_sub$line = 1.1 + length(displayed) * obj$plot$par.settings$par.main.text$cex * 0.8
     } 
   }
@@ -871,8 +880,11 @@ plot_lattice=function(obj) {
   
   trunc_labels = obj$input$trunc_labels
   main = trunc_string(obj$input$title, trunc_labels) 
+  if(main == "") main = " "
   xlab = trunc_string(obj$input$xlab, trunc_labels)
+  if(xlab == "") xlab = " "
   ylab = trunc_string(obj$input$ylab, trunc_labels)
+  if(ylab == "") ylab = " "
   if(type %in% c("percent", "count")) {
     # define legend
     KEY = list("text"=list(displayed_n),
