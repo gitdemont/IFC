@@ -162,7 +162,8 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   } else {
     bin=na.omit(as.integer(bin)); assert(bin, len=1, typ="integer")
   }
-  if(!"draw" %in% names(dots)) dots$draw = TRUE
+  if(!"draw" %in% names(dots)) dots$draw = FALSE
+  if(!"create_graph" %in% names(dots)) dots$create_graph = TRUE
   do_stats = na.omit(dots$stats_print)
   if(length(do_stats) != 1 || do_stats != FALSE) {
     do_stats = TRUE
@@ -233,7 +234,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
       }
       rownames(stats) = paste0("Error: ", G[[i]]$title)
       if((length(g$plot) == 1) || inherits(x = g, what = "try-error")) {
-        foo = arrangeGrob(grid.text(label = paste0(ifelse(length(g$plot) == 1,"'draw' is set to FALSE ","Error: "), attr(x = g, which = "condition")$message), gp=gpar(col="red"), draw = FALSE),
+        foo = arrangeGrob(grid.text(label = paste0(ifelse(length(g$plot) == 1,"'create_graph' is set to FALSE ","Error: "), attr(x = g, which = "condition")$message), gp=gpar(col="red"), draw = FALSE),
                           top = textGrob(paste0("\n",G[[i]]$title), gp = gpar(fontsize = 8, font=2, lineheight=0.5)))
       } else {
         foo = grob(p=g$plot, vp = viewport(x=0.5, y=unit(0.5,"npc")), cl = "lattice")
