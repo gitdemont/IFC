@@ -9,6 +9,7 @@ plotGraph(
   graph,
   draw = FALSE,
   stats_print = draw,
+  create_graph = draw,
   color_mode = c("white", "black")[1],
   add_key = "panel",
   precision = c("light", "full")[1],
@@ -27,6 +28,8 @@ plotGraph(
 \item{draw}{whether to draw plot or not. Default is FALSE.}
 
 \item{stats_print}{whether to print stats or not. Default is given by 'draw' argument.}
+
+\item{create_graph}{whether to create lattice plot or not. Default is given by 'draw' argument.}
 
 \item{color_mode}{whether to extract colors from 'obj' in white or black mode. Default is "white".}
 

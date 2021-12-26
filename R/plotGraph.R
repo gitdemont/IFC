@@ -34,6 +34,7 @@
 #' @param graph a graph from 'obj' or a list that can be coerced by \code{\link{buildGraph}}.
 #' @param draw whether to draw plot or not. Default is FALSE.
 #' @param stats_print whether to print stats or not. Default is given by 'draw' argument.
+#' @param create_graph whether to create lattice plot or not. Default is given by 'draw' argument.
 #' @param color_mode whether to extract colors from 'obj' in white or black mode. Default is "white".
 #' @param add_key whether to draw a "global" key under title or in the first "panel" or "both". Default is "panel".\cr
 #' Accepted values are either: FALSE, "panel", "global", "both" or c("panel", "global").\cr
@@ -54,7 +55,7 @@
 #' -stats, a table of statistics computed for the graph, if 'stats_print' was TRUE,\cr
 #' -input, a list with input parameters.
 #' @export
-plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
+plotGraph = function(obj, graph, draw = FALSE, stats_print = draw, create_graph = draw,
                      color_mode = c("white","black")[1], add_key = "panel", precision = c("light","full")[1],
                      trunc_labels = 38, trans = asinh, bin, viewport = "ideas", ...) {
   dots = list(...)
@@ -77,6 +78,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   assert(trunc_labels, len=1, typ="integer")
   draw = as.logical(draw); assert(draw, len=1, alw=c(TRUE,FALSE))
   stats_print = as.logical(stats_print); assert(stats_print, len=1, alw=c(TRUE,FALSE))
+  create_graph = as.logical(create_graph); assert(create_graph, len=1, alw=c(TRUE,FALSE))
   assert(viewport, len = 1, alw = c("ideas","data","max"))
   
   # shortcuts
@@ -339,10 +341,11 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       ret$stats = plot_stats(ret)
       print(ret$stats)
     }
-    if(draw) {
+    if(draw || create_graph) {
       tryCatch({
+        if(!create_graph) message("'create_graph' has been forced to TRUE to draw graph")
         ret$plot = plot_lattice(ret)
-        plot(ret$plot)
+        if(draw) plot(ret$plot)
       })
     }
     return(invisible(ret))
