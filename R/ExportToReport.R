@@ -162,8 +162,13 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   } else {
     bin=na.omit(as.integer(bin)); assert(bin, len=1, typ="integer")
   }
-  if(!"draw" %in% names(dots)) dots$draw = FALSE
-  if(!"create_graph" %in% names(dots)) dots$create_graph = TRUE
+  do_draw = na.omit(dots$draw)
+  if(length(do_draw) != 1 || do_draw != FALSE) {
+    do_draw = TRUE
+  } else {
+    do_draw = FALSE
+  }
+  dots$draw = FALSE
   do_stats = na.omit(dots$stats_print)
   if(length(do_stats) != 1 || do_stats != FALSE) {
     do_stats = TRUE
@@ -172,7 +177,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   }
   dots$stats_print = FALSE
   plotGraph_args = c(dots, list(obj=obj, color_mode=color_mode, add_key=add_key,
-                        precision=precision, trunc_labels=trunc_labels, viewport=viewport))
+                     precision=precision, trunc_labels=trunc_labels, viewport=viewport))
   if(length(bin) != 0) plotGraph_args = c(plotGraph_args, list(bin=bin))
   if(!missing(trans)) plotGraph_args = c(plotGraph_args, list(trans=trans))
   title_progress = basename(obj$fileName)
@@ -226,15 +231,20 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
     stList = list()
     grList = lapply(1:gl, FUN=function(i) {
       if(display_progress) setPB(pb = pb_gr, value = i, title = title_progress, label = "computing graphs and stats")
-      g = try(do.call(what = plotGraph, args = c(plotGraph_args, list(graph = G[[i]]))), silent = TRUE)
+      g = try({
+        p = do.call(what = plotGraph, args = c(plotGraph_args, list(graph = G[[i]])))
+        p$plot = plot_lattice(p)
+        p
+      }, silent = TRUE)
+      
       if(G[[i]]$type=="histogram") {
         stats = default_stats_1D
       } else {
         stats = default_stats_2D
       }
       rownames(stats) = paste0("Error: ", G[[i]]$title)
-      if((length(g$plot) == 1) || inherits(x = g, what = "try-error")) {
-        foo = arrangeGrob(grid.text(label = paste0(ifelse(length(g$plot) == 1,"'create_graph' is set to FALSE ","Error: "), attr(x = g, which = "condition")$message), gp=gpar(col="red"), draw = FALSE),
+      if(!do_draw || inherits(x = g, what = "try-error")) {
+        foo = arrangeGrob(grid.text(label = paste0(ifelse(do_draw,"Error: ","'draw' is set to FALSE "), attr(x = g, which = "condition")$message), gp=gpar(col="red"), draw = FALSE),
                           top = textGrob(paste0("\n",G[[i]]$title), gp = gpar(fontsize = 8, font=2, lineheight=0.5)))
       } else {
         foo = grob(p=g$plot, vp = viewport(x=0.5, y=unit(0.5,"npc")), cl = "lattice")
