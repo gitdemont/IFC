@@ -191,7 +191,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   if(length(off1) == 0) off1 = header$data_beg
   if(length(off2) == 0) off2 = header$data_end
   if(options$force_header) {
-    if(any(c(header$data_beg, header$data_end) == 0)) {
+    if(any(c(header$data_beg, header$data_end, length(header$data_beg), length(header$data_end)) == 0)) {
       warning("can't 'force_header' because header data offset is 0", call. = FALSE, immediate. = TRUE)
     } else {
       off1 = header$data_beg
