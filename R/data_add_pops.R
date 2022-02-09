@@ -80,13 +80,15 @@ data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsi
     pops = pops[!tmp]
   }
   
-  exported_pops = sapply(pops, FUN=function(pop) {
+  exported_pops = sapply(1:length(pops), FUN=function(i_pop) {
+    pop = pops[[i_pop]]
     if(pop$name%in%names(obj$pops)) {
       warning(paste0(pop$name, ", not exported: trying to export an already defined population"), immediate. = TRUE, call. = FALSE)
       return(FALSE)
     }
     if(pop$type=="T") {
-      K = class(pop$obj)
+      K = typeof(pop$obj)
+      str(K)
       if(length(pop$obj)==0) {
         warning(paste0(pop$name, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
         return(FALSE)
@@ -98,8 +100,11 @@ data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsi
         }
         if(obj_number != length(pop$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
       }
-      if(K%in% c("numeric","integer")) {
+      if(K%in% c("double","integer")) {
         if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+        log_obj = rep(FALSE, obj_number)
+        log_obj[pop$obj + 1] = TRUE
+        pops[[i_pop]]$obj <<- log_obj
       }
     }
     return(TRUE)

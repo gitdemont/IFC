@@ -361,7 +361,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
         new_node_pop = to_xml_list(pop, name = "Pop")
       }
       if(pop$type=="T") {
-        K = class(pop$obj)
+        K = typeof(pop$obj)
         if(length(pop$obj)==0) {
           warning(paste0(pop$name, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
           next
@@ -375,7 +375,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
           new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,as.raw(c(0x20,0x20)))),
                                      kids = lapply(num_to_string(which(pop$obj)-1), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
         }
-        if(K%in% c("numeric","integer")) {
+        if(K%in% c("double","integer")) {
           if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
           new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,as.raw(c(0x20,0x20)))),
                                      kids = lapply(num_to_string(pop$obj), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
