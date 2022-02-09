@@ -88,7 +88,6 @@ data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsi
     }
     if(pop$type=="T") {
       K = typeof(pop$obj)
-      str(K)
       if(length(pop$obj)==0) {
         warning(paste0(pop$name, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
         return(FALSE)
