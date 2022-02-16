@@ -4,7 +4,7 @@
 \alias{getFullTag}
 \title{Image Field Directory Full Tag Retrieval}
 \source{
-TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 }
 \usage{
 getFullTag(IFD, which = 1, tag = "256")

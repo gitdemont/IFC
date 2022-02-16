@@ -33,7 +33,7 @@
 #' @param IFD an object of class `IFC_ifd_list` extracted by \code{\link{getIFD}}.
 #' @param which scalar, integer (index) or the name of 'IFD' sub-element to extract 'tag' from. Default is 1 to extract 'tag' from the first member of 'IFD'.
 #' @param tag scalar, integer (index) or the name of the IFD[[which]] of the desired 'tag'.
-#' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+#' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 #' @details It may be usefull to extract all information contained in a specific 'tag' since \code{\link{getIFD}} is designed to be run with argument trunc_bytes so as to only extract essential bytes to run faster and save memory.
 #' Nonetheless, thanks to \code{\link{getFullTag}} users will still be able to get full extraction of specific tag.
 #' @return the full value of the corresponding IFD tag.

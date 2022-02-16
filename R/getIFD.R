@@ -45,7 +45,7 @@
 #' @param display_progress whether to display a progress bar. Default is FALSE.
 #' @param bypass whether to bypass checks on 'trunc_bytes', 'force_trunc', 'verbose', 'verbosity' and 'display_progress'. Default is FALSE.
 #' @param ... other arguments to be passed.
-#' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+#' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 #' @details Function will return IFDs (image, mask or first) from the file using provided offsets argument.\cr
 #' IFDs contain several tags that can be viewed as descriptive meta-information of raw data stored within RIF or CIF file. For more details see TIFF specifications.\cr
 #' If 'offsets' == "first" only first IFD will be returned.\cr

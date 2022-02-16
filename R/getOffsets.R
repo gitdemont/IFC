@@ -38,7 +38,7 @@
 #' If set to FALSE, all object_ids will be scanned from 'fileName' to ensure extraction of desired offsets.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
-#' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+#' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 #' @details Offsets are byte positions of IFDs found within RIF or CIF file. For more details see TIFF specifications.
 #' @examples
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {

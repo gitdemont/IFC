@@ -207,7 +207,7 @@ Rcpp::RawVector cpp_writeBMP (const Rcpp::NumericVector image) {
 //' @details If file is a TIFF it returns endianness of file, 'big' or 'little.
 //' Otherwise, it shows an error and returns an empty string.
 //' @param fname string, path to file.
-//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+//' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
@@ -224,7 +224,7 @@ std::string cpp_checkTIFF (const std::string fname) {
 //' If obj_count <= 0 then progress_bar is forced to false.
 //' @param display_progress bool, whether to display a progress bar. Default is false.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+//' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 //' @return an integer vector with offsets of IFDs found.
 //' @keywords internal
 ////' @export
@@ -248,7 +248,7 @@ Rcpp::IntegerVector cpp_getoffsets_noid(const std::string fname,
 //' Note that, if 0 is provided, it will be automatically set to 1.
 //' @param force_trunc whether to force truncation for all TAGS types. Default is FALSE.\cr
 //' If 'true', 'trunc_bytes' will be used for TAGS (3, 4, 5, 8, 9, 10, 11 and 12) to extract desired number of individual scalar corresponding to each types.
-//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+//' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
@@ -267,7 +267,7 @@ Rcpp::List cpp_getTAGS (const std::string fname,
 //' @param fname string, path to file.
 //' @param offset uint32_t, position of the IFD beginning.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is 'false'.
-//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+//' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
@@ -286,7 +286,7 @@ Rcpp::List cpp_fastTAGS (const std::string fname,
 //' If obj_count <= 0 then progress_bar is forced to false.
 //' @param display_progress bool, whether to display a progress bar. Default is false.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+//' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 //' @return a list of integer vectors with OBJECT_ID, TYPE and OFFSET of IFDs found.
 //' @keywords internal
 ////' @export
@@ -303,7 +303,7 @@ Rcpp::List cpp_getoffsets_wid(const std::string fname,
 //' @description
 //' Computes sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.
 //' @param fname string, path to file.
-//' @source TIFF 6.0 specifications available at \url{https://www.adobe.io/open/standards/TIFF.html}
+//' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 //' @return an integer vector with offsets of IFDs found.
 //' @keywords internal
 ////' @export
