@@ -1241,7 +1241,7 @@ adjustGraph=function(obj, selection, adjust_graph = TRUE, ...) {
     obj$graphs = bar
     return(obj)
   } else {
-    if(length(selection) != 0) stop("'selection' refers to graph absent from 'obj'")
+    if(!missing(selection) && (length(selection) != 0)) stop("'selection' refers to graph absent from 'obj'")
     return(obj)
   }
 }
