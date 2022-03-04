@@ -447,6 +447,7 @@ void hpp_draw(Rcpp::IntegerVector img,
         }
         R_len_t i_row = coords(i_pt, 1);
         R_len_t i_col = coords(i_pt, 0);
+        Rcpp::IntegerVector col_v = color(Rcpp::_, i_pt);
         if(!(coords(i_pt, 2))) continue;
         for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c + msk_c_1; f_col++) {
           for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r + msk_r_1; f_row++) {
@@ -456,7 +457,7 @@ void hpp_draw(Rcpp::IntegerVector img,
                (f_row >= 0) &&
                (f_row < height)) {
               for(R_len_t i_k = 0; i_k < 4; i_k++) {
-                img[i_k * height * width + f_col * height + f_row] = color(i_k,i_pt);
+                img[i_k * height * width + f_col * height + f_row] = col_v(i_k);
               }
             }
           }
