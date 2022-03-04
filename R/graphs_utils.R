@@ -751,7 +751,7 @@ plot_raster=function(obj) {
       size = 7
       col = map_color(obj$input$displayed[[p]]$lightModeColor)
     } else {
-      size = 7
+      size = 9
       colramp = colorRampPalette(colConv(obj$input$base[[1]][c("densitycolorsdarkmode", "densitycolorslightmode")][[obj$input$mode]]))
       if((sum(sub_) < 20000) || inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), "try-error")) {
         col = densCols(x = structure(coords[sub_,"x"], features=attr(obj$input$data,"features")),

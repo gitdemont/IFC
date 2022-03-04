@@ -514,7 +514,9 @@ Rcpp::IntegerVector cpp_drawat(const Rcpp::IntegerVector img,
                                const Rcpp::IntegerMatrix coords = Rcpp::IntegerMatrix(1,2),
                                const Rcpp::LogicalMatrix mask = Rcpp::LogicalMatrix(1),
                                const Rcpp::IntegerMatrix color = Rcpp::IntegerMatrix(4,1)) {
-  return hpp_drawat(img, coords, mask, color);
+  Rcpp::IntegerVector out = Rcpp::clone(img);
+  hpp_draw(out, coords, mask, color);
+  return out;
 }
 //' @title Raster Image
 //' @name cpp_raster
