@@ -115,6 +115,7 @@ Rcpp::LogicalMatrix hpp_triangle(const uint8_t size = 3) {
 // [[Rcpp::export]]
 Rcpp::LogicalMatrix hpp_triangle_filled(const uint8_t size = 3) {
   Rcpp::LogicalMatrix out = hpp_triangle(size);
+  if(size == 0) return out;
   for(R_len_t i_col = 0; i_col < size; i_col++) {
     Rcpp::LogicalVector V = out(_,i_col);
     R_len_t beg = size, end = 0;
@@ -401,19 +402,25 @@ void hpp_draw(Rcpp::IntegerVector img,
               const Rcpp::IntegerMatrix coords = Rcpp::IntegerMatrix(1,2),
               const Rcpp::LogicalMatrix mask = Rcpp::LogicalMatrix(1),
               const Rcpp::IntegerMatrix color = Rcpp::IntegerMatrix(4,1)) {
+  if((mask.size() == 0) || (mask.size() >= 1225)) Rcpp::stop("hpp_draw: 'size' argument is not possible with this shape");
   R_len_t msk_c = mask.ncol() >> 1;
   R_len_t msk_r = mask.nrow() >> 1;
   bool msk_c_1 = mask.ncol() % 2;
   bool msk_r_1 = mask.nrow() % 2;
   R_len_t col_r = color.nrow();
   R_len_t col_c = color.ncol();
-  if(col_r != 4) Rcpp::stop("hpp_dens: bad density color specification");
-  for(R_len_t i = 0; i < color.size(); i++) if((color[i] < 0) || (color[i] > 255)) Rcpp::stop("hpp_dens: bad color specification, out-of-range [0-255]");
+  if(col_r != 4) Rcpp::stop("hpp_draw: bad density color specification");
+  for(R_len_t i = 0; i < color.size(); i++) if((color[i] < 0) || (color[i] > 255)) Rcpp::stop("hpp_draw: bad color specification, out-of-range [0-255]");
   Rcpp::IntegerVector V = get_dim(img);
   R_len_t width  = V[1];
   R_len_t height = V[0];
+  unsigned short count = 1;
   if(color.size() == 4) { // only one-color points
     for(R_len_t i_pt = 0; i_pt < coords.nrow(); i_pt++) {
+      if((count++ % 10000) == 0) {
+        count = 1;
+        Rcpp::checkUserInterrupt();
+      }
       R_len_t i_row = coords(i_pt, 1);
       R_len_t i_col = coords(i_pt, 0);
       if(!(coords(i_pt, 2))) continue;
@@ -434,6 +441,10 @@ void hpp_draw(Rcpp::IntegerVector img,
   } else {
     if(col_c == coords.nrow()) { // colors are provided for each points
       for(R_len_t i_pt = 0; i_pt < coords.nrow(); i_pt++) {
+        if((count++ % 10000) == 0) {
+          count = 1;
+          Rcpp::checkUserInterrupt();
+        }
         R_len_t i_row = coords(i_pt, 1);
         R_len_t i_col = coords(i_pt, 0);
         if(!(coords(i_pt, 2))) continue;
@@ -459,6 +470,10 @@ void hpp_draw(Rcpp::IntegerVector img,
       R_len_t blr_r = blur.nrow() >> 1;
       double den_mx = 0;
       for(R_len_t i_pt = 0; i_pt < coords.nrow(); i_pt++) {
+        if((count++ % 10000) == 0) {
+          count = 1;
+          Rcpp::checkUserInterrupt();
+        }
         R_len_t i_row = coords(i_pt, 1);
         R_len_t i_col = coords(i_pt, 0);
         for(R_len_t f_col = i_col - blr_c, i_blr = 0; f_col <= i_col + blr_c; f_col++) {
@@ -475,6 +490,10 @@ void hpp_draw(Rcpp::IntegerVector img,
       }
       for(R_len_t i = 0; i < grd.size(); i++) grd[i] = (col_c - 0.001) * std::asinh(den[i] / den_mx) / std::asinh(1);
       for(R_len_t i_pt = 0; i_pt < coords.nrow(); i_pt++) {
+        if((count++ % 10000) == 0) {
+          count = 1;
+          Rcpp::checkUserInterrupt();
+        }
         R_len_t i_row = coords(i_pt, 1);
         R_len_t i_col = coords(i_pt, 0);
         if((!coords(i_pt, 2)) ||
@@ -531,6 +550,7 @@ Rcpp::IntegerVector hpp_raster(const uint16_t width,
     Rcpp::List L = obj[i_obj];
     R_len_t pch = L["pch"];
     R_len_t size = L["size"];
+    size += 3;
     Rcpp::IntegerMatrix color = L["col"];
     Rcpp::IntegerMatrix coords = L["coords"];
     Rcpp::LogicalMatrix mask;
@@ -539,7 +559,7 @@ Rcpp::IntegerVector hpp_raster(const uint16_t width,
       mask = hpp_square(size + 1);
       break;
     case 1 :
-      mask = hpp_circle(size); // size reference
+      mask = hpp_circle(size);
       break;
     case 2 :
       mask = hpp_triangle(size + 4);
@@ -596,7 +616,7 @@ Rcpp::IntegerVector hpp_raster(const uint16_t width,
       mask = hpp_circle_filled(size);
       break;
     case 20 :
-      mask = hpp_circle_filled(size - 2);
+      mask = hpp_circle_filled(size - 2); // size reference
       break;
     case 21 :
       mask = hpp_circle(size);
