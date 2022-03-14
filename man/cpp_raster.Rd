@@ -15,7 +15,9 @@
 - coords, an IntegerMatrix whose rows are points to draw and with:\cr
 -* 1st column being img col coordinate in px,\cr
 -* 2nd column being img row coordinate in px,\cr
--* 3rd column determining if point should be drawn or not.}
+-* 3rd column determining if point should be drawn or not.\cr
+- blur_size an integer controlling the size of the blurring gaussian kernel.\cr
+- blur_sd a double controlling the sd of the blurring gaussian kernel.}
 }
 \description{
 low-level function to create plot raster

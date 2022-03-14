@@ -335,9 +335,45 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_fast_factor
+SEXP cpp_fast_factor(SEXP x, const bool handleNA);
+RcppExport SEXP _IFC_cpp_fast_factor(SEXP xSEXP, SEXP handleNASEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const bool >::type handleNA(handleNASEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fast_factor(x, handleNA));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_group_df
+Rcpp::IntegerVector cpp_group_df(const Rcpp::DataFrame df);
+RcppExport SEXP _IFC_cpp_group_df(SEXP dfSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::DataFrame >::type df(dfSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_group_df(df));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_coord_to_px
+Rcpp::IntegerMatrix cpp_coord_to_px(const Rcpp::NumericVector x, const Rcpp::NumericVector y, const Rcpp::NumericVector param);
+RcppExport SEXP _IFC_cpp_coord_to_px(SEXP xSEXP, SEXP ySEXP, SEXP paramSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type param(paramSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_coord_to_px(x, y, param));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_drawat
-Rcpp::IntegerVector cpp_drawat(const Rcpp::IntegerVector img, const Rcpp::IntegerMatrix coords, const Rcpp::LogicalMatrix mask, const Rcpp::IntegerMatrix color);
-RcppExport SEXP _IFC_cpp_drawat(SEXP imgSEXP, SEXP coordsSEXP, SEXP maskSEXP, SEXP colorSEXP) {
+Rcpp::IntegerVector cpp_drawat(const Rcpp::IntegerVector img, const Rcpp::IntegerMatrix coords, const Rcpp::LogicalMatrix mask, const Rcpp::IntegerMatrix color, const uint8_t blur_size, const double blur_sd);
+RcppExport SEXP _IFC_cpp_drawat(SEXP imgSEXP, SEXP coordsSEXP, SEXP maskSEXP, SEXP colorSEXP, SEXP blur_sizeSEXP, SEXP blur_sdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -345,7 +381,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix >::type coords(coordsSEXP);
     Rcpp::traits::input_parameter< const Rcpp::LogicalMatrix >::type mask(maskSEXP);
     Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix >::type color(colorSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_drawat(img, coords, mask, color));
+    Rcpp::traits::input_parameter< const uint8_t >::type blur_size(blur_sizeSEXP);
+    Rcpp::traits::input_parameter< const double >::type blur_sd(blur_sdSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_drawat(img, coords, mask, color, blur_size, blur_sd));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -569,7 +607,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_v_int32_to_uint32", (DL_FUNC) &_IFC_cpp_v_int32_to_uint32, 1},
     {"_IFC_cpp_v_int64_to_uint64", (DL_FUNC) &_IFC_cpp_v_int64_to_uint64, 1},
     {"_IFC_cpp_scanFirst", (DL_FUNC) &_IFC_cpp_scanFirst, 5},
-    {"_IFC_cpp_drawat", (DL_FUNC) &_IFC_cpp_drawat, 4},
+    {"_IFC_cpp_fast_factor", (DL_FUNC) &_IFC_cpp_fast_factor, 2},
+    {"_IFC_cpp_group_df", (DL_FUNC) &_IFC_cpp_group_df, 1},
+    {"_IFC_cpp_coord_to_px", (DL_FUNC) &_IFC_cpp_coord_to_px, 3},
+    {"_IFC_cpp_drawat", (DL_FUNC) &_IFC_cpp_drawat, 6},
     {"_IFC_cpp_raster", (DL_FUNC) &_IFC_cpp_raster, 3},
     {"_IFC_cpp_crop", (DL_FUNC) &_IFC_cpp_crop, 3},
     {"_IFC_cpp_resize", (DL_FUNC) &_IFC_cpp_resize, 6},

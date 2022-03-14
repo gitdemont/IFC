@@ -419,28 +419,26 @@ get_coordmap_raw=function() {
 #' @source computes drawing region in a similar way as shiny:::getPrevPlotCoordmap()
 #' @keywords internal
 get_coordmap_adjusted=function(coordmap,
-                                  width = grDevices::dev.size("px")[1],
-                                  height = grDevices::dev.size("px")[2],
-                                  ratio = graphics::par('din') / graphics::par('pin')) {
+                               width = grDevices::dev.size("px")[1],
+                               height = grDevices::dev.size("px")[2],
+                               ratio = graphics::par('din') / graphics::par('pin')) {
   if(missing(coordmap)) coordmap = get_coordmap_raw()
-  range = list(left = coordmap$range$left * width * ratio[1],
-               right = coordmap$range$right * width * ratio[1],
-               bottom = (1 - coordmap$range$bottom) * height * ratio[2] - 1,
-               top = (1 - coordmap$range$top) * height * ratio[2] - 1)
+  range = list(left = coordmap$range$left * (width - 1) * ratio[1],
+               right = coordmap$range$right * (width - 1) * ratio[1],
+               bottom = (1 - coordmap$range$bottom) * (height - 1) * ratio[2],
+               top = (1 - coordmap$range$top) * (height - 1) * ratio[2])
   return(list(domain=coordmap$domain, range=range, width = width, height = height, ratio=list(x=ratio[1],y=ratio[2])))
 }
 
 #' @title User's Coordinates to Pixels Conversion
-#' @name get_coordmap_adjusted
-#' @description Helper to extract current device plotting region adjusted to device size
+#' @name coord_to_px
+#' @description Helper map user's coordinates to pixels
 #' @param coord coordinates in user system. A matrix where rows are points and with at least 2 columns named "x" and "y" for x and y coordinates, respectively.
 #' @param coordmap current device adjusted coordinates. Default is missing.
-#' @param height current device width in pixel. Default is grDevices::dev.size("px")[2].
-#' @param ratio current device ratio. Default is graphics::par('din') / graphics::par('pin').
-#' @return a 3-columns matrix with "x" and "y" coordinates and a "draw" column specifying if point is within drawing region limits
+#' @param clipedge whether to clip points outside of plotting region to the edge. Default is FALSE.
+#' @return a 2-columns matrix with "x" and "y" coordinates.
 #' @keywords internal
-
-coord_to_px=function (coord, coordmap) {
+coord_to_px=function (coord, coordmap, clipedge = FALSE) {
   if(missing(coordmap)) coordmap = get_coordmap_adjusted()
   ran_x = range(coordmap$domain$left, coordmap$domain$right)
   dx = coordmap$domain$right - coordmap$domain$left
@@ -450,10 +448,21 @@ coord_to_px=function (coord, coordmap) {
   width = diff(ran_img_width)
   ran_img_height = range(coordmap$range$bottom, coordmap$range$top)
   height = diff(ran_img_height)
-  return(cbind(x = ((coord$x - coordmap$domain$left)/dx * width + ran_img_width[1])     /coordmap$ratio$x,
-               y = (ran_img_height[2] - (coord$y - coordmap$domain$bottom)/dy * height) /coordmap$ratio$y, 
-               draw = (coord$x <= ran_x[2]) & (coord$x >= ran_x[1]) & 
-                 (coord$y <= ran_y[2]) & (coord$y >= ran_y[1])))
+  cpp_coord_to_px(x = coord$x, y = coord$y, 
+                  param = c(xmin = ran_x[1], xmax = ran_x[2],
+                            ymin = ran_y[1], ymax = ran_y[2], 
+                            width / dx, height / dy,
+                            domain_l = coordmap$domain$left,
+                            domain_b = coordmap$domain$bottom,
+                            img_w_1 = ran_img_width[1],
+                            img_h_2 = ran_img_height[2],
+                            ratio_x = coordmap$ratio$x,
+                            ratio_y = coordmap$ratio$y,
+                            edge = clipedge))
+  # return(cbind(x = ((coord$x - coordmap$domain$left)/dx * width + ran_img_width[1])     /coordmap$ratio$x,
+  #              y = (ran_img_height[2] - (coord$y - coordmap$domain$bottom)/dy * height) /coordmap$ratio$y, 
+  #              draw = (coord$x <= ran_x[2]) & (coord$x >= ran_x[1]) & 
+  #                (coord$y <= ran_y[2]) & (coord$y >= ran_y[1])))
 }
 
 #' @title `IFC_plot` Conversion to 'base' Plot
@@ -766,21 +775,23 @@ plot_raster=function(obj) {
     list(size = size,
          pch = obj$input$displayed[[p]]$style,
          col = rbind(col2rgb(col), 255),
-         coords = coord_to_px(coord=coords[sub_,,drop=FALSE], coordmap=coordmap))
+         coords = coord_to_px(coord=coords[sub_,,drop=FALSE], coordmap=coordmap),
+         blur_size = 9,
+         blur_sd = 3)
   })
   data = data[sapply(data, length) != 0]
   if(length(data) != 0) {
     zoom = 1
-    # image is zoom fold more the size of the device and then raster size is zoom fold less, this should allow antialaising
+    # image is zoom fold more the size of the device and then raster size is zoom fold less, this should allow anti-aliasing
     # however this could lead to much more longer computation times
     # call c part to produce image raster
     img = cpp_raster(width = zoom * grDevices::dev.size("px")[1], height = zoom * grDevices::dev.size("px")[2], data)
     usr = par("usr")
     # subset img to drawing region
-    lims = round(c(graphics::grconvertX(usr[1], "user", "ndc") * grDevices::dev.size("px")[1],
-                    graphics::grconvertX(usr[2], "user", "ndc") * grDevices::dev.size("px")[1],
-                    (1 - graphics::grconvertY(usr[3], "user", "ndc")) * grDevices::dev.size("px")[2] - 1,
-                    (1 - graphics::grconvertY(usr[4], "user", "ndc")) * grDevices::dev.size("px")[2] - 1))
+    lims = round(c(graphics::grconvertX(usr[1], "user", "ndc") * (grDevices::dev.size("px")[1]),
+                   graphics::grconvertX(usr[2], "user", "ndc") * (grDevices::dev.size("px")[1]),
+                   (1 - graphics::grconvertY(usr[3], "user", "ndc")) * (grDevices::dev.size("px")[2]),
+                   (1 - graphics::grconvertY(usr[4], "user", "ndc")) * (grDevices::dev.size("px")[2])))
     bg = img[lims[3]:lims[4], lims[1]:lims[2],]
     # add image to plot
     rasterImage(bg / 255, xleft = usr[1], xright = usr[2], ybottom = usr[4], ytop = usr[3], interpolate = FALSE)

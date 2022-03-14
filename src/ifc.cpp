@@ -41,6 +41,7 @@
 #include "../inst/include/decomp.hpp"
 #include "../inst/include/extract.hpp"
 #include "../inst/include/resize.hpp"
+#include "../inst/include/group.hpp"
 #include "../inst/include/plot.hpp"
 using namespace Rcpp;
 
@@ -490,9 +491,62 @@ std::size_t cpp_scanFirst(const std::string fname,
 }
 // END scan
 
+// FROM group
+//' @title Fast Factorize Vector
+//' @name cpp_fast_factor
+//' @description
+//' Makes factor with Rcpp
+//' @param x a SEXP only NILSXP, LGLSXP, INTSXP, REALSXP, STRSXP, RAWSXP are handled.
+//' @param handleNA a bool specifying if NA should be returned as NA or if they should be attributed a unique integer.
+//' @details returned object should not be of class `factor` so has to prevent malformed factor' error when printing the result in R.
+//' For this reason, it is aimed to be wrap in an R function to handle factor class / handleNA balance.\cr
+//' e.g. either:
+//' - structure(cpp_fast_factor(df, TRUE), class = "factor"), or,
+//' - structure(cpp_fast_factor(unclass(df), FALSE), levels = NULL)
+//' @source adaptation from Kevin Ushey code \url{https://gallery.rcpp.org/articles/fast-factor-generation/}
+//' @return an IntegerVector, with attributes "levels" being the non-NA unique value(s) found
+//' and "lvs" the total number of unique values found (including NA).
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+SEXP cpp_fast_factor( SEXP x, 
+                      const bool handleNA = true) {
+  return hpp_fast_factor(x, handleNA);
+}
+
+//' @title Data Frame Merge Groups with Rcpp
+//' @name cpp_group_df
+//' @description
+//' Computes global grouping factor from data.frame columns
+//' @param df a DataFrame.
+//' @return an IntegerVector with the resulting global grouping factor and a "table" attribute representing the amount of scalar in each resulting level.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::IntegerVector cpp_group_df(const Rcpp::DataFrame df) {
+  return hpp_group_df(df);
+}
+// END group
+
 // FROM plot
+//' @title Coordinates to Pixels
+//' @name cpp_coord_to_px
+//' @description low-level function to compute pixels coordinates
+//' @param x NumericVector of x-coordinates of the points.
+//' @param y NumericVector of y-coordinates of the points.
+//' @param param NumericVector of parameters to scale raw points coordinates to pixels coordinates.
+//' @return a 2 columns IntegerMatrix of x and y pixels coordinates.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::IntegerMatrix cpp_coord_to_px(const Rcpp::NumericVector x,
+                                    const Rcpp::NumericVector y,
+                                    const Rcpp::NumericVector param) {
+  return hpp_coord_to_px(x, y, param);
+}
+
 //' @title Draw Shape to Image
-//' @name cpp_drawat
+//' @name hpp_draw
 //' @description low-level function to add shape on image
 //' @param img an IntegerVector. A non null array of dimensions [nrow, ncol, 4].
 //' @param coords an IntegerMatrix whose rows are points to draw and with:\cr
@@ -501,23 +555,29 @@ std::size_t cpp_scanFirst(const std::string fname,
 //' - 3rd column determining if point should be drawn or not.
 //' @param mask a LogicalMatrix where every true value will be added to the image.
 //' @param color, a length 4 IntegerMatrix specifying rgba, from 0 to 255. Only first row will be used.
-//' @details shape according to 'mask' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true
-//' and every pixels being part of the shape will be filled with 'color'.
+//' @param blur_size, a uint8_t the size of the gaussian blurring kernel. Default is 9.
+//' @param blur_sd, a double the sd of the gaussian blurring kernel. Default is 3.0.
+//' @details shape according to 'mask' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true.\cr
+//' Every pixels being part of the shape will be filled with 'color'.
 //' If only one 'color' is provided, this 'color' will be used for each points.
 //' If more than one 'color' is provided, then if number of colors (ncol) equals the number of points 'color' will be used as is for each single point.
 //' Otherwise, 'color' will be considered as a color-gradient and density will be computed.
 //' /!\ please note that IFC:::densCols() is faster to compute color based on density for n < 20000 points, so it's worth using it when number of points are lower.
 //' @keywords internal
+//' @return /!\ nothing is returned but img is modified in-place
 ////' @export
 // [[Rcpp::export]]
 Rcpp::IntegerVector cpp_drawat(const Rcpp::IntegerVector img,
                                const Rcpp::IntegerMatrix coords = Rcpp::IntegerMatrix(1,2),
                                const Rcpp::LogicalMatrix mask = Rcpp::LogicalMatrix(1),
-                               const Rcpp::IntegerMatrix color = Rcpp::IntegerMatrix(4,1)) {
+                               const Rcpp::IntegerMatrix color = Rcpp::IntegerMatrix(4,1),
+                               const uint8_t blur_size = 9,
+                               const double blur_sd = 3.0) {
   Rcpp::IntegerVector out = Rcpp::clone(img);
-  hpp_draw(out, coords, mask, color);
+  hpp_draw(out, coords, mask, color, blur_size, blur_sd);
   return out;
 }
+
 //' @title Raster Image
 //' @name cpp_raster
 //' @description low-level function to create plot raster
@@ -530,7 +590,9 @@ Rcpp::IntegerVector cpp_drawat(const Rcpp::IntegerVector img,
 //' - coords, an IntegerMatrix whose rows are points to draw and with:\cr
 //' -* 1st column being img col coordinate in px,\cr
 //' -* 2nd column being img row coordinate in px,\cr
-//' -* 3rd column determining if point should be drawn or not.
+//' -* 3rd column determining if point should be drawn or not.\cr
+//' - blur_size an integer controlling the size of the blurring gaussian kernel.\cr
+//' - blur_sd a double controlling the sd of the blurring gaussian kernel.
 //' @details shape according to 'pch' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true
 //' and every pixels being part of the shape will be filled with 'color'.
 //' If only one 'color' is provided, this 'color' will be used for each points.

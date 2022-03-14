@@ -2,7 +2,6 @@
 % Please edit documentation in R/graphs_utils.R
 \name{get_coordmap_adjusted}
 \alias{get_coordmap_adjusted}
-\alias{coord_to_px}
 \title{Device Adjusted Coordinates}
 \source{
 computes drawing region in a similar way as shiny:::getPrevPlotCoordmap()
@@ -14,26 +13,17 @@ get_coordmap_adjusted(
   height = grDevices::dev.size("px")[2],
   ratio = graphics::par("din")/graphics::par("pin")
 )
-
-coord_to_px(coord, coordmap)
 }
 \arguments{
-\item{coordmap}{current device adjusted coordinates. Default is missing.}
+\item{coordmap}{current device plotting region. Default is missing.}
 
 \item{width}{current device height in pixel. Default is grDevices::dev.size("px")[1].}
 
 \item{height}{current device width in pixel. Default is grDevices::dev.size("px")[2].}
 
 \item{ratio}{current device ratio. Default is graphics::par('din') / graphics::par('pin').}
-
-\item{coord}{coordinates in user system. A matrix where rows are points and with at least 2 columns named "x" and "y" for x and y coordinates, respectively.}
-}
-\value{
-a 3-columns matrix with "x" and "y" coordinates and a "draw" column specifying if point is within drawing region limits
 }
 \description{
-Helper to extract current device plotting region adjusted to device size
-
 Helper to extract current device plotting region adjusted to device size
 }
 \keyword{internal}
