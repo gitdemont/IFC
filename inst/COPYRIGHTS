@@ -38,6 +38,18 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 
 --------------------------------------------------------------------------------
+hpp_fast_factor is adapted from Kevin Ushey's code presented in Rcpp gallery.
+Rcpp is under GPL >= 2
+
+Dirk Eddelbuettel and Romain Francois (2011). Rcpp: Seamless R and C++ Integration. Journal of Statistical
+Software, 40(8), 1-18. URL https://www.jstatsoft.org/v40/i08/.
+
+Eddelbuettel, Dirk (2013) Seamless R and C++ Integration with Rcpp. Springer, New York. ISBN 978-1-4614-6867-7.
+
+Dirk Eddelbuettel and James Joseph Balamuta (2018). Extending R with C++: A Brief Introduction to Rcpp. The
+American Statistician. 72(1). URL https://doi.org/10.1080/00031305.2017.1375990.
+
+--------------------------------------------------------------------------------
 popsNetwork in popsNetwork.R is using visNetwork package authored by Almende
 B.V., Benoit Thieurmel and Titouan Robert
 COPYRIGHT HOLDER: Benoit Thieurmel

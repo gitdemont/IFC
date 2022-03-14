@@ -12,6 +12,10 @@ hpp_rle_Decomp and hpp_gray_Decomp decompression are port of Bio-Formats readers
 and writers authored by Lee Kamentsky under BSD license
 
 --------------------------------------------------------------------------------
+hpp_fast_factor is adapted from Kevin Ushey's code presented in Rcpp gallery.
+Rcpp is under GPL >= 2 https://gallery.rcpp.org/articles/fast-factor-generation/
+
+--------------------------------------------------------------------------------
 popsNetwork in popsNetwork.R is using visNetwork package authored by Almende
 B.V., Benoit Thieurmel and Titouan Robert under MIT + file LICENSE
 
