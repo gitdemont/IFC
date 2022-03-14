@@ -546,7 +546,7 @@ Rcpp::IntegerMatrix cpp_coord_to_px(const Rcpp::NumericVector x,
 }
 
 //' @title Draw Shape to Image
-//' @name hpp_draw
+//' @name cpp_draw
 //' @description low-level function to add shape on image
 //' @param img an IntegerVector. A non null array of dimensions [nrow, ncol, 4].
 //' @param coords an IntegerMatrix whose rows are points to draw and with:\cr
