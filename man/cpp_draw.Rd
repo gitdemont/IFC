@@ -8,8 +8,7 @@
 
 \item{coords}{an IntegerMatrix whose rows are points to draw and with:\cr
 - 1st column being img col coordinate in px,\cr
-- 2nd column being img row coordinate in px,\cr
-- 3rd column determining if point should be drawn or not.}
+- 2nd column being img row coordinate in px.}
 
 \item{mask}{a LogicalMatrix where every true value will be added to the image.}
 

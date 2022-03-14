@@ -432,13 +432,12 @@ Rcpp::IntegerMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
 }
 
 //' @title Draw Shape to Image
-//' @name hpp_draw
+//' @name cpp_draw
 //' @description low-level function to add shape on image
 //' @param img an IntegerVector. A non null array of dimensions [nrow, ncol, 4].
 //' @param coords an IntegerMatrix whose rows are points to draw and with:\cr
 //' - 1st column being img col coordinate in px,\cr
-//' - 2nd column being img row coordinate in px,\cr
-//' - 3rd column determining if point should be drawn or not.
+//' - 2nd column being img row coordinate in px.
 //' @param mask a LogicalMatrix where every true value will be added to the image.
 //' @param color, a length 4 IntegerMatrix specifying rgba, from 0 to 255. Only first row will be used.
 //' @param blur_size, a uint8_t the size of the gaussian blurring kernel. Default is 9.
@@ -583,13 +582,12 @@ void hpp_draw(Rcpp::IntegerVector img,
 //' @param width a uint16_t determining the returned image width.
 //' @param height a uint16_t determining the returned image height.
 //' @param obj a List containing drawing information:\cr
-//' - pch, an integer specifying a symbol to draw. Handled are 0,1,2,3,4,5,15,17,18,20. Otherwise only a pixel will be drawn.\cr
+//' - pch, an integer specifying a symbol to draw. Handled are [0-20]. Otherwise only a pixel will be drawn.\cr
 //' - size, an integer specifying the size in pixel of the shape, from 1 to 255.\cr
 //' - color an IntegerMatrix (rgba) of the color used to draw the shape.\cr
 //' - coords, an IntegerMatrix whose rows are points to draw and with:\cr
 //' -* 1st column being img col coordinate in px,\cr
-//' -* 2nd column being img row coordinate in px,\cr
-//' -* 3rd column determining if point should be drawn or not.\cr
+//' -* 2nd column being img row coordinate in px.
 //' - blur_size an integer controlling the size of the blurring gaussian kernel.\cr
 //' - blur_sd a double controlling the sd of the blurring gaussian kernel.
 //' @details shape according to 'pch' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true
