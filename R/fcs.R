@@ -52,7 +52,7 @@
 #' @details 'options' may be tweaked according to file type, instrument and software used to generate it.\cr
 #' Default 'options' should allow to read most files.\cr
 #' 'apply_scale', 'force_header', 'first_only', and 'textt_only' can also be passed to 'options' thanks to ...
-#' @source Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \url{https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.20825}.
+#' @source Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \doi{10.1002/cyto.a.20825}.
 #' @return a list whose elements are lists for each dataset stored within the file.\cr
 #' each sub-list contains:\cr
 #' - header, list of header information corresponding to 'options'\cr
@@ -824,7 +824,7 @@ FCS_to_data <- function(fcs, ...) {
 #' Extracts data from Flow Cytometry Standard (FCS) Files.
 #' @param fileName path(s) of file(s). If multiple files are provided they will be merged and 
 #' populations will be created to identify each single file within returned `IFC_data` object.
-#' @source Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \url{https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.20825}.
+#' @source Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \doi{10.1002/cyto.a.20825}.
 #' @param ... other arguments to be passed to readFCS function, with the exception of 'options$text_only'.
 #' @return A named list of class `IFC_data`, whose members are:\cr
 #' -description, a list of descriptive information,\cr

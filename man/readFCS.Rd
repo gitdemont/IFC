@@ -4,7 +4,7 @@
 \alias{readFCS}
 \title{FCS File Parser}
 \source{
-Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \url{https://onlinelibrary.wiley.com/doi/10.1002/cyto.a.20825}.
+Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \doi{10.1002/cyto.a.20825}.
 }
 \usage{
 readFCS(

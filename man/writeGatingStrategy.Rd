@@ -40,7 +40,7 @@ Writes GatingML from an `IFC_data` object to a xml file
 }
 \details{
 Partial implementation of ISAC's Gating-ML 2.0 data exchange standard for gating description.
-See Josef Spidlen et al. Cytometry A 87 683-687 (2015). \url{https://onlinelibrary.wiley.com/doi/full/10.1002/cyto.a.22690}\cr
+See Josef Spidlen et al. Cytometry A 87 683-687 (2015). \doi{full/10.1002/cyto.a.22690}\cr
 GatingML is partly implemented because:\cr
 -Tagged population are not part of GatingML gates\cr
 -IDEAS/INSPIRE regions are different from the collection of gates listed in GatingML. Notably,\cr
