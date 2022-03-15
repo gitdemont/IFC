@@ -578,7 +578,8 @@ void hpp_draw(Rcpp::IntegerVector img,
           R_len_t i_col = coords(i_pt, 0);
           if(Z(i_row, i_col)) {
             Z(i_row, i_col) = false;
-            for(R_len_t v = 0, f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
+            R_len_t v = 0;
+            for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
               for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++) {
                 if(mask[i_msk++] &&
                    (f_col >= 0) &&
@@ -586,11 +587,11 @@ void hpp_draw(Rcpp::IntegerVector img,
                    (f_row >= 0) &&
                    (f_row < height)) {
                   if(grd(f_row, f_col) > v) v = grd(f_row, f_col);
-                  for(R_len_t i_k = 0; i_k < 4; i_k++) {
-                    img[i_k * height * width + f_col * height + f_row] = color(i_k, v);
-                  }
                 }
               }
+            }
+            for(R_len_t i_k = 0; i_k < 4; i_k++) {
+              img[i_k * height * width + i_col * height + i_row] = color(i_k, v);
             }
           }
         }
