@@ -371,9 +371,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_drawat
-Rcpp::IntegerVector cpp_drawat(const Rcpp::IntegerVector img, const Rcpp::IntegerMatrix coords, const Rcpp::LogicalMatrix mask, const Rcpp::IntegerMatrix color, const uint8_t blur_size, const double blur_sd);
-RcppExport SEXP _IFC_cpp_drawat(SEXP imgSEXP, SEXP coordsSEXP, SEXP maskSEXP, SEXP colorSEXP, SEXP blur_sizeSEXP, SEXP blur_sdSEXP) {
+// cpp_draw
+Rcpp::IntegerVector cpp_draw(const Rcpp::IntegerVector img, const Rcpp::IntegerMatrix coords, const Rcpp::LogicalMatrix mask, const Rcpp::IntegerMatrix color, const uint8_t blur_size, const double blur_sd);
+RcppExport SEXP _IFC_cpp_draw(SEXP imgSEXP, SEXP coordsSEXP, SEXP maskSEXP, SEXP colorSEXP, SEXP blur_sizeSEXP, SEXP blur_sdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -383,7 +383,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::IntegerMatrix >::type color(colorSEXP);
     Rcpp::traits::input_parameter< const uint8_t >::type blur_size(blur_sizeSEXP);
     Rcpp::traits::input_parameter< const double >::type blur_sd(blur_sdSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_drawat(img, coords, mask, color, blur_size, blur_sd));
+    rcpp_result_gen = Rcpp::wrap(cpp_draw(img, coords, mask, color, blur_size, blur_sd));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -610,7 +610,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_fast_factor", (DL_FUNC) &_IFC_cpp_fast_factor, 2},
     {"_IFC_cpp_group_df", (DL_FUNC) &_IFC_cpp_group_df, 1},
     {"_IFC_cpp_coord_to_px", (DL_FUNC) &_IFC_cpp_coord_to_px, 3},
-    {"_IFC_cpp_drawat", (DL_FUNC) &_IFC_cpp_drawat, 6},
+    {"_IFC_cpp_draw", (DL_FUNC) &_IFC_cpp_draw, 6},
     {"_IFC_cpp_raster", (DL_FUNC) &_IFC_cpp_raster, 3},
     {"_IFC_cpp_crop", (DL_FUNC) &_IFC_cpp_crop, 3},
     {"_IFC_cpp_resize", (DL_FUNC) &_IFC_cpp_resize, 6},

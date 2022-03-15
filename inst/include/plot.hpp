@@ -1,6 +1,6 @@
 /*
   This file is released under the GNU General Public License, Version 3, GPL-3  
-  Copyright (C) 2020 Yohann Demont                                              
+  Copyright (C) 2022 Yohann Demont                                              
                                                                                 
   It is part of IFC package, please cite:                                       
   -IFC: An R Package for Imaging Flow Cytometry                                 
@@ -439,7 +439,7 @@ Rcpp::IntegerMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
 //' - 1st column being img col coordinate in px,\cr
 //' - 2nd column being img row coordinate in px.
 //' @param mask a LogicalMatrix where every true value will be added to the image.
-//' @param color, a length 4 IntegerMatrix specifying rgba, from 0 to 255. Only first row will be used.
+//' @param color, a 4 rows IntegerMatrix specifying rgba, from 0 to 255.
 //' @param blur_size, a uint8_t the size of the gaussian blurring kernel. Default is 9.
 //' @param blur_sd, a double the sd of the gaussian blurring kernel. Default is 3.0.
 //' @details shape according to 'mask' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true.\cr
@@ -551,22 +551,45 @@ void hpp_draw(Rcpp::IntegerVector img,
       }
       double ash = std::asinh(1);
       for(R_len_t i = 0; i < grd.size(); i++) grd[i] = (col_c - 0.001) * std::asinh(den[i] / den_mx) / ash;
-      for(R_len_t i_pt = 0; i_pt < coords.nrow(); i_pt++) {
-        if((count++ % 10000) == 0) {
-          count = 1;
-          Rcpp::checkUserInterrupt();
+      Rcpp::LogicalMatrix Z(V[0], V[1]); // matrix to record points already drawn so a to skip drawing another point at same xy location
+      Z.fill(true);
+      if(mask.size() == 1) {
+        for(R_len_t i_pt = 0; i_pt < coords.nrow(); i_pt++) {
+          if((count++ % 10000) == 0) {
+            count = 1;
+            Rcpp::checkUserInterrupt();
+          }
+          R_len_t i_row = coords(i_pt, 1);
+          R_len_t i_col = coords(i_pt, 0);
+          if(Z(i_row, i_col)) {
+            Z(i_row, i_col) = false;
+            for(R_len_t i_k = 0; i_k < 4; i_k++) {
+              img[i_k * height * width + i_col * height + i_row] = color(i_k,grd(i_row, i_col));
+            }
+          }
         }
-        R_len_t i_row = coords(i_pt, 1);
-        R_len_t i_col = coords(i_pt, 0);
-        for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
-          for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++) {
-            if(mask[i_msk++] &&
-               (f_col >= 0) &&
-               (f_col < width) &&
-               (f_row >= 0) &&
-               (f_row < height)) {
-              for(R_len_t i_k = 0; i_k < 4; i_k++) {
-                img[i_k * height * width + f_col * height + f_row] = color(i_k,grd(i_row, i_col));
+      } else {
+        for(R_len_t i_pt = 0; i_pt < coords.nrow(); i_pt++) {
+          if((count++ % 10000) == 0) {
+            count = 1;
+            Rcpp::checkUserInterrupt();
+          }
+          R_len_t i_row = coords(i_pt, 1);
+          R_len_t i_col = coords(i_pt, 0);
+          if(Z(i_row, i_col)) {
+            Z(i_row, i_col) = false;
+            for(R_len_t v = 0, f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
+              for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++) {
+                if(mask[i_msk++] &&
+                   (f_col >= 0) &&
+                   (f_col < width) &&
+                   (f_row >= 0) &&
+                   (f_row < height)) {
+                  if(grd(f_row, f_col) > v) v = grd(f_row, f_col);
+                  for(R_len_t i_k = 0; i_k < 4; i_k++) {
+                    img[i_k * height * width + f_col * height + f_row] = color(i_k, v);
+                  }
+                }
               }
             }
           }
@@ -584,7 +607,7 @@ void hpp_draw(Rcpp::IntegerVector img,
 //' @param obj a List containing drawing information:\cr
 //' - pch, an integer specifying a symbol to draw. Handled are [0-20]. Otherwise only a pixel will be drawn.\cr
 //' - size, an integer specifying the size in pixel of the shape, from 1 to 255.\cr
-//' - color an IntegerMatrix (rgba) of the color used to draw the shape.\cr
+//' - color a 4 rows IntegerMatrix (rgba) of the color used to draw the shape.\cr
 //' - coords, an IntegerMatrix whose rows are points to draw and with:\cr
 //' -* 1st column being img col coordinate in px,\cr
 //' -* 2nd column being img row coordinate in px.

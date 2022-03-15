@@ -12,7 +12,7 @@
 
 \item{mask}{a LogicalMatrix where every true value will be added to the image.}
 
-\item{color, }{a length 4 IntegerMatrix specifying rgba, from 0 to 255. Only first row will be used.}
+\item{color, }{a 4 rows IntegerMatrix specifying rgba, from 0 to 255.}
 
 \item{blur_size, }{a uint8_t the size of the gaussian blurring kernel. Default is 9.}
 

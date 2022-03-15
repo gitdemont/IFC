@@ -539,9 +539,9 @@ Rcpp::IntegerVector cpp_group_df(const Rcpp::DataFrame df) {
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-Rcpp::IntegerMatrix cpp_coord_to_px(const Rcpp::NumericVector x,
-                                    const Rcpp::NumericVector y,
-                                    const Rcpp::NumericVector param) {
+Rcpp::IntegerMatrix cpp_coord_to_px (const Rcpp::NumericVector x,
+                                     const Rcpp::NumericVector y,
+                                     const Rcpp::NumericVector param) {
   return hpp_coord_to_px(x, y, param);
 }
 
@@ -553,7 +553,7 @@ Rcpp::IntegerMatrix cpp_coord_to_px(const Rcpp::NumericVector x,
 //' - 1st column being img col coordinate in px,\cr
 //' - 2nd column being img row coordinate in px.
 //' @param mask a LogicalMatrix where every true value will be added to the image.
-//' @param color, a length 4 IntegerMatrix specifying rgba, from 0 to 255. Only first row will be used.
+//' @param color, a 4 rows IntegerMatrix specifying rgba, from 0 to 255.
 //' @param blur_size, a uint8_t the size of the gaussian blurring kernel. Default is 9.
 //' @param blur_sd, a double the sd of the gaussian blurring kernel. Default is 3.0.
 //' @details shape according to 'mask' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true.\cr
@@ -566,12 +566,12 @@ Rcpp::IntegerMatrix cpp_coord_to_px(const Rcpp::NumericVector x,
 //' @return /!\ nothing is returned but img is modified in-place
 ////' @export
 // [[Rcpp::export]]
-Rcpp::IntegerVector cpp_drawat(const Rcpp::IntegerVector img,
-                               const Rcpp::IntegerMatrix coords = Rcpp::IntegerMatrix(1,2),
-                               const Rcpp::LogicalMatrix mask = Rcpp::LogicalMatrix(1),
-                               const Rcpp::IntegerMatrix color = Rcpp::IntegerMatrix(4,1),
-                               const uint8_t blur_size = 9,
-                               const double blur_sd = 3.0) {
+Rcpp::IntegerVector cpp_draw (const Rcpp::IntegerVector img,
+                              const Rcpp::IntegerMatrix coords = Rcpp::IntegerMatrix(1,2),
+                              const Rcpp::LogicalMatrix mask = Rcpp::LogicalMatrix(1),
+                              const Rcpp::IntegerMatrix color = Rcpp::IntegerMatrix(4,1),
+                              const uint8_t blur_size = 9,
+                              const double blur_sd = 3.0) {
   Rcpp::IntegerVector out = Rcpp::clone(img);
   hpp_draw(out, coords, mask, color, blur_size, blur_sd);
   return out;
@@ -584,7 +584,7 @@ Rcpp::IntegerVector cpp_drawat(const Rcpp::IntegerVector img,
 //' @param obj a List containing drawing information:\cr
 //' - pch, an integer specifying a symbol to draw. Handled are [0-20]. Otherwise only a pixel will be drawn.\cr
 //' - size, an integer specifying the size in pixel of the shape, from 1 to 255.\cr
-//' - color an IntegerMatrix (rgba) of the color used to draw the shape.\cr
+//' - color a 4 rows IntegerMatrix (rgba) of the color used to draw the shape.\cr
 //' - coords, an IntegerMatrix whose rows are points to draw and with:\cr
 //' -* 1st column being img col coordinate in px,\cr
 //' -* 2nd column being img row coordinate in px.
@@ -599,9 +599,9 @@ Rcpp::IntegerVector cpp_drawat(const Rcpp::IntegerVector img,
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-Rcpp::IntegerVector cpp_raster(const uint16_t width,
-                               const uint16_t height,
-                               const Rcpp::List obj) {
+Rcpp::IntegerVector cpp_raster (const uint16_t width,
+                                const uint16_t height,
+                                const Rcpp::List obj) {
   return hpp_raster(width, height, obj);
 }
 // END plot

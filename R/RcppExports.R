@@ -331,7 +331,7 @@ NULL
 #' - 1st column being img col coordinate in px,\cr
 #' - 2nd column being img row coordinate in px.
 #' @param mask a LogicalMatrix where every true value will be added to the image.
-#' @param color, a length 4 IntegerMatrix specifying rgba, from 0 to 255. Only first row will be used.
+#' @param color, a 4 rows IntegerMatrix specifying rgba, from 0 to 255.
 #' @param blur_size, a uint8_t the size of the gaussian blurring kernel. Default is 9.
 #' @param blur_sd, a double the sd of the gaussian blurring kernel. Default is 3.0.
 #' @details shape according to 'mask' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true.\cr
@@ -352,7 +352,7 @@ NULL
 #' @param obj a List containing drawing information:\cr
 #' - pch, an integer specifying a symbol to draw. Handled are [0-20]. Otherwise only a pixel will be drawn.\cr
 #' - size, an integer specifying the size in pixel of the shape, from 1 to 255.\cr
-#' - color an IntegerMatrix (rgba) of the color used to draw the shape.\cr
+#' - color a 4 rows IntegerMatrix (rgba) of the color used to draw the shape.\cr
 #' - coords, an IntegerMatrix whose rows are points to draw and with:\cr
 #' -* 1st column being img col coordinate in px,\cr
 #' -* 2nd column being img row coordinate in px.
@@ -720,8 +720,8 @@ cpp_coord_to_px <- function(x, y, param) {
     .Call(`_IFC_cpp_coord_to_px`, x, y, param)
 }
 
-cpp_drawat <- function(img, coords = matrix(1,2), mask = matrix(1), color = matrix(4,1), blur_size = 9L, blur_sd = 3.0) {
-    .Call(`_IFC_cpp_drawat`, img, coords, mask, color, blur_size, blur_sd)
+cpp_draw <- function(img, coords = matrix(1,2), mask = matrix(1), color = matrix(4,1), blur_size = 9L, blur_sd = 3.0) {
+    .Call(`_IFC_cpp_draw`, img, coords, mask, color, blur_size, blur_sd)
 }
 
 cpp_raster <- function(width, height, obj) {
