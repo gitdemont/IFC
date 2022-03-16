@@ -6,7 +6,7 @@
   -IFC: An R Package for Imaging Flow Cytometry                                 
   -YEAR: 2020                                                                   
   -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,              
-                      Jean-Pierre Marolleau, Loï?c Gaççon,                       
+                      Jean-Pierre Marolleau, Loïc Garçon,                       
                       INSERM, UPD, CHU Amiens                                   
                                                                                 
                                                                                 
@@ -465,8 +465,8 @@ void hpp_draw(Rcpp::IntegerVector img,
   R_len_t msk_r_1 = msk_r + (mask.nrow() % 2);
   R_len_t col_r = color.nrow();
   R_len_t col_c = color.ncol();
-  if(col_r != 4) Rcpp::stop("hpp_draw: bad density color specification");
-  for(R_len_t i = 0; i < color.size(); i++) if((color[i] < 0) || (color[i] > 255)) Rcpp::stop("hpp_draw: bad color specification, out-of-range [0-255]");
+  if(col_r != 4) Rcpp::stop("hpp_draw: bad 'color' specification");
+  for(R_len_t i = 0; i < color.size(); i++) if((color[i] < 0) || (color[i] > 255)) Rcpp::stop("hpp_draw: bad 'color' specification, out-of-range [0-255]");
   Rcpp::IntegerVector V = get_dim(img);
   R_len_t width  = V[1];
   R_len_t height = V[0];
@@ -484,8 +484,8 @@ void hpp_draw(Rcpp::IntegerVector img,
       if(Z(i_row, i_col)) {
         Z(i_row, i_col) = false; // no need to draw same point at same xy location
         for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
-          for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++) {
-            if(mask[i_msk++] &&
+          for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
+            if(mask[i_msk] &&
                (f_col >= 0) &&
                (f_col < width) &&
                (f_row >= 0) &&
@@ -508,8 +508,8 @@ void hpp_draw(Rcpp::IntegerVector img,
         R_len_t i_row = coords(i_pt, 1);
         R_len_t i_col = coords(i_pt, 0);
         for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
-          for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++) {
-            if(mask[i_msk++] &&
+          for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
+            if(mask[i_msk] &&
                (f_col >= 0) &&
                (f_col < width) &&
                (f_row >= 0) &&
@@ -530,6 +530,7 @@ void hpp_draw(Rcpp::IntegerVector img,
       R_len_t blr_c_1 = blr_c + (blur.ncol() % 2);
       R_len_t blr_r_1 = blr_r + (blur.nrow() % 2);
       double den_mx = 0;
+      double ash = std::asinh(1);
       for(R_len_t i_pt = 0; i_pt < coords.nrow(); i_pt++) {
         if((count++ % 10000) == 0) {
           count = 1;
@@ -538,18 +539,17 @@ void hpp_draw(Rcpp::IntegerVector img,
         R_len_t i_row = coords(i_pt, 1);
         R_len_t i_col = coords(i_pt, 0);
         for(R_len_t f_col = i_col - blr_c, i_blr = 0; f_col <= i_col + blr_c_1; f_col++) {
-          for(R_len_t f_row = i_row - blr_r; f_row <= i_row + blr_r_1; f_row++) {
+          for(R_len_t f_row = i_row - blr_r; f_row <= i_row + blr_r_1; f_row++, i_blr++) {
             if((f_col >= 0) &&
                (f_col < width) &&
                (f_row >= 0) &&
                (f_row < height)) {
-              den(f_row, f_col) = den(f_row, f_col) + blur[i_blr++];
+              den(f_row, f_col) = den(f_row, f_col) + blur[i_blr];
               if(den(f_row, f_col) > den_mx) den_mx = den(f_row, f_col);
             }
           }
         }
       }
-      double ash = std::asinh(1);
       for(R_len_t i = 0; i < grd.size(); i++) grd[i] = (col_c - 0.001) * std::asinh(den[i] / den_mx) / ash;
       Rcpp::LogicalMatrix Z(V[0], V[1]); // matrix to record points already drawn so a to skip drawing another point at same xy location
       Z.fill(true);
@@ -580,8 +580,8 @@ void hpp_draw(Rcpp::IntegerVector img,
             Z(i_row, i_col) = false;
             R_len_t v = 0;
             for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
-              for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++) {
-                if(mask[i_msk++] &&
+              for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
+                if(mask[i_msk] &&
                    (f_col >= 0) &&
                    (f_col < width) &&
                    (f_row >= 0) &&
@@ -590,8 +590,18 @@ void hpp_draw(Rcpp::IntegerVector img,
                 }
               }
             }
-            for(R_len_t i_k = 0; i_k < 4; i_k++) {
-              img[i_k * height * width + i_col * height + i_row] = color(i_k, v);
+            for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
+              for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
+                if(mask[i_msk] &&
+                   (f_col >= 0) &&
+                   (f_col < width) &&
+                   (f_row >= 0) &&
+                   (f_row < height)) {
+                  for(R_len_t i_k = 0; i_k < 4; i_k++) {
+                    img[i_k * height * width + f_col * height + f_row] = color(i_k, v);
+                  }
+                }
+              }
             }
           }
         }
