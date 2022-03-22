@@ -804,7 +804,7 @@ FCS_to_data <- function(fcs, ...) {
   # foo = grep("^\\$P|^\\@P|^\\$D|^@D|^flowCore", names(fcs@description), value = TRUE, invert = TRUE)
   # min_data$info = fcs@description[foo]
   min_data$description$FCS = c(min_data$description$ID, list(instrument = paste0(instrument, collapse = ", "), spillover = spillover))
-  min_data = suppressWarnings(data_add_features(obj = min_data, features = features_def, session = dots$session))
+  min_data = suppressWarnings(IFC::data_add_features(obj = min_data, features = features_def, session = dots$session))
   min_data = IFC::data_add_pops(obj = min_data,
                                 pops = list(buildPopulation(name = "All", type = "B",
                                                             color = "White", lightModeColor = "Black",
