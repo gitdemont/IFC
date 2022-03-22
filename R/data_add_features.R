@@ -127,10 +127,12 @@ data_add_features <- function(obj, features, ...) {
   })
   exported_feats = features[exported_feats]
   if(length(exported_feats) == 0) return(obj)
-  names(exported_feats) = sapply(exported_feats, FUN=function(x) x$name)
   
+  names(exported_feats) = sapply(exported_feats, FUN=function(x) x$name)
   K = class(obj$features)
-  obj$features = cbind(obj$features, sapply(exported_feats, FUN=function(x) x$val))
+  # obj$features = cbind.data.frame(obj$features,stringsAsFactors = FALSE, fix.empty.names = FALSE,
+                       # as.data.frame.list(lapply(exported_feats, FUN=function(x) x$val), optional = TRUE, stringsAsFactors = FALSE, col.names = sapply(exported_feats, FUN=function(x) x$name)))
+  obj$features = fastCbind(obj$features, sapply(exported_feats, simplify = FALSE, FUN=function(x) x$val))
   class(obj$features) = c(setdiff(K, "IFC_features"), "IFC_features")
 
   K = class(obj$features_def)

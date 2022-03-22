@@ -43,6 +43,7 @@
 #include "../inst/include/resize.hpp"
 #include "../inst/include/group.hpp"
 #include "../inst/include/plot.hpp"
+#include "../inst/include/cbind.hpp"
 using namespace Rcpp;
 
 // FROM align
@@ -127,12 +128,67 @@ Rcpp::LogicalVector cpp_pnt_in_gate (const Rcpp::NumericMatrix pnts,
   return hpp_pnt_in_gate (pnts, gate, algorithm, epsilon);
 }
 // END gate
-
 // FROM utils
+//' @title Use Rcpp to Apply Any on Matrix Rows
+//' @name cpp_fast_rowAny
+//' @description
+//' Computes any across matrix rows.
+//' @param M_ a Nullable LogicalVector. /!\ But cast to LogicalMatrix
+//' @return a LogicalVector.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::LogicalVector> cpp_fast_rowAny(const Rcpp::Nullable<Rcpp::LogicalVector> M_ = R_NilValue) {
+  return hpp_fast_rowAny(M_);
+}
+
+//' @title Use Rcpp to Apply Any on List members
+//' @name cpp_fast_listAny
+//' @description
+//' Computes any across list members
+//' @param L_ a Nullable List.
+//' @return a LogicalVector.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::LogicalVector> cpp_fast_listAny(const Rcpp::Nullable<Rcpp::List> L_ = R_NilValue) {
+  return hpp_fast_listAny(L_);
+}
+
+//' @title Use Rcpp for Range
+//' @name cpp_fast_range
+//' @description
+//' Determines range of numeric vector
+//' @param x_ a Nullable NumericVector.
+//' @details the behaviour is the same as R base::range(x_, na.rm = TRUE, finite = TRUE) without creating warnings
+//' @return a NumericVector.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::NumericVector cpp_fast_range(const Rcpp::Nullable<Rcpp::NumericVector> x_ = R_NilValue) {
+  return hpp_fast_range(x_);
+}
+
+//' @title Use Rcpp for Sampling
+//' @name cpp_fast_sample
+//' @description
+//' Create a sample of integers
+//' @param n a R_len_t, max number integers to choose from.
+//' @param size a R_len_t the desired size of return integers.
+//' @param replace a bool determining if sampling should be done with replacement. Default is false.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::IntegerVector cpp_fast_sample(const R_len_t n = 0,
+                                    const R_len_t size = 0,
+                                    const bool replace = false) {
+  return hpp_fast_sample(n, size, replace);
+}
+
 //' @title Get Bytes Order
 //' @name cpp_get_bytes_order
 //' @description
-//' This function expands bytes order to the whole data.
+//' This function expands bytes order to the whole data
 //' @param obj number of objects in the data.
 //' @param byt_ IntegerVector of number of bytes to take from 'ord_'.
 //' @param ord_ IntegerVector bytes order. 
@@ -606,6 +662,110 @@ Rcpp::IntegerVector cpp_raster (const uint16_t width,
 }
 // END plot
 
+// FROM cbind
+
+//' @title Fast Dataframe and Matrix Column Binding
+//' @name cpp_fast_cbind_DF_M
+//' @description
+//' Combines data.frame and matrix by columns
+//' @param Df_ a Nullable DataFrame.
+//' @param M_ a Nullable NumericVector. /!\ But cast to NumericMatrix.
+//' @param add_id a bool determining if 1st column of returned object should be given 1 to nrow integers
+//' @return a DataFrame.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_DF_M(const Rcpp::Nullable<Rcpp::DataFrame> Df_ = R_NilValue,
+                                                    const Rcpp::Nullable<Rcpp::NumericVector> M_ = R_NilValue,
+                                                    const bool add_id = false) {
+  return hpp_fast_cbind_DF_M(Df_, M_, add_id);
+}
+
+//' @title Fast Matrix and Dataframe Column Binding
+//' @name cpp_fast_cbind_M_DF
+//' @description
+//' Combines matrix and data.frame by columns
+//' @param M_ a Nullable NumericVector. /!\ But cast to NumericMatrix.
+//' @param Df_ a Nullable DataFrame.
+//' @param add_id a bool determining if 1st column of returned object should be given 1 to nrow integers
+//' @return a DataFrame.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_M_DF(const Rcpp::Nullable<Rcpp::NumericVector> M_ = R_NilValue,
+                                                    const Rcpp::Nullable<Rcpp::DataFrame> Df_ = R_NilValue,
+                                                    const bool add_id = false) {
+  return hpp_fast_cbind_M_DF(M_, Df_, add_id);
+}
+
+//' @title Dataframe and Dataframe Column Binding
+//' @name cpp_fast_cbind_DF_DF
+//' @description
+//' Combines numeric matrix by columns
+//' @param Df1_ a Nullable DataFrame.
+//' @param Df2_ a Nullable DataFrame.
+//' @param add_id a bool determining if 1st column of returned object should be given 1 to nrow integers
+//' @return a DataFrame.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_DF_DF(const Rcpp::Nullable<Rcpp::DataFrame> Df1_ = R_NilValue,
+                                                     const Rcpp::Nullable<Rcpp::DataFrame> Df2_ = R_NilValue,
+                                                     const bool add_id = false) {
+  return hpp_fast_cbind_DF_DF(Df1_, Df2_, add_id);
+}
+
+//' @title Matrix and Matrix Column Binding
+//' @name cpp_fast_cbind_M_M
+//' @description
+//' Combines numeric matrix by columns
+//' @param M1_ a Nullable NumericVector. /!\ But cast to NumericMatrix.
+//' @param M2_ a Nullable NumericVector. /!\ But cast to NumericMatrix.
+//' @param add_id a bool determining if 1st column of returned object should be given 1 to nrow integers
+//' @return a NumericVector.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::NumericVector> cpp_fast_cbind_M_M(const Rcpp::Nullable<Rcpp::NumericVector> M1_ = R_NilValue,
+                                                       const Rcpp::Nullable<Rcpp::NumericVector> M2_ = R_NilValue,
+                                                       const bool add_id = false) {
+  return hpp_fast_cbind_M_M(M1_, M2_, add_id);
+}
+
+//' @title Fast Dataframe and List Column Binding
+//' @name cpp_fast_cbind_DF_L
+//' @description
+//' Combines data.frame and list by columns
+//' @param Df_ a Nullable DataFrame.
+//' @param L_ a Nullable List.
+//' @param add_id a bool determining if 1st column of returned object should be given 1 to nrow integers
+//' @return a DataFrame.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_DF_L(const Rcpp::Nullable<Rcpp::DataFrame> Df_ = R_NilValue,
+                                                    const Rcpp::Nullable<Rcpp::List> L_ = R_NilValue,
+                                                    const bool add_id = false) {
+  return hpp_fast_cbind_DF_L(Df_, L_, add_id);
+}
+
+//' @title Fast List and Dataframe Column Binding
+//' @name cpp_fast_cbind_L_DF
+//' @description
+//' Combines list and data.frame by columns
+//' @param L_ a Nullable List.
+//' @param Df_ a Nullable DataFrame.
+//' @param add_id a bool determining if 1st column of returned object should be given 1 to nrow integers
+//' @return a DataFrame.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_L_Df(const Rcpp::Nullable<Rcpp::List> L_ = R_NilValue,
+                                                    const Rcpp::Nullable<Rcpp::DataFrame> Df_ = R_NilValue,
+                                                    const bool add_id = false) {
+  return hpp_fast_cbind_L_Df(L_, Df_, add_id);
+}
+// END cbind
 
 // FROM resize
 //' @title Matrix Cropping

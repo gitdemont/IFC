@@ -13,6 +13,6 @@
 \item{rev}{bool whether to reverse order or not. Default is false.}
 }
 \description{
-This function expands bytes order to the whole data.
+This function expands bytes order to the whole data
 }
 \keyword{internal}

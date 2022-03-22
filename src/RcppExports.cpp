@@ -65,6 +65,52 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_fast_rowAny
+Rcpp::Nullable<Rcpp::LogicalVector> cpp_fast_rowAny(const Rcpp::Nullable<Rcpp::LogicalVector> M_);
+RcppExport SEXP _IFC_cpp_fast_rowAny(SEXP M_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::LogicalVector> >::type M_(M_SEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fast_rowAny(M_));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_fast_listAny
+Rcpp::Nullable<Rcpp::LogicalVector> cpp_fast_listAny(const Rcpp::Nullable<Rcpp::List> L_);
+RcppExport SEXP _IFC_cpp_fast_listAny(SEXP L_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::List> >::type L_(L_SEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fast_listAny(L_));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_fast_range
+Rcpp::NumericVector cpp_fast_range(const Rcpp::Nullable<Rcpp::NumericVector> x_);
+RcppExport SEXP _IFC_cpp_fast_range(SEXP x_SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::NumericVector> >::type x_(x_SEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fast_range(x_));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_fast_sample
+Rcpp::IntegerVector cpp_fast_sample(const R_len_t n, const R_len_t size, const bool replace);
+RcppExport SEXP _IFC_cpp_fast_sample(SEXP nSEXP, SEXP sizeSEXP, SEXP replaceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const R_len_t >::type n(nSEXP);
+    Rcpp::traits::input_parameter< const R_len_t >::type size(sizeSEXP);
+    Rcpp::traits::input_parameter< const bool >::type replace(replaceSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fast_sample(n, size, replace));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_get_bytes_order
 Rcpp::Nullable<Rcpp::IntegerVector> cpp_get_bytes_order(const R_len_t obj, const Rcpp::Nullable<Rcpp::IntegerVector> byt_, const Rcpp::Nullable<Rcpp::IntegerVector> ord_, const bool rev);
 RcppExport SEXP _IFC_cpp_get_bytes_order(SEXP objSEXP, SEXP byt_SEXP, SEXP ord_SEXP, SEXP revSEXP) {
@@ -400,6 +446,84 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_fast_cbind_DF_M
+Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_DF_M(const Rcpp::Nullable<Rcpp::DataFrame> Df_, const Rcpp::Nullable<Rcpp::NumericVector> M_, const bool add_id);
+RcppExport SEXP _IFC_cpp_fast_cbind_DF_M(SEXP Df_SEXP, SEXP M_SEXP, SEXP add_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::DataFrame> >::type Df_(Df_SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::NumericVector> >::type M_(M_SEXP);
+    Rcpp::traits::input_parameter< const bool >::type add_id(add_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fast_cbind_DF_M(Df_, M_, add_id));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_fast_cbind_M_DF
+Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_M_DF(const Rcpp::Nullable<Rcpp::NumericVector> M_, const Rcpp::Nullable<Rcpp::DataFrame> Df_, const bool add_id);
+RcppExport SEXP _IFC_cpp_fast_cbind_M_DF(SEXP M_SEXP, SEXP Df_SEXP, SEXP add_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::NumericVector> >::type M_(M_SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::DataFrame> >::type Df_(Df_SEXP);
+    Rcpp::traits::input_parameter< const bool >::type add_id(add_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fast_cbind_M_DF(M_, Df_, add_id));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_fast_cbind_DF_DF
+Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_DF_DF(const Rcpp::Nullable<Rcpp::DataFrame> Df1_, const Rcpp::Nullable<Rcpp::DataFrame> Df2_, const bool add_id);
+RcppExport SEXP _IFC_cpp_fast_cbind_DF_DF(SEXP Df1_SEXP, SEXP Df2_SEXP, SEXP add_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::DataFrame> >::type Df1_(Df1_SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::DataFrame> >::type Df2_(Df2_SEXP);
+    Rcpp::traits::input_parameter< const bool >::type add_id(add_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fast_cbind_DF_DF(Df1_, Df2_, add_id));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_fast_cbind_M_M
+Rcpp::Nullable<Rcpp::NumericVector> cpp_fast_cbind_M_M(const Rcpp::Nullable<Rcpp::NumericVector> M1_, const Rcpp::Nullable<Rcpp::NumericVector> M2_, const bool add_id);
+RcppExport SEXP _IFC_cpp_fast_cbind_M_M(SEXP M1_SEXP, SEXP M2_SEXP, SEXP add_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::NumericVector> >::type M1_(M1_SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::NumericVector> >::type M2_(M2_SEXP);
+    Rcpp::traits::input_parameter< const bool >::type add_id(add_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fast_cbind_M_M(M1_, M2_, add_id));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_fast_cbind_DF_L
+Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_DF_L(const Rcpp::Nullable<Rcpp::DataFrame> Df_, const Rcpp::Nullable<Rcpp::List> L_, const bool add_id);
+RcppExport SEXP _IFC_cpp_fast_cbind_DF_L(SEXP Df_SEXP, SEXP L_SEXP, SEXP add_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::DataFrame> >::type Df_(Df_SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::List> >::type L_(L_SEXP);
+    Rcpp::traits::input_parameter< const bool >::type add_id(add_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fast_cbind_DF_L(Df_, L_, add_id));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_fast_cbind_L_Df
+Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_L_Df(const Rcpp::Nullable<Rcpp::List> L_, const Rcpp::Nullable<Rcpp::DataFrame> Df_, const bool add_id);
+RcppExport SEXP _IFC_cpp_fast_cbind_L_Df(SEXP L_SEXP, SEXP Df_SEXP, SEXP add_idSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::List> >::type L_(L_SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::DataFrame> >::type Df_(Df_SEXP);
+    Rcpp::traits::input_parameter< const bool >::type add_id(add_idSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fast_cbind_L_Df(L_, Df_, add_id));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_crop
 Rcpp::NumericMatrix cpp_crop(Rcpp::NumericMatrix mat, const R_len_t new_height, const R_len_t new_width);
 RcppExport SEXP _IFC_cpp_crop(SEXP matSEXP, SEXP new_heightSEXP, SEXP new_widthSEXP) {
@@ -585,6 +709,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_assert", (DL_FUNC) &_IFC_cpp_assert, 6},
     {"_IFC_cpp_ell_coord", (DL_FUNC) &_IFC_cpp_ell_coord, 2},
     {"_IFC_cpp_pnt_in_gate", (DL_FUNC) &_IFC_cpp_pnt_in_gate, 4},
+    {"_IFC_cpp_fast_rowAny", (DL_FUNC) &_IFC_cpp_fast_rowAny, 1},
+    {"_IFC_cpp_fast_listAny", (DL_FUNC) &_IFC_cpp_fast_listAny, 1},
+    {"_IFC_cpp_fast_range", (DL_FUNC) &_IFC_cpp_fast_range, 1},
+    {"_IFC_cpp_fast_sample", (DL_FUNC) &_IFC_cpp_fast_sample, 3},
     {"_IFC_cpp_get_bytes_order", (DL_FUNC) &_IFC_cpp_get_bytes_order, 4},
     {"_IFC_cpp_replace_non_finite", (DL_FUNC) &_IFC_cpp_replace_non_finite, 2},
     {"_IFC_cpp_computeGamma", (DL_FUNC) &_IFC_cpp_computeGamma, 1},
@@ -612,6 +740,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_coord_to_px", (DL_FUNC) &_IFC_cpp_coord_to_px, 3},
     {"_IFC_cpp_draw", (DL_FUNC) &_IFC_cpp_draw, 6},
     {"_IFC_cpp_raster", (DL_FUNC) &_IFC_cpp_raster, 3},
+    {"_IFC_cpp_fast_cbind_DF_M", (DL_FUNC) &_IFC_cpp_fast_cbind_DF_M, 3},
+    {"_IFC_cpp_fast_cbind_M_DF", (DL_FUNC) &_IFC_cpp_fast_cbind_M_DF, 3},
+    {"_IFC_cpp_fast_cbind_DF_DF", (DL_FUNC) &_IFC_cpp_fast_cbind_DF_DF, 3},
+    {"_IFC_cpp_fast_cbind_M_M", (DL_FUNC) &_IFC_cpp_fast_cbind_M_M, 3},
+    {"_IFC_cpp_fast_cbind_DF_L", (DL_FUNC) &_IFC_cpp_fast_cbind_DF_L, 3},
+    {"_IFC_cpp_fast_cbind_L_Df", (DL_FUNC) &_IFC_cpp_fast_cbind_L_Df, 3},
     {"_IFC_cpp_crop", (DL_FUNC) &_IFC_cpp_crop, 3},
     {"_IFC_cpp_resize", (DL_FUNC) &_IFC_cpp_resize, 6},
     {"_IFC_cpp_decomp", (DL_FUNC) &_IFC_cpp_decomp, 9},

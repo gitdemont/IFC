@@ -543,14 +543,26 @@ FCS_merge_dataset <- function(fcs, ...) {
     lapply(1:L, FUN = function(i) {
       if(display_progress) setPB(pb, value = i, title = "FCS", label = "Merging Data Sets")
       dat = fcs[[i]]$data
-      if(!any("import_file" == names(dat))) dat = cbind.data.frame(dat, "import_file"=rep(fcs[[i]]$text[["@IFC_file"]], nrow(dat)))
-      if(!any("import_subfile" == names(dat))) dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["@IFC_dataset"]], nrow(dat)))
+      if(!any("import_file" == names(dat))) {
+        dat[,"import_file"]=rep(fcs[[i]]$text[["@IFC_file"]], nrow(dat))
+        # dat = cbind.data.frame(dat, "import_file"=rep(fcs[[i]]$text[["@IFC_file"]], nrow(dat)))
+      }
+      if(!any("import_subfile" == names(dat))) {
+        dat[,"import_subfile"]=rep(fcs[[i]]$text[["@IFC_dataset"]], nrow(dat))
+        # dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["@IFC_dataset"]], nrow(dat)))
+      }
       dat
     }))
   } else {
     features = fcs[[1]]$data
-    if(!any("import_file" == names(features))) features = cbind.data.frame(features, "import_file"=rep(fcs[[1]]$text[["@IFC_file"]], nrow(features)))
-    if(!any("import_subfile" == names(features))) features = cbind.data.frame(features, "import_subfile"=rep(1, nrow(features)))
+    if(!any("import_file" == names(features))) {
+      features[,"import_file"]=rep(fcs[[1]]$text[["@IFC_file"]], nrow(features))
+      # features = cbind.data.frame(features, "import_file"=rep(fcs[[1]]$text[["@IFC_file"]], nrow(features)))
+    }
+    if(!any("import_subfile" == names(features))) {
+      features[,"import_subfile"]=rep(1, nrow(features))
+      # features = cbind.data.frame(features, "import_subfile"=rep(1, nrow(features)))
+    }
   }
   
   ans = list(list(header=fcs[[1]]$header,
@@ -601,14 +613,26 @@ FCS_merge_sample <- function(fcs, ...) {
     lapply(1:L, FUN = function(i) {
       if(display_progress) setPB(pb, value = i, title = "FCS", label = "Merging Samples")
       dat = fcs[[i]]$data
-      if(!any("import_file" == names(dat))) dat = cbind.data.frame(dat, "import_file"=rep(fcs[[i]]$text[["@IFC_file"]], nrow(dat)))
-      if(!any("import_subfile" == names(dat))) dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["@IFC_dataset"]], nrow(dat)))
+      if(!any("import_file" == names(dat))) {
+        dat[,"import_file"]=rep(fcs[[i]]$text[["@IFC_file"]], nrow(dat))
+        # dat = cbind.data.frame(dat, "import_file"=rep(fcs[[i]]$text[["@IFC_file"]], nrow(dat)))
+      }
+      if(!any("import_subfile" == names(dat))) {
+        dat[,"import_subfile"]=rep(fcs[[i]]$text[["@IFC_dataset"]], nrow(dat))
+        # dat = cbind.data.frame(dat, "import_subfile"=rep(fcs[[i]]$text[["@IFC_dataset"]], nrow(dat)))
+      }
       dat
     }))
   } else {
     features = fcs[[1]]$data
-    if(!any("import_file" == names(features))) features = cbind.data.frame(features, "import_file"=rep(fcs[[1]]$text[["@IFC_file"]], nrow(features)))
-    if(!any("import_subfile" == names(features))) features = cbind.data.frame(features, "import_subfile"=rep(1, nrow(features)))
+    if(!any("import_file" == names(features))) {
+      features[,"import_file"]=rep(fcs[[1]]$text[["@IFC_file"]], nrow(features))
+      # features = cbind.data.frame(features, "import_file"=rep(fcs[[1]]$text[["@IFC_file"]], nrow(features)))
+    }
+    if(!any("import_subfile" == names(features))) {
+      features[,"import_subfile"]=rep(1, nrow(features))
+      # features = cbind.data.frame(features, "import_subfile"=rep(1, nrow(features)))
+    }
   }
   
   ans = list(list(header=fcs[[1]]$header,
@@ -720,7 +744,6 @@ FCS_to_data <- function(fcs, ...) {
     })
     pops = pops[sapply(pops, FUN = function(p) length(p) != 0)]
   }
-  
   features = subset(x = features, select = !identif)
   features_def = lapply(names(features), FUN = function(i_feat) {
     # TODO check it it correctly imports linear values
@@ -781,7 +804,7 @@ FCS_to_data <- function(fcs, ...) {
   # foo = grep("^\\$P|^\\@P|^\\$D|^@D|^flowCore", names(fcs@description), value = TRUE, invert = TRUE)
   # min_data$info = fcs@description[foo]
   min_data$description$FCS = c(min_data$description$ID, list(instrument = paste0(instrument, collapse = ", "), spillover = spillover))
-  min_data = suppressWarnings(IFC::data_add_features(obj = min_data, features = features_def, session = dots$session))
+  min_data = suppressWarnings(data_add_features(obj = min_data, features = features_def, session = dots$session))
   min_data = IFC::data_add_pops(obj = min_data,
                                 pops = list(buildPopulation(name = "All", type = "B",
                                                             color = "White", lightModeColor = "Black",
@@ -958,9 +981,10 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                 anal_end = "       0")
   
   # we modify features to add populations
-  all_pops = do.call(what = cbind, args = lapply(obj$pops, FUN = function(p) p$obj))
-  colnames(all_pops) = names(obj$pops)
-  features = cbind(obj$features[, setdiff(names(obj$features), colnames(all_pops))], all_pops)
+  # all_pops = do.call(what = cbind, args = lapply(obj$pops, FUN = function(p) p$obj))
+  # colnames(all_pops) = names(obj$pops)
+  features = fastCbind(obj$features[, setdiff(names(obj$features), colnames(all_pops)), drop = FALSE],
+                       sapply(names(obj$pops), simplify = FALSE, FUN = function(p) obj$pops[[p]]$obj))
   # need to replace non finite values by something; IDEAS is using 0 so we use 0 also
   # TODO maybe replace -Inf by features min and +Inf by features max ?
   features = as.data.frame(apply(features, 2, cpp_replace_non_finite), stringsAsFactors = TRUE)

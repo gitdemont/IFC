@@ -362,8 +362,9 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
     }
     if(!keep_region) {
       P = obj$pops[unique(c(ss,shown_pops))]
-      SUB = as.data.frame(do.call(what=cbind, args=lapply(P, FUN=function(p) p$obj)), stringsAsFactors = FALSE)
-      SUB = apply(SUB, 1, any)
+      # SUB = as.data.frame(do.call(what=cbind, args=lapply(P, FUN=function(p) p$obj)), stringsAsFactors = FALSE)
+      # SUB = apply(SUB, 1, any)
+      SUB = fastAny(lapply(P, FUN=function(p) p$obj))
       xran = range(obj$features[SUB, foo$f1], na.rm = TRUE)
       if(length(foo$xlogrange)==0) foo$xlogrange = trans_x
       trans_x = parseTrans(foo$xlogrange)
