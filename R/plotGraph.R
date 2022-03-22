@@ -85,7 +85,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   R = obj$regions
   g = do.call(what=buildGraph, args=graph)
   if(missing(trans)) trans = g$BasePop[[1]]$densitytrans
-  is_fun = inherits(trans, what="function") || !inherits(try(suppressWarnings(formals(trans)), silent = TRUE), what="try-error")
+  check_fun <- try(suppressWarnings(formals(trans)), silent = TRUE)
+  is_fun = inherits(trans, what="function") || !inherits(check_fun, what="try-error")
   dens_feat = numeric()
   if(length(trans) == 0) trans = "asinh"
   foo = c(g$f1, g$f2)
@@ -110,10 +111,10 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   # extracts graph information
   if(g$type == "histogram") {
     D = obj$features[,c("Object Number",g$f1)]
-    names(D) = c("Object Number","x1")
+    colnames(D) = c("Object Number","x1")
   } else {
     D = obj$features[,c("Object Number",g$f1,g$f2)]
-    names(D) = c("Object Number","x1","y1")
+    colnames(D) = c("Object Number","x1","y1")
   }
   Xlim = c(g$xmin, g$xmax)
   Ylim = c(g$ymin, g$ymax)
@@ -134,7 +135,6 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   displayed_r = rev(displayed_n)
   tmp = displayed_n %in% names(P)
   if(!all(tmp)) stop(paste0("trying to display a population not found in obj$pops: ",  paste0(displayed_n[!tmp], collapse=", ")))
-  displayed_d = sapply(displayed_n, FUN=function(x) P[[x]]$obj)
   L = length(displayed_n)
 
   base_o = sapply(base_n, FUN=function(x) which(displayed_n%in%x))
@@ -149,22 +149,20 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   }
   
   # subset data
-  base = as.data.frame(sapply(base_n, FUN=function(x) P[[x]]$obj), stringsAsFactors = FALSE)
-  data_sub = apply(base, 1, any)
+  # base = sapply(base_n, FUN=function(x) P[[x]]$obj)
+  data_sub = fastAny(lapply(base_n, FUN=function(x) P[[x]]$obj))
   displayed_o = c(base_o, shown_o)
-  Dall = cbind(1:nrow(D), D, displayed_d)
-  names(Dall) = c(random_name(special = NULL, forbidden = c(names(D), "x2", "y2", displayed_n)), names(D), displayed_n)
-  D = Dall[data_sub, ]
+  Dall = fastCbind(D, sapply(displayed_n, simplify = FALSE, FUN=function(x) P[[x]]$obj), TRUE)
+  D = Dall[data_sub, , drop = FALSE]
   
   xy_subset = rep(TRUE, nrow(D))
   if(length(xy_subset) == 0) xy_subset = TRUE
-  
   D[,"x2"] = applyTrans(D[,"x1"], trans_x)
   Xlim = applyTrans(Xlim, trans_x)
   # computes limits / stats
   if(g$type == "histogram") {
     if(viewport == "data") {
-      Xlim = suppressWarnings(range(D[,"x1"], na.rm = TRUE, finite = TRUE))
+      Xlim = cpp_fast_range(D[, "x1", drop=TRUE])
       Xlim = applyTrans(Xlim, trans_x)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
@@ -175,7 +173,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         coords = reg[["x"]]
         return(c(reg$cx, coords))
       })
-      Xlim = suppressWarnings(range(c(D[,"x1"], regx), na.rm = TRUE, finite = TRUE))
+      Xlim = cpp_fast_range(c(D[,"x1", drop=TRUE], unlist(regx)))
       Xlim = applyTrans(Xlim, trans_x)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
@@ -216,10 +214,10 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     D[,"y2"] = applyTrans(D[,"y1"], trans_y)
     Ylim = applyTrans(Ylim, trans_y)
     if(viewport == "data") {
-      Xlim = suppressWarnings(range(D[,"x1"], na.rm = TRUE, finite = TRUE))
+      Xlim = cpp_fast_range(D[,"x1", drop=TRUE])
       Xlim = applyTrans(Xlim, trans_x)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
-      Ylim = suppressWarnings(range(D[,"y1"], na.rm = TRUE, finite = TRUE))
+      Ylim = cpp_fast_range(D[,"y1", drop=TRUE])
       Ylim = applyTrans(Ylim, trans_y)
       Ylim = Ylim + c(-0.07,0.07)*diff(Ylim)
     }
@@ -229,7 +227,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         coords = reg[["x"]]
         return(c(reg$cx, coords))
       })
-      Xlim = suppressWarnings(range(c(D[,"x1"], regx), na.rm = TRUE, finite = TRUE))
+      Xlim = cpp_fast_range(c(D[,"x1", drop=TRUE], unlist(regx)))
       Xlim = applyTrans(Xlim, trans_x)
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       regy = sapply(reg_n, FUN=function(r) {
@@ -237,7 +235,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         coords = reg[["y"]]
         return(c(reg$cy, coords))
       })
-      Ylim = suppressWarnings(range(c(D[,"y1"], regy), na.rm = TRUE, finite = TRUE))
+      Ylim = cpp_fast_range(c(D[,"y1", drop=TRUE], unlist(regy)))
       Ylim = applyTrans(Ylim, trans_y)
       Ylim = Ylim + c(-0.07,0.07)*diff(Ylim)
     }
@@ -258,20 +256,22 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     if(nrow(D) > 0) {
       xy_subset = rep(FALSE, nrow(D))
       if(g$maxpoints <= 1) {
-        xy_subset[sample(x = nrow(D), size = g$maxpoints * nrow(D), replace = FALSE)] <- TRUE
+        xy_subset[cpp_fast_sample(n = nrow(D), size = g$maxpoints * nrow(D), replace = FALSE)] <- TRUE
       } else {
-        xy_subset[sample(x = nrow(D), size = min(g$maxpoints,nrow(D)), replace = FALSE)] <- TRUE
+        xy_subset[cpp_fast_sample(n = nrow(D), size = min(g$maxpoints,nrow(D)), replace = FALSE)] <- TRUE
       }
     }
     xtop = NULL
     if(is_fun) {
-      dens_feat = obj$features[data_sub,][xy_subset,]
+      if("features" %in% names(check_fun)) {
+        dens_feat = do.call(what = trans, args = list(features = obj$features[D[xy_subset, 1, drop = TRUE], , drop = FALSE])) 
+      }
     } else {
       if((length(g$BasePop[[base_o[1]]][["densitylevel"]]) == 0) || (g$BasePop[[base_o[1]]][["densitylevel"]] == "")) {
         xtop = trans
       } 
-      dens_feat = obj$features[data_sub,][xy_subset,trans]
-      dens_ran = range(dens_feat, na.rm = TRUE)
+      dens_feat = obj$features[D[xy_subset, 1, drop = TRUE], trans, drop = TRUE]
+      dens_ran = cpp_fast_range(dens_feat)
       dens_feat = (dens_feat-dens_ran[1])/diff(dens_ran)
     }
     coln_stats = c("count","perc","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
@@ -307,6 +307,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   displayed = lapply(obj$pops[displayed_n], FUN = function(p) {
     return(p[!(names(p) %in% "obj")])
   })
+  suball = rep(FALSE, nrow(D))
+  suball[D[xy_subset, 1, drop = TRUE]] <- TRUE
   ret = list("plot" = foo,
              "stats" = stats,
              "input" = list("data" = structure(D[ ,ret_order], features=dens_feat), 
@@ -329,7 +331,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                             "precision" = precision,
                             "add_key" = add_key,
                             "subset" = xy_subset,
-                            "suball" = Dall[, 1] %in% D[xy_subset, 1],
+                            "suball" = suball,
                             "mode" = color_mode))
   class(ret) <- "IFC_plot"
   invisible(ret)

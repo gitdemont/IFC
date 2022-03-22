@@ -68,19 +68,17 @@ densCols=function (x, y = NULL, nbin = 128, bandwidth, colramp = colorRampPalett
   if (!inherits(check_fun, what = "try-error")) {
     x <- cbind(xy$x, xy$y)[select, ]
     map <- calcDensity(x, nbin, bandwidth)
-    mkBreaks <- function(u) u - diff(range(u))/(length(u) - 1)/2
+    mkBreaks <- function(u) u - diff(cpp_fast_range(u))/(length(u) - 1)/2
     xbin <- cut(x[, 1], mkBreaks(map$x1), labels = FALSE)
     ybin <- cut(x[, 2], mkBreaks(map$x2), labels = FALSE)
     if ("features" %in% names(check_fun)) {
-      args = list(features = x_features)
-    }
-    else {
+      dens <- x_features
+    } else {
       args = list(x = map$fhat[cbind(xbin, ybin)])
+      dens <- do.call(what = transformation, args = args)
     }
-    dens <- do.call(what = transformation, args = args)
-  }
-  else {
-    ran <- range(x_features, finite = TRUE)
+  } else {
+    ran <- cpp_fast_range(x_features)
     dens <- ((x_features - ran[1])/diff(ran))
     map = NULL
   }
@@ -182,7 +180,7 @@ pan_hist=function(x, type, br, normalize, fill, lwd, lty, col, alpha, ylim, bin,
 get_ylim=function(x, type, br, include.lowest=TRUE, right=TRUE) {
   h=hist_constr(x, br, include.lowest=include.lowest, right=right, plot=FALSE)
   yy=val_constr(x, h, type)
-  return(range(0,yy,finite=TRUE,na.rm=TRUE))
+  return(cpp_fast_range(c(0,unlist(yy))))
 }
 
 #' @title Lattice Key Panel Contructor
@@ -525,7 +523,7 @@ plot_base=function(obj) {
                            normalize = obj$input$normalize, 
                            smooth = obj$input$histogramsmoothingfactor,
                            fill = basepop[[obj$input$order[disp]]]$fill=="true",
-                           alpha = 0.8, lwd=1,
+                           alpha = 0.8, lwd=2,
                            col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
                            border = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
                            lty = c(1,2,3,4,6)[match(basepop[[obj$input$order[disp]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])
@@ -867,7 +865,6 @@ plot_lattice=function(obj) {
   P = obj$input$displayed
   R = obj$input$regions
   D = obj$input$data[xy_subset,,drop=FALSE]
-  #browser()
   nbin = obj$input$bin
   basepop = obj$input$base
   Xlim = obj$input$xlim
@@ -921,9 +918,9 @@ plot_lattice=function(obj) {
                           nint = nbin, type = type, breaks = br, normalize = normalize, Ylim = Ylim,
                           panel = function(x, type, breaks, normalize, fill, nint, border, col, alpha, lty, Ylim = Ylim, ...) {
                             if(histogramsmoothingfactor > 0) {
-                              pan_smooth(x=x, type=type, br=breaks, normalize=normalize, fill=fill, lwd=1, lty=lty, col=col, alpha=alpha, ylim=Ylim, bin=nint, border=border, factor=histogramsmoothingfactor)
+                              pan_smooth(x=x, type=type, br=breaks, normalize=normalize, fill=fill, lwd=2, lty=lty, col=col, alpha=alpha, ylim=Ylim, bin=nint, border=border, factor=histogramsmoothingfactor)
                             } else {
-                              pan_hist(x=x, type=type, br=breaks, normalize=normalize, fill=fill, lwd=1, lty=1, col=col, alpha=alpha, ylim=Ylim, bin=nint, border=border)
+                              pan_hist(x=x, type=type, br=breaks, normalize=normalize, fill=fill, lwd=2, lty=1, col=col, alpha=alpha, ylim=Ylim, bin=nint, border=border)
                             }
                             if(l == 1) {
                               if(any(c("panel","both")%in%add_key)) pan_key(key=c(KEY,"background"="lightgrey","alpha.background"=0.8), x = 0.02)
