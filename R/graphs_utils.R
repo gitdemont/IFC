@@ -507,7 +507,7 @@ plot_base=function(obj) {
   if(obj$input$type %in% c("percent", "count")) {
     # 1D
     br = do.breaks(Xlim, obj$input$bin)
-    do.call(args = c(list(x = D[, "x2"],
+    do.call(args = c(list(x = quote(Xlim),
                           border = "transparent",
                           freq = obj$input$type == "count",
                           breaks = br,
