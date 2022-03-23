@@ -555,8 +555,8 @@ plot_base=function(obj) {
         zz = as.vector(z$fhat)
         at_probs = seq(from=lowest, to=1, length.out=1+nlevels+(lowest!=0))
         at = quantile(dd, at_probs, na.rm = TRUE, names = FALSE)
-        do.call(args = c(list(x = obj$input$data$x2[obj$input$subset][1],
-                              y = obj$input$data$y2[obj$input$subset][1],
+        do.call(args = c(list(x = quote(Xlim),
+                              y = quote(Ylim),
                               pch = pch,
                               col = c("black","white")[obj$input$mode]),
                          args_plot),
@@ -583,8 +583,8 @@ plot_base=function(obj) {
                                    colramp = colramp,
                                    nbin = obj$input$bin,
                                    transformation = obj$input$trans)
-        do.call(args = c(list(x = obj$input$data$x2[obj$input$subset],
-                              y = obj$input$data$y2[obj$input$subset],
+        do.call(args = c(list(x = quote(obj$input$data$x2[obj$input$subset]),
+                              y = quote(obj$input$data$y2[obj$input$subset]),
                               pch = pch,
                               col = col),
                          args_plot),
@@ -596,8 +596,8 @@ plot_base=function(obj) {
     } else {
       if(obj$input$precision == "full") {
         disp = disp_n[length(displayed)]
-        do.call(args = c(list(x = obj$input$data[obj$input$data[,disp], "x2"][obj$input$subset],
-                              y = obj$input$data[obj$input$data[,disp], "y2"][obj$input$subset],
+        do.call(args = c(list(x = quote(obj$input$data[obj$input$data[,disp], "x2"][obj$input$subset]),
+                              y = quote(obj$input$data[obj$input$data[,disp], "y2"][obj$input$subset]),
                               pch = displayed[[disp]]$style, 
                               col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]]),
                          args_plot),
@@ -626,8 +626,8 @@ plot_base=function(obj) {
         } else {
           col = NA 
         }
-        do.call(args = c(list(x = obj$input$data$x2[obj$input$subset],
-                              y = obj$input$data$y2[obj$input$subset],
+        do.call(args = c(list(x = quote(obj$input$data$x2[obj$input$subset]),
+                              y = quote(obj$input$data$y2[obj$input$subset]),
                               pch = pch,
                               col = col),
                          args_plot),
@@ -942,7 +942,7 @@ plot_lattice=function(obj) {
         }
       }
     } else {
-      foo = histogram(0 ~ 0, auto.key=FALSE,
+      foo = histogram(Ylim ~ Xlim, auto.key=FALSE,
                       xlim = Xlim, ylim = Ylim, main = main, xlab = xlab,
                       ylab = obj$input$ylab,
                       scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)), border = "transparent",
@@ -1119,7 +1119,7 @@ plot_stats=function(obj) {
       p = c("count"=np, "perc"=100, summary(na.omit(D[D[,d],"x1"])))
     })
     kids_s = lapply(shown_n, FUN=function(s) {
-      do.call(what = "rbind", args = lapply(base_n, FUN=function(d) {
+      do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
         np = sum(D[,d])
         if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
         isin = D[,d] & D[,s]
@@ -1128,7 +1128,7 @@ plot_stats=function(obj) {
       }))
     })
     kids_r = lapply(reg_n, FUN=function(r) {
-      do.call(what = "rbind", args = lapply(base_n, FUN=function(d) {
+      do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
         alg = 3
         reg = R[[r]]
         coords = reg["x"]
@@ -1155,7 +1155,7 @@ plot_stats=function(obj) {
       p = c("count"=np, "perc"=100, summary(na.omit(D[D[,d],"x1"])), summary(na.omit(D[D[,d],"y1"])))
     })
     kids_s = lapply(shown_n, FUN=function(s) {
-      do.call(what = "rbind", args = lapply(base_n, FUN=function(d) {
+      do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
         np = sum(D[,d])
         if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
         isin = D[,d] & D[,s]
@@ -1171,7 +1171,7 @@ plot_stats=function(obj) {
       coords$y = applyTrans(coords$y, trans_y)
       if(reg$type=="oval") alg = 3
       if(reg$type=="rect") alg = 2
-      do.call(what = "rbind", args = lapply(base_n, FUN=function(d) {
+      do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
         np = sum(D[,d])
         if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
         isin = cpp_pnt_in_gate(pnts = cbind(D[D[,d],"x2"],D[D[,d],"y2"]), gate = cbind(coords$x,coords$y), algorithm = alg)
