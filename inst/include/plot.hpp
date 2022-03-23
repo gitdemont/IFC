@@ -378,6 +378,34 @@ Rcpp::IntegerVector get_dim(Rcpp::IntegerVector img) {
   }
 }
 
+
+//' @title Image to Native Raster Conversion
+//' @name cpp_as_nativeRaster
+//' @description Converts 3D image array to nativeRaster
+//' @param x an IntegerVecter /!\ It should be coercible to 3D array [height, width, rgba]
+//' @return a nativeRaster IntegerMatrix
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::IntegerMatrix hpp_as_nativeRaster(const Rcpp::IntegerVector x) {
+  Rcpp::IntegerVector V = get_dim(x);
+  R_len_t h = V[0], w = V[1];
+  R_len_t D = h * w;
+  Rcpp::IntegerMatrix out = Rcpp::no_init(h, w);
+  for(R_len_t i_row = 0, i = 0; i_row < h; i_row++) {
+    for(R_len_t i_col = 0; i_col < w; i_col++, i++) {
+      R_len_t d = i_col * h + i_row;
+      out[i] = 
+        x[d] | // x[0 * D + d]
+        (x[1 * D + d] <<  8) |
+        (x[2 * D + d] << 16) |
+        (x[3 * D + d] << 24);
+    }
+  }
+  out.attr("class") = "nativeRaster";
+  return out;
+}
+
 //' @title Coordinates to Pixels
 //' @name cpp_coord_to_px
 //' @description low-level function to compute pixels coordinates

@@ -361,6 +361,14 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title Image to Native Raster Conversion
+#' @name cpp_as_nativeRaster
+#' @description Converts 3D image array to nativeRaster
+#' @param x an IntegerVecter /!\ It should be coercible to 3D array [height, width, rgba]
+#' @return a nativeRaster IntegerMatrix
+#' @keywords internal
+NULL
+
 #' @title Draw Shape to Image
 #' @name cpp_draw
 #' @description low-level function to add shape on image
@@ -838,6 +846,10 @@ cpp_group_df <- function(df) {
 
 cpp_coord_to_px <- function(x, y, param) {
     .Call(`_IFC_cpp_coord_to_px`, x, y, param)
+}
+
+cpp_as_nativeRaster <- function(x) {
+    .Call(`_IFC_cpp_as_nativeRaster`, x)
 }
 
 cpp_draw <- function(img, coords = matrix(1,2), mask = matrix(1), color = matrix(4,1), blur_size = 9L, blur_sd = 3.0) {

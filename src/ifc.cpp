@@ -601,6 +601,18 @@ Rcpp::IntegerMatrix cpp_coord_to_px (const Rcpp::NumericVector x,
   return hpp_coord_to_px(x, y, param);
 }
 
+//' @title Image to Native Raster Conversion
+//' @name cpp_as_nativeRaster
+//' @description Converts 3D image array to nativeRaster
+//' @param x an IntegerVecter /!\ It should be coercible to 3D array [height, width, rgba]
+//' @return a nativeRaster IntegerMatrix
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::IntegerMatrix cpp_as_nativeRaster(const Rcpp::IntegerVector x) {
+  return hpp_as_nativeRaster(x);
+}
+
 //' @title Draw Shape to Image
 //' @name cpp_draw
 //' @description low-level function to add shape on image

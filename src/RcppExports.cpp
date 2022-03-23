@@ -417,6 +417,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_as_nativeRaster
+Rcpp::IntegerMatrix cpp_as_nativeRaster(const Rcpp::IntegerVector x);
+RcppExport SEXP _IFC_cpp_as_nativeRaster(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_as_nativeRaster(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_draw
 Rcpp::IntegerVector cpp_draw(const Rcpp::IntegerVector img, const Rcpp::IntegerMatrix coords, const Rcpp::LogicalMatrix mask, const Rcpp::IntegerMatrix color, const uint8_t blur_size, const double blur_sd);
 RcppExport SEXP _IFC_cpp_draw(SEXP imgSEXP, SEXP coordsSEXP, SEXP maskSEXP, SEXP colorSEXP, SEXP blur_sizeSEXP, SEXP blur_sdSEXP) {
@@ -738,6 +749,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_fast_factor", (DL_FUNC) &_IFC_cpp_fast_factor, 2},
     {"_IFC_cpp_group_df", (DL_FUNC) &_IFC_cpp_group_df, 1},
     {"_IFC_cpp_coord_to_px", (DL_FUNC) &_IFC_cpp_coord_to_px, 3},
+    {"_IFC_cpp_as_nativeRaster", (DL_FUNC) &_IFC_cpp_as_nativeRaster, 1},
     {"_IFC_cpp_draw", (DL_FUNC) &_IFC_cpp_draw, 6},
     {"_IFC_cpp_raster", (DL_FUNC) &_IFC_cpp_raster, 3},
     {"_IFC_cpp_fast_cbind_DF_M", (DL_FUNC) &_IFC_cpp_fast_cbind_DF_M, 3},

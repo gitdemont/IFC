@@ -785,14 +785,15 @@ plot_raster=function(obj) {
     # call c part to produce image raster
     img = cpp_raster(width = zoom * grDevices::dev.size("px")[1], height = zoom * grDevices::dev.size("px")[2], data)
     usr = par("usr")
+    dv_size = grDevices::dev.size("px")
     # subset img to drawing region
-    lims = round(c(graphics::grconvertX(usr[1], "user", "ndc") * (grDevices::dev.size("px")[1]),
-                   graphics::grconvertX(usr[2], "user", "ndc") * (grDevices::dev.size("px")[1]),
-                   (1 - graphics::grconvertY(usr[3], "user", "ndc")) * (grDevices::dev.size("px")[2]),
-                   (1 - graphics::grconvertY(usr[4], "user", "ndc")) * (grDevices::dev.size("px")[2])))
-    bg = img[lims[3]:lims[4], lims[1]:lims[2],]
+    lims = round(c(graphics::grconvertX(usr[1], "user", "ndc") * (dv_size[1]),
+                   graphics::grconvertX(usr[2], "user", "ndc") * (dv_size[1]),
+                   (1 - graphics::grconvertY(usr[3], "user", "ndc")) * (dv_size[2]),
+                   (1 - graphics::grconvertY(usr[4], "user", "ndc")) * (dv_size[2])))
     # add image to plot
-    rasterImage(bg / 255, xleft = usr[1], xright = usr[2], ybottom = usr[4], ytop = usr[3], interpolate = FALSE)
+    rasterImage(cpp_as_nativeRaster(img[lims[3]:lims[4], lims[1]:lims[2],]),
+                xleft = usr[1], xright = usr[2], ybottom = usr[4], ytop = usr[3], interpolate = FALSE)
     # rasterImage is faster than grid.raster and allows to fit bg when it is resized
   }
   # redraw regions
