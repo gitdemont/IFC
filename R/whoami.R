@@ -72,7 +72,7 @@ whoami = function(entries = as.list(match.call()),
   if(L == 0) {
     new = sapply(classes, simplify = FALSE, FUN = function(x) return(NULL))
     attr(new, "was") <- rep(0, times = length(classes))
-    attr(new, "from") <- from
+    attr(new, "from") <- entry1
     return(new)
   }
   
@@ -151,12 +151,16 @@ whoami = function(entries = as.list(match.call()),
     }
   }
   attr(new, "was") <- was 
-  attr(new, "from") <- from
+  attr(new, "from") <- entry1
   
   # reinit to arguments of searched classes found to their default value
   if(reinit) {
     call_from = parent.frame(1)
-    form = formals(fun = from)
+    if(any(from[1] %in% c("::",":::"))) {
+      form = formals(fun = from[3], envir = asNamespace(from[2], base.OK = FALSE))
+    } else {
+      form = formals(fun = from)
+    }
     mism = setdiff(na.omit(names(args)[was]), "")
     sapply(mism, FUN = function(x) assign(x = x, value = form[[x]], inherits = FALSE, envir = call_from, immediate = TRUE))
   }
