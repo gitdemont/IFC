@@ -108,7 +108,7 @@ colConv=function(col){
 #' @description Helper to convert color from hex
 #' @keywords internal
 inv_colConv=function(col){
-  x = col2rgb(col,T)
+  x = col2rgb(col,alpha = TRUE)
   paste0(apply(x, 2, FUN = function(i) { sum(i * c(2^16,2^8,2^1,0)) - 2^24 - i[3] }),"|",collapse="")
 }
 
@@ -772,7 +772,7 @@ plot_raster=function(obj) {
     }
     list(size = size,
          pch = obj$input$displayed[[p]]$style,
-         col = rbind(col2rgb(col), 255),
+         col = rbind(col2rgb(col, alpha = FALSE), 255),
          coords = coord_to_px(coord=coords[sub_,,drop=FALSE], coordmap=coordmap),
          blur_size = 9,
          blur_sd = 3)
