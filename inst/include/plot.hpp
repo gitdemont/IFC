@@ -32,6 +32,7 @@
 #define IFC_PLOT_HPP
 
 #include <Rcpp.h>
+#include "utils.hpp"
 using namespace Rcpp;
 
 // compute distance from point with coords x, y to line
@@ -470,8 +471,8 @@ Rcpp::IntegerMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
 //' @param color, a 4 rows IntegerMatrix specifying rgba, from 0 to 255.
 //' @param blur_size, a uint8_t the size of the gaussian blurring kernel. Default is 9.
 //' @param blur_sd, a double the sd of the gaussian blurring kernel. Default is 3.0.
-//' @details shape according to 'mask' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true.\cr
-//' Every pixels being part of the shape will be filled with 'color'.
+//' @details shape according to 'mask' will be drawn on 'img' centered at coordinates coords[, 1], coords[, 0]
+//' and every pixels being part of the shape will be filled with 'color'.
 //' If only one 'color' is provided, this 'color' will be used for each points.
 //' If more than one 'color' is provided, then if number of colors (ncol) equals the number of points 'color' will be used as is for each single point.
 //' Otherwise, 'color' will be considered as a color-gradient and density will be computed.
@@ -652,19 +653,30 @@ void hpp_draw(Rcpp::IntegerVector img,
 //' -* 2nd column being img row coordinate in px.
 //' - blur_size an integer controlling the size of the blurring gaussian kernel.\cr
 //' - blur_sd a double controlling the sd of the blurring gaussian kernel.
-//' @details shape according to 'pch' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true
+//' @param bg_ a Nullable IntegerVector that will be cast to 3D array when not NULL. Default is R_NilValue.\cr
+//' When not NULL, its dimensions should be the same as required by 'width' and 'height', otherwise an error will be thrown.\cr
+//' When not NULL, it will serve as a background to draw new points on top of it.
+//' @details shape according to 'pch' will be drawn centered at coordinates obj$coord[, 1], obj$coord[, 0]
 //' and every pixels being part of the shape will be filled with 'color'.
 //' If only one 'color' is provided, this 'color' will be used for each points.
 //' If more than one 'color' is provided, then if number of colors (ncol) equals the number of points 'color' will be used as is for each single point.
 //' Otherwise, 'color' will be considered as a color-gradient and density will be computed.
 //' /!\ please note that IFC:::densCols() is faster to compute color based on density for n < 20000 points, so it's worth using it when number of points are lower.
 //' @keywords internal
+//' @return an IntegerVector with dimensions [height, width, 4]
 ////' @export
 // [[Rcpp::export]]
 Rcpp::IntegerVector hpp_raster(const uint16_t width,
                                const uint16_t height,
-                               const Rcpp::List obj) {
+                               const Rcpp::List obj,
+                               const Rcpp::Nullable <Rcpp::IntegerVector> bg_ = R_NilValue) {
   Rcpp::IntegerVector img(width * height * 4);
+  if(iNotisNULL(bg_)) {
+    Rcpp::IntegerVector bg(bg_.get());
+    Rcpp::IntegerVector V = get_dim(bg);
+    if(!((V[0] == height) && (V[1] == width))) Rcpp::stop("hpp_raster: when provided 'bg' should be of same dimension as current raster");
+    img = Rcpp::clone(bg);
+  }
   img.attr("dim") = Rcpp::Dimension(height, width, 4);
   for(R_len_t i_obj = 0; i_obj < obj.size(); i_obj++) {
     Rcpp::List L = obj[i_obj];

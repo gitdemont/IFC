@@ -25,8 +25,8 @@
 low-level function to add shape on image
 }
 \details{
-shape according to 'mask' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true.\cr
-Every pixels being part of the shape will be filled with 'color'.
+shape according to 'mask' will be drawn on 'img' centered at coordinates coords[, 1], coords[, 0]
+and every pixels being part of the shape will be filled with 'color'.
 If only one 'color' is provided, this 'color' will be used for each points.
 If more than one 'color' is provided, then if number of colors (ncol) equals the number of points 'color' will be used as is for each single point.
 Otherwise, 'color' will be considered as a color-gradient and density will be computed.

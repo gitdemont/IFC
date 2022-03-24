@@ -17,12 +17,19 @@
 -* 2nd column being img row coordinate in px.
 - blur_size an integer controlling the size of the blurring gaussian kernel.\cr
 - blur_sd a double controlling the sd of the blurring gaussian kernel.}
+
+\item{bg_}{a Nullable IntegerVector that will be cast to 3D array when not NULL. Default is R_NilValue.\cr
+When not NULL, its dimensions should be the same as required by 'width' and 'height', otherwise an error will be thrown.\cr
+When not NULL, it will serve as a background to draw new points on top of it.}
+}
+\value{
+an IntegerVector with dimensions [height, width, 4]
 }
 \description{
 low-level function to create plot raster
 }
 \details{
-shape according to 'pch' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true
+shape according to 'pch' will be drawn centered at coordinates obj$coord[, 1], obj$coord[, 0]
 and every pixels being part of the shape will be filled with 'color'.
 If only one 'color' is provided, this 'color' will be used for each points.
 If more than one 'color' is provided, then if number of colors (ncol) equals the number of points 'color' will be used as is for each single point.

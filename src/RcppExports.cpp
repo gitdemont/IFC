@@ -445,15 +445,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_raster
-Rcpp::IntegerVector cpp_raster(const uint16_t width, const uint16_t height, const Rcpp::List obj);
-RcppExport SEXP _IFC_cpp_raster(SEXP widthSEXP, SEXP heightSEXP, SEXP objSEXP) {
+Rcpp::IntegerVector cpp_raster(const uint16_t width, const uint16_t height, const Rcpp::List obj, const Rcpp::Nullable <Rcpp::IntegerVector> bg_);
+RcppExport SEXP _IFC_cpp_raster(SEXP widthSEXP, SEXP heightSEXP, SEXP objSEXP, SEXP bg_SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const uint16_t >::type width(widthSEXP);
     Rcpp::traits::input_parameter< const uint16_t >::type height(heightSEXP);
     Rcpp::traits::input_parameter< const Rcpp::List >::type obj(objSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_raster(width, height, obj));
+    Rcpp::traits::input_parameter< const Rcpp::Nullable <Rcpp::IntegerVector> >::type bg_(bg_SEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_raster(width, height, obj, bg_));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -751,7 +752,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_coord_to_px", (DL_FUNC) &_IFC_cpp_coord_to_px, 3},
     {"_IFC_cpp_as_nativeRaster", (DL_FUNC) &_IFC_cpp_as_nativeRaster, 1},
     {"_IFC_cpp_draw", (DL_FUNC) &_IFC_cpp_draw, 6},
-    {"_IFC_cpp_raster", (DL_FUNC) &_IFC_cpp_raster, 3},
+    {"_IFC_cpp_raster", (DL_FUNC) &_IFC_cpp_raster, 4},
     {"_IFC_cpp_fast_cbind_DF_M", (DL_FUNC) &_IFC_cpp_fast_cbind_DF_M, 3},
     {"_IFC_cpp_fast_cbind_M_DF", (DL_FUNC) &_IFC_cpp_fast_cbind_M_DF, 3},
     {"_IFC_cpp_fast_cbind_DF_DF", (DL_FUNC) &_IFC_cpp_fast_cbind_DF_DF, 3},

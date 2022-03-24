@@ -380,8 +380,8 @@ NULL
 #' @param color, a 4 rows IntegerMatrix specifying rgba, from 0 to 255.
 #' @param blur_size, a uint8_t the size of the gaussian blurring kernel. Default is 9.
 #' @param blur_sd, a double the sd of the gaussian blurring kernel. Default is 3.0.
-#' @details shape according to 'mask' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true.\cr
-#' Every pixels being part of the shape will be filled with 'color'.
+#' @details shape according to 'mask' will be drawn on 'img' centered at coordinates coords[, 1], coords[, 0]
+#' and every pixels being part of the shape will be filled with 'color'.
 #' If only one 'color' is provided, this 'color' will be used for each points.
 #' If more than one 'color' is provided, then if number of colors (ncol) equals the number of points 'color' will be used as is for each single point.
 #' Otherwise, 'color' will be considered as a color-gradient and density will be computed.
@@ -404,12 +404,16 @@ NULL
 #' -* 2nd column being img row coordinate in px.
 #' - blur_size an integer controlling the size of the blurring gaussian kernel.\cr
 #' - blur_sd a double controlling the sd of the blurring gaussian kernel.
-#' @details shape according to 'pch' will be drawn on 'img' centered at coordinates img[coord[, 1], coord[, 0]] if coord[, 2] is true
+#' @param bg_ a Nullable IntegerVector that will be cast to 3D array when not NULL. Default is R_NilValue.\cr
+#' When not NULL, its dimensions should be the same as required by 'width' and 'height', otherwise an error will be thrown.\cr
+#' When not NULL, it will serve as a background to draw new points on top of it.
+#' @details shape according to 'pch' will be drawn centered at coordinates obj$coord[, 1], obj$coord[, 0]
 #' and every pixels being part of the shape will be filled with 'color'.
 #' If only one 'color' is provided, this 'color' will be used for each points.
 #' If more than one 'color' is provided, then if number of colors (ncol) equals the number of points 'color' will be used as is for each single point.
 #' Otherwise, 'color' will be considered as a color-gradient and density will be computed.
 #' /!\ please note that IFC:::densCols() is faster to compute color based on density for n < 20000 points, so it's worth using it when number of points are lower.
+#' @return an IntegerVector with dimensions [height, width, 4]
 #' @keywords internal
 NULL
 
@@ -856,8 +860,8 @@ cpp_draw <- function(img, coords = matrix(1,2), mask = matrix(1), color = matrix
     .Call(`_IFC_cpp_draw`, img, coords, mask, color, blur_size, blur_sd)
 }
 
-cpp_raster <- function(width, height, obj) {
-    .Call(`_IFC_cpp_raster`, width, height, obj)
+cpp_raster <- function(width, height, obj, bg_ = NULL) {
+    .Call(`_IFC_cpp_raster`, width, height, obj, bg_)
 }
 
 cpp_fast_cbind_DF_M <- function(Df_ = NULL, M_ = NULL, add_id = FALSE) {
