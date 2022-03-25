@@ -884,8 +884,8 @@ cpp_fast_cbind_DF_L <- function(Df_ = NULL, L_ = NULL, add_id = FALSE) {
     .Call(`_IFC_cpp_fast_cbind_DF_L`, Df_, L_, add_id)
 }
 
-cpp_fast_cbind_L_Df <- function(L_ = NULL, Df_ = NULL, add_id = FALSE) {
-    .Call(`_IFC_cpp_fast_cbind_L_Df`, L_, Df_, add_id)
+cpp_fast_cbind_L_DF <- function(L_ = NULL, Df_ = NULL, add_id = FALSE) {
+    .Call(`_IFC_cpp_fast_cbind_L_DF`, L_, Df_, add_id)
 }
 
 cpp_crop <- function(mat, new_height = 0L, new_width = 0L) {

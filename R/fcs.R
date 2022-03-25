@@ -981,9 +981,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                 anal_end = "       0")
   
   # we modify features to add populations
-  # all_pops = do.call(what = cbind, args = lapply(obj$pops, FUN = function(p) p$obj))
-  # colnames(all_pops) = names(obj$pops)
-  features = fastCbind(obj$features[, setdiff(names(obj$features), colnames(all_pops)), drop = FALSE],
+  features = fastCbind(obj$features[, setdiff(names(obj$features), names(obj$pops)), drop = FALSE],
                        sapply(names(obj$pops), simplify = FALSE, FUN = function(p) obj$pops[[p]]$obj))
   # need to replace non finite values by something; IDEAS is using 0 so we use 0 also
   # TODO maybe replace -Inf by features min and +Inf by features max ?

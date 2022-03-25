@@ -777,7 +777,7 @@ Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_DF_L(const Rcpp::Nullable<Rcpp::D
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_L_Df(const Rcpp::Nullable<Rcpp::List> L_ = R_NilValue,
+Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_L_DF(const Rcpp::Nullable<Rcpp::List> L_ = R_NilValue,
                                                     const Rcpp::Nullable<Rcpp::DataFrame> Df_ = R_NilValue,
                                                     const bool add_id = false) {
   return hpp_fast_cbind_L_Df(L_, Df_, add_id);

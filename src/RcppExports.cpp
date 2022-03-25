@@ -523,16 +523,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_fast_cbind_L_Df
-Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_L_Df(const Rcpp::Nullable<Rcpp::List> L_, const Rcpp::Nullable<Rcpp::DataFrame> Df_, const bool add_id);
-RcppExport SEXP _IFC_cpp_fast_cbind_L_Df(SEXP L_SEXP, SEXP Df_SEXP, SEXP add_idSEXP) {
+// cpp_fast_cbind_L_DF
+Rcpp::Nullable<Rcpp::DataFrame> cpp_fast_cbind_L_DF(const Rcpp::Nullable<Rcpp::List> L_, const Rcpp::Nullable<Rcpp::DataFrame> Df_, const bool add_id);
+RcppExport SEXP _IFC_cpp_fast_cbind_L_DF(SEXP L_SEXP, SEXP Df_SEXP, SEXP add_idSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::List> >::type L_(L_SEXP);
     Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::DataFrame> >::type Df_(Df_SEXP);
     Rcpp::traits::input_parameter< const bool >::type add_id(add_idSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_fast_cbind_L_Df(L_, Df_, add_id));
+    rcpp_result_gen = Rcpp::wrap(cpp_fast_cbind_L_DF(L_, Df_, add_id));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -758,7 +758,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_fast_cbind_DF_DF", (DL_FUNC) &_IFC_cpp_fast_cbind_DF_DF, 3},
     {"_IFC_cpp_fast_cbind_M_M", (DL_FUNC) &_IFC_cpp_fast_cbind_M_M, 3},
     {"_IFC_cpp_fast_cbind_DF_L", (DL_FUNC) &_IFC_cpp_fast_cbind_DF_L, 3},
-    {"_IFC_cpp_fast_cbind_L_Df", (DL_FUNC) &_IFC_cpp_fast_cbind_L_Df, 3},
+    {"_IFC_cpp_fast_cbind_L_DF", (DL_FUNC) &_IFC_cpp_fast_cbind_L_DF, 3},
     {"_IFC_cpp_crop", (DL_FUNC) &_IFC_cpp_crop, 3},
     {"_IFC_cpp_resize", (DL_FUNC) &_IFC_cpp_resize, 6},
     {"_IFC_cpp_decomp", (DL_FUNC) &_IFC_cpp_decomp, 9},
