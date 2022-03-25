@@ -421,6 +421,7 @@ Rcpp::IntegerMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
                                     const Rcpp::NumericVector y,
                                     const Rcpp::NumericVector param) {
   if(x.size() != y.size()) Rcpp::stop("cpp_coord_to_px: 'x' and 'y' should be of same size");
+  if(param.size() != 13) Rcpp::stop("cpp_coord_to_px: 'param' is not valid");
   Rcpp::IntegerMatrix out(x.size(), 2);
   if(param[12]) {
     for(R_len_t i = 0; i < x.size(); i++) {
@@ -510,15 +511,12 @@ void hpp_draw(Rcpp::IntegerVector img,
       }
       R_len_t i_row = coords(i_pt, 1);
       R_len_t i_col = coords(i_pt, 0);
+      if((i_col < 0) || (i_col >= width) || (i_row < 0) || (i_row >= height)) continue;
       if(Z(i_row, i_col)) {
         Z(i_row, i_col) = false; // no need to draw same point at same xy location
         for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
           for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
-            if(mask[i_msk] &&
-               (f_col >= 0) &&
-               (f_col < width) &&
-               (f_row >= 0) &&
-               (f_row < height)) {
+            if(mask[i_msk] && (f_col >= 0) && (f_col < width) && (f_row >= 0) && (f_row < height)) {
               for(R_len_t i_k = 0; i_k < 4; i_k++) {
                 img[i_k * height * width + f_col * height + f_row] = color[i_k];
               }
@@ -538,11 +536,7 @@ void hpp_draw(Rcpp::IntegerVector img,
         R_len_t i_col = coords(i_pt, 0);
         for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
           for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
-            if(mask[i_msk] &&
-               (f_col >= 0) &&
-               (f_col < width) &&
-               (f_row >= 0) &&
-               (f_row < height)) {
+            if(mask[i_msk] && (f_col >= 0) && (f_col < width) && (f_row >= 0) && (f_row < height)) {
               for(R_len_t i_k = 0; i_k < 4; i_k++) {
                 img[i_k * height * width + f_col * height + f_row] = color[i_k + 4 * i_pt];
               }
@@ -569,10 +563,7 @@ void hpp_draw(Rcpp::IntegerVector img,
         R_len_t i_col = coords(i_pt, 0);
         for(R_len_t f_col = i_col - blr_c, i_blr = 0; f_col <= i_col + blr_c_1; f_col++) {
           for(R_len_t f_row = i_row - blr_r; f_row <= i_row + blr_r_1; f_row++, i_blr++) {
-            if((f_col >= 0) &&
-               (f_col < width) &&
-               (f_row >= 0) &&
-               (f_row < height)) {
+            if((f_col >= 0) && (f_col < width) && (f_row >= 0) && (f_row < height)) {
               den(f_row, f_col) = den(f_row, f_col) + blur[i_blr];
               if(den(f_row, f_col) > den_mx) den_mx = den(f_row, f_col);
             }
@@ -590,6 +581,7 @@ void hpp_draw(Rcpp::IntegerVector img,
           }
           R_len_t i_row = coords(i_pt, 1);
           R_len_t i_col = coords(i_pt, 0);
+          if((i_col < 0) || (i_col >= width) || (i_row < 0) || (i_row >= height)) continue; 
           if(Z(i_row, i_col)) {
             Z(i_row, i_col) = false;
             for(R_len_t i_k = 0; i_k < 4; i_k++) {
@@ -605,27 +597,20 @@ void hpp_draw(Rcpp::IntegerVector img,
           }
           R_len_t i_row = coords(i_pt, 1);
           R_len_t i_col = coords(i_pt, 0);
+          if((i_col < 0) || (i_col >= width) || (i_row < 0) || (i_row >= height)) continue;
           if(Z(i_row, i_col)) {
             Z(i_row, i_col) = false;
             R_len_t v = 0;
             for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
               for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
-                if(mask[i_msk] &&
-                   (f_col >= 0) &&
-                   (f_col < width) &&
-                   (f_row >= 0) &&
-                   (f_row < height)) {
+                if(mask[i_msk] && (f_col >= 0) && (f_col < width) && (f_row >= 0) && (f_row < height)) {
                   if(grd(f_row, f_col) > v) v = grd(f_row, f_col);
                 }
               }
             }
             for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
               for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
-                if(mask[i_msk] &&
-                   (f_col >= 0) &&
-                   (f_col < width) &&
-                   (f_row >= 0) &&
-                   (f_row < height)) {
+                if(mask[i_msk] && (f_col >= 0) && (f_col < width) && (f_row >= 0) && (f_row < height)) {
                   for(R_len_t i_k = 0; i_k < 4; i_k++) {
                     img[i_k * height * width + f_col * height + f_row] = color(i_k, v);
                   }
