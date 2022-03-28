@@ -8,13 +8,13 @@ rasterplot(
   x,
   y = NULL,
   pch = ".",
-  size = 1,
+  size = 7,
   alpha = 255,
   col = "black",
   rgba = NULL,
   force = FALSE,
   draw = TRUE,
-  new = TRUE,
+  new = is.null(bg_),
   width = 512,
   height = 512,
   clipedge = FALSE,
@@ -32,7 +32,7 @@ x and y should have same length.}
 \item{pch, }{a vector of plotting symbols. it will be coerce to integer and NA will be omit. allowed are 0 to 20.
 Everything else will result in a dot (single pixel of size 1). Default is "." (a 1-pixel dot).}
 
-\item{size, }{an integer vector giving the size of the allowed symbols. Default is 6.}
+\item{size, }{an integer vector giving the size of the allowed symbols. Default is 7.}
 
 \item{alpha, }{a [0,255] integer. Default is 255.}
 
@@ -50,7 +50,7 @@ This only applies when 'force' is FALSE.}
 
 \item{draw, }{whether to draw to plot (when TRUE), or to image only (when FALSE). Default is TRUE.}
 
-\item{new, }{whether a new plot should be created, only applies when 'draw' is TRUE. Default is TRUE.
+\item{new, }{whether a new plot should be created, only applies when 'draw' is TRUE. Default is is.null(bg_).
 If FALSE, the current plot will be used to draw points.}
 
 \item{width, }{the desired width of the raster Default is 512. It only applies when draw is FALSE.}

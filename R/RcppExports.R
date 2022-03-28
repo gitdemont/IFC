@@ -378,7 +378,7 @@ NULL
 #' - 2nd column being img row coordinate in px.
 #' @param mask a LogicalMatrix where every true value will be added to the image.
 #' @param color, a 4 rows IntegerMatrix specifying rgba, from 0 to 255.
-#' @param blur_size, a uint8_t the size of the gaussian blurring kernel. Default is 9.
+#' @param blur_size, a R_len_t the size of the gaussian blurring kernel. Default is 9.
 #' @param blur_sd, a double the sd of the gaussian blurring kernel. Default is 3.0.
 #' @details shape according to 'mask' will be drawn on 'img' centered at coordinates coords[, 1], coords[, 0]
 #' and every pixels being part of the shape will be filled with 'color'.

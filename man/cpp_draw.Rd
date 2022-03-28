@@ -14,7 +14,7 @@
 
 \item{color, }{a 4 rows IntegerMatrix specifying rgba, from 0 to 255.}
 
-\item{blur_size, }{a uint8_t the size of the gaussian blurring kernel. Default is 9.}
+\item{blur_size, }{a R_len_t the size of the gaussian blurring kernel. Default is 9.}
 
 \item{blur_sd, }{a double the sd of the gaussian blurring kernel. Default is 3.0.}
 }

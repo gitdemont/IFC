@@ -755,10 +755,10 @@ plot_raster=function(obj) {
     coords = obj$input$data[, c("x2","y2")]
     colnames(coords) = c("x","y")
     if(obj$input$type == "scatter") {
-      size = 4
+      size = 7
       col = map_color(obj$input$displayed[[p]]$lightModeColor)
     } else {
-      size = 6
+      size = 9
       colramp = colorRampPalette(colConv(obj$input$base[[1]][c("densitycolorsdarkmode", "densitycolorslightmode")][[obj$input$mode]]))
       if((sum(sub_) < 20000) || inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), "try-error")) {
         col = densCols(x = structure(coords[sub_,"x"], features=attr(obj$input$data,"features")),
@@ -773,6 +773,7 @@ plot_raster=function(obj) {
     list(size = size,
          pch = obj$input$displayed[[p]]$style,
          col = rbind(col2rgb(col, alpha = FALSE), 255),
+         lwd = 1,
          coords = coord_to_px(coord=coords[sub_,,drop=FALSE], coordmap=coordmap),
          blur_size = 9,
          blur_sd = 3)

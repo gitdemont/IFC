@@ -39,7 +39,7 @@
 #' x and y should have same length.
 #' @param pch, a vector of plotting symbols. it will be coerce to integer and NA will be omit. allowed are 0 to 20.
 #' Everything else will result in a dot (single pixel of size 1). Default is "." (a 1-pixel dot).
-#' @param size, an integer vector giving the size of the allowed symbols. Default is 6.
+#' @param size, an integer vector giving the size of the allowed symbols. Default is 7.
 #' @param alpha, a [0,255] integer. Default is 255.
 #' @param col, a vector of desired colors of the symbols that will be passed by grDevices::col2rgb('x', alpha = TRUE). Default is "black".
 #' If number of colors equals number of points every point will be assigned this color.
@@ -51,7 +51,7 @@
 #' /!\ When provided this argument will take precedence over 'col' and 'alpha'.
 #' @param force, whether to force scatter instead of density when multiple 'col' are provided
 #' @param draw, whether to draw to plot (when TRUE), or to image only (when FALSE). Default is TRUE.
-#' @param new, whether a new plot should be created, only applies when 'draw' is TRUE. Default is TRUE.
+#' @param new, whether a new plot should be created, only applies when 'draw' is TRUE. Default is is.null(bg_).
 #' If FALSE, the current plot will be used to draw points.
 #' @param width, the desired width of the raster Default is 512. It only applies when draw is FALSE.
 #' @param height, the desired height of the raster Default is 512. It only applies when draw is FALSE.
@@ -95,10 +95,10 @@
 #' @return an [0, 255] integer array of (height, width, 4) of class `rasterplot`
 #' @keywords internal
 rasterplot = function(x, y = NULL, 
-                      pch = ".", size = 1,
+                      pch = ".", size = 7,
                       alpha = 255, col = "black", rgba = NULL, force = FALSE, # parameters for colors
                       draw = TRUE,
-                      new = TRUE,                                             # only when draw == TRUE
+                      new = is.null(bg_),                                     # only when draw == TRUE
                       width = 512, height = 512,                              # only when draw == FALSE
                       clipedge = FALSE, 
                       blur_size = 9, blur_sd = 3,                             # only for density
@@ -129,7 +129,11 @@ rasterplot = function(x, y = NULL,
   if(length(pch) == 0) pch = 27
   has_bg = !missing(bg_) && (length(bg_) != 0)
   if(has_bg && !inherits(bg_, "rasterplot")) stop("when provided 'bg_' should be of class `rasterplot`")
-  if(length(dots$cex) != 0) size = size * dots$cex
+  cex = par("cex"); if(length(dots$cex) != 0) cex = dots$cex
+  if(cex < 0) stop("'cex' should be positive numeric")
+  lwd = par("lwd"); if(length(dots$lwd) != 0) lwd = dots$lwd
+  if(lwd < 0) stop("'lwd' should be positive integer")
+  size = size * cex
   size[size < 1] <- 1
   
   # create empty plot
@@ -160,11 +164,12 @@ rasterplot = function(x, y = NULL,
   }
   
   # setup data
-  do_group = (length(pch) == 1) && (length(size) == 1)
-  if(do_group) do_group = !force
-  if(do_group) { # only one combination of size / pch
+  one_group = (length(pch) == 1) && (length(size) == 1)
+  if(one_group) one_group = !force
+  if(one_group) { # only one combination of size / pch
     data = list(list(size = size,
                      pch = pch,
+                     lwd = lwd, 
                      coords = coord_to_px(coord=data.frame(x = x, y = y), coordmap = coordmap, clipedge = clipedge),
                      blur_size = blur_size,
                      blur_sd = blur_sd))
@@ -183,6 +188,7 @@ rasterplot = function(x, y = NULL,
         col_[4, ] <- alpha
         list(size = d$size[g[[i]][1]],
              pch = d$pch[g[[i]][1]],
+             lwd = lwd,
              col = col_,
              coords = coord_to_px(coord=data.frame(x = d$x[g[[i]]], y = d$y[g[[i]]]), coordmap = coordmap, clipedge = clipedge),
              blur_size = blur_size,
@@ -198,6 +204,7 @@ rasterplot = function(x, y = NULL,
       data = lapply(seq_along(g), FUN = function(i) {
         list(size = d$size[g[[i]][1]],
              pch = d$pch[g[[i]][1]],
+             lwd = lwd,
              col = rgba[, g[[i]], drop = FALSE],
              coords = coord_to_px(coord=data.frame(x = d$x[g[[i]]], y = d$y[g[[i]]]), coordmap = coordmap, clipedge = clipedge),
              blur_size = blur_size,
