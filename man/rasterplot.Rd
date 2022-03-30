@@ -15,6 +15,7 @@ rasterplot(
   force = FALSE,
   draw = TRUE,
   new = is.null(bg_),
+  interpolate = FALSE,
   width = 512,
   height = 512,
   clipedge = FALSE,
@@ -26,47 +27,51 @@ rasterplot(
 )
 }
 \arguments{
-\item{x, y, }{the x and y coordinates for the plot. If 'y' is NULL, it will be same as 'x'.
+\item{x, y}{the x and y coordinates for the plot. If 'y' is NULL, it will be same as 'x'.
 x and y should have same length.}
 
-\item{pch, }{a vector of plotting symbols. it will be coerce to integer and NA will be omit. allowed are 0 to 20.
-Everything else will result in a dot (single pixel of size 1). Default is "." (a 1-pixel dot).}
+\item{pch}{a vector of plotting symbols. Default is "." (resulting in a 1-pixel dot). Allowed are 0 to 20 and ".". It will be repeated along 'x'. 
+With the exception of ".", NA resulting its coercion to integer(s) from the conversion will be omitted
+(i.e. points won't be displayed, but their x-y coordinates will account for xlim, ylim range computation when not provided through ...).
+Everything else (coercible to integer) will result in a dot (a 1-pixel pixel).}
 
-\item{size, }{an integer vector giving the size of the allowed symbols. Default is 7.}
+\item{size}{an integer vector giving the size(s) of the 'pch'. Default is 7. It will be repeated along 'x'.}
 
-\item{alpha, }{a [0,255] integer. Default is 255.}
+\item{alpha}{a [0,255] integer. Default is 255.}
 
-\item{col, }{a vector of desired colors of the symbols that will be passed by grDevices::col2rgb('x', alpha = TRUE). Default is "black".
+\item{col}{a vector of desired colors of the symbols that will be passed by grDevices::col2rgb('x', alpha = TRUE). Default is "black".
 If number of colors equals number of points every point will be assigned this color.
 Otherwise, if color is of length 1 for a single combination of size / pch, all points with this combination will be assigned this color.
 Finally, if there is only one combination of size / pch and color not equals 1 nor the total number of points,
 then, colors will be used as a gradient for density (in such case 'blur_size' and 'blur_sd' will be taken in consideration)
 This only applies when 'force' is FALSE.}
 
-\item{rgba, }{a 4 rows color matrix, with rows being Red, Green, Blue and Alpha and number of columns identical to number of points.\cr
+\item{rgba}{a 4 rows color matrix, with rows being Red, Green, Blue and Alpha and number of columns identical to number of points.\cr
 /!\ When provided this argument will take precedence over 'col' and 'alpha'.}
 
-\item{force, }{whether to force scatter instead of density when multiple 'col' are provided}
+\item{force}{whether to force scatter instead of density when multiple 'col' are provided}
 
-\item{draw, }{whether to draw to plot (when TRUE), or to image only (when FALSE). Default is TRUE.}
+\item{draw}{whether to draw to plot (when TRUE), or to image only (when FALSE). Default is TRUE.}
 
-\item{new, }{whether a new plot should be created, only applies when 'draw' is TRUE. Default is is.null(bg_).
+\item{new}{whether a new plot should be created, only applies when 'draw' is TRUE. Default is is.null(bg_).
 If FALSE, the current plot will be used to draw points.}
 
-\item{width, }{the desired width of the raster Default is 512. It only applies when draw is FALSE.}
+\item{interpolate}{whether to use linear interpolation, only applies when 'draw' is TRUE. Default is FALSE.}
 
-\item{height, }{the desired height of the raster Default is 512. It only applies when draw is FALSE.}
+\item{width}{the desired width of the raster Default is 512. It only applies when draw is FALSE.}
 
-\item{clipedge, }{whether to clip points outside of plotting region to the edge. Default is FALSE.}
+\item{height}{the desired height of the raster Default is 512. It only applies when draw is FALSE.}
 
-\item{blur_size, }{(for density) an integer controlling the size of the blurring gaussian kernel. Default is 9.}
+\item{clipedge}{whether to clip points outside of plotting region to the edge. Default is FALSE.}
 
-\item{blur_sd, }{(for density) a double controlling the sd of the blurring gaussian kernel. Default is 3.}
+\item{blur_size}{(for density) an integer controlling the size of the blurring gaussian kernel. Default is 9.}
 
-\item{bg_, }{an `rasterplot` object as returned by rasterplot() that will be used to add points to. Default is NULL.
+\item{blur_sd}{(for density) a double controlling the sd of the blurring gaussian kernel. Default is 3.}
+
+\item{bg_}{an `rasterplot` object as returned by rasterplot() that will be used to add points to. Default is NULL.
 If provided it will have to be compatible with current drawing size or 'width' and 'height' when 'draw' is FALSE.}
 
-\item{bg_map, }{whether to use 'bg_' when provided to compute points coordinates. Default is TRUE.
+\item{bg_map}{whether to use 'bg_' when provided to compute points coordinates. Default is TRUE.
 This allows to get same "user" to "pixel" coordinates conversion as the one used to create 'bg_'.}
 
 \item{...}{other arguments to pass to graphics::plot().

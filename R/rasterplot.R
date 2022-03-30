@@ -35,32 +35,35 @@
 #' @title Fast 2D plot
 #' @description
 #' Creates fast 2D plots with Rcpp
-#' @param x,y, the x and y coordinates for the plot. If 'y' is NULL, it will be same as 'x'.
+#' @param x,y the x and y coordinates for the plot. If 'y' is NULL, it will be same as 'x'.
 #' x and y should have same length.
-#' @param pch, a vector of plotting symbols. it will be coerce to integer and NA will be omit. allowed are 0 to 20.
-#' Everything else will result in a dot (single pixel of size 1). Default is "." (a 1-pixel dot).
-#' @param size, an integer vector giving the size of the allowed symbols. Default is 7.
-#' @param alpha, a [0,255] integer. Default is 255.
-#' @param col, a vector of desired colors of the symbols that will be passed by grDevices::col2rgb('x', alpha = TRUE). Default is "black".
+#' @param pch a vector of plotting symbols. Default is "." (resulting in a 1-pixel dot). Allowed are 0 to 20 and ".". It will be repeated along 'x'. 
+#' With the exception of ".", NA resulting its coercion to integer(s) from the conversion will be omitted
+#' (i.e. points won't be displayed, but their x-y coordinates will account for xlim, ylim range computation when not provided through ...).
+#' Everything else (coercible to integer) will result in a dot (a 1-pixel pixel).
+#' @param size an integer vector giving the size(s) of the 'pch'. Default is 7. It will be repeated along 'x'. 
+#' @param alpha a [0,255] integer. Default is 255.
+#' @param col a vector of desired colors of the symbols that will be passed by grDevices::col2rgb('x', alpha = TRUE). Default is "black".
 #' If number of colors equals number of points every point will be assigned this color.
 #' Otherwise, if color is of length 1 for a single combination of size / pch, all points with this combination will be assigned this color.
 #' Finally, if there is only one combination of size / pch and color not equals 1 nor the total number of points,
 #' then, colors will be used as a gradient for density (in such case 'blur_size' and 'blur_sd' will be taken in consideration)
 #' This only applies when 'force' is FALSE.
-#' @param rgba, a 4 rows color matrix, with rows being Red, Green, Blue and Alpha and number of columns identical to number of points.\cr
+#' @param rgba a 4 rows color matrix, with rows being Red, Green, Blue and Alpha and number of columns identical to number of points.\cr
 #' /!\ When provided this argument will take precedence over 'col' and 'alpha'.
-#' @param force, whether to force scatter instead of density when multiple 'col' are provided
-#' @param draw, whether to draw to plot (when TRUE), or to image only (when FALSE). Default is TRUE.
-#' @param new, whether a new plot should be created, only applies when 'draw' is TRUE. Default is is.null(bg_).
+#' @param force whether to force scatter instead of density when multiple 'col' are provided
+#' @param draw whether to draw to plot (when TRUE), or to image only (when FALSE). Default is TRUE.
+#' @param new whether a new plot should be created, only applies when 'draw' is TRUE. Default is is.null(bg_).
 #' If FALSE, the current plot will be used to draw points.
-#' @param width, the desired width of the raster Default is 512. It only applies when draw is FALSE.
-#' @param height, the desired height of the raster Default is 512. It only applies when draw is FALSE.
-#' @param clipedge, whether to clip points outside of plotting region to the edge. Default is FALSE.
-#' @param blur_size, (for density) an integer controlling the size of the blurring gaussian kernel. Default is 9.
-#' @param blur_sd, (for density) a double controlling the sd of the blurring gaussian kernel. Default is 3.
-#' @param bg_, an `rasterplot` object as returned by rasterplot() that will be used to add points to. Default is NULL.
+#' @param interpolate whether to use linear interpolation, only applies when 'draw' is TRUE. Default is FALSE.
+#' @param width the desired width of the raster Default is 512. It only applies when draw is FALSE.
+#' @param height the desired height of the raster Default is 512. It only applies when draw is FALSE.
+#' @param clipedge whether to clip points outside of plotting region to the edge. Default is FALSE.
+#' @param blur_size (for density) an integer controlling the size of the blurring gaussian kernel. Default is 9.
+#' @param blur_sd (for density) a double controlling the sd of the blurring gaussian kernel. Default is 3.
+#' @param bg_ an `rasterplot` object as returned by rasterplot() that will be used to add points to. Default is NULL.
 #' If provided it will have to be compatible with current drawing size or 'width' and 'height' when 'draw' is FALSE.
-#' @param bg_map, whether to use 'bg_' when provided to compute points coordinates. Default is TRUE.
+#' @param bg_map whether to use 'bg_' when provided to compute points coordinates. Default is TRUE.
 #' This allows to get same "user" to "pixel" coordinates conversion as the one used to create 'bg_'.
 #' @param ... other arguments to pass to graphics::plot().
 #' For example, providing xlim and/or ylim will controls if point will be shown or not
@@ -98,7 +101,7 @@ rasterplot = function(x, y = NULL,
                       pch = ".", size = 7,
                       alpha = 255, col = "black", rgba = NULL, force = FALSE, # parameters for colors
                       draw = TRUE,
-                      new = is.null(bg_),                                     # only when draw == TRUE
+                      new = is.null(bg_), interpolate = FALSE,                # only when draw == TRUE
                       width = 512, height = 512,                              # only when draw == FALSE
                       clipedge = FALSE, 
                       blur_size = 9, blur_sd = 3,                             # only for density
@@ -125,8 +128,8 @@ rasterplot = function(x, y = NULL,
   if((alpha < 0) || (alpha > 255)) stop("'alpha' should be a [0,255] integer")
   
   dots = dots[setdiff(names(dots), c("xlim", "ylim", "xlab", "ylab", "main"))]
-  pch = na.omit(suppressWarnings(as.integer(pch)))
-  if(length(pch) == 0) pch = 27
+  pch[pch == "."] <- 27
+  pch = suppressWarnings(as.integer(pch))
   has_bg = !missing(bg_) && (length(bg_) != 0)
   if(has_bg && !inherits(bg_, "rasterplot")) stop("when provided 'bg_' should be of class `rasterplot`")
   cex = par("cex"); if(length(dots$cex) != 0) cex = dots$cex
@@ -216,20 +219,22 @@ rasterplot = function(x, y = NULL,
   # plot it / return it
   if(draw) {
     # create raster
-    dv_size = grDevices::dev.size("px")
-    width = dv_size[1]
-    height = dv_size[2]
+    width = coordmap$width
+    height = coordmap$height
     img = cpp_raster(width = width, height = height, data, bg_)
+    
     # subset img to drawing region
     usr = par("usr")
     lims = round(c(graphics::grconvertX(usr[1], "user", "ndc") * width,
                    graphics::grconvertX(usr[2], "user", "ndc") * width,
                    (1 - graphics::grconvertY(usr[3], "user", "ndc")) * height,
                    (1 - graphics::grconvertY(usr[4], "user", "ndc")) * height))
+    
     # add image to plot background
     rasterImage(image = cpp_as_nativeRaster(img[lims[3]:lims[4], lims[1]:lims[2],]),
                 xleft = usr[1], xright = usr[2], ybottom = usr[4], ytop = usr[3],
-                interpolate = FALSE)
+                interpolate = interpolate)
+    
     return(invisible(structure(img, "coordmap" = coordmap, class = "rasterplot")))
   } else {
     return(invisible(structure(cpp_raster(width = width, height = height, data, bg_), "coordmap" = coordmap, class = "rasterplot")))
