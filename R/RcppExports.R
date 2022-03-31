@@ -336,7 +336,7 @@ NULL
 #' e.g. either:
 #' - structure(cpp_fast_factor(df, TRUE), class = "factor"), or,
 #' - structure(cpp_fast_factor(unclass(df), FALSE), levels = NULL)
-#' @source adaptation from Kevin Ushey code \url{https://gallery.rcpp.org/articles/fast-factor-generation/}
+#' @source adaptation from Kevin Ushey code \url{https://gallery.rcpp.org/articles/fast-factor-generation}
 #' @return an IntegerVector, with attributes "levels" being the non-NA unique value(s) found
 #' and "lvs" the total number of unique values found (including NA).
 #' @keywords internal

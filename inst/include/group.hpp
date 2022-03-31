@@ -34,7 +34,7 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// from https://gallery.rcpp.org/articles/fast-factor-generation/
+// from https://gallery.rcpp.org/articles/fast-factor-generation
 // slightly modified to handle raw and logical vectors
 // it can also handle NA, NaN, NULL, -Inf, and +Inf
 // depending on handleNA, NAs will be returned as NA or as an integer
@@ -116,7 +116,7 @@ Rcpp::IntegerVector fast_factor_T( const Rcpp::Vector<RTYPE>& x,
 //' e.g. either:
 //' - structure(cpp_fast_factor(df, TRUE), class = "factor"), or,
 //' - structure(cpp_fast_factor(unclass(df), FALSE), levels = NULL)
-//' @source adaptation from Kevin Ushey code \url{https://gallery.rcpp.org/articles/fast-factor-generation/}
+//' @source adaptation from Kevin Ushey code \url{https://gallery.rcpp.org/articles/fast-factor-generation}
 //' @return an IntegerVector, with attributes "levels" being the non-NA unique value(s) found
 //' and "lvs" the total number of unique values found (including NA).
 //' @keywords internal
