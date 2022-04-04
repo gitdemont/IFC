@@ -28,8 +28,8 @@ readFCS(
 -- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
 -- data_end: where to retrieve file text segment end.       Default is list(at = 34, n = 8),\cr
 - apply_scale, whether to apply data scaling. It only applies when fcs file is stored as DATATYPE "I". Default is TRUE.\cr
-- first_only, whether to extract only first. Default is TRUE.\cr
-- force_header, whether to force the use of header position for data segment. Default is FALSE.
+- first_only, whether to extract only the first dataset when several. Default is TRUE.\cr
+- force_header, whether to force the use of header to determine the position of data segment. Default is FALSE, for using positions found in "$BEGINDATA" and "$ENDDATA" keywords.\cr
 - text_only, whether to only extract text segment. Default is FALSE.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
