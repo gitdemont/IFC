@@ -517,7 +517,9 @@ Rcpp::IntegerMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
         n++;
       }
     }
-    return out(Rcpp::Range(0, n - 1), Rcpp::_);
+    if(n >= 1) return out(Rcpp::Range(0, n - 1), Rcpp::_);
+    Rcpp::IntegerMatrix empty(0, 2);
+    return empty;
   }
 }
 
