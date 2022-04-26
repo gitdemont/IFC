@@ -480,9 +480,13 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   more = integer()
   if(!options$first_only) more = suppressWarnings(na.omit(as.integer(text[["$NEXTDATA"]]) + at))
   if((length(more) != 0) && !(more %in% options$header$start$at)) {
-    options$header$start$at <- c(more, options$header$start$at)
-    ans = c(ans, readFCS(fileName = fileName, options = options,
-                         display_progress = display_progress, ...))
+    if(more < file.size(fileName)) {
+      options$header$start$at <- c(more, options$header$start$at)
+      ans = c(ans, readFCS(fileName = fileName, options = options,
+                           display_progress = display_progress, ...))
+    } else {
+      warning("can't extract all datasets: keyword $NEXDATA points to outside of the file")
+    }
   }
   return(structure(ans, class = "IFC_fcs", fileName = fileName))
 }
