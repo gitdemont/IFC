@@ -485,7 +485,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
       ans = c(ans, readFCS(fileName = fileName, options = options,
                            display_progress = display_progress, ...))
     } else {
-      warning("can't extract all datasets: keyword $NEXDATA points to outside of the file")
+      warning("can't extract all datasets: keyword $NEXTDATA points to outside of the file")
     }
   }
   return(structure(ans, class = "IFC_fcs", fileName = fileName))
