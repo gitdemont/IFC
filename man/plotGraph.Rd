@@ -13,7 +13,7 @@ plotGraph(
   add_key = "panel",
   precision = c("light", "full")[1],
   trunc_labels = 38,
-  trans = asinh,
+  trans = "asinh",
   bin,
   viewport = "ideas",
   ...
@@ -40,7 +40,7 @@ Note that it only applies when display is seen as overlaying populations.}
 
 \item{trunc_labels}{maximum number of characters to display for labels. Default is 38.}
 
-\item{trans}{transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise asinh will be used.}
+\item{trans}{the name of a transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise "asinh" will be used.}
 
 \item{bin}{number of bin used for histogram / density. Default is missing.}
 

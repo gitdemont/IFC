@@ -20,6 +20,6 @@ the transformation of the input
 Helper apply transformation.
 }
 \details{
-for the moment, in addition to no transformation, only smoothLinLog and asinh are supported.
+for the moment, in addition to no transformation, only "smoothLinLog", "asinh", and "sqrt" are supported.
 }
 \keyword{internal}

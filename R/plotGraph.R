@@ -42,7 +42,7 @@
 #' -"light", the default, will only display points of same coordinates that are among the other layers.\cr
 #' -"full" will display all the layers.
 #' @param trunc_labels maximum number of characters to display for labels. Default is 38.
-#' @param trans transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise asinh will be used.
+#' @param trans the name of a transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise "asinh" will be used.
 #' @param bin number of bin used for histogram / density. Default is missing.
 #' @param viewport either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
 #' -"ideas" will use same limits as the one defined in ideas.\cr
@@ -56,7 +56,7 @@
 #' @export
 plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                      color_mode = c("white","black")[1], add_key = "panel", precision = c("light","full")[1],
-                     trunc_labels = 38, trans = asinh, bin, viewport = "ideas", ...) {
+                     trunc_labels = 38, trans = "asinh", bin, viewport = "ideas", ...) {
   dots = list(...)
   ret <- list()
   tryCatch({
@@ -84,15 +84,13 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   P = obj$pops
   R = obj$regions
   g = do.call(what=buildGraph, args=graph)
-  if(missing(trans)) trans = g$BasePop[[1]]$densitytrans
-  check_fun <- try(suppressWarnings(formals(trans)), silent = TRUE)
-  is_fun = inherits(trans, what="function") || !inherits(check_fun, what="try-error")
-  dens_feat = numeric()
-  if(length(trans) == 0) trans = "asinh"
   foo = c(g$f1, g$f2)
-  if(g$type == "density" && !is_fun) foo = c(foo, trans)
   tmp = foo %in% names(obj$features)
-  if(!all(tmp)) stop(paste0("trying to plot a features not found in obj$features: ",  paste0(foo[!tmp], collapse=", ")))
+  if(!all(tmp)) stop(paste0("trying to plot feature(s) not found in obj$features: ",  paste0(foo[!tmp], collapse=", ")))
+  if(missing(trans)) trans = g$BasePop[[1]]$densitytrans
+  if(length(trans) == 0 || (trans == "")) trans = "asinh"
+  is_fun = !inherits(x = try(parseTrans(trans), silent = TRUE), what = "try-error")
+  if((length(g$BasePop[[1]][["densitylevel"]]) != 0) && (g$BasePop[[1]][["densitylevel"]] != "")) trans = "return"
   
     # defines binning (for histogram and density)
   if(missing(bin)) {
@@ -154,6 +152,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   displayed_o = c(base_o, shown_o)
   Dall = fastCbind(D, sapply(displayed_n, simplify = FALSE, FUN=function(x) P[[x]]$obj), TRUE)
   D = Dall[data_sub, , drop = FALSE]
+  dens_feat = numeric()
   
   xy_subset = rep(TRUE, nrow(D))
   if(length(xy_subset) == 0) xy_subset = TRUE
@@ -261,15 +260,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         xy_subset[cpp_fast_sample(n = nrow(D), size = min(g$maxpoints,nrow(D)), replace = FALSE)] <- TRUE
       }
     }
-    xtop = NULL
-    if(is_fun) {
-      if("features" %in% names(check_fun)) {
-        dens_feat = do.call(what = trans, args = list(features = obj$features[D[xy_subset, 1, drop = TRUE], , drop = FALSE])) 
-      }
-    } else {
-      if((length(g$BasePop[[base_o[1]]][["densitylevel"]]) == 0) || (g$BasePop[[base_o[1]]][["densitylevel"]] == "")) {
-        xtop = trans
-      } 
+    if(!is_fun && (trans!="return")) {
+      if(!any(names(obj$features) %in% trans)) stop(paste0("trying to plot a feature not found in obj$features: ", trans))
       dens_feat = obj$features[D[xy_subset, 1, drop = TRUE], trans, drop = TRUE]
       dens_ran = cpp_fast_range(dens_feat)
       dens_feat = (dens_feat-dens_ran[1])/diff(dens_ran)

@@ -86,8 +86,8 @@ readGatingStrategy <- function(fileName, ...) {
     })
     plots=mapply(plots, plots_tmp, FUN = append, SIMPLIFY = FALSE)
     plots_tmp=c("xlocation","ylocation","scaletype","xmin","xmax","ymin","ymax","axislabelsfontsize","axistickmarklabelsfontsize",
-                "graphtitlefontsize","regionlabelsfontsize","bincount","histogramsmoothingfactor","xsize","ysize","splitterdistance")
-    plots=lapply(plots, FUN=function(x) {replace(x, plots_tmp, lapply(x[plots_tmp], as.numeric))})
+                "graphtitlefontsize","regionlabelsfontsize","bincount","histogramsmoothingfactor","xsize","ysize","splitterdistance","maxpoints")
+    plots=lapply(plots, FUN=function(x) {plots_tmp = plots_tmp[plots_tmp %in% names(x)]; replace(x, plots_tmp, lapply(x[plots_tmp], as.numeric))})
     plot_order=sapply(plots, FUN=function(i_plot) as.numeric(i_plot[c("xlocation", "ylocation")]))
     plots=plots[order(unlist(plot_order[1,]),unlist(plot_order[2,]))]
     rm(list=c("plots_tmp", "plot_order"))

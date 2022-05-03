@@ -49,14 +49,19 @@ toXML2_graphs = function(graphs, verbose = FALSE) {
         return(x)
       }
     })
+    if((length(g$maxpoints) != 0) && ((g$maxpoints == +Inf) || (g$maxpoints == 1))) g$maxpoints=NULL
     g = g[sapply(g, length) != 0] # to remove empty values (e.g. xtrans, ytrans)
     g
   })
   lapply(graphs, FUN=function(i_graph) {
-               xml_new_node(name = "Graph", attrs = i_graph[!grepl("Legend|BasePop|GraphRegion|ShownPop", names(i_graph))],
-                          .children = c(lapply(i_graph[["Legend"]], FUN=function(i) xml_new_node(name = "Legend", attrs = i)),
-                                        lapply(i_graph[["BasePop"]], FUN=function(i) xml_new_node(name = "BasePop", attrs = i)),
-                                        lapply(i_graph[["GraphRegion"]], FUN=function(i) xml_new_node(name = "GraphRegion", attrs = i)),
-                                        lapply(i_graph[["ShownPop"]], FUN=function(i) xml_new_node(name = "ShownPop", attrs = i))))
+    do.call(what = buildGraph, args = i_graph[!grepl("order", names(i_graph))])
+    xml_new_node(name = "Graph", attrs = i_graph[!grepl("Legend|BasePop|GraphRegion|ShownPop", names(i_graph))],
+                 .children = c(lapply(i_graph[["Legend"]], FUN=function(i) xml_new_node(name = "Legend", attrs = i)),
+                               lapply(i_graph[["BasePop"]], FUN=function(i) {
+                                 if(length(i$densitytrans) != 0 && (i$densitytrans == "return" || i$densitytrans == "")) i = i[names(i) != "densitytrans"]
+                                 xml_new_node(name = "BasePop", attrs = i)
+                               }),
+                               lapply(i_graph[["GraphRegion"]], FUN=function(i) xml_new_node(name = "GraphRegion", attrs = i)),
+                               lapply(i_graph[["ShownPop"]], FUN=function(i) xml_new_node(name = "ShownPop", attrs = i))))
   })
 }

@@ -71,6 +71,7 @@ toXML2_spillover_gs = function(spillover, name) {
 toXML2_graphs_gs = function(graphs) {
   if(length(graphs)==0) return(list())
   graphs = lapply(graphs, FUN=function(g) {
+    do.call(what = buildGraph, args = g[!grepl("order", names(g))])
     g$GraphRegion = lapply(g$GraphRegion, FUN = function(r) r[!grepl("def", names(r))]) # it is mandatory to remove def
     foo = lapply(g, FUN = function(i) {
       if(typeof(i) %in% c("integer","double")) {
@@ -95,6 +96,7 @@ toXML2_graphs_gs = function(graphs) {
     gg$smooth=g$histogramsmoothingfactor
     # additional parameters
     gg$maxpoints=g$maxpoints
+    if((length(gg$maxpoints) != 0) && ((gg$maxpoints == +Inf) || (gg$maxpoints == 1))) gg$maxpoints=NULL
     gg$xtrans=g$xtrans
     gg$ytrans=g$ytrans
     labs = list(main= g$title, x=g$xlabel, y=g$ylabel,
@@ -111,6 +113,7 @@ toXML2_graphs_gs = function(graphs) {
     if(gg$type == "density") {
       tmp = grepl("density", names(g$BasePop[[1]]))
       density = g$BasePop[[1]][tmp]
+      if(length(density$densitytrans) != 0 && (density$densitytrans == "return" || density$densitytrans == "")) density = density[names(density) != "densitytrans"]
       names(density) = gsub("density", "", names(density))
       names(density)[names(density) == "bincount"] <- "bin"
       names(density)[names(density) == "colorslightmode"] <- "color1"

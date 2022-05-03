@@ -65,17 +65,29 @@ parseTrans <- function(string) {
 #' @param x a numeric vector.
 #' @param trans the object returned by parseTrans().
 #' @param inverse whether or not to apply the inverse transformation. Default is FALSE.
-#' @details for the moment, in addition to no transformation, only smoothLinLog and asinh are supported.
+#' @details for the moment, in addition to no transformation, only "smoothLinLog", "asinh", and "sqrt" are supported.
 #' @return the transformation of the input
 #' @keywords internal
 applyTrans <- function(x, trans, inverse = FALSE) {
   fun = trans$what
+  alw_trans = c("return",
+                "sqrt", "pow2",
+                "smoothLinLog", "inv_smoothLinLog",
+                "smoothAsinh", "inv_smoothAsinh",
+                "asinh", "sinh")
+  if(!(trans$what %in% alw_trans)) stop("transformation '",trans$what,"' is not supported.\nAllowed are: '", paste0(alw_trans, collapse="','"),"'")
   if(inverse) fun = switch(fun,
-                           "return" = "return" ,
+                           "return" = "return",
+                           "sqrt" = "pow2",
+                           "pow2" = "sqrt",
                            "smoothLinLog" = "inv_smoothLinLog",
+                           "inv_smoothLinLog" = "smoothLinLog",
                            "smoothAsinh" = "inv_smoothAsinh",
+                           "inv_smoothAsinh" = "smoothAsinh",
                            "asinh" = "sinh",
+                           "sinh" = "asinh" ,
                            stop("can't find inverse transformation for: '",fun,"'" ))
+  # if(fun = "pow" && inverse) trans$args
   do.call(what = fun, args = c(list(x), trans$args))
 }
 
@@ -91,4 +103,11 @@ smoothAsinh <- function(x, hyper = 1000) {
 #' @keywords internal
 inv_smoothAsinh <- function(x, hyper = 1000) {
   return(sinh(x)*hyper)
+}
+
+#' @title Power of Two
+#' @description Raise values to power of two
+#' @keywords internal
+pow2 <- function(x) {
+  return(x^2)
 }

@@ -14,7 +14,7 @@ ExportToReport(
   add_key = "panel",
   precision = c("light", "full")[1],
   trunc_labels = 38,
-  trans = asinh,
+  trans = "asinh",
   bin,
   viewport = "ideas",
   display_progress = TRUE,
@@ -24,9 +24,11 @@ ExportToReport(
 \arguments{
 \item{obj}{an `IFC_data` object extracted with features extracted.}
 
-\item{selection}{when provided, indices of desired graphs.\cr
-In such case 'onepage' parameter is set to FALSE.\cr
-Note that indices are read from left to right, from top to bottom.}
+\item{selection}{indices of desired graphs. It can be provided as an integer vector or as a matrix.\cr
+In such case, the layout of the matrix will reflect the layout of the extracted graphs.\cr
+NA value will result in an empty place.\cr
+Otherwise, when 'selection' is provided as a vector not identical to seq_along(obj$graphs), 'onepage' parameter will be set to FALSE.\cr
+Note that indices are read from left to right, from top to bottom. Default is missing for extracting all graphs.}
 
 \item{write_to}{pattern used to export file(s).
 Placeholders, like c("\%d/\%s_fromR.pdf", "\%d/\%s_fromR.csv"), will be substituted:\cr
@@ -53,7 +55,7 @@ Note that it only applies when display is seen as overlaying populations.}
 
 \item{trunc_labels}{maximum number of characters to display for labels. Default is 38.}
 
-\item{trans}{transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise asinh will be used.}
+\item{trans}{name of the transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise "asinh" will be used.}
 
 \item{bin}{default number of bin used for histogram. Default is missing.}
 

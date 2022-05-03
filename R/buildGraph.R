@@ -255,12 +255,8 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
         levelplot.lines = densitylevel[2]; assert(levelplot.fill,alw=c("true","false"))
         levelplot.nlevels = as.integer(densitylevel[3]); levelplot.nlevels=na.omit(levelplot.nlevels[levelplot.nlevels>0]); assert(levelplot.nlevels,len=1)
         levelplot.lowest = as.numeric(densitylevel[4]); levelplot.lowest=na.omit(levelplot.lowest[levelplot.lowest >=0 & levelplot.lowest < 1]); assert(levelplot.lowest,len=1)
-      }
-      # checks transformation
-      is_fun = inherits(BasePop_default$densitytrans, what="function") || !inherits(try(suppressWarnings(formals(BasePop_default$densitytrans)), silent = TRUE), what="try-error")
-      if(!is_fun) {
-        to_fun = try(eval(parse(text=paste0(deparse(BasePop_default$densitytrans), collapse = "\n"))), silent=TRUE)
-        if(!inherits(to_fun, "try-error")) BasePop_default$densitytrans = to_fun
+      } else { # checks transformation
+        assert(BasePop_default$densitytrans, len=1, typ="character")
       }
     }
     # checks that linestyle is ok
@@ -286,7 +282,9 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
     order_tmp = b_names
     maxpoints = +Inf
   } else {
-    maxpoints = as.numeric(maxpoints); na.omit(maxpoints[maxpoints>0]); assert(maxpoints, len=1)
+    maxpoints = as.numeric(maxpoints)
+    maxpoints = na.omit(maxpoints[maxpoints>0])
+    if(length(maxpoints) != 1) maxpoints = +Inf
   }
   if(type=="density") order_tmp = rep(b_names,5)
   if(type=="scatter") {

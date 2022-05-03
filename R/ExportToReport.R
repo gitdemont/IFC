@@ -114,9 +114,11 @@ tryReportFileCreation <- function(fileName, write_to, overwrite = FALSE) {
 #' @description
 #' Generates graph report (plot + statistics) from `IFC_data` object.
 #' @param obj an `IFC_data` object extracted with features extracted.
-#' @param selection when provided, indices of desired graphs.\cr
-#' In such case 'onepage' parameter is set to FALSE.\cr
-#' Note that indices are read from left to right, from top to bottom. 
+#' @param selection indices of desired graphs. It can be provided as an integer vector or as a matrix.\cr
+#' In such case, the layout of the matrix will reflect the layout of the extracted graphs.\cr
+#' NA value will result in an empty place.\cr
+#' Otherwise, when 'selection' is provided as a vector not identical to seq_along(obj$graphs), 'onepage' parameter will be set to FALSE.\cr
+#' Note that indices are read from left to right, from top to bottom. Default is missing for extracting all graphs.
 #' @param onepage whether to generate a pdf with all graphs on one page or not. Default is TRUE.
 #' @param color_mode Whether to extract colors from obj in white or black mode. Default is "white".
 #' @param add_key whether to draw a "global" key under title or in the first "panel" or "both". Default is "panel".\cr
@@ -126,7 +128,7 @@ tryReportFileCreation <- function(fileName, write_to, overwrite = FALSE) {
 #' -"light", the default, will only display points of same coordinates that are among the other layers.\cr
 #' -"full" will display all the layers.
 #' @param trunc_labels maximum number of characters to display for labels. Default is 38.
-#' @param trans transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise asinh will be used.
+#' @param trans name of the transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise "asinh" will be used.
 #' @param bin default number of bin used for histogram. Default is missing.
 #' @param viewport Either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
 #' -"ideas" will use same limits as the one defined in ideas.\cr
@@ -138,7 +140,7 @@ tryReportFileCreation <- function(fileName, write_to, overwrite = FALSE) {
 #' @keywords internal
 CreateGraphReport <- function(obj, selection, onepage=TRUE,
                             color_mode=c("white","black")[1], add_key="panel", precision=c("light","full")[1],    # parameters to pass to plotGraph
-                            trunc_labels=38, trans=asinh, bin, viewport="ideas",                                  # parameters to pass to plotGraph
+                            trunc_labels=38, trans="asinh", bin, viewport="ideas",                                  # parameters to pass to plotGraph
                             display_progress=TRUE, ...) {
   dots = list(...)
   dv = dev.list()
@@ -189,29 +191,37 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   # defines layout
   lay=lapply(G, FUN=function(g) with(g, c(x=xlocation,y=ylocation)))
   lay=as.data.frame(do.call(rbind, lay))
-  row.names(lay)=1:length(G)
+  row.names(lay)=seq_along(G)
   lay=by(lay, lay$y, FUN=function(d) {
     d=d[order(d$x), ]
     d$x=seq_along(d$x)
     cbind("N"=as.integer(row.names(d)), d, stringsAsFactors=FALSE)
   })
-  lay=lapply(1:length(lay), FUN=function(i) {
+  lay=lapply(seq_along(c(lay)), FUN=function(i) {
     d=lay[[i]]
     d$y=i
     return(d)
   })
   lay=do.call("rbind", c(lay, make.row.names=FALSE))
   lay_mat=ftable(by(lay$N, lay[,c("y","x")], FUN=function(x) x))
-  if(missing(selection)) {
-    selection = 1:length(G)
+  if(missing(selection) || (length(suppressWarnings(na.omit(as.integer(c(selection))))) == 0)) {
+    selection = seq_along(G)
   } else {
-    if(!all(selection%in%(1:length(G)))) stop("'selection' refers to graph absent from 'obj'")
-    if(!identical(selection, 1:length(G))) onepage = FALSE
+    if(!all(na.omit(selection)%in%(seq_along(G)))) stop("'selection' refers to graph absent from 'obj'")
   }
-  if(onepage) { 
-    G=G[order(lay$N)]
+  if(is.matrix(selection)) {
+    G=G[c(selection)]
+    lay_mat = matrix(seq_along(selection), nrow = nrow(selection))
+    lay_mat[is.na(selection)] <- NA
+    lay = data.frame(N = seq_along(selection), x = (1:ncol(selection)), y = (1:nrow(selection)))
+    lay = lay[!is.na(selection),,drop=FALSE]
   } else {
-    G=G[lay$N[selection]]
+    if(!identical(selection, seq_along(G))) onepage = FALSE
+    if(onepage) {
+      G=G[order(lay$N)]
+    } else {
+      G=G[na.omit(selection)]
+    }
   }
   gl = length(G)
   
@@ -229,25 +239,32 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
                                  "y-Min.","y-1st Qu.","y-Median","y-Mean","y-3rd Qu.","y-Max.")
   suppressWarnings({
     stList = list()
-    grList = lapply(1:gl, FUN=function(i) {
+    grList = lapply(seq_along(G), FUN=function(i) {
       if(display_progress) setPB(pb = pb_gr, value = i, title = title_progress, label = "computing graphs and stats")
-      g = try({
-        p = do.call(what = plotGraph, args = c(plotGraph_args, list(graph = G[[i]])))
-        p$plot = plot_lattice(p)
-        p
-      }, silent = TRUE)
-      
-      if(G[[i]]$type=="histogram") {
-        stats = default_stats_1D
-      } else {
-        stats = default_stats_2D
-      }
+      stats = default_stats_1D
       rownames(stats) = paste0("Error: ", G[[i]]$title)
-      if(!do_draw || inherits(x = g, what = "try-error")) {
-        foo = arrangeGrob(grid.text(label = paste0(ifelse(do_draw,"Error: ","'draw' is set to FALSE "), attr(x = g, which = "condition")$message), gp=gpar(col="red"), draw = FALSE),
-                          top = textGrob(paste0("\n",G[[i]]$title), gp = gpar(fontsize = 8, font=2, lineheight=0.5)))
+      if(length(G[[i]]) != 0) {
+        g = try({
+          p = do.call(what = plotGraph, args = c(plotGraph_args, list(graph = G[[i]])))
+          p$plot = plot_lattice(p)
+          p
+        }, silent = TRUE)
+        if(!do_draw || inherits(x = g, what = "try-error")) {
+          foo = arrangeGrob(grid.text(label = paste0(ifelse(do_draw,"Error: ","'draw' is set to FALSE "), attr(x = g, which = "condition")$message), gp=gpar(col="red"), draw = FALSE),
+                            top = textGrob(paste0("\n",G[[i]]$title), gp = gpar(fontsize = 8, font=2, lineheight=0.5)))
+        } else {
+          if(G[[i]]$type=="histogram") {
+            stats = default_stats_1D
+          } else {
+            stats = default_stats_2D
+          }
+          rownames(stats) = paste0("Error: ", G[[i]]$title)
+          foo = grob(p=g$plot, vp = viewport(x=0.5, y=unit(0.5,"npc")), cl = "lattice")
+        }
       } else {
-        foo = grob(p=g$plot, vp = viewport(x=0.5, y=unit(0.5,"npc")), cl = "lattice")
+        do_stats = FALSE
+        do_draw = FALSE
+        foo = grob()
       }
       if(do_stats) try({stats = plot_stats(g)}, silent = TRUE)
       stList <<- c(stList, list(stats))
@@ -274,9 +291,11 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
 #' @description
 #' Generates report from `IFC_data` object.
 #' @param obj an `IFC_data` object extracted with features extracted.
-#' @param selection when provided, indices of desired graphs.\cr
-#' In such case 'onepage' parameter is set to FALSE.\cr
-#' Note that indices are read from left to right, from top to bottom. 
+#' @param selection indices of desired graphs. It can be provided as an integer vector or as a matrix.\cr
+#' In such case, the layout of the matrix will reflect the layout of the extracted graphs.\cr
+#' NA value will result in an empty place.\cr
+#' Otherwise, when 'selection' is provided as a vector not identical to seq_along(obj$graphs), 'onepage' parameter will be set to FALSE.\cr
+#' Note that indices are read from left to right, from top to bottom. Default is missing for extracting all graphs.
 #' @param write_to pattern used to export file(s).
 #' Placeholders, like c("\%d/\%s_fromR.pdf", "\%d/\%s_fromR.csv"), will be substituted:\cr
 #' -\%d: with full path directory of 'obj$fileName'\cr
@@ -295,7 +314,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
 #' -"light", the default, will only display points of same coordinates that are amoung the other layers.\cr
 #' -"full" will display all the layers.
 #' @param trunc_labels maximum number of characters to display for labels. Default is 38.
-#' @param trans transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise asinh will be used.
+#' @param trans name of the transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise "asinh" will be used.
 #' @param bin default number of bin used for histogram. Default is missing.
 #' @param viewport Either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
 #' -"ideas" will use same limits as the one defined in ideas.\cr
@@ -330,7 +349,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
 #' @export
 ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRUE,
                           color_mode=c("white","black")[1], add_key="panel", precision=c("light","full")[1],    # parameters to pass to plotGraph
-                          trunc_labels=38, trans=asinh, bin, viewport="ideas",                                  # parameters to pass to plotGraph
+                          trunc_labels=38, trans="asinh", bin, viewport="ideas",                                  # parameters to pass to plotGraph
                           display_progress=TRUE, ...) {
   dots = list(...)
   dv = dev.list()
@@ -364,11 +383,13 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
                             display_progress=display_progress, ...)
     gl = length(foo$graphs)
     if(create_csv) {
-      lapply(1:gl, FUN = function(i) {
+      lapply(seq_along(foo$graphs), FUN = function(i) {
         g = foo$graphs[[i]]
-        write.table(x=rbind(c(g$f1,"x")), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
-        if(g$type!="histogram") write.table(x=rbind(c(g$f2,"y")), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
-        write.table(x=foo$stats[[i]], file=export_to_csv, append=TRUE, sep=",", col.names = FALSE)
+        if(length(g)!=0) {
+          write.table(x=rbind(c(g$f1,"x")), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
+          if(g$type!="histogram") write.table(x=rbind(c(g$f2,"y")), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
+          write.table(x=foo$stats[[i]], file=export_to_csv, append=TRUE, sep=",", col.names = FALSE)
+        }
       })
     }
     if(create_pdf) {
@@ -442,7 +463,7 @@ DisplayReport = function(obj, display_progress = TRUE, ...) {
     # TODO add a progress bar
     grid.arrange(grobs = foo$grobs[foo$layout$N], top = title_progress, newpage = TRUE, layout_matrix = foo$matrix, as.table = FALSE)
   } else {
-    for(i in 1:gl) {
+    for(i in seq_along(foo$grobs)) {
       grid.arrange(foo$grobs[[i]], top = title_progress, newpage = TRUE)
       if(display_progress) setPB(pb_pdf, value = i, title = title_progress, label = "plotting each graph")
     }
@@ -453,9 +474,11 @@ DisplayReport = function(obj, display_progress = TRUE, ...) {
 #' @description
 #' Batch creates graphical an statistical report.
 #' @param fileName path to file(s).
-#' @param selection indices of desired graphs. It can be provided as an integer vector or as a matrix.
-#' In such case, the layout of the matrix will reflect the layout of the extracted graphs for each single 'fileName'.
-#' NA value will result in an empty place.
+#' @param selection indices of desired graphs. It can be provided as an integer vector or as a matrix.\cr
+#' In such case, the layout of the matrix will reflect the layout of the extracted graphs for each fileName.\cr
+#' NA value will result in an empty place.\cr
+#' Otherwise, when 'selection' is provided as a vector not identical to seq_along(obj$graphs), 'onepage' parameter will be set to FALSE.\cr
+#' Note that indices are read from left to right, from top to bottom. Default is missing for extracting all graphs.
 #' @param write_to pattern used to export file(s).
 #' Placeholders, like c("\%d/\%s_fromR.pdf", "\%d/\%s_fromR.csv"), will be substituted:\cr
 #' -\%d: with full path directory of first element of 'fileName'\cr
@@ -478,7 +501,7 @@ DisplayReport = function(obj, display_progress = TRUE, ...) {
 #' -"light", the default, will only display points of same coordinates that are among the other layers.\cr
 #' -"full" will display all the layers.
 #' @param trunc_labels maximum number of characters to display for labels. Default is 38.
-#' @param trans transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise asinh will be used.
+#' @param trans name of the transformation function for density graphs. If missing the default, the BasePop[[1]]$densitytrans, if any, will be retrieved, otherwise "asinh" will be used.
 #' @param bin default number of bin used for histogram. Default is missing.
 #' @param viewport Either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
 #' -"ideas" will use same limits as the one defined in ideas.\cr
@@ -491,7 +514,7 @@ DisplayReport = function(obj, display_progress = TRUE, ...) {
 BatchReport <- function(fileName, selection, write_to, overwrite=FALSE, 
                         gating, main, byrow = FALSE, times = 5, 
                         color_mode=c("white","black")[1], add_key="panel", precision=c("light","full")[1],    # parameters to pass to plotGraph
-                        trunc_labels=38, trans=asinh, bin, viewport="ideas",                                  # parameters to pass to plotGraph
+                        trunc_labels=38, trans="asinh", bin, viewport="ideas",                                  # parameters to pass to plotGraph
                         display_progress=TRUE, ...) {
   dots = list(...)
   create_pdf = FALSE
@@ -535,10 +558,10 @@ BatchReport <- function(fileName, selection, write_to, overwrite=FALSE,
   if(length(lay) > 1) lay[[length(lay)]] = c(lay[[length(lay)]], rep(NA, times - length(lay[[length(lay)]])))
   lay = do.call(what = ifelse(byrow, "cbind", "rbind"), args = lay)
   L = length(selection)
-  if(byrow) { LX = 1; LY = L } else { LX = L; LY = 1 }
-  if(inherits(x = selection, what = "matrix")) {
-    LX = ncol(selection)
-    LY = ncol(selection)
+  if(!is.matrix(selection)) {
+    selection = na.omit(selection)
+    selection = matrix(selection, nrow=length(selection))
+    if(!byrow) selection = t(selection)
   }
   apply_gating = FALSE
   if(!missing(gating)) apply_gating = TRUE
@@ -550,36 +573,44 @@ BatchReport <- function(fileName, selection, write_to, overwrite=FALSE,
     on.exit(endPB(pb), add = TRUE)
   }
   tryCatch({
-    grobs = lapply(1:length(fileName), FUN = function(i_file) {
+    grobs = lapply(seq_along(fileName), FUN = function(i_file) {
       if(display_progress) setPB(pb = pb, value = i_file, title = "creating batch report", label = paste0("extracting ",basename(fileName[i_file])))
-      obj = readIFC(fileName=fileName[i_file], display_progress=FALSE, ...)
-      if(apply_gating) obj = applyGatingStrategy(obj=obj, gating=gating, display_progress=FALSE)
-      G = obj$graphs[c(selection)]
-      plotGraph_args = c(plotGraph_args, list(obj=obj))
-      file_lay = matrix(1:L, ncol = LX, nrow = LY)
-      foo = CreateGraphReport(obj, selection, onepage=FALSE,
-                              color_mode=color_mode, add_key=add_key, precision=precision,
-                              trunc_labels=trunc_labels, trans=trans, bin=bin, viewport=viewport,
-                              display_progress=display_progress)
-      gl = length(foo$graphs)
-      if(create_csv) {
-        write.table(x=basename(fileName[i_file]), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
-        lapply(1:gl, FUN = function(i) {
-          g = foo$graphs[[i]]
-          write.table(x=rbind(c(g$f1,"x")), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
-          if(g$type!="histogram") write.table(x=rbind(c(g$f2,"y")), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
-          write.table(x=foo$stats[[i]], file=export_to_csv, append=TRUE, sep=",", col.names = FALSE)
-        })
-      }
-      file_grob = foo$grobs
-      bar = grobTree(arrangeGrob(grobs=file_grob, ncol=LX, nrow=LY,
-                                 top=textGrob(paste0("\n\n\n",basename(fileName[i_file]),"\n"), 
-                                              gp=gpar(fontsize=14, font=2, col="skyblue4", lineheight=0.5))),
-                     rectGrob(.5,.5,width=unit(.99,"npc"), height=unit(0.99,"npc"),
-                              gp=gpar(lwd=2, col="skyblue4", fill=NA)))
+      tryCatch({
+        obj = readIFC(fileName=fileName[i_file], display_progress=FALSE, ...)
+        if(apply_gating) obj = applyGatingStrategy(obj=obj, gating=gating, display_progress=FALSE)
+        plotGraph_args = c(plotGraph_args, list(obj=obj))
+        foo = CreateGraphReport(obj, selection, onepage=TRUE,
+                                color_mode=color_mode, add_key=add_key, precision=precision,
+                                trunc_labels=trunc_labels, trans=trans, bin=bin, viewport=viewport,
+                                display_progress=display_progress)
+        if(create_csv) {
+          write.table(x=basename(fileName[i_file]), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
+          lapply(seq_along(foo$graphs), FUN = function(i) {
+            g = foo$graphs[[i]]
+            if(length(g)!=0) {
+              write.table(x=rbind(c(g$f1,"x")), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
+              if(g$type!="histogram") write.table(x=rbind(c(g$f2,"y")), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
+              write.table(x=foo$stats[[i]], file=export_to_csv, append=TRUE, sep=",", col.names = FALSE)
+            }
+          })
+        }
+        grobTree(
+          grid.arrange(grobs = foo$grobs[foo$layout$N], 
+                       top=textGrob(paste0("\n\n\n",basename(fileName[i_file]),"\n"), 
+                                    gp=gpar(fontsize=14, font=2, col="skyblue4", lineheight=0.5)),
+                       newpage = names(dev.cur()) != "pdf", 
+                       layout_matrix = foo$matrix, as.table = FALSE),
+          rectGrob(.5,.5,width=unit(.99,"npc"), height=unit(0.99,"npc"), gp=gpar(lwd=2, col="skyblue4", fill=NA)))
+      }, error = function(e) {
+        if(names(dev.cur()) != "pdf") grid.newpage()
+        grobTree(arrangeGrob(grid.text(label = e$message, gp=gpar(col="red"), draw = FALSE),
+                             top=textGrob(paste0("\n\n\n",basename(fileName[i_file]),"\n"), 
+                                          gp=gpar(fontsize=14, font=2, col="skyblue4", lineheight=0.5))),
+                 rectGrob(.5,.5,width=unit(.99,"npc"), height=unit(0.99,"npc"), gp=gpar(lwd=2, col="skyblue4", fill=NA)))
+      })
     })
     if(create_pdf) {
-      pdf(file=write_to, height=3*nrow(lay)*LY*2.54, width=3*ncol(lay)*LX*2.54,
+      pdf(file=write_to, height=3*nrow(lay)*nrow(selection)*2.54, width=3*ncol(lay)*ncol(selection)*2.54,
           family = "serif",
           onefile=TRUE, pagecentre=TRUE, useDingbats=FALSE)
       if(!missing(main)) args=c(args, top=main)

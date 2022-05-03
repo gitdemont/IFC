@@ -60,23 +60,18 @@ calcDensity=getFromNamespace(x = ".smoothScatterCalcDensity", ns = "grDevices")
 #' @description Helper to map density to colors
 #' @source derived from \pkg{grDevices} R Core Team, Florian Hahne at FHCRC, originally
 #' @keywords internal
-densCols=function (x, y = NULL, nbin = 128, bandwidth, colramp = colorRampPalette(c("blue","green","red")), transformation=function(x) (asinh(x))) {
+densCols=function (x, y = NULL, nbin = 128, bandwidth, colramp = colorRampPalette(c("blue","green","red")), transformation="asinh") {
   x_features = attr(x, "features")
   xy <- xy.coords(x, y)
   select <- is.finite(xy$x) & is.finite(xy$y)
-  check_fun <- try(suppressWarnings(formals(transformation)), silent = TRUE)
-  if (!inherits(check_fun, what = "try-error")) {
+  tr <- try(parseTrans(transformation), silent = TRUE)
+  if(!inherits(tr, what = "try-error")) {
     x <- cbind(xy$x, xy$y)[select, ]
     map <- calcDensity(x, nbin, bandwidth)
     mkBreaks <- function(u) u - diff(cpp_fast_range(u))/(length(u) - 1)/2
     xbin <- cut(x[, 1], mkBreaks(map$x1), labels = FALSE)
     ybin <- cut(x[, 2], mkBreaks(map$x2), labels = FALSE)
-    if ("features" %in% names(check_fun)) {
-      dens <- x_features
-    } else {
-      args = list(x = map$fhat[cbind(xbin, ybin)])
-      dens <- do.call(what = transformation, args = args)
-    }
+    dens <- applyTrans(x = map$fhat[cbind(xbin, ybin)], trans = tr)
   } else {
     ran <- cpp_fast_range(x_features)
     dens <- ((x_features - ran[1])/diff(ran))
@@ -544,7 +539,7 @@ plot_base=function(obj) {
                        y = obj$input$data$y2[obj$input$subset],
                        colramp=colramp,
                        nbin=obj$input$bin,
-                       transformation=function(x) {x})
+                       transformation="return")
         args_level = strsplit(args_level,split="|",fixed=TRUE)[[1]]
         fill = args_level[1] == "true"
         dolines = args_level[2] == "true"
@@ -591,8 +586,7 @@ plot_base=function(obj) {
                 what = plot)
       }
       if((length(args_level) == 0) || (args_level == ""))
-        if(!(inherits(obj$input$trans, what="function") || 
-           !inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), what="try-error"))) subtitle = TRUE
+        if(inherits(x = try(parseTrans(obj$input$trans), silent = TRUE), what="try-error")) subtitle = TRUE
     } else {
       if(obj$input$precision == "full") {
         disp = disp_n[length(displayed)]
@@ -730,8 +724,7 @@ plot_raster=function(obj) {
     graph$input$title = ""
     graph$input$trans = ""
   }
-  if(!(inherits(obj$input$trans, what="function") || 
-     !inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), what="try-error"))) subtitle = TRUE
+  if(inherits(x = try(parseTrans(obj$input$trans), silent = TRUE), what="try-error")) subtitle = TRUE
 
   # create empty plot
   plot_base(graph)
@@ -989,8 +982,7 @@ plot_lattice=function(obj) {
     if(type == "density") {
       args_level = basepop[[1]][["densitylevel"]]
       if((length(args_level) == 0) || (args_level == ""))
-        if(!(inherits(trans, what="function") || 
-             !inherits(try(suppressWarnings(formals(trans)), silent = TRUE), what="try-error"))) xtop = trans
+        if(inherits(x = try(parseTrans(trans), silent = TRUE), what="try-error")) xtop = trans
     }
     foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE,
                  xlim = Xlim, ylim = Ylim,
@@ -1004,7 +996,7 @@ plot_lattice=function(obj) {
                      colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[color_mode]]))
                      args_level = basepop[[1]][["densitylevel"]]
                      if((length(args_level) != 0) && (args_level != "")) {
-                       col = densCols(x=structure(x, features=attr(obj$input$data,"features")), y=y, colramp=colramp, nbin=nbin, transformation=function(x) {x})
+                       col = densCols(x=structure(x, features=attr(obj$input$data,"features")), y=y, colramp=colramp, nbin=nbin, transformation="return")
                        args_level=strsplit(args_level,split="|",fixed=TRUE)[[1]]
                        fill = args_level[1] == "true"
                        dolines = args_level[2] == "true"
@@ -1209,7 +1201,7 @@ adjustGraph=function(obj, selection, adjust_graph = TRUE, ...) {
     if(missing(selection)) {
       selection = 1:length(G)
     } else {
-      if(!all(selection%in%(1:length(G)))) stop("'selection' refers to graph absent from 'obj'")
+      if(!all(na.omit(selection)%in%(1:length(G)))) stop("'selection' refers to graph absent from 'obj'")
     }
     foo = lapply(1:length(G), FUN = function(i_graph) {
       g = G[[i_graph]]
@@ -1251,7 +1243,7 @@ adjustGraph=function(obj, selection, adjust_graph = TRUE, ...) {
     obj$graphs = bar
     return(obj)
   } else {
-    if(!missing(selection) && (length(selection) != 0)) stop("'selection' refers to graph absent from 'obj'")
+    if(!missing(selection) && (length(na.omit(selection)) != 0)) stop("'selection' refers to graph absent from 'obj'")
     return(obj)
   }
 }
