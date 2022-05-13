@@ -156,7 +156,7 @@ whoami = function(entries = as.list(match.call()),
   # reinit to arguments of searched classes found to their default value
   if(reinit) {
     call_from = parent.frame(1)
-    if(any(from[1] %in% c("::",":::"))) {
+    if((typeof(from) != "closure") && any(from[1] %in% c("::",":::"))) {
       form = formals(fun = from[3], envir = asNamespace(from[2], base.OK = FALSE))
     } else {
       form = formals(fun = from)
