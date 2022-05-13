@@ -27,6 +27,39 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
+
+#' @title Report Layout Extraction
+#' @description
+#' Extracts report layout from `IFC_graphs` object.
+#' @param graphs an `IFC_graphs` object extracted with features extracted.
+#' @return a list containing:\cr
+#' -lay, a 3 columns (N, x, y) data.frame, where N is the graph index and x and y its coordinates on the layout,\cr
+#' -mat, a matrix describing the layout.
+#' @keywords internal
+layoutReport <- function(graphs) {
+  assert(graphs, cla="IFC_graphs")
+  lay=structure(as.data.frame(matrix(integer(),nrow=0, ncol=3)), names=c("N","x","y"))
+  lay_mat=structure(matrix(integer(),nrow=0,ncol=0),"row.vars"=list(y=character()), "col.vars"=list(x=character()))
+  if(length(graphs) != 0) {
+    lay=lapply(graphs, FUN=function(g) with(g, c(x=xlocation,y=ylocation)))
+    lay=as.data.frame(do.call(rbind, lay))
+    row.names(lay)=seq_along(graphs)
+    lay=by(lay, lay$y, FUN=function(d) {
+      d=d[order(d$x), ]
+      d$x=seq_along(d$x)
+      cbind("N"=as.integer(row.names(d)), d, stringsAsFactors=FALSE)
+    })
+    lay=lapply(seq_along(c(lay)), FUN=function(i) {
+      d=lay[[i]]
+      d$y=i
+      return(d)
+    })
+    lay=do.call("rbind", c(lay, make.row.names=FALSE))
+    lay_mat=ftable(by(lay$N, lay[,c("y","x")], FUN=function(x) x))
+  }
+  return(list(lay=lay, mat=unclass(lay_mat)))
+}
+
 #' @title Report File Creation
 #' @description
 #' Checks if report files can be created.
@@ -139,9 +172,9 @@ tryReportFileCreation <- function(fileName, write_to, overwrite = FALSE) {
 #' @return a list with onepage, layout, layout_matrix, graphs, grobs, and stats.
 #' @keywords internal
 CreateGraphReport <- function(obj, selection, onepage=TRUE,
-                            color_mode=c("white","black")[1], add_key="panel", precision=c("light","full")[1],    # parameters to pass to plotGraph
-                            trunc_labels=38, trans="asinh", bin, viewport="ideas",                                  # parameters to pass to plotGraph
-                            display_progress=TRUE, ...) {
+                              color_mode=c("white","black")[1], add_key="panel", precision=c("light","full")[1],    # parameters to pass to plotGraph
+                              trunc_labels=38, trans="asinh", bin, viewport="ideas",                                # parameters to pass to plotGraph
+                              display_progress=TRUE, ...) {
   dots = list(...)
   dv = dev.list()
   on.exit(while(!identical(dv, dev.list())) {
@@ -189,21 +222,9 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   if(length(G)==0) stop("there is no graph defined in 'obj'")
   
   # defines layout
-  lay=lapply(G, FUN=function(g) with(g, c(x=xlocation,y=ylocation)))
-  lay=as.data.frame(do.call(rbind, lay))
-  row.names(lay)=seq_along(G)
-  lay=by(lay, lay$y, FUN=function(d) {
-    d=d[order(d$x), ]
-    d$x=seq_along(d$x)
-    cbind("N"=as.integer(row.names(d)), d, stringsAsFactors=FALSE)
-  })
-  lay=lapply(seq_along(c(lay)), FUN=function(i) {
-    d=lay[[i]]
-    d$y=i
-    return(d)
-  })
-  lay=do.call("rbind", c(lay, make.row.names=FALSE))
-  lay_mat=ftable(by(lay$N, lay[,c("y","x")], FUN=function(x) x))
+  lay=layoutReport(G)
+  lay_mat=lay$mat
+  lay=lay$lay
   if(missing(selection) || (length(suppressWarnings(na.omit(as.integer(c(selection))))) == 0)) {
     selection = seq_along(G)
   } else {
@@ -473,27 +494,25 @@ DisplayReport = function(obj, display_progress = TRUE, ...) {
 #' @title Batch Generation of Graphical and Statistic Report
 #' @description
 #' Batch creates graphical an statistical report.
-#' @param fileName path to file(s).
+#' @param fileName,obj either one or the other. Path to file(s) to read from for 'fileName' or list of `IFC_data` objects for obj.
 #' @param selection indices of desired graphs. It can be provided as an integer vector or as a matrix.\cr
-#' In such case, the layout of the matrix will reflect the layout of the extracted graphs for each fileName.\cr
-#' NA value will result in an empty place.\cr
-#' Otherwise, when 'selection' is provided as a vector not identical to seq_along(obj$graphs), 'onepage' parameter will be set to FALSE.\cr
-#' Note that indices are read from left to right, from top to bottom. Default is missing for extracting all graphs.
+#' In such case, the layout of the matrix will reflect the layout of the extracted graphs for each 'fileName' or ''obj'.\cr
+#' NA value will result in an empty place. When missing, it will be determined by the whole layout of 1st 'fileName' or 'obj' with 'gating' applied when provided
 #' @param write_to pattern used to export file(s).
 #' Placeholders, like c("\%d/\%s_fromR.pdf", "\%d/\%s_fromR.csv"), will be substituted:\cr
-#' -\%d: with full path directory of first element of 'fileName'\cr
-#' -\%p: with first parent directory of first element of 'fileName'\cr
-#' -\%e: with extension of first element of 'fileName' (without leading .)\cr
-#' -\%s: with shortname from first element of 'fileName' (i.e. basename without extension).\cr
-#' Exported file(s) extension(s) will be deduced from this pattern. Note that has to be a .pdf and/or .csv.
+#' -\%d: with full path directory\cr
+#' -\%p: with first parent directory\cr
+#' -\%e: with extension (without leading .)\cr
+#' -\%s: with shortname (i.e. basename without extension).\cr
+#' Exported file(s) extension(s) will be deduced from this pattern using either 1st 'fileName' or 'obj'. Note that has to be a .pdf and/or .csv.
 #' @param overwrite whether to overwrite file or not. Default is FALSE.
 #' Note that if TRUE, it will overwrite file. In addition a warning message will be sent.
 #' @param gating an `IFC_gating` object as extracted by readGatingStrategy(). Default is missing.
-#' If not missing, each file provided in 'fileName' will be extracted by readIFC() and 'gating' will be applied by applyGatingStrategy() to the returned object before creating the report
+#' If not missing, each `IFC_data` provided in 'obj' or read from 'fileName' will be passed to applyGatingStrategy() before creating the report.
 #' @param main the main title of the document. Default is missing.
-#' @param byrow whether to add selected graphs for each file by row or not. Deafult is FALSE.
+#' @param byrow whether to add selected graphs for each file by row or not. Default is FALSE.
 #' @param times number of files to add before starting a new row or column (depending on 'byrow').
-#' @param color_mode Whether to extract colors from obj in white or black mode. Default is "white".
+#' @param color_mode Whether to extract colors in white or black mode. Default is "white".
 #' @param add_key whether to draw a "global" key under title or in the first "panel" or "both". Default is "panel".\cr
 #' Accepted values are either: FALSE, "panel", "global", "both" or c("panel", "global").\cr
 #' Note that it only applies when display is seen as overlaying populations.
@@ -510,11 +529,11 @@ DisplayReport = function(obj, display_progress = TRUE, ...) {
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other parameters to be passed.
 #' @return It invisibly returns full path of exported .pdf and/or .csv file(s).
-#' @keywords internal
-BatchReport <- function(fileName, selection, write_to, overwrite=FALSE, 
+#' @export
+BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE, 
                         gating, main, byrow = FALSE, times = 5, 
                         color_mode=c("white","black")[1], add_key="panel", precision=c("light","full")[1],    # parameters to pass to plotGraph
-                        trunc_labels=38, trans="asinh", bin, viewport="ideas",                                  # parameters to pass to plotGraph
+                        trunc_labels=38, trans="asinh", bin, viewport="ideas",                                # parameters to pass to plotGraph
                         display_progress=TRUE, ...) {
   dots = list(...)
   create_pdf = FALSE
@@ -525,6 +544,22 @@ BatchReport <- function(fileName, selection, write_to, overwrite=FALSE,
   on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
   suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
   
+  # check fileName or obj
+  if(missing(obj) && missing(fileName)) stop("you should provide either 'fileName' or 'obj'")
+  if(!missing(fileName) && !missing(obj)) stop("you should provide either 'fileName' or 'obj' not both")
+  if(!missing(fileName) && is.list(fileName) && inherits(fileName[[1]], what="IFC_data")) {
+    warning("'fileName' will be treated as a list of `IFC_data` objects")
+    obj = fileName
+  }
+  is_obj = FALSE
+  if(!missing(obj)) {
+    is_obj = TRUE
+    fileName = sapply(seq_along(obj), FUN = function(i_obj) {
+      assert(obj[[i_obj]], cla="IFC_data")
+      obj[[i_obj]]$fileName
+    })
+  }
+  
   # check file(s) can be created
   can_write = tryReportFileCreation(fileName[1], write_to, overwrite)
   export_to_csv = can_write$csv
@@ -534,11 +569,12 @@ BatchReport <- function(fileName, selection, write_to, overwrite=FALSE,
   create_pdf = length(export_to_pdf) != 0
   write_to = c(export_to_pdf, export_to_csv)
   
-  # checks
+  # checks & coercion
   display_progress = as.logical(display_progress); assert(display_progress, len=1, alw=c(TRUE,FALSE))
   byrow = as.logical(byrow); assert(byrow, len=1, alw=c(TRUE,FALSE))
   times = na.omit(as.integer(times)); assert(times, len = 1)
-  if(missing(selection)) stop("'selection' can't be missing")
+  apply_gating = FALSE
+  if(!missing(gating)) apply_gating = TRUE
   if(missing(bin)) {
     bin = NULL
   } else {
@@ -547,25 +583,38 @@ BatchReport <- function(fileName, selection, write_to, overwrite=FALSE,
   if(!"draw" %in% names(dots)) dots$draw = FALSE
   if(!"stats_print" %in% names(dots)) dots$stats_print = FALSE
   plotGraph_args=c(dots, list(color_mode=color_mode, add_key=add_key,
-                      precision=precision, trunc_labels=trunc_labels,
-                      viewport=viewport))
+                              precision=precision, trunc_labels=trunc_labels,
+                              viewport=viewport))
   if(length(bin) != 0) plotGraph_args = c(plotGraph_args, list(bin=bin))
   if(!missing(trans)) plotGraph_args = c(plotGraph_args, list(trans=trans))
-
+  
+  # layout
   n_tiles = length(fileName)
   s_tiles = seq(from = 1, to = n_tiles, by = 1)
   lay = split(seq(from = 1, to = n_tiles, by = 1), ceiling(seq(from = 1, to = n_tiles, by = 1) / times) )
   if(length(lay) > 1) lay[[length(lay)]] = c(lay[[length(lay)]], rep(NA, times - length(lay[[length(lay)]])))
   lay = do.call(what = ifelse(byrow, "cbind", "rbind"), args = lay)
-  L = length(selection)
+  if(missing(selection)) {
+    if(apply_gating) {
+      selection=gating$graphs
+    } else {
+      if(is_obj) {
+        selection=obj[[1]]$graphs
+      } else {
+        selection=readIFC(fileName=fileName[1], display_progress=FALSE,
+                          extract_features=TRUE, extract_images=FALSE,
+                          extract_offsets=FALSE, extract_stats=FALSE)$graphs
+      }
+    }
+    selection=layoutReport(selection)$mat
+  }
   if(!is.matrix(selection)) {
     selection = na.omit(selection)
     selection = matrix(selection, nrow=length(selection))
     if(!byrow) selection = t(selection)
   }
-  apply_gating = FALSE
-  if(!missing(gating)) apply_gating = TRUE
-
+  if(length(selection) == 0) selection=matrix(1,ncol=1,nrow=1)
+  
   # backup last state of graphic device
   dv = dev.list()
   if(display_progress) {
@@ -576,10 +625,16 @@ BatchReport <- function(fileName, selection, write_to, overwrite=FALSE,
     grobs = lapply(seq_along(fileName), FUN = function(i_file) {
       if(display_progress) setPB(pb = pb, value = i_file, title = "creating batch report", label = paste0("extracting ",basename(fileName[i_file])))
       tryCatch({
-        obj = readIFC(fileName=fileName[i_file], display_progress=FALSE, ...)
-        if(apply_gating) obj = applyGatingStrategy(obj=obj, gating=gating, display_progress=FALSE)
-        plotGraph_args = c(plotGraph_args, list(obj=obj))
-        foo = CreateGraphReport(obj, selection, onepage=TRUE,
+        if(is_obj) {
+          i_obj = obj[[i_file]]
+        } else {
+          i_obj = readIFC(fileName=fileName[i_file], display_progress=FALSE,
+                          extract_features=TRUE, extract_images=FALSE,
+                          extract_offsets=FALSE, extract_stats=FALSE)
+        }
+        if(apply_gating) i_obj = applyGatingStrategy(obj=i_obj, gating=gating, display_progress=FALSE)
+        plotGraph_args = c(plotGraph_args, list(obj=i_obj))
+        foo = CreateGraphReport(i_obj, selection, onepage=TRUE,
                                 color_mode=color_mode, add_key=add_key, precision=precision,
                                 trunc_labels=trunc_labels, trans=trans, bin=bin, viewport=viewport,
                                 display_progress=display_progress)
@@ -595,14 +650,13 @@ BatchReport <- function(fileName, selection, write_to, overwrite=FALSE,
           })
         }
         grobTree(
-          grid.arrange(grobs = foo$grobs[foo$layout$N], 
+          arrangeGrob(grobs = foo$grobs[foo$layout$N], 
                        top=textGrob(paste0("\n\n\n",basename(fileName[i_file]),"\n"), 
                                     gp=gpar(fontsize=14, font=2, col="skyblue4", lineheight=0.5)),
-                       newpage = names(dev.cur()) != "pdf", 
+                       newpage = FALSE,
                        layout_matrix = foo$matrix, as.table = FALSE),
           rectGrob(.5,.5,width=unit(.99,"npc"), height=unit(0.99,"npc"), gp=gpar(lwd=2, col="skyblue4", fill=NA)))
       }, error = function(e) {
-        if(names(dev.cur()) != "pdf") grid.newpage()
         grobTree(arrangeGrob(grid.text(label = e$message, gp=gpar(col="red"), draw = FALSE),
                              top=textGrob(paste0("\n\n\n",basename(fileName[i_file]),"\n"), 
                                           gp=gpar(fontsize=14, font=2, col="skyblue4", lineheight=0.5))),
@@ -615,7 +669,8 @@ BatchReport <- function(fileName, selection, write_to, overwrite=FALSE,
           onefile=TRUE, pagecentre=TRUE, useDingbats=FALSE)
       if(!missing(main)) args=c(args, top=main)
       # no reason to have newpage = TRUE unless pdf is not open
-      args = list(newpage=names(dev.cur()) != "pdf", layout_matrix=lay, as.table=FALSE)
+      args = list(newpage=names(dev.cur()) != "pdf",
+                  layout_matrix=lay, as.table=FALSE)
       tryCatch(do.call(what=grid.arrange, args=c(list(grobs=grobs), args)), 
                error = function(e) { stop(e$message, call.=FALSE) },
                finally = dev.off())

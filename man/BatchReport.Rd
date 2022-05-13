@@ -6,6 +6,7 @@
 \usage{
 BatchReport(
   fileName,
+  obj,
   selection,
   write_to,
   overwrite = FALSE,
@@ -25,35 +26,33 @@ BatchReport(
 )
 }
 \arguments{
-\item{fileName}{path to file(s).}
+\item{fileName, obj}{either one or the other. Path to file(s) to read from for 'fileName' or list of `IFC_data` objects for obj.}
 
 \item{selection}{indices of desired graphs. It can be provided as an integer vector or as a matrix.\cr
-In such case, the layout of the matrix will reflect the layout of the extracted graphs for each fileName.\cr
-NA value will result in an empty place.\cr
-Otherwise, when 'selection' is provided as a vector not identical to seq_along(obj$graphs), 'onepage' parameter will be set to FALSE.\cr
-Note that indices are read from left to right, from top to bottom. Default is missing for extracting all graphs.}
+In such case, the layout of the matrix will reflect the layout of the extracted graphs for each 'fileName' or ''obj'.\cr
+NA value will result in an empty place. When missing, it will be determined by the whole layout of 1st 'fileName' or 'obj' with 'gating' applied when provided}
 
 \item{write_to}{pattern used to export file(s).
 Placeholders, like c("\%d/\%s_fromR.pdf", "\%d/\%s_fromR.csv"), will be substituted:\cr
--\%d: with full path directory of first element of 'fileName'\cr
--\%p: with first parent directory of first element of 'fileName'\cr
--\%e: with extension of first element of 'fileName' (without leading .)\cr
--\%s: with shortname from first element of 'fileName' (i.e. basename without extension).\cr
-Exported file(s) extension(s) will be deduced from this pattern. Note that has to be a .pdf and/or .csv.}
+-\%d: with full path directory\cr
+-\%p: with first parent directory\cr
+-\%e: with extension (without leading .)\cr
+-\%s: with shortname (i.e. basename without extension).\cr
+Exported file(s) extension(s) will be deduced from this pattern using either 1st 'fileName' or 'obj'. Note that has to be a .pdf and/or .csv.}
 
 \item{overwrite}{whether to overwrite file or not. Default is FALSE.
 Note that if TRUE, it will overwrite file. In addition a warning message will be sent.}
 
 \item{gating}{an `IFC_gating` object as extracted by readGatingStrategy(). Default is missing.
-If not missing, each file provided in 'fileName' will be extracted by readIFC() and 'gating' will be applied by applyGatingStrategy() to the returned object before creating the report}
+If not missing, each `IFC_data` provided in 'obj' or read from 'fileName' will be passed to applyGatingStrategy() before creating the report.}
 
 \item{main}{the main title of the document. Default is missing.}
 
-\item{byrow}{whether to add selected graphs for each file by row or not. Deafult is FALSE.}
+\item{byrow}{whether to add selected graphs for each file by row or not. Default is FALSE.}
 
 \item{times}{number of files to add before starting a new row or column (depending on 'byrow').}
 
-\item{color_mode}{Whether to extract colors from obj in white or black mode. Default is "white".}
+\item{color_mode}{Whether to extract colors in white or black mode. Default is "white".}
 
 \item{add_key}{whether to draw a "global" key under title or in the first "panel" or "both". Default is "panel".\cr
 Accepted values are either: FALSE, "panel", "global", "both" or c("panel", "global").\cr
@@ -84,4 +83,3 @@ It invisibly returns full path of exported .pdf and/or .csv file(s).
 \description{
 Batch creates graphical an statistical report.
 }
-\keyword{internal}
