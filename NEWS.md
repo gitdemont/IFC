@@ -1,4 +1,82 @@
 # NEWS
+## 0.1.4
+- CRAN submission
+
+## 0.1.2.101 to 0.1.3.104
+- for CRAN
+
+preparing for CRAN release
+
+use doi instead of url
+
+modify some links that have moved
+
+- Improvements to graphs
+
+improve drawing speed due to internal do.call that causes subtitute(x) to cast all x values to character
+
+speed gain thanks to dissociation between `IFC_plot` object generation from plot and stats production
+
+create internal plot_stats() dedicated function for stats extraction
+
+create internal plot_lattice() dedicated function for plotting (also rename convert_to_baseplot to plot_base)
+
+create internal plot_raster() and rasterplot() + cpp/hpp underlying functions to allow plot rasterization for very fast 2D graph drawing
+
+better legend positioning
+
+additional use of " " to prevent heightDetails potential error
+
+fix bug with plotGraph which was opening a dev to retrieve lattice par settings
+
+fix bug with grouping and precision = "light" when number of displayed population was <= 1
+
+transformations (axes + density) should now be provided as character and are matched against allowed names
+
+- Improvements to FCS file I/O
+
+add text_only parameter
+
+speed gain thanks creation of internal cpp/hpp functions after code profiling
+
+better handle files with extra keywords segment
+
+fix fcs import for multiple files merging when no spillover can be retrieved + when they have exactly same features names
+
+fix large fcs file export
+
+add support to bad-formatted fcs files (with empty data offsets in header)
+
+warn user on missing additional datasets (i.e. non empty $NEXTDATA)
+
+- Improvements to DAF / XIF file I/O
+
+fix progress bar bug when extracting images/masks offsets
+
+fix bug with population stats computation when IFC_data object contains tagged populations whose obj are not logical (i.e. numeric or integer)
+
+fix bug when applying gating strategy with no graphs
+
+better control/coercion on files read/write notably for graphs
+
+- Misc
+
+internally improve file scan by using raw vector target rather than string
+
+fix internal whoami() which was erroring on namespaced calls (i.e. with :: or :::)
+
+improve ExportToReport selection argument to allow graphs to be passed as a matrix that defines report layout
+
+export new BatchReport function
+
+#### This leads to the following visible changes for the user
+*transformations should now be provided as character and will be matched against allowed names*
+
+*a new BatchReport function is exported*
+
+*readFCS gains a new 'text_only' entry in 'options' argument to allow user to only extract TXT segment*
+
+
 ## 0.1.2.100
 - allow to pass `IFC_data` object in writeIFC()
 

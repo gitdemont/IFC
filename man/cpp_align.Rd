@@ -19,6 +19,6 @@ This function uses bilinear interpolation to apply spatial offset correction on 
 \details{
 It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
 See William E. Ortyn et al. Sensitivity Measurement and Compensation in Spectral Imaging. Cytometry A 69 852-862 (2006).
-\url{https://onlinelibrary.wiley.com/doi/full/10.1002/cyto.a.20306}
+\doi{10.1002/cyto.a.20306}
 }
 \keyword{internal}
