@@ -4,7 +4,7 @@
 \alias{cpp_fast_factor}
 \title{Fast Factorize Vector}
 \source{
-adaptation from Kevin Ushey code \url{https://gallery.rcpp.org/articles/fast-factor-generation}
+adaptation from Kevin Ushey code \url{https://gallery.rcpp.org/articles/fast-factor-generation/}
 }
 \arguments{
 \item{x}{a SEXP only NILSXP, LGLSXP, INTSXP, REALSXP, STRSXP, RAWSXP are handled.}

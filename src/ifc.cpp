@@ -559,7 +559,7 @@ std::size_t cpp_scanFirst(const std::string fname,
 //' e.g. either:
 //' - structure(cpp_fast_factor(df, TRUE), class = "factor"), or,
 //' - structure(cpp_fast_factor(unclass(df), FALSE), levels = NULL)
-//' @source adaptation from Kevin Ushey code \url{https://gallery.rcpp.org/articles/fast-factor-generation}
+//' @source adaptation from Kevin Ushey code \url{https://gallery.rcpp.org/articles/fast-factor-generation/}
 //' @return an IntegerVector, with attributes "levels" being the non-NA unique value(s) found
 //' and "lvs" the total number of unique values found (including NA).
 //' @keywords internal
@@ -970,7 +970,7 @@ Rcpp::NumericMatrix cpp_normalize (const Rcpp::NumericMatrix mat,
                                    const bool full_range = false,
                                    const bool force_range = false, 
                                    const double gamma = 1.0) {
-  return hpp_normalize (mat, input_range, full_range, gamma);
+  return hpp_normalize (mat, input_range, full_range, force_range, gamma);
 }
 
 //' @title Matrix Cleanser

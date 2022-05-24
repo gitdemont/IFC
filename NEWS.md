@@ -1,4 +1,11 @@
 # NEWS
+## 0.1.5
+- CRAN resubmission
+
+fix trailing slash NOTE in last CRAN submission
+
+fix cpp_normalize which did not take into account force_range parameter
+
 ## 0.1.4
 - CRAN submission
 
