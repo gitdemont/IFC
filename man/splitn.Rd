@@ -4,7 +4,12 @@
 \alias{splitn}
 \title{String Decomposition with Operators}
 \usage{
-splitn(definition, all_names, operators = c("And", "Or", "Not", "(", ")"))
+splitn(
+  definition,
+  all_names,
+  operators = c("And", "Or", "Not", "(", ")"),
+  split = "|"
+)
 }
 \arguments{
 \item{definition}{population definition to be splitted}
@@ -12,6 +17,8 @@ splitn(definition, all_names, operators = c("And", "Or", "Not", "(", ")"))
 \item{all_names}{the names of all allowed populations}
 
 \item{operators}{operators used. Default is c("And", "Or", "Not", "(", ")").}
+
+\item{split}{string used for splitting. Default is "|".}
 }
 \description{
 Helper that will split population definition into chunks of names and operators.

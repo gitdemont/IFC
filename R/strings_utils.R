@@ -110,15 +110,17 @@ protectn <- function(name) {
 #' @param definition population definition to be splitted
 #' @param all_names the names of all allowed populations
 #' @param operators operators used. Default is c("And", "Or", "Not", "(", ")").
+#' @param split string used for splitting. Default is "|".
 #' @keywords internal
-splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(", ")")) {
+splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(", ")"), split = "|") {
   assert(definition, len=1, typ="character")
   assert(all_names, typ="character")
   assert(operators, typ="character")
+  assert(split, len=1, typ="character")
   
   # we create a mapping between all_names and random names
   # we also ensure that random names will not contain any specials and 
-  # will not match with themselves nor with names or operators to substitute
+  # will not match with themselves nor with names or operators or split to substitute
   # we also order to_substitute by number of character (decreasing) to
   # be sure that longer words will be substitute first
   to_substitute = all_names
@@ -129,7 +131,7 @@ splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(",
     foo = c()
     while((length(foo) == 0) ||
           any(unlist(lapply(to_substitute, FUN = function(x) grepl(pattern=x, x=foo, fixed=TRUE))))) {
-      foo = random_name(n=max(9,nchar(operators))+1, special = NULL, forbidden = c(replace_with, to_substitute, operators)) 
+      foo = random_name(n=max(9,nchar(operators))+1, special = NULL, forbidden = c(replace_with, to_substitute, operators, split)) 
     }
     replace_with = c(replace_with, foo)
   }
@@ -140,9 +142,9 @@ splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(",
     ans = gsub(pattern = to_substitute[i], replacement = replace_with[i], x = ans, fixed = TRUE)
   }
   
-  # we can now split the definition with "|" since random names we use
-  # do not contain this special character
-  ans = strsplit(ans, split = "|", fixed = TRUE)[[1]]
+  # we can now split the definition since random names we use
+  # do not contain split
+  ans = strsplit(ans, split = split, fixed = TRUE)[[1]]
   
   # finally, can replace random names with their corresponding initial names
   # from to_substitute (i.e. all_names + operators)
