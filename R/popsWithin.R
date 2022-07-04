@@ -116,7 +116,7 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
              comb_tmp=do.call(what=cbind, args=lapply(pops[pop$names], FUN=function(i_pop) i_pop$obj))
              replace_with=c()
              for(i_def in 1:length(pop$names)) replace_with=c(replace_with,random_name(n=10,special=NULL,forbidden=c(replace_with,pop_def_tmp)))
-             pop_def_tmp[!is_ope] <- paste0("`",replace_with,"`")
+             for(i_def in 1:length(pop$names)) pop_def_tmp[pop$names[i_def] == pop_def_tmp] <- rep(paste0("`",replace_with[i_def],"`"), sum(pop$names[i_def] == pop_def_tmp))
              colnames(comb_tmp)=replace_with
              comb_tmp=eval(expr=parse(text=paste0(pop_def_tmp,collapse=" ")),envir=as.data.frame(comb_tmp,stringsAsFactors=FALSE),enclos=new.env())
              pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & comb_tmp
