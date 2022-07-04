@@ -48,10 +48,10 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
   ori_names <- names(obj$pops)
   foo = old_names %in% ori_names
   if(!all(foo)) warning("can't find population(s) to rename:\n", paste0("\t- ", old_names[!foo], collapse="\n"))
-  foo = new_names %in% ori_names
-  if(any(foo)) stop("trying to rename population with an already existing name:\n", paste0("\t- ", new_names[foo], collapse="\n"))
   mutation <- old_names[foo]
   names(mutation) <- new_names[foo]
+  foo = new_names %in% ori_names
+  if(any(foo)) stop("trying to rename population with an already existing name:\n", paste0("\t- ", new_names[foo], collapse="\n"))
 
   sort_unique <- function(x) {
     N = names(x)
