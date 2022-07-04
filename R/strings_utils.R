@@ -362,21 +362,22 @@ num_to_string <- function(x, precision = 22) {
 #' Helper to define next allowed component in a boolean vector.
 #' @param x a string, current component.
 #' @param count an integer, representing current number of opened/closed bracket.
+#' @param obj_alias a string, alias used for population name.
 #' @return a vector of next allowed components.
 #' @keywords internal
-next_bool = function(x = "", count = 0L) {
+next_bool = function(x = "", count = 0L, obj_alias) {
   return(switch(x,
                 "And" = {
-                  c("Not", "(", "obj")
+                  c("Not", "(", obj_alias)
                 },
                 "Or" = {
-                  c("Not", "(", "obj")
+                  c("Not", "(", obj_alias)
                 },
                 "Not" = {
-                  c("(", "obj")
+                  c("(", obj_alias)
                 },
                 "(" = {
-                  c("Not", "(", "obj")
+                  c("Not", "(", obj_alias)
                 },
                 ")" = {
                   tmp = c("And", "Or")
@@ -401,17 +402,18 @@ validate_bool = function(x = "", all_names = "") {
   operators = c("And", "Or", "Not", "(", ")")
   all_names = setdiff(all_names, c(operators, ""))
   if(!any(all_names %in% x)) stop("object definition is not possible: no match found")
+  obj_alias = random_name(special = NULL, forbidden = unique(c("", operators, all_names, x)))
   count = 0L
-  alw = c("Not", "(", "obj")
+  alw = c("Not", "(", obj_alias)
   lapply(1:length(x), FUN = function(i) {
     if(x[i] == "(") count <<- count + 1L
     if(x[i] == ")") count <<- count - 1L
     if(x[i] %in% alw) {
-      alw <<- next_bool(x[i], count)
+      alw <<- next_bool(x[i], count, obj_alias)
       return(NULL)
     } else {
-      if(("obj" %in% alw) && (x[i] %in% all_names)) {
-        alw <<- next_bool(x[i], count)
+      if((obj_alias %in% alw) && (x[i] %in% all_names)) {
+        alw <<- next_bool(x[i], count, obj_alias)
         return(NULL)
       }
     }

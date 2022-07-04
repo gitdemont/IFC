@@ -4,12 +4,14 @@
 \alias{next_bool}
 \title{Next Component Prediction}
 \usage{
-next_bool(x = "", count = 0L)
+next_bool(x = "", count = 0L, obj_alias)
 }
 \arguments{
 \item{x}{a string, current component.}
 
 \item{count}{an integer, representing current number of opened/closed bracket.}
+
+\item{obj_alias}{a string, alias used for population name.}
 }
 \value{
 a vector of next allowed components.
