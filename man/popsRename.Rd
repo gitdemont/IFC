@@ -9,17 +9,20 @@ popsRename(
   old_names = character(),
   new_names = character(),
   loops = 10L,
+  verbose = TRUE,
   ...
 )
 }
 \arguments{
 \item{obj}{an `IFC_data`.}
 
-\item{old_names}{character vector of name(s) of population(s) to rename. Default is character().}
+\item{old_names}{character vector of name(s) of population(s) to rename inside 'obj'. Default is character().}
 
-\item{new_names}{character vector of new population(s) name(s). Default is character().}
+\item{new_names}{character vector of desired new population(s) name(s). Default is character().}
 
-\item{loops}{an positive integer specifying the maximum number of recursive loops before raising an error. Default is 10L}
+\item{loops}{a positive integer specifying the maximum number of recursive loops before raising an error. Default is 10L.}
+
+\item{verbose}{whether to show a final message about the renaming.}
 
 \item{...}{other arguments to be passed.}
 }
@@ -29,4 +32,3 @@ an object of class `IFC_data`.
 \description{
 Renames populations in an `IFC_data` object
 }
-\keyword{internal}

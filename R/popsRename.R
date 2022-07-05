@@ -31,28 +31,32 @@
 #' @description
 #' Renames populations in an `IFC_data` object
 #' @param obj an `IFC_data`.
-#' @param old_names character vector of name(s) of population(s) to rename. Default is character().
-#' @param new_names character vector of new population(s) name(s). Default is character().
-#' @param loops an positive integer specifying the maximum number of recursive loops before raising an error. Default is 10L
+#' @param old_names character vector of name(s) of population(s) to rename inside 'obj'. Default is character().
+#' @param new_names character vector of desired new population(s) name(s). Default is character().
+#' @param loops a positive integer specifying the maximum number of recursive loops before raising an error. Default is 10L.
+#' @param verbose whether to show a final message about the renaming.
 #' @param ... other arguments to be passed.
 #' @return an object of class `IFC_data`.
-#' @keywords internal
-popsRename <- function(obj, old_names = character(), new_names = character(), loops = 10L, ...) {
+#' @export
+popsRename <- function(obj, old_names = character(), new_names = character(), loops = 10L, verbose = TRUE, ...) {
   assert(obj, cla = "IFC_data")
   assert(old_names, typ="character")
   assert(new_names, typ="character")
   loops = na.omit(as.integer(loops)); loops = loops[loops > 0]; assert(loops, len = 1, typ="integer")
-  if(any(old_names %in% c(character(), "", "All"))) stop("'old_names' should not be \"\", nor \"All\"")
-  if(any(new_names %in% c(character(), "", "All"))) stop("'new_names' should not be \"\", nor \"All\"")
+  if(any(old_names %in% c(character(), "", NA_character_, "All"))) stop("'old_names' should not be NA, \"\", nor \"All\"")
+  if(any(new_names %in% c(character(), "", NA_character_, "All"))) stop("'new_names' should not be NA, \"\", nor \"All\"")
   if(length(old_names) != length(new_names)) stop("'old_names' and 'new_names' should be character vectors of same length")
   ori_names <- names(obj$pops)
-  foo = old_names %in% ori_names
-  if(!all(foo)) warning("can't find population(s) to rename:\n", paste0("\t- ", old_names[!foo], collapse="\n"))
-  mutation <- old_names[foo]
-  names(mutation) <- new_names[foo]
-  foo = new_names %in% ori_names
-  if(any(foo)) stop("trying to rename population with an already existing name:\n", paste0("\t- ", new_names[foo], collapse="\n"))
-
+  tmp1 = old_names %in% ori_names
+  tmp2 = new_names %in% ori_names
+  if(!all(tmp1)) warning("can't find population",ifelse(sum(!tmp1) > 1, "s", "")," to rename:\n",
+                         paste0("\t- ", old_names[!tmp1], collapse="\n"))
+  if(any(tmp2)) warning("trying to rename population",ifelse(sum(tmp2) > 1, "s", ""),"with already existing name",ifelse(sum(tmp2) > 1, "s", ""),":\n",
+                        paste0("\t- ", new_names[tmp2], collapse="\n"))
+  mutation <- old_names[tmp1 & !tmp2]
+  names(mutation) <- new_names[tmp1 & !tmp2]
+  
+  # create function for sorting unique values (and keeping names)
   sort_unique <- function(x) {
     N = names(x)
     foo = duplicated(x)
@@ -123,7 +127,7 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
       if(any(foo)) gg$name <- N[foo]
       gg
     })
-    # check if title is default or has been given by user
+    # check if title is default or has been given by user, when default try to modify it
     bar = try(splitn(trimws(g$title), all_names = ori_names, split = " , "), silent = TRUE)
     if(!inherits(bar, "try-error")) {
       g$title = paste0(sapply(bar, FUN = function(x) {
@@ -140,11 +144,23 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
         if(any(foo)) return(N[foo])
         x
       }), collapse = "|")
-    } else { # something went wrong order is reset and will be recomputed by buildGraph
+    } else { # something went wrong: g$order is reset and will be recomputed by buildGraph
       g$order <- NULL
     }
     g$xstatsorder <- NULL
     do.call(buildGraph, args = g)
   })
+  if(verbose) {
+    if(length(mutation) > 0) {
+      message("population",ifelse(length(mutation) > 1,"s have"," has")," been successfully renamed:\n\t- ", paste(mutation, names(mutation), sep = " -> ", collapse = "\n\t- "))
+    } else {
+      message("no population was renamed")
+    }
+  } 
   return(obj)
 }
+################################# test
+# library(IFC)
+# f = system.file(package = "IFCdata", "extdata", "example.daf")
+# daf = readIFC(f)
+# ndaf = popsRename(daf, c("foo","Events","Cells"), c("bar", "Events2","Focused"))
