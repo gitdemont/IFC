@@ -34,7 +34,7 @@
 #' @param old_names character vector of name(s) of population(s) to rename inside 'obj'. Default is character().
 #' @param new_names character vector of desired new population(s) name(s). Default is character().
 #' @param loops a positive integer specifying the maximum number of recursive loops before raising an error. Default is 10L.
-#' @param verbose whether to show a final message about the renaming.
+#' @param verbose whether to show a final message about the renaming. Default is TRUE.
 #' @param ... other arguments to be passed.
 #' @return an object of class `IFC_data`.
 #' @export
@@ -42,6 +42,7 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
   assert(obj, cla = "IFC_data")
   assert(old_names, typ="character")
   assert(new_names, typ="character")
+  verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
   loops = na.omit(as.integer(loops)); loops = loops[loops > 0]; assert(loops, len = 1, typ="integer")
   if(any(old_names %in% c(character(), "", NA_character_, "All"))) stop("'old_names' should not be NA, \"\", nor \"All\"")
   if(any(new_names %in% c(character(), "", NA_character_, "All"))) stop("'new_names' should not be NA, \"\", nor \"All\"")

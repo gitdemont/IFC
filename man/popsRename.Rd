@@ -22,7 +22,7 @@ popsRename(
 
 \item{loops}{a positive integer specifying the maximum number of recursive loops before raising an error. Default is 10L.}
 
-\item{verbose}{whether to show a final message about the renaming.}
+\item{verbose}{whether to show a final message about the renaming. Default is TRUE.}
 
 \item{...}{other arguments to be passed.}
 }
