@@ -14,7 +14,7 @@
 
 ## INSTALLATION (from CRAN)
 
-IFC package is now on CRAN, the easiest way to install it is:
+The easiest way to install `IFC` package is:
 
 ```R
 install.packages("IFC")
@@ -22,7 +22,7 @@ install.packages("IFC")
 
 ## INSTALLATION (from **in-dev** github master branch)
 
-However current in development branch can be installed from github
+Current in development branch can be installed from github and requires compilation
 
 #### On Windows (tested 7 and 10)
 
@@ -134,7 +134,7 @@ Once data are parsed and treated new elements can be used to subset or merge raw
 
 This allows direct extraction of raw / compensated images and associated masks for all acquired channels. These images can be then easily exported to R arrays or TIFF / JPEG / PNG images.
 For instance, we can programmatically export images from a desired population identified in a daf file.
-Accessing images allows to pass them to deep learning frameworks like tensorflow or MXNet (e.g. Convolutional Neural Network)
+Accessing images allows to pass them to deep learning frameworks like tensorflow (e.g. Convolutional Neural Network)
 
 **ExportToReport()**, exports graphs and associated stats from analysis worksheet of files,
 
@@ -154,7 +154,7 @@ Accessing images allows to pass them to deep learning frameworks like tensorflow
 
 **data_to_DAF** to export object manipulated in R to .daf file.
 
-## DISCLAMER
+## DISCLAIMER
 
 - You are using this package **on your own risk!**
 
