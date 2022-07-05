@@ -1,5 +1,7 @@
 # NEWS
 ## 0.1.5.xxx
+- add `add_tracking` argument to mergeXIF, subsetXIF, and ExportToXIF functions to control whether exported file should contain tracking information
+
 - improve numeric to string conversion when using objects ids as names/dimnames (e.g. avoid 1e+05, use 100000 instead)
 
 - create popsRename function to simplify population renaming in `IFC_data` object
@@ -7,6 +9,8 @@
 - fix bug with popsCompute for type "C" (combined) population computation when population definition contains repeated occurrence of same population name
 
 #### This leads to the following visible changes for the user
+*mergeXIF, subsetXIF and ExportToXIF functions gain a new `add_tracking` argument*
+
 *a new popsRename function is now exported*
 
 
