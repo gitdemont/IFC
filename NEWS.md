@@ -1,4 +1,13 @@
 # NEWS
+## 0.1.5.xxx
+- create popsRename function to simplify population renaming in `IFC_data` object
+
+- fix bug with popsCompute for type "C" (combined) population computation when population definition contains repeated occurrence of same population name
+
+#### This leads to the following visible changes for the user
+*a new popsRename function is now exported*
+
+
 ## 0.1.5
 - CRAN resubmission
 
