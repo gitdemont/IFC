@@ -192,7 +192,7 @@ ExtractMasks_toMatrix <- function(...,
   }
   ids = as.integer(gsub("^.*_(.*)$", "\\1", sapply(ans, attr, which="offset_id")))
   if(length(ids) != 0) if(!all(objects == ids)) warning("Extracted object_ids differ from expected ones. Concider running with 'fast' = FALSE", call. = FALSE, immediate. = TRUE)
-  names(ans) = objects
+  names(ans) = num_to_string(objects)
   attr(ans, "channel_id") <- channel_id
   return(ans)
 }

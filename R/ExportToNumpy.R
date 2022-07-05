@@ -352,7 +352,7 @@ ExportToNumpy <- function(...,
          {
            ret = aperm(array(unlist(ans), dim = c(nrow(ans[[1]][[1]]), ncol(ans[[1]][[1]]), length(ans[[1]]), length(objects))), perm = c(4,1,2,3))
          })
-  dimnames(ret) = list("object" = ids,
+  dimnames(ret) = list("object" = num_to_string(ids),
                        "height" = NULL,
                        "width" = NULL,
                        "channel" = channel_id)

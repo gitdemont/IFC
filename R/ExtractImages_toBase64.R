@@ -197,7 +197,7 @@ ExtractImages_toBase64 <- function(...,
   }
   ids = sapply(ans, attr, which="object_id")
   if(!all(objects == ids)) warning("Extracted object_ids differ from expected ones. Concider running with 'fast' = FALSE", call. = FALSE, immediate. = TRUE)
-  names(ans) = objects
+  names(ans) = num_to_string(objects)
   attr(ans, "channel_id") <- channel_id
   return(ans)
 }
