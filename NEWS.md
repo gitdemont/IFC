@@ -15,7 +15,7 @@
 
 
 ## 0.1.5
-- CRAN resubmission
+- CRAN release
 
 fix trailing slash NOTE in last CRAN submission
 

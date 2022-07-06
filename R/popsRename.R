@@ -160,8 +160,3 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
   } 
   return(obj)
 }
-################################# test
-# library(IFC)
-# f = system.file(package = "IFCdata", "extdata", "example.daf")
-# daf = readIFC(f)
-# ndaf = popsRename(daf, c("foo","Events","Cells"), c("bar", "Events2","Focused"))
