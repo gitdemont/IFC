@@ -36,5 +36,5 @@
 #' @keywords internal
 checksumXIF = function(fileName, ...) {
   # TODO ask AMNIS how checksum is computed
-  return(cpp_checksum(fileName))
+  return(cpp_checksum(enc2native(fileName)))
 }

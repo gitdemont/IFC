@@ -150,6 +150,7 @@ whoami = function(entries = as.list(match.call()),
       }
     }
   }
+  new$fileName = as.character(new$fileName)
   attr(new, "was") <- was 
   attr(new, "from") <- entry1
   

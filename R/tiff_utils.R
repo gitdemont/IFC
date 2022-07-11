@@ -202,6 +202,7 @@ writeIFD <- function(ifd, r_con, w_con, pos = 0, extra = NULL, endianness = .Pla
 #' @keywords internal
 testXIF <- function(fileName) {
   ans = -1L
+  fileName = enc2native(fileName)
   IFD_first = getIFD(fileName = fileName, 
                      offsets = "first", 
                      trunc_bytes = 8, 

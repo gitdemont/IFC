@@ -77,6 +77,7 @@ mergeXIF <- function (fileName, write_to,
   if(!all(tmp)) stop(paste0(paste0("'fileName', can't find file",ifelse(sum(!tmp) > 1, "s:", ":")),"\n-", paste0(fileName[!tmp],collapse="\n-")))
   tmp = unique(getFileExt(fileName))
   if(length(tmp) != 1) stop("all files in 'fileName' should have same extension")
+  fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
   tryCatch({
     tmp = unique(sapply(fileName, cpp_checkTIFF))
   }, error = function(e) {
@@ -86,8 +87,6 @@ mergeXIF <- function (fileName, write_to,
   XIF_test = unique(sapply(fileName, testXIF))
   if(length(XIF_test) != 1) stop("can't deal with files in 'fileName' with different image/mask storage")
   XIF_step = as.integer(XIF_test == 1) + 1L
-  
-  fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
   file_first = fileName[1]
   
   # no check on illumination

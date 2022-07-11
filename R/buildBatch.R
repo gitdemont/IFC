@@ -100,7 +100,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
           stop(paste0("options$`Spatial alignment` can't find file:",options[[x]]))
         } else {
           if(getFileExt(options[[x]])!="rif") stop("when provided options$`Spatial alignment` should be a rif file")
-          cpp_checkTIFF(options[[x]])
+          cpp_checkTIFF(enc2native(options[[x]]))
           return("Y")
         }
       }
@@ -193,7 +193,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
   }
   if(!missing(compensation)) {
     if(c_Ext == "daf") {
-      toskip = cpp_scanFirst(compensation, charToRaw('</Assay>'), start = 0, end = 0)
+      toskip = cpp_scanFirst(enc2native(compensation), charToRaw('</Assay>'), start = 0, end = 0)
       if(toskip == 0) stop(paste0(compensation, "\ndoes not seem to be well formatted: </Assay> not found")) 
       toskip = toskip + nchar("</Assay>") - 1
       tmp_comp = read_xml(readBin(compensation, what = "raw", n = toskip), options = c("HUGE", "RECOVER", "NOENT", "NOBLANKS", "NSCLEAN"))
@@ -248,7 +248,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
                     })), FUN=function(n) xml_new_node(name="statfile", attrs = list(name=n)))))
   if(!missing(analysis)) {
     target = ifelse(a_Ext=="daf", '</Assay>', '</AssayTemplate>')
-    toskip = cpp_scanFirst(analysis, charToRaw(target), start = 0, end = 0)
+    toskip = cpp_scanFirst(enc2native(analysis), charToRaw(target), start = 0, end = 0)
     if(toskip == 0) {
       if(a_Ext=="daf") {
         stop(paste0(analysis, "\ndoes not seem to be well formatted: </Assay> not found")) 

@@ -75,6 +75,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   if(missing(fileName)) stop("'fileName' can't be missing")
   assert(display_progress, len = 1, alw = c(TRUE,FALSE))
   assert(fileName, len = 1)
+  fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
   title_progress = basename(fileName)
   
@@ -875,7 +876,7 @@ ExtractFromFCS <- function(fileName, ...) {
   display_progress = dots$display_progress
   if(length(display_progress) == 0) display_progress = TRUE
   assert(display_progress, len=1, alw = c(TRUE, FALSE))
-  fileName = normalizePath(path = fileName, winslash = "/", mustWork = TRUE)
+  fileName = enc2native(normalizePath(path = fileName, winslash = "/", mustWork = TRUE))
   
   # read the fcs file and extract features and description
   L = length(fileName)

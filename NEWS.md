@@ -1,8 +1,23 @@
 # NEWS
 ## 0.1.5.xxx
+issue with unexpected file names encoding
+- encode files names to native before passing them to underlying hpp/cpp files for reading
+
+object extraction
+
+- fix cpp_check_range that could lead to error when input can be summarize to a single value (this could happen when image object has no mask)
+
+- fix cpp_resize that did not take into account resizing information for masks
+
+XIF subset/merging
+
 - add `add_tracking` argument to mergeXIF, subsetXIF, and ExportToXIF functions to control whether exported file should contain tracking information
 
+num to string
+
 - improve numeric to string conversion when using objects ids as names/dimnames (e.g. avoid 1e+05, use 100000 instead)
+
+population computation:
 
 - create popsRename function to simplify population renaming in `IFC_data` object
 

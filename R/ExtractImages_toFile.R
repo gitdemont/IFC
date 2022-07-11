@@ -72,9 +72,9 @@ ExtractImages_toFile <- function(...,
   offsets = input[["offsets"]]
   param = input[["param"]]
   if(length(offsets) == 0) {
-    fileName = input[["fileName"]]
+    fileName = enc2native(input[["fileName"]])
   } else {
-    fileName = attr(offsets, "fileName_image")
+    fileName = enc2native(attr(offsets, "fileName_image"))
   }
   
   # check mandatory param
@@ -144,6 +144,7 @@ ExtractImages_toFile <- function(...,
     assert(type, len = 1, alw = c("bmp", "jpeg", "png", "tiff"))
     param$type <- type
   }
+  param$fileName_image = enc2native(param$fileName_image)
   fileName = param$fileName_image
   title_progress = basename(fileName)
   

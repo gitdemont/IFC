@@ -103,7 +103,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
   if(ntry < 0) ntry = 0
   assert(fullname, len=1, alw=c(TRUE, FALSE))
   
-  fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
+  fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
   splitf_obj = splitf(fileName)
   splitp_obj = splitp(write_to)
   write_to = formatn(splitp_obj, splitf_obj)
@@ -114,7 +114,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
 
   overwritten = FALSE
   if(file.exists(write_to)) {
-    write_to = normalizePath(write_to, winslash = "/")
+    write_to = enc2native(normalizePath(write_to, winslash = "/"))
     if(!overwrite) stop(paste0("file ",write_to," already exists"))
     if(tolower(fileName) == tolower(write_to)) stop("you are trying to overwrite source file which is not allowed")
     xmlEND_export = cpp_scanFirst(write_to, charToRaw('</Assay>'), start = 0, end = 0)

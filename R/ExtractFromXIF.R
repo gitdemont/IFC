@@ -107,9 +107,9 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
   force_default = as.logical(force_default); assert(force_default, len = 1, alw = c(TRUE, FALSE))
   recursive = as.logical(recursive); assert(recursive, len = 1, alw = c(TRUE, FALSE))
+  fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
   endianness = cpp_checkTIFF(fileName)
   IFD = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, verbose = verbose, verbosity = verbosity, force_trunc = FALSE, bypass = FALSE, ...)
-  fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
   title_progress = basename(fileName)
   
   ##### Initializes values

@@ -90,7 +90,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
   pnt_in_poly_epsilon = as.numeric(pnt_in_poly_epsilon); pnt_in_poly_epsilon = pnt_in_poly_epsilon[pnt_in_poly_epsilon>0]; pnt_in_poly_epsilon = pnt_in_poly_epsilon[is.finite(pnt_in_poly_epsilon)]
   assert(pnt_in_poly_epsilon, len = 1, typ = "numeric")
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
-  fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
+  fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
   toskip=cpp_scanFirst(fileName, charToRaw('</Assay>'), start = 0, end = 0)
   if(toskip == 0) stop(paste0(fileName, "\ndoes not seem to be well formatted: </Assay> not found")) 
   toskip = toskip + nchar("</Assay>") - 1

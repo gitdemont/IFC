@@ -51,7 +51,7 @@ readGatingStrategy <- function(fileName, ...) {
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
   title_progress = basename(fileName)
   
-  fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
+  fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
   if(file_extension == "xml") return(readGatingML(fileName, ...))
   if(file_extension %in% c("daf", "ast")) {
     assay = switch(file_extension,

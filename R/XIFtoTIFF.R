@@ -95,9 +95,9 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
   } else {
     VER = FALSE
   }
+  fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
   r_endian = cpp_checkTIFF(fileName)
   f_Ext = getFileExt(fileName)
-  fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
   title_progress = basename(fileName)
   assert(write_to, len = 1, typ = "character")
   splitf_obj = splitf(fileName)

@@ -43,7 +43,7 @@ checksumDAF <- function(fileName, endianness = .Platform$endian, ...) {
   assert(file_extension, len = 1, alw = "daf")
   if(!file.exists(fileName)) stop(paste("can't find",fileName,sep=" "))
   assert(endianness, len = 1, alw= c("big", "little"))
-  fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
+  fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
   toskip=cpp_scanFirst(fileName, charToRaw('</Assay>'), start = 0, end = 0)
   if(toskip == 0) stop(paste0(fileName, "\ndoes not seem to be well formatted: </Assay> not found")) 
   toskip = toskip + nchar("</Assay>") - 1

@@ -65,7 +65,7 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
   fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
   verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
-  fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
+  fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
   
   XIF_test = testXIF(fileName)
   obj_count = attr(XIF_test, "obj_count")

@@ -40,7 +40,7 @@
 #' @export
 getFullTag <- function(IFD, which = 1, tag = "256") {
   if(!("IFC_ifd_list"%in%class(IFD))) stop("'IFD' object is not of class `IFC_ifd_list`")
-  endian = cpp_checkTIFF(attr(x = IFD, which = "fileName_image"))
+  endian = cpp_checkTIFF(enc2native(attr(x = IFD, which = "fileName_image")))
   if(typeof(which) == "character") {
     if(length(which) != 1) stop("'which' should be of length 1")
     if(!(which %in% names(ifd$tags))) {

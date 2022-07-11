@@ -100,7 +100,7 @@ getInfo <- function(fileName,
   if(!file.exists(fileName)) stop(paste0("can't find ",fileName))
   file_extension = getFileExt(fileName)
   assert(file_extension, len = 1, alw = c("daf", "cif", "rif"))
-  fileName = normalizePath(fileName, winslash = "/", mustWork = FALSE)
+  fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
   assert(from, len = 1, alw = c("acquisition","analysis"))
   verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
   verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))

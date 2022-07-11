@@ -77,6 +77,7 @@ getIFD <- function(fileName, offsets = "first", trunc_bytes = 12, force_trunc = 
                    verbose = FALSE, verbosity = 1, display_progress = FALSE, bypass = FALSE, ...) {
   dots = list(...)
   # various check
+  fileName = enc2native(fileName)
   assert(bypass, len = 1, alw = c(TRUE, FALSE))
   endianness = cpp_checkTIFF(fileName) # used to determine endianness and check that file exists and is of XIF content.
   title_progress = basename(fileName)

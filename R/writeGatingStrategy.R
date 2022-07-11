@@ -97,7 +97,7 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   
   overwritten = FALSE
   if(file.exists(write_to)) {
-    write_to = normalizePath(write_to, winslash = "/", mustWork = FALSE)
+    write_to = enc2native(normalizePath(write_to, winslash = "/", mustWork = FALSE))
     if(!overwrite) stop(paste0("file ",write_to," already exists"))
     if(tolower(fileName) == tolower(write_to)) stop("you are trying to overwrite source file which is not allowed")
     xmlEND_export = cpp_scanFirst(write_to, charToRaw('</gating:Gating-ML>'), start = 0, end = 0)
