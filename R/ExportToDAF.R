@@ -111,7 +111,6 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
   assert(file_extension, len = 1, alw = "daf")
   if(any(splitp_obj$channel > 0)) message("'write_to' has %c argument but channel information can't be retrieved with ExportToDAF()")
   if(any(splitp_obj$object > 0)) message("'write_to' has %o argument but channel information can't be retrieved with ExportToDAF()")
-
   overwritten = FALSE
   if(file.exists(write_to)) {
     write_to = enc2native(normalizePath(write_to, winslash = "/"))
@@ -130,7 +129,6 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     tmp_file = tempfile()
     overwritten = TRUE
   }
-  
   dir_name = dirname(write_to)
   if(!dir.exists(dir_name)) if(!dir.create(dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dir_name))
   file_w = ifelse(overwritten, tmp_file, write_to)
@@ -317,6 +315,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     }
     if(length(regions)!=0) for(i in 1:length(regions)) {
       reg = regions[[i]]
+      reg = reg[sapply(reg, length) != 0]
       if(verbose) cat(paste0("creating region: ", reg$label, "\n"))
       if(reg$label%in%regions_daf_label) {
         warning(paste0(reg$label, ", not exported: trying to export an already defined region"), immediate. = TRUE, call. = FALSE)
@@ -332,6 +331,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     pops_alw = c()
     if(length(pops)!=0) for(i in 1:length(pops)) {
       pop = pops[[i]]
+      pop = pop[sapply(pop, length) != 0]
       if(verbose) cat(paste0("creating population: ", pop$name, "\n"))
       if(pop$name%in%pops_daf) {
         warning(paste0(pop$name, ", not exported: trying to export an already defined population"), immediate. = TRUE, call. = FALSE)
