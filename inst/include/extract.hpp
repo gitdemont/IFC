@@ -78,7 +78,7 @@ Rcpp::NumericMatrix hpp_normalize (const Rcpp::NumericMatrix mat,
     }
   }
   
-  double diff = ran[1] - ran[0];
+  double diff = (ran[1] == ran[0]) ? 1.0 : (ran[1] - ran[0]);
   if(gamma == 1.0) {
     for(R_len_t i = 0; i < mat.size(); i++) {
       if(mat[i] <= ran[0]) {
@@ -250,7 +250,7 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
     } else {
       foo = hpp_cleanse(hpp_align_img(mat, spatialX, spatialY), hpp_align_msk(msk, spatialX, spatialY), false, 0.0, 0.0);
     } 
-    foo = hpp_resize(foo, false, 0.0, 0.0);
+    foo = hpp_resize(foo, size[0], size[1], false, 0.0, 0.0);
     if(mode != "raw") {
       foo = hpp_normalize(foo, msk_range, false, false, 1.0);
     }

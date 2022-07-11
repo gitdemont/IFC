@@ -275,10 +275,11 @@ Rcpp::NumericVector hpp_check_range(const Rcpp::NumericVector x) {
     Rcpp::LogicalVector a = is_infinite(x);
     Rcpp::LogicalVector b = is_nan(x);
     for(R_len_t i = 0; i < x.size(); i++) {
-      if(a[i] | b[i]) Rcpp::stop("hpp_check_range: 'x' contains non-finite values");
+      if(a[i] || b[i]) Rcpp::stop("hpp_check_range: 'x' contains non-finite values");
       if((x[i] < Min) && (x[i] > -4095.0)) Min = x[i];
       if(x[i] > Max) Max = x[i];
     }
+    if(Min == R_PosInf) Min = Max;
   } else {
     Rcpp::stop("hpp_check_range: 'x' is empty");
   }
