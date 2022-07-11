@@ -1,5 +1,8 @@
 # NEWS
 ## 0.1.5.xxx
+File I/O
+- fix ExportToDAF that exports xml files containing NULL values
+
 issue with unexpected file names encoding
 - encode files names to native before passing them to underlying hpp/cpp files for reading
 
