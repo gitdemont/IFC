@@ -272,6 +272,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
                         paste0("satpercent",(1:chan_number)))
       }
     }
+    rownames(images) = num_to_string(as.integer(rownames(images)))
     class(images) <- c(class(images), "IFC_images")
     
     ##### extracts offsets from images in DAF
