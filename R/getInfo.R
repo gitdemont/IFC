@@ -163,7 +163,7 @@ getInfo <- function(fileName,
     if(IFD[[1]]$tags[["33030"]]$byt != 0) Merged_rif = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33030")), "|", fixed = TRUE)[[1]]
   }
   if(file_extension == "daf" & from == "acquisition") file_extension = "cif"
-  tmp_acq = read_xml(getFullTag(IFD = IFD, which = 1, "33027"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  tmp_acq = read_xml(getFullTag(IFD = IFD, which = 1, tag = "33027", raw = TRUE), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
   
   acquisition = list("Illumination"=lapply(as_list(xml_find_first(tmp_acq, "//Illumination")), unlist),
                      "Fluidics"=lapply(as_list(xml_find_first(tmp_acq, "//Fluidics")), unlist),
@@ -179,7 +179,7 @@ getInfo <- function(fileName,
   # prefer using channelwidth extracted from ifd dedicated tag (=tag 33009) rather than the one from parsing ASSISTdb (=tag 33064)
   # TODO ask AMNIS the rules for extracting channelwidth
   channelwidth1 = IFD[[1]]$tags[["33009"]]$map # should not exceed 4 bytes
-  tmp_ins = read_xml(getFullTag(IFD = IFD, which = 1, tag ="33064"), options = c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  tmp_ins = read_xml(getFullTag(IFD = IFD, which = 1, tag ="33064", raw = TRUE), options = c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
   channelwidth2 = as.numeric(xml_text(xml_find_first(tmp_ins, xpath = "//ChannelWidth")))
   
   tryCatch({

@@ -186,7 +186,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
     offsets = c(X="",Y="")
   } else {
     IFD = getIFD(fileName = fileName_align, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, bypass = FALSE)
-    tmp_off = read_xml(getFullTag(IFD = IFD, which = 1, "33064"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+    tmp_off = read_xml(getFullTag(IFD = IFD, which = 1, tag = "33064", raw = TRUE), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
     offsets = sapply(c("X","Y"), USE.NAMES = TRUE, FUN = function(off) {
       paste0(round(as.numeric(strsplit(xml_text(xml_find_first(tmp_off, xpath = paste0("//",off,mag)))," ",fixed=TRUE)[[1]]),2),collapse="|")
     })

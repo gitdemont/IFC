@@ -64,7 +64,7 @@ readGatingStrategy <- function(fileName, ...) {
   } else {
     if(file_extension %in% c("cif", "rif")) {
       IFD = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = FALSE, verbosity = 0, bypass = TRUE)
-      tmp=read_xml(as_list(xml_find_first(read_xml(getFullTag(IFD = IFD, which = 1, "33027"),
+      tmp=read_xml(as_list(xml_find_first(read_xml(getFullTag(IFD = IFD, which = 1, tag = "33027", raw = TRUE),
                                           options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN")), "//Imaging//DafFile"))[[1]],
                    options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
     } else { # for ist

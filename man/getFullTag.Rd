@@ -7,7 +7,7 @@
 TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 }
 \usage{
-getFullTag(IFD, which = 1, tag = "256")
+getFullTag(IFD, which = 1, tag = "256", raw = FALSE)
 }
 \arguments{
 \item{IFD}{an object of class `IFC_ifd_list` extracted by \code{\link{getIFD}}.}
@@ -15,6 +15,8 @@ getFullTag(IFD, which = 1, tag = "256")
 \item{which}{scalar, integer (index) or the name of 'IFD' sub-element to extract 'tag' from. Default is 1 to extract 'tag' from the first member of 'IFD'.}
 
 \item{tag}{scalar, integer (index) or the name of the IFD[[which]] of the desired 'tag'.}
+
+\item{raw}{whether to return tag as a raw vector. Default is FALSE.}
 }
 \value{
 the full value of the corresponding IFD tag.

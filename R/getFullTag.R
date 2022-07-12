@@ -33,13 +33,15 @@
 #' @param IFD an object of class `IFC_ifd_list` extracted by \code{\link{getIFD}}.
 #' @param which scalar, integer (index) or the name of 'IFD' sub-element to extract 'tag' from. Default is 1 to extract 'tag' from the first member of 'IFD'.
 #' @param tag scalar, integer (index) or the name of the IFD[[which]] of the desired 'tag'.
+#' @param raw whether to return tag as a raw vector. Default is FALSE.
 #' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 #' @details It may be usefull to extract all information contained in a specific 'tag' since \code{\link{getIFD}} is designed to be run with argument trunc_bytes so as to only extract essential bytes to run faster and save memory.
 #' Nonetheless, thanks to \code{\link{getFullTag}} users will still be able to get full extraction of specific tag.
 #' @return the full value of the corresponding IFD tag.
 #' @export
-getFullTag <- function(IFD, which = 1, tag = "256") {
+getFullTag <- function(IFD, which = 1, tag = "256", raw = FALSE) {
   if(!("IFC_ifd_list"%in%class(IFD))) stop("'IFD' object is not of class `IFC_ifd_list`")
+  assert(raw, len=1, alw=c(TRUE, FALSE))
   endian = cpp_checkTIFF(enc2native(attr(x = IFD, which = "fileName_image")))
   if(typeof(which) == "character") {
     if(length(which) != 1) stop("'which' should be of length 1")
@@ -74,10 +76,15 @@ getFullTag <- function(IFD, which = 1, tag = "256") {
     toread = file(description = attr(IFD, "fileName_image"), open = "rb")
     on.exit(close(toread))
     seek(toread, where = ifd$tags[[tag]]$val, origin = "start")
+    if(raw) return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = FALSE))
     switch(ifd$tags[[tag]]$typ,
            { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = FALSE)) # 1 BYTE, 1 Byte
            },
-           { return(readChar(toread, nchars = ifd$tags[[tag]]$byt, useBytes = TRUE)) # 2 ASCII, 1 Byte
+           { 
+             if(length(ifd$tags[[tag]]$byt) == 0) return(character(0))
+             tmpcon <- rawConnection(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = FALSE))  # 2 ASCII, 1 Byte
+             on.exit(close(tmpcon), add = TRUE)
+             return(paste(suppressWarnings(readLines(tmpcon, skipNul = FALSE, encoding = "UTF-8")), sep = "", collapse = "\n"))
            },
            { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 2, signed = FALSE, endian = endian)) # 3 SHORT 2 bytes
            },
@@ -116,6 +123,13 @@ getFullTag <- function(IFD, which = 1, tag = "256") {
            { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "double", size = 8, endian = endian)) # 12 DOUBLE, 8 bytes
            })
   } else {
-    return(ifd$tags[[tag]]$map)
+    if(raw) {
+      if(ifd$tags[[tag]]$byt == 0) return(raw())
+      v = c(09,10,11,12)[1:ifd$tags[[tag]]$byt]
+      if(endian != .Platform$endian) v = rev(v)
+      return(ifd$tags[[tag]]$raw[v])
+    } else {
+      return(ifd$tags[[tag]]$map) 
+    }
   }
 }

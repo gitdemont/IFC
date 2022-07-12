@@ -93,7 +93,7 @@ mergeXIF <- function (fileName, write_to,
   # check on channels
   tmp = lapply(fileName, FUN = function(f) {
     IFD = getIFD(fileName = f, offsets = "first", verbose = verbose, verbosity = verbosity, bypass = TRUE)
-    tmp_acq = read_xml(getFullTag(IFD = IFD, which = 1, "33027"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+    tmp_acq = read_xml(getFullTag(IFD = IFD, which = 1, tag = "33027", raw = TRUE), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
     as.logical(as.numeric(unlist(strsplit( xml_text(xml_find_first(tmp_acq, "//Imaging//ChannelInUseIndicators_0_11")), " ", useBytes = TRUE, fixed = TRUE))))
   })
   if(!do.call(what = "all.equal.list", args = tmp)) stop("files in 'fileName' have been acquired with different channels")
@@ -196,10 +196,11 @@ mergeXIF <- function (fileName, write_to,
     
     # set additional IFD
     # 33029 or 33030 names of files that constitute the merge
+    fname2 = collapse_raw(lapply(fileName, FUN = function(x) charToRaw(normalizePath(enc2native(x), mustWork = FALSE, winslash =  "\\"))), as.raw(0x7c))
     if(f_Ext == "rif") {
-      ifd_merged = buildIFD(val = paste0(normalizePath(fileName, winslash = "\\"), collapse = "|"), typ = 2, tag = 33030, endianness = r_endian)
+      ifd_merged = buildIFD(val = fname2, typ = 2, tag = 33030, endianness = r_endian)
     } else {
-      ifd_merged = buildIFD(val = paste0(normalizePath(fileName, winslash = "\\"), collapse = "|"), typ = 2, tag = 33029, endianness = r_endian)
+      ifd_merged = buildIFD(val = fname2, typ = 2, tag = 33029, endianness = r_endian)
     }
     # 33004 now time
     ifd_time = buildIFD(val = format(Sys.time(), "%d-%m-%Y %H:%M:%S %p"), typ = 2, tag = 33004, endianness = r_endian)
@@ -211,14 +212,14 @@ mergeXIF <- function (fileName, write_to,
     ifd_version = buildIFD(val = paste0(unlist(packageVersion("IFC")), collapse = "."), typ = 2, tag = 33090, endianness = r_endian)
     if(add_tracking) {
       # 33091 names of files that constitute the merge
-      ifd_files = buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = IFD_first, which = 1, tag = "33091")),
-                                          paste0(normalizePath(fileName, winslash = "\\"), collapse = "|")),
-                                        collapse = ">"),
+      ifd_files = buildIFD(val = collapse_raw(c(list(suppressWarnings(getFullTag(IFD = IFD_first, which = 1, tag = "33091", raw = TRUE))),
+                                                list(fname2)),
+                                              collapse = as.raw("0x3e")),
                            typ = 2, tag = 33091, endianness = r_endian)
       # 33092 checksum of each file constituting the merge
-      ifd_checksum = buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = IFD_first, which = 1, tag = "33092")),
-                                             paste0(unname(sapply(fileName, cpp_checksum)), collapse = "|")),
-                                           collapse = ">"), 
+      ifd_checksum = buildIFD(val = collapse_raw(c(list(suppressWarnings(getFullTag(IFD = IFD_first, which = 1, tag = "33092", raw = TRUE))),
+                                                   list(collapse_raw(lapply(fileName, FUN = function(x) charToRaw(num_to_string(cpp_checksum(x)))), as.raw(0x7c)))),
+                                                 collapse = as.raw("0x3e")),
                               typ = 2, tag = 33092, endianness = r_endian)
     } else {
       ifd_files = list()
@@ -242,6 +243,7 @@ mergeXIF <- function (fileName, write_to,
     
     # repeat same process for img / msk data for all files
     for(f in fileName) {
+      fname3 = charToRaw(f)
       IFD_first = getIFD(fileName = f, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE)
       obj_count = XIF_step * getFullTag(IFD = IFD_first, which = 1, tag = "33018")
       IFD = IFD_first[[1]]
@@ -268,14 +270,14 @@ mergeXIF <- function (fileName, write_to,
           if(add_tracking) {
             extra = c(
               # register current object id in new tag to be able to track it
-              buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33093")),
-                                      OBJECT_ID),
-                                    collapse = ">"),
+              buildIFD(val = collapse_raw(c(list(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33093", raw = TRUE))),
+                                            list(charToRaw(num_to_string(OBJECT_ID)))),
+                                          collapse = as.raw(0x3e)),
                        typ = 2, tag = 33093, endianness = r_endian),
               # add origin fileName to allow to track where exported objects are coming from
-              buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33094")),
-                                      f),
-                                    collapse = ">"),
+              buildIFD(val = collapse_raw(c(list(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = f), which = 1, tag = "33094", raw = TRUE))),
+                                            list(fname3)),
+                                          collapse = as.raw(0x3e)),
                        typ = 2, tag = 33094, endianness = r_endian))
           } else {
             extra = NULL

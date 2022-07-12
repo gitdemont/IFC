@@ -196,6 +196,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   offsets = subsetOffsets(offsets = offsets, objects = objects, image_type = c("img", "msk"))
   offsets = c(IFDs[[1]]$curr_IFD_offset, offsets)
   off_number = length(offsets)
+  fname2 = charToRaw(fileName)
   
   # unwanted tags
   # 33004 corresponds to file date
@@ -360,14 +361,14 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
         if(add_tracking) {
           extra = c(extra,
                     # add fileName tag /!\ allow to track where exported objects are coming from
-                    buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33091")),
-                                            fileName),
-                                          collapse = ">"),
+                    buildIFD(val = collapse_raw(c(list(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33091", raw = TRUE))),
+                                                  list(fname2)),
+                                                collapse=as.raw(0x3e)),
                              typ = 2, tag = 33091, endianness = r_endian),
                     # add checksum tag /!\ allow to track where exported objects are coming from
-                    buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33092")),
-                                            checksumXIF(fileName)),
-                                          collapse = ">"), 
+                    buildIFD(val = collapse_raw(c(list(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33092", raw = TRUE))),
+                                                  list(charToRaw(num_to_string(checksumXIF(fileName))))),
+                                                collapse=as.raw(0x3e)), 
                              typ = 2, tag = 33092, endianness = r_endian)
           )
         }
@@ -375,15 +376,15 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
         if(add_tracking) {
           extra = c(extra, 
                     # register current object id in new tag to be able to track it
-                    buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33093")),
-                                            OBJECT_ID),
-                                          collapse = ">"),
+                    buildIFD(val = collapse_raw(c(list(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33093", raw = TRUE))),
+                                                  list(charToRaw(num_to_string(OBJECT_ID)))),
+                                                collapse = as.raw(0x3e)),
                              typ = 2, tag = 33093, endianness = r_endian),
                     
                     # register current fil_ori in new tag to be able to track it
-                    buildIFD(val = paste0(c(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33094")),
-                                            fileName),
-                                          collapse = ">"), 
+                    buildIFD(val = collapse_raw(c(list(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33094", raw = TRUE))),
+                                                  list(fname2)),
+                                                collapse=as.raw(0x3e)),
                              typ = 2, tag = 33094, endianness = r_endian)
           )
         }

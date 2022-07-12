@@ -169,7 +169,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
       onefile = TRUE
     }
   }
-  tmp = read_xml(getFullTag(IFD = IFD, which = 1, "33027"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  tmp = read_xml(getFullTag(IFD = IFD, which = 1, tag = "33027", raw = TRUE), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
   acquisition = list("Illumination"=lapply(as_list(xml_find_first(tmp, "//Illumination")), unlist),
                      "Imaging"=lapply(as_list(xml_find_first(tmp, "//Imaging")), unlist),
                      "Display"=lapply(as_list(xml_find_first(tmp, "//Display")), unlist))

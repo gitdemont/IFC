@@ -53,7 +53,12 @@ buildIFD <- function(val, typ, tag, endianness = .Platform$endian) {
     switch(typ,
            { x # 1 BYTE
            },
-           { charToRaw(as.character(x)) # 2 ASCII
+           { 
+             if(typeof(val) == "raw") {
+               x
+             } else {
+               charToRaw(as.character(x)) # 2 ASCII
+           }
            },
            { cpp_uint32_to_raw(x)[1:2] # 3 SHORT 2 bytes, what happen when endianness is swapped ?
            },
@@ -241,6 +246,24 @@ testXIF <- function(fileName) {
     if(length(obj_estimated) == 0) obj_estimated = 0
     attr(ans, "obj_count") <- 0
     attr(ans, "obj_estimated") <- obj_estimated
+  }
+  return(ans)
+}
+
+#' @title Raw Vectors Collapse
+#' @description Collapses raw vectors together
+#' @param x a list of raw vectors.
+#' @collapse a raw vector used to collapse. Default is as.raw(0x7c)
+#' @return a collapsed raw vector
+#' @keywords internal
+collapse_raw <- function(x, collapse = as.raw(0x7c)) {
+  ans <- raw()
+  xx = x[sapply(x, FUN = function(x_) length(x_) != 0)]
+  if(length(xx) > 0) {
+    for(i in seq_along(xx)) {
+      ans <- c(ans, collapse, xx[[i]])
+    }
+    return(ans[-1])
   }
   return(ans)
 }

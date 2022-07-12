@@ -37,6 +37,6 @@ getASSIST <- function(fileName, ...) {
   dots = list(...)
   IFD = getIFD(fileName = fileName, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, 
                verbose = FALSE, verbosity = 1, display_progress = FALSE, bypass = TRUE, ...)
-  tmp_ass = read_xml(getFullTag(IFD = IFD, which = 1, "33064"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  tmp_ass = read_xml(getFullTag(IFD = IFD, which = 1, tag = "33064", raw = TRUE), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
   return(structure(lapply(as_list(xml_find_first(tmp_ass, "//ASSISTDb")), unlist), class = c("list", "IFC_assist")))
 }

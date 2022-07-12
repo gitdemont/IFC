@@ -14,7 +14,9 @@ object extraction
 
 XIF subset/merging
 
-- add `add_tracking` argument to mergeXIF, subsetXIF, and ExportToXIF functions to control whether exported file should contain tracking information
+- add `add_tracking` argument to mergeXIF, subsetXIF, XIFtoTIFF, and ExportToXIF functions to control whether exported file should contain tracking information
+
+- improve tracking of object_ID
 
 num to string
 

@@ -245,6 +245,9 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     stop(paste0(ifelse(overwritten,"temp ","'write_to' "), "file: ", file_w, "\ncan't be created: check name ?"))
   })
   write_to = normalizePath(write_to, winslash = "/", mustWork = FALSE)
+  raw_3e = as.raw(0x3e)
+  raw_00 = as.raw(0x00)
+  raw_2020 = as.raw(c(0x20,0x20))
   tryCatch(expr = {
     # extracts extra characters separating nodes and initializes nodes
     collapse = lapply(names(toskip), FUN=function(x) as.raw(c()))
@@ -255,8 +258,8 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
         k = toskip[i]-1
         seek(toread, k)
         B = readBin(toread, what="raw", n=1)
-        while(B != as.raw(0x3e)) {
-          collapse[[i]]=c(B,collapse[[i]])
+        while(B != raw_3e) {
+          if(B != raw_00) collapse[[i]]=c(B,collapse[[i]])
           k=k-1
           seek(toread, k)
           B = readBin(toread, what="raw", n=1)
@@ -300,16 +303,16 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
                                  sapply(feat$val, FUN=function(x) writeBin(object=as.double(x), con=raw(), size = 8, endian = endianness, useBytes = TRUE)))
         } else {
           new_nodes$features = c(new_nodes$features,
-                                 as.raw(c(0x20,0x20)),
+                                 raw_2020,
                                  charToRaw(sprintf('<UDFValues fid="%s" fv="%s" />', num_to_string(fid), paste0(num_to_string(feat$val), collapse = "|"))),
-                                 as.raw(c(0x20,0x20)),
+                                 raw_2020,
                                  collapse$features)
         }
         fid=fid+1
         new_nodes$features_def = c(new_nodes$features_def,
-                                   as.raw(c(0x20,0x20)),
+                                   raw_2020,
                                    charToRaw(sprintf('<UDF name="%s" type="%s" userfeaturetype="%s" def="%s" />', feat[["name"]], feat[["type"]], feat[["userfeaturetype"]], feat[["def"]])),
-                                   as.raw(c(0x20,0x20)),
+                                   raw_2020,
                                    collapse$features_def)
         }
     }
@@ -322,10 +325,10 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
         next
       }
       new_nodes$regions = c(new_nodes$regions,
-                            as.raw(c(0x20,0x20)),
-                            charToRaw(to_xml_list(reg[-which(names(reg)%in%c("x","y"))], name = "Region", escape = rawToChar(c(collapse$regions,as.raw(c(0x20,0x20)))),
+                            raw_2020,
+                            charToRaw(to_xml_list(reg[-which(names(reg)%in%c("x","y"))], name = "Region", escape = rawToChar(c(collapse$regions,raw_2020)),
                                                   kids = lapply(1:length(reg$x), FUN=function(k) to_xml_list(x=list("x"=num_to_string(reg$x[k]), "y"=num_to_string(reg$y[k])), name="axy")))),
-                            as.raw(c(0x20,0x20)),
+                            raw_2020,
                             collapse$regions)
     }
     pops_alw = c()
@@ -372,20 +375,20 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
             next
           }
           if(obj_number != length(pop$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
-          new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,as.raw(c(0x20,0x20)))),
+          new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,raw_2020)),
                                      kids = lapply(num_to_string(which(pop$obj)-1), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
         }
         if(K%in% c("double","integer")) {
           if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
-          new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,as.raw(c(0x20,0x20)))),
+          new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,raw_2020)),
                                      kids = lapply(num_to_string(pop$obj), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
         }
       }
       pops_alw = c(pops_alw, i)
       new_nodes$pops = c(new_nodes$pops,
-                         as.raw(c(0x20,0x20)), 
+                         raw_2020, 
                          charToRaw(new_node_pop),
-                         as.raw(c(0x20,0x20)),
+                         raw_2020,
                          collapse$pops)
     }
     pops = pops[pops_alw]
