@@ -78,17 +78,20 @@ getFullTag <- function(IFD, which = 1, tag = "256", raw = FALSE) {
     seek(toread, where = ifd$tags[[tag]]$val, origin = "start")
     if(raw) return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = FALSE))
     switch(ifd$tags[[tag]]$typ,
-           { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = FALSE)) # 1 BYTE, 1 Byte
+           { # 1 BYTE, 1 Byte
+             return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = FALSE))
            },
-           { 
+           { # 2 ASCII, 1 Byte
              if(length(ifd$tags[[tag]]$byt) == 0) return(character(0))
-             tmpcon <- rawConnection(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = FALSE))  # 2 ASCII, 1 Byte
+             tmpcon <- rawConnection(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = FALSE))
              on.exit(close(tmpcon), add = TRUE)
              return(paste(suppressWarnings(readLines(tmpcon, skipNul = FALSE, encoding = "UTF-8")), sep = "", collapse = "\n"))
            },
-           { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 2, signed = FALSE, endian = endian)) # 3 SHORT 2 bytes
+           { # 3 SHORT 2 bytes
+             return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 2, signed = FALSE, endian = endian))
            },
-           { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, endian = endian)) # 4 LONG, 4 bytes
+           { # 4 LONG, 4 bytes
+             return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, endian = endian))
            },
            { # 5 RATIONAL = 2 LONG, 1st numerator, 2nd denominator
              if(length(ifd$tags[[tag]]$byt) == 0) return(numeric(0))
@@ -100,13 +103,17 @@ getFullTag <- function(IFD, which = 1, tag = "256", raw = FALSE) {
              odd = seq(from = 1, to = ifd$tags[[tag]]$len, by = 2)
              return(foo[odd] / foo[-odd])
            },
-           { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = TRUE)) # 6 SBYTE, 1 Byte
+           { # 6 SBYTE, 1 Byte
+             return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = TRUE))
            },
-           { return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw")) # 7 UNDEFINED, 1 Byte
+           { # 7 UNDEFINED, 1 Byte
+             return(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw"))
            },
-           { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, endian = endian)) # 8 SSHORT, 2 bytes
+           { # 8 SSHORT, 2 bytes
+             return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, endian = endian))
            },
-           { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, endian = endian)) # 9 SLONG, 4 bytes
+           { # 9 SLONG, 4 bytes
+             return(readBin(toread, n = ifd$tags[[tag]]$len, what = "integer", size = 4, endian = endian))
            },
            { # 10 SRATIONAL, 2 SLONG, 1st numerator, 2nd denominator
              if(length(ifd$tags[[tag]]$byt) == 0) return(numeric(0))
@@ -118,9 +125,11 @@ getFullTag <- function(IFD, which = 1, tag = "256", raw = FALSE) {
              odd = seq(from = 1, to = ifd$tags[[tag]]$len, by = 2)
              return(foo[odd] / foo[-odd])
            },
-           { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "double", size = 4, endian = endian)) # 11 FLOAT, 4 bytes
+           { # 11 FLOAT, 4 bytes
+             return(readBin(toread, n = ifd$tags[[tag]]$len, what = "double", size = 4, endian = endian))
            },
-           { return(readBin(toread, n = ifd$tags[[tag]]$len, what = "double", size = 8, endian = endian)) # 12 DOUBLE, 8 bytes
+           { # 12 DOUBLE, 8 bytes
+             return(readBin(toread, n = ifd$tags[[tag]]$len, what = "double", size = 8, endian = endian))
            })
   } else {
     if(raw) {
