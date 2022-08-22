@@ -382,7 +382,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
                     # add checksum tag /!\ allow to track where exported objects are coming from
                     buildIFD(val = collapse_raw(c(list(suppressWarnings(getFullTag(IFD = structure(list(IFD), class = "IFC_ifd_list", "fileName_image" = fileName), which = 1, tag = "33092", raw = TRUE))),
                                                   list(charToRaw(num_to_string(checksumXIF(fileName))))),
-                                                collapse==as.raw(0x3e)),
+                                                collapse=as.raw(0x3e)),
                              typ = 2, tag = 33092, endianness = r_endian))
         }
       } else {

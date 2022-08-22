@@ -8,6 +8,8 @@ collapse_raw(x, collapse = as.raw(124))
 }
 \arguments{
 \item{x}{a list of raw vectors.}
+
+\item{collapse}{a raw vector used to collapse. Default is as.raw(0x7c)}
 }
 \value{
 a collapsed raw vector

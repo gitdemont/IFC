@@ -253,7 +253,7 @@ testXIF <- function(fileName) {
 #' @title Raw Vectors Collapse
 #' @description Collapses raw vectors together
 #' @param x a list of raw vectors.
-#' @collapse a raw vector used to collapse. Default is as.raw(0x7c)
+#' @param collapse a raw vector used to collapse. Default is as.raw(0x7c)
 #' @return a collapsed raw vector
 #' @keywords internal
 collapse_raw <- function(x, collapse = as.raw(0x7c)) {
