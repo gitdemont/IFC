@@ -1,32 +1,41 @@
 # NEWS
+## 0.1.6
+- CRAN submission
+
 ## 0.1.5.xxx
-File I/O
-- fix ExportToDAF that exports xml files containing NULL values
+- File I/O
 
-issue with unexpected file names encoding
-- encode files names to native before passing them to underlying hpp/cpp files for reading
+fix ExportToDAF that exports xml files containing NULL values
 
-object extraction
+- issue with unexpected file names encoding
 
-- fix cpp_check_range that could lead to error when input can be summarize to a single value (this could happen when image object has no mask)
+encode files names to native before passing them to underlying hpp/cpp files for reading
 
-- fix cpp_resize that did not take into account resizing information for masks
+- object extraction
 
-XIF subset/merging
+fix error in objectExtract when info argument is provided generated duplicated arguments
 
-- add `add_tracking` argument to mergeXIF, subsetXIF, XIFtoTIFF, and ExportToXIF functions to control whether exported file should contain tracking information
+fix cpp_check_range that could lead to error when input can be summarize to a single value (this could happen when image object has no mask)
 
-- improve tracking of object_ID
+fix cpp_resize that did not take into account resizing information for masks
 
-num to string
+- XIF subset/merging
 
-- improve numeric to string conversion when using objects ids as names/dimnames (e.g. avoid 1e+05, use 100000 instead)
+add `add_tracking` argument to mergeXIF, subsetXIF, XIFtoTIFF, and ExportToXIF functions to control whether exported file should contain tracking information
 
-population computation:
+improve tracking of object_ID
 
-- create popsRename function to simplify population renaming in `IFC_data` object
+improve XIF I/O speed (avoid conversion when building IFD and use raw instead thanks to new internal collapse_raw function)
 
-- fix bug with popsCompute for type "C" (combined) population computation when population definition contains repeated occurrence of same population name
+- num to string
+
+improve numeric to string conversion when using objects ids as names/dimnames (e.g. avoid 1e+05, use 100000 instead)
+
+- population computation
+
+create popsRename function to simplify population renaming in `IFC_data` object
+
+fix bug with popsCompute for type "C" (combined) population computation when population definition contains repeated occurrence of same population name
 
 #### This leads to the following visible changes for the user
 *mergeXIF, subsetXIF and ExportToXIF functions gain a new `add_tracking` argument*
