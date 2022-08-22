@@ -153,15 +153,15 @@ Rcpp::LogicalVector hpp_pnt_in_gate (const Rcpp::NumericMatrix pnts,
                                      const Rcpp::NumericMatrix gate,
                                      const int algorithm = 1,
                                      const double epsilon = 0.000000000001 ) {
+  if((algorithm < 0) || (algorithm > 3)) Rcpp::stop("hpp_pnt_in_gate: 'algorithm' should be 1(Trigonometry), 2(Special case = axes-aligned rectangle) or 3(Special case = axes-aligned ellipse)");
   R_len_t k, n = gate.nrow(), L = pnts.nrow();
+  if((n < 1) || (L < 1) || (gate.ncol() != 2) || (pnts.ncol() != 2)) Rcpp::stop("hpp_pnt_in_gate: Bad dimension in pnt_in_poly inputs");
   Rcpp::NumericMatrix P;
   if( (gate(0,0) == gate(n - 1,0)) && (gate(0,1) == gate(n - 1,1)) ) {
     P = gate;
   } else {
     P = close_polygon(gate);
   }
-  if((L < 1) || (P.nrow() < 2) || (gate.ncol() != 2) || (pnts.ncol() != 2)) Rcpp::stop("hpp_pnt_in_gate: Bad dimension in pnt_in_poly inputs");
-  if((algorithm < 0) || (algorithm > 3)) Rcpp::stop("hpp_pnt_in_gate: 'algorithm' should be 1(Trigonometry), 2(Special case = axes-aligned rectangle) or 3(Special case = axes-aligned ellipse)");
   Rcpp::NumericVector xran = range(P(_,0));
   Rcpp::NumericVector yran = range(P(_,1));
   Rcpp::LogicalVector C(L, false);
