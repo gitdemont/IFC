@@ -125,11 +125,11 @@ objectExtract <- function(ifd,
     if(length(ifd) == 0) stop("'ifd' can't be missing")
     if("IFC_first_ifd" %in% class(ifd)) stop("can't extract object from 'ifd' of class `IFC_first_ifd`")
     if(length(param) == 0) {
-      dots = dots[names(dots) %in% c("fileName", "verbose")]
+      dots = dots[!(names(dots) %in% c("fileName", "verbose"))]
       if((length(fileName) == 0) && (length(info) == 0)) {
         param = do.call(what = "objectParam", args = c(list(fileName = attr(ifd, "fileName_image"), verbose = verbose), dots))
       } else {
-        dots = dots[names(dots) %in% c("info")]
+        dots = dots[!(names(dots) %in% c("info"))]
         param = do.call(what = "objectParam", args = c(list(verbose = verbose, info = info, fileName = fileName), dots))
       }
     } else {
