@@ -107,7 +107,7 @@ std::string hpp_checkTIFF (const std::string fname) {
 }
 
 Rcpp::IntegerVector hpp_getoffsets_noid_obj_unk(const std::string fname, 
-                                             const bool verbose = false) {
+                                                const bool verbose = false) {
   bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
   
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -187,7 +187,7 @@ Rcpp::IntegerVector hpp_getoffsets_noid_obj_ok(const std::string fname,
                                                const bool display_progress = false,
                                                const bool verbose = false) {
   bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
-  Rcpp::IntegerVector out(obj_count * 2);
+  Rcpp::IntegerVector out = Rcpp::no_init(obj_count * 2);
   bool show_pb = display_progress;
   if(obj_count <= 0) show_pb = false;
   
@@ -382,7 +382,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
       RObject BG_STD = R_NilValue;                // 33053
       
       Rcpp::List INFOS(entries);
-      CharacterVector NAMES(entries);
+      CharacterVector NAMES = Rcpp::no_init(entries);
       if(verbose) Rcout << "Entries: " << entries << std::endl;
       if(swap) {
         for(uint16_t k = 0; k < entries; k++) {
@@ -481,7 +481,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
                                             _["map"] = IFD_map);
             }
           } else {
-            Rcpp::NumericVector IFD_map(ext_scalar);
+            Rcpp::NumericVector IFD_map = Rcpp::no_init(ext_scalar);
             switch(IFD_type) {
             case 3: {
               uint16_t ele;
@@ -692,7 +692,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
                                             _["map"] = IFD_map);
             }
           } else {
-            Rcpp::NumericVector IFD_map(ext_scalar);
+            Rcpp::NumericVector IFD_map = Rcpp::no_init(ext_scalar);
             switch(IFD_type) {
             case 3: {
               uint16_t ele;
@@ -1076,8 +1076,9 @@ Rcpp::List hpp_getoffsets_wid_obj_ok(const std::string fname,
       if(!offset) {
         Rcpp::stop("hpp_getoffsets_wid: No IFD offsets found");
       }
-      Rcpp::IntegerVector out_obj(obj_count * 2), out_typ(obj_count * 2), out_off(obj_count * 2);
-
+      Rcpp::IntegerVector out_obj = Rcpp::no_init(obj_count * 2);
+      Rcpp::IntegerVector out_typ = Rcpp::no_init(obj_count * 2);
+      Rcpp::IntegerVector out_off = Rcpp::no_init(obj_count * 2);
       while(offset){
         p.increment();
         Rcpp::List IFD = hpp_getTAGS(fname, offset, verbose, 4, true);

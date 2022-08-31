@@ -101,7 +101,7 @@ Rcpp::NumericMatrix hpp_expand_no_noise (const Rcpp::NumericMatrix mat,
   ori_c = (fin_width-img_c) >> 1;
   
   // create output matrix with expanded dimension and fill with bg
-  Rcpp::NumericMatrix out(fin_height, fin_width);
+  Rcpp::NumericMatrix out = Rcpp::no_init(fin_height, fin_width);
   out.fill(bg);
   
   // write mat into center of output matrix
@@ -128,7 +128,7 @@ Rcpp::NumericMatrix hpp_expand_row (const Rcpp::NumericMatrix mat,
   ori_r = (new_height-img_r) >> 1;
   
   // create output matrix with expanded rows
-  Rcpp::NumericMatrix out(new_height, img_c);
+  Rcpp::NumericMatrix out = Rcpp::no_init(new_height, img_c);
   
   // write top padding
   for(i = 0; i < ori_r; i++) out(i, Rcpp::_) = Rcpp::rnorm(img_c, bg, sd);
@@ -153,7 +153,7 @@ Rcpp::NumericMatrix hpp_expand_col (const Rcpp::NumericMatrix mat,
   ori_c = (new_width-img_c) >> 1;
   
   // create output matrix with expanded rows
-  Rcpp::NumericMatrix out(img_r, new_width);
+  Rcpp::NumericMatrix out = Rcpp::no_init(img_r, new_width);
   
   // write left padding
   for(i = 0; i < ori_c; i++) out(Rcpp::_, i) = Rcpp::rnorm(img_r, bg, sd);

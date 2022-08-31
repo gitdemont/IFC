@@ -37,7 +37,7 @@ using namespace Rcpp;
 // combines 2 character vector into one
 Rcpp::CharacterVector hpp_combine(const Rcpp::CharacterVector x,
                                   const Rcpp::CharacterVector y) {
-  Rcpp::CharacterVector out(x.size() + y.size());
+  Rcpp::CharacterVector out = Rcpp::no_init(x.size() + y.size());
   R_len_t i = 0, j = 0;
   for(; i<x.size(); i++) out[i] = x[i];
   for(; j<y.size(); i++, j++) out[i] = y[j];

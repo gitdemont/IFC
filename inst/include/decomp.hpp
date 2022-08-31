@@ -114,7 +114,7 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
         fi.read(buf_image.data(), nbytes);
         fi.close();
         
-        Rcpp::IntegerMatrix img(imgWidth,imgHeight);
+        Rcpp::IntegerMatrix img = Rcpp::no_init(imgWidth,imgHeight);
         R_len_t L = imgWidth * imgHeight, runLength = 0, j = 0;
         
         switch(removal) {
@@ -274,7 +274,8 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
         fi.close();
         
         Rcpp::IntegerVector lastRow(imgWidth + 1);
-        Rcpp::IntegerMatrix img(imgHeight, imgWidth + 1);
+        Rcpp::IntegerMatrix img = Rcpp::no_init(imgHeight, imgWidth + 1);
+        for(uint32_t y = 0 ; y < imgHeight ; y++) img(y, 0) = 0;
         bool odd = false;
         
         uint32_t k = 0;
@@ -456,7 +457,8 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
         fi.close();
         
         Rcpp::IntegerVector lastRow(imgWidth + 1);
-        Rcpp::IntegerMatrix img(imgHeight, imgWidth + 1);
+        Rcpp::IntegerMatrix img = Rcpp::no_init(imgHeight, imgWidth + 1);
+        for(uint32_t y = 0 ; y < imgHeight ; y++) img(y, 0) = 0;
         bool odd = false;
         
         uint32_t k = 0;
