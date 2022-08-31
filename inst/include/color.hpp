@@ -91,27 +91,15 @@ void hpp_HSV2RGB(double *r, double *g, double *b,
 Rcpp::NumericVector hpp_M_HSV2RGB (const Rcpp::NumericMatrix mat, 
                                    const double h = 0.0,
                                    const double s = 0.0) {
-  R_len_t mat_r = mat.nrow();
-  R_len_t mat_c = mat.ncol();
-  R_len_t D = mat_r * mat_c;
-  double r = 0.0, g = 0.0, b = 0.0;
-  Rcpp::NumericMatrix R(mat_r, mat_c);
-  Rcpp::NumericMatrix G(mat_r, mat_c);
-  Rcpp::NumericMatrix B(mat_r, mat_c);
-  
-  for(R_len_t i_row = 0; i_row < mat_r; i_row++) {
-    for(R_len_t i_col = 0; i_col < mat_c; i_col++) {
-      hpp_HSV2RGB(&r, &g, &b, h, s, mat(i_row, i_col));
-      R(i_row, i_col) = r;
-      G(i_row, i_col) = g;
-      B(i_row, i_col) = b;
-    }
+  R_len_t mat_r = mat.nrow(), mat_c = mat.ncol(),
+    D = mat_r * mat_c, DD = D + D;
+  Rcpp::NumericVector out = Rcpp::no_init(D * 3);
+  for(R_len_t i = 0; i < D; i++) {
+    hpp_HSV2RGB(&out[i     ],
+                &out[i + D ],
+                &out[i + DD],
+                h, s, mat[i]);
   }
-  
-  Rcpp::NumericVector out(D * 3);
-  std::copy(R.begin(), R.end(), out.begin());
-  std::copy(G.begin(), G.end(), out.begin() + D);
-  std::copy(B.begin(), B.end(), out.begin() + 2 * D);
   out.attr("dim") = Rcpp::Dimension(mat_r, mat_c, 3);
   if(mat.hasAttribute("mask")) out.attr("mask") = mat.attr("mask");
   return out;
