@@ -71,7 +71,6 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
                                              text_only = FALSE),
                     display_progress = TRUE, ...) {
   dots = list(...)
-  on.exit(gc(verbose = FALSE), add = TRUE)
   if(missing(fileName)) stop("'fileName' can't be missing")
   assert(display_progress, len = 1, alw = c(TRUE,FALSE))
   assert(fileName, len = 1)
@@ -506,7 +505,6 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
 #' @keywords internal
 FCS_merge_dataset <- function(fcs, ...) {
   dots = list(...)
-  on.exit(gc(verbose = FALSE), add = TRUE)
   display_progress = dots$display_progress
   if(length(display_progress) == 0) display_progress = TRUE
   assert(display_progress, len=1, alw = c(TRUE, FALSE))
@@ -595,7 +593,6 @@ FCS_merge_dataset <- function(fcs, ...) {
 #' @keywords internal
 FCS_merge_sample <- function(fcs, ...) {
   dots = list(...)
-  on.exit(gc(verbose = FALSE), add = TRUE)
   display_progress = dots$display_progress
   if(length(display_progress) == 0) display_progress = TRUE
   assert(display_progress, len=1, alw = c(TRUE, FALSE))
@@ -697,7 +694,6 @@ convert_spillover <- function(spillover) {
 FCS_to_data <- function(fcs, ...) {
   # create structure
   dots = list(...)
-  on.exit(gc(verbose = FALSE), add = TRUE)
   display_progress = dots$display_progress
   if(length(display_progress) == 0) display_progress = TRUE
   assert(display_progress, len=1, alw = c(TRUE, FALSE))
@@ -917,7 +913,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   dots = list(...)
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
-  on.exit(suppressWarnings({Sys.setlocale("LC_ALL", locale = locale_back); gc(verbose = FALSE)}), add = TRUE)
+  on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
   suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
   now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
   
