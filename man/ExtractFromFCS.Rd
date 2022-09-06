@@ -19,6 +19,7 @@ populations will be created to identify each single file within returned `IFC_da
 A named list of class `IFC_data`, whose members are:\cr
 -description, a list of descriptive information,\cr
 -Merged_fcs, character vector of path of files used to create fcs, if input was a merged,\cr
+-Keywords, a named-list of keywords values, only keywords from 1st 'fcs' segment will be retrieved\cr
 -fileName, path of fileName input,\cr
 -fileName_image, path of .cif image fileName is referring to,\cr
 -features, a data.frame of features,\cr

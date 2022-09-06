@@ -679,6 +679,7 @@ convert_spillover <- function(spillover) {
 #' @return A named list of class `IFC_data`, whose members are:\cr
 #' -description, a list of descriptive information,\cr
 #' -Merged_fcs, character vector of path of files used to create fcs, if input was a merged,\cr
+#' -Keywords, a named-list of keywords values, only keywords from 1st 'fcs' segment will be retrieved\cr
 #' -fileName, path of fileName input,\cr
 #' -fileName_image, path of .cif image fileName is referring to,\cr
 #' -features, a data.frame of features,\cr
@@ -704,6 +705,7 @@ FCS_to_data <- function(fcs, ...) {
                                                              "tokens"= NULL, "baseimage"= NULL, "function"= NULL),
                                        "masks" = data.frame()),
                   "Merged_fcs" = character(),
+                  "Keywords" = list(),
                   "fileName" = character(),
                   "fileName_image" = character(),
                   "features" = structure(.Data = list(), class = c("data.frame", "IFC_features")),
@@ -793,6 +795,7 @@ FCS_to_data <- function(fcs, ...) {
   min_data$fileName = normalizePath(attr(fcs, "fileName"), winslash = "/", mustWork = FALSE)
   bar <- unique(idx[, "import_file"])
   if(length(bar) > 1) min_data$Merged_fcs <- bar
+  min_data$Keywords <- fcs[[1]]$text
   min_data$description$Assay = data.frame(date = file.info(min_data$fileName)$mtime, FCS_version = paste0(FCS_version, collapse = ", "), stringsAsFactors = FALSE)
   min_data$description$ID = data.frame(file = min_data$fileName,
                                        creation = format(file.info(min_data$fileName)$ctime, format = "%d-%b-%y %H:%M:%S"),
@@ -810,10 +813,11 @@ FCS_to_data <- function(fcs, ...) {
                                 pops = list(buildPopulation(name = "All", type = "B",
                                                             color = "White", lightModeColor = "Black",
                                                             obj = rep(TRUE, obj_count))),
+                                display_progress = display_progress,
                                 session = dots$session)
   # min_data$features_comp = min_data$features[, grep("^FS.*$|^SS.*$|LOG|^Object Number$|TIME", names(min_data$features), value = TRUE, invert = TRUE, ignore.case = TRUE)]
   if(multiple) {
-    min_data = IFC::data_add_pops(obj = min_data, pops = pops, session = dots$session)
+    min_data = IFC::data_add_pops(obj = min_data, pops = pops, display_progress = display_progress, session = dots$session)
   }
   K = class(min_data$pops)
   min_data$pops = lapply(min_data$pops, FUN = function(p) {
@@ -853,6 +857,7 @@ FCS_to_data <- function(fcs, ...) {
 #' @return A named list of class `IFC_data`, whose members are:\cr
 #' -description, a list of descriptive information,\cr
 #' -Merged_fcs, character vector of path of files used to create fcs, if input was a merged,\cr
+#' -Keywords, a named-list of keywords values, only keywords from 1st 'fcs' segment will be retrieved\cr
 #' -fileName, path of fileName input,\cr
 #' -fileName_image, path of .cif image fileName is referring to,\cr
 #' -features, a data.frame of features,\cr
@@ -868,7 +873,7 @@ FCS_to_data <- function(fcs, ...) {
 ExtractFromFCS <- function(fileName, ...) {
   # create structure
   dots = list(...)
-  dots = dots[names(dots) != "text_only"]
+  dots = dots[!(names(dots) %in% c("fcs","text_only"))]
   display_progress = dots$display_progress
   if(length(display_progress) == 0) display_progress = TRUE
   assert(display_progress, len=1, alw = c(TRUE, FALSE))
@@ -882,7 +887,7 @@ ExtractFromFCS <- function(fileName, ...) {
   }
   fcs = lapply(1:L, FUN = function(i_file) {
     if(display_progress) setPB(pb, value = i_file, title = "Extracting FCS", label = "reading files")
-    FCS_merge_dataset(do.call(what = readFCS,  args=c(dots, list(fileName = fileName[[i_file]]))))[[1]]
+    do.call(what = FCS_merge_dataset, args = c(dots, list(fcs = do.call(what = readFCS,  args=c(dots, list(fileName = fileName[[i_file]]))))))[[1]]
   })
   attr(fcs, "fileName") <- fileName[1]
   FCS_to_data(fcs, ...)
@@ -1034,17 +1039,16 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                        "@IFC_date" = now
   )
   
-  # adds extra keywords from ...
-  # removes keywords that are already in text_segment1 or that are named "session", "$BEGINDATA", "$ENDDATA" or that have no name
-  extra_keywords = setdiff(names(dots), c(names(text_segment1), "$BEGINDATA", "$ENDDATA", "session", ""))
-  # removes keywords that are already in text_segment2 ($PnN, $PnS, $PnB, $PnE, $PnR)
-  extra_keywords = grep("^\\$P\\d.*[N|S|B|E|R]$", extra_keywords, value = TRUE, invert = TRUE)
-  # gets keywords in dots
-  extra_keywords = dots[extra_keywords]
+  # gather keywords in priority order 
+  text_segment1 = c(text_segment1, dots, obj$Keywords)
   # removes keywords whose values are NULL
-  extra_keywords = extra_keywords[sapply(extra_keywords, length) != 0]
-  # adds to text_segment1
-  text_segment1 = c(text_segment1, extra_keywords)
+  text_segment1 = text_segment1[sapply(text_segment1, nchar) != 0]
+  # removes duplicated keywords (priority order is important here)
+  text_segment1 = text_segment1[!duplicated(names(text_segment1))]
+  # removes not allowed keywords (e.g. in text_segment2 ($PnN, $PnS, $PnB, $PnE, $PnR) or session, "")
+  text_segment1 = text_segment1[setdiff(names(text_segment1),c("session", ""))]
+  text_segment1 = text_segment1[!grepl("^\\$P\\d.*[N|S|B|E|R]$", names(text_segment1))]
+
   # determines length of data
   data_length = 4 * L * nrow(features)
   
