@@ -14,7 +14,10 @@ data_rm_pops(obj, pops, list_only = TRUE, adjust_graph = TRUE, ...)
 \item{list_only}{whether to return a list of elements that will be impacted by the removal. Default is TRUE.
 If FALSE then modified object will be returned.}
 
-\item{adjust_graph}{whether to try to adjust graph when possible. Default is TRUE.}
+\item{adjust_graph}{whether to try to adjust graph(s) when possible. Default is TRUE.\cr
+-TRUE, graph(s) will be kept if possible using only regions, pops it depends that can be found in 'obj',\cr
+-FALSE, graph(s) will be kept only if all features, regions, pops it refers to are found in 'obj',\cr
+-NA, graph(s) will be removed no matter if features, regions, pops it refers to are found in 'obj'.}
 
 \item{...}{Other arguments to be passed.}
 }
