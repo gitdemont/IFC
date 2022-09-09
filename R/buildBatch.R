@@ -272,7 +272,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
     } else {
       StatisticsReports = list(name="StatisticsReports",
                                .children = xml_new_node(name = "StatisticsReport",
-                                                        attr = list(filename="",
+                                                        attrs = list(filename="",
                                                                     count="0",
                                                                     title="",
                                                                     classifier="",
