@@ -41,13 +41,17 @@
 #' @export
 data_add_graphs <- function(obj, graphs, adjust_graph=TRUE, ...) {
   assert(obj, cla = "IFC_data")
-  adjust_graph = as.logical(adjust_graph); adjust_graph = assert(adjust_graph, len = 1, alw = c(TRUE,FALSE))
+  adjust_graph = as.logical(adjust_graph)
+  assert(adjust_graph, len = 1, alw = c(TRUE,FALSE))
   L = length(obj$graphs)
   if(L == 0) obj$graphs = list()
   for(i in seq_along(graphs)) {
-    obj$graphs = c(obj$graphs, graphs[i])
-    obj$graphs = adjustGraph(obj = obj, selection = L + i, adjust_graph = adjust_graph)$graphs
-    if(length(obj$graphs) != (L + i)) stop("can't add 'graphs[",i,"]' to 'obj'") 
+    g = adjustGraph(obj = obj, graph = graphs[[i]], adjust_graph = adjust_graph)
+    if(length(g) == 0) {
+      stop("can't add element [",i,"] of 'graphs' to 'obj'") 
+    } else {
+      obj$graphs = c(obj$graphs, list(g))
+    }
   }
   class(obj$graphs) <- "IFC_graphs"
   return(obj)

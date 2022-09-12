@@ -135,6 +135,6 @@ data_rm_regions <- function(obj, regions, list_only = TRUE, adjust_graph = TRUE,
   pops_back = obj$pops
   obj$pops = list()
   obj = data_add_pops(obj, pops = pops_back[!(names(pops_back) %in% to_remove_pops)], ...)
-  if(length(to_remove_graphs) != 0) return(adjustGraph(obj = obj, selection = to_remove_graphs, adjust_graph = adjust_graph))
+  obj = data_rm_graphs(obj = obj, graphs = to_remove_graphs, list_only = list_only, adjust_graph = adjust_graph)
   return(obj)
 }

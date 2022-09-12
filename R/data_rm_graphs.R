@@ -78,6 +78,14 @@ data_rm_graphs <- function(obj, graphs, list_only=TRUE, adjust_graph=TRUE, ...) 
     return(l_default)
   }
   
-  # otherwise return obj
-  return(adjustGraph(obj = obj, selection = to_remove_graphs, adjust_graph = adjust_graph))
+  # otherwise return 
+  if(length(to_remove_graphs) != 0) {
+    G = obj$graphs
+    for(i in to_remove_graphs) {
+      G[[i]] = adjustGraph(obj = obj, graph =  obj$graphs[[i]], adjust_graph = adjust_graph)
+    }
+    obj$graphs = G[sapply(G, length) != 0]
+    class(obj$graphs) = "IFC_graphs"
+  }
+  return(obj)
 }

@@ -1187,78 +1187,57 @@ plot_stats=function(obj) {
 #' @name adjustGraph
 #' @description Helper to readjust `IFC_data` graphs in case of missing feature, region, population.
 #' @param obj an object of class `IFC_data` extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
-#' @param selection when provided, indices of desired graphs.\cr
-#' Note that indices are read from left to right, from top to bottom. 
+#' @param graph a graph from 'obj' or a list that can be coerced by \code{\link{buildGraph}}.
 #' @param adjust_graph whether to try to adjust graph(s) when possible. Default is TRUE.\cr
 #' -TRUE, graph(s) will be kept if possible using only regions, pops it depends that can be found in 'obj',\cr
 #' -FALSE, graph(s) will be kept only if all features, regions, pops it refers to are found in 'obj',\cr
 #' -NA, graph(s) will be removed no matter if features, regions, pops it refers to are found in 'obj'.
 #' @param ... other arguments to be passed.
 #' @keywords internal
-adjustGraph=function(obj, selection, adjust_graph=TRUE, ...) {
+adjustGraph=function(obj, graph, adjust_graph=TRUE, ...) {
   dots = list(...)
   assert(obj, cla = "IFC_data")
-  adjust_graph = as.logical(adjust_graph); assert(adjust_graph, len = 1, alw = c(as.logical(NA),TRUE,FALSE))
-  G = obj$graphs
+  adjust_graph = as.logical(adjust_graph);
+  assert(adjust_graph, len = 1, alw = c(as.logical(NA),TRUE,FALSE))
   f_name = names(obj$features)
   r_name = names(obj$regions)
   p_name = names(obj$pops)
-  N = names(G)
-  if(length(G) > 0) {
-    if(missing(selection)) {
-      selection = 1:length(G)
-    } else {
-      if(!all(na.omit(selection)%in%(1:length(G)))) stop("'selection' refers to graph absent from 'obj'")
-    }
-    foo = lapply(1:length(G), FUN = function(i_graph) {
-      g = G[[i_graph]]
-      if(i_graph %in% selection) {
-        if(is.na(adjust_graph)) return(NULL)
-        # check if x axis is present in obj
-        if(!(g$f1 %in% f_name)) return(NULL)
-        # check if y axis is present in obj
-        if(g$type != "histogram") if(!(g$f2 %in% f_name)) return(NULL)
-        # check that at least one base pop will be plot
-        tmp = sapply(g$BasePop, FUN = function(p) p$name %in% p_name)
-        if(!adjust_graph) if(!all(tmp)) return(NULL)
-        if(!any(tmp)) return(NULL)
-        # remove BasePop not present in obj
-        g$BasePop = g$BasePop[tmp]
-        # remove GraphRegion not found in obj
-        if(length(g$GraphRegion) !=0 && length(g$GraphRegion[[1]]) != 0) {
-          # remove region not found
-          tmp = sapply(g$GraphRegion, FUN = function(r) r$name %in% r_name)
-          if(!adjust_graph) if(!all(tmp)) return(NULL)
-          g$GraphRegion = g$GraphRegion[tmp]
-          # remove region if pop graphically defined by region is not found
-          tmp = lapply(sapply(seq_along(g$GraphRegion), FUN = function(i_r) g$GraphRegion[[i_r]]$name),
-                       FUN = function(n) p_name[sapply(obj$pops, FUN = function(p) p$region) %in% n])
-          tmp = sapply(seq_along(tmp), FUN = function(i) any(tmp[[i]] %in% p_name))
-          if (!adjust_graph) if (!all(tmp)) return(NULL)
-          g$GraphRegion = g$GraphRegion[tmp]
-        }
-        # remove ShownPop not found in obj
-        if(length(g$ShownPop) != 0 && length(g$ShownPop[[1]]) != 0) {
-          tmp = sapply(g$ShownPop, FUN = function(p) p$name %in% p_name)
-          if(!adjust_graph) if(!all(tmp)) return(NULL)
-          g$ShownPop = g$ShownPop[tmp]
-        }
-        # rebuild Graph, mainly to recompute order
-        g = try(do.call(what = buildGraph, args = g[!grepl("order", names(g))]), silent = TRUE)
-        if(inherits(x = g, what = "try-error")) return(NULL)
-        # try to draw the graph
-        drawable = try(plot_lattice(plotGraph(obj = obj, graph = g, draw = FALSE, stats_print = FALSE)), silent = TRUE)
-        if(inherits(x = drawable, what = "try-error")) return(NULL)
-      }
-      return(g)
-    })
-    names(foo) = N
-    bar = foo[sapply(foo, FUN = function(x) length(x) > 0)]
-    class(bar) = class(obj$graphs)
-    obj$graphs = bar
-    return(obj)
-  } else {
-    if(!missing(selection) && (length(na.omit(selection)) != 0)) stop("'selection' refers to graph absent from 'obj'")
-    return(obj)
+  g = graph
+  if(is.na(adjust_graph)) return(list())
+  # check if x axis is present in obj
+  if(!(g$f1 %in% f_name)) return(list())
+  # check if y axis is present in obj
+  if(g$type != "histogram") if(!(g$f2 %in% f_name)) return(list())
+  # check that at least one base pop will be plot
+  tmp = sapply(g$BasePop, FUN = function(p) p$name %in% p_name)
+  if(!adjust_graph) if(!all(tmp)) return(list())
+  if(!any(tmp)) return(list())
+  # remove BasePop not present in obj
+  g$BasePop = g$BasePop[tmp]
+  # remove GraphRegion not found in obj
+  if(length(g$GraphRegion) !=0 && length(g$GraphRegion[[1]]) != 0) {
+    # remove region not found
+    tmp = sapply(g$GraphRegion, FUN = function(r) r$name %in% r_name)
+    if(!adjust_graph) if(!all(tmp)) return(list())
+    g$GraphRegion = g$GraphRegion[tmp]
+    # remove region if pop graphically defined by region is not found
+    tmp = lapply(sapply(seq_along(g$GraphRegion), FUN = function(i_r) g$GraphRegion[[i_r]]$name),
+                 FUN = function(n) p_name[sapply(obj$pops, FUN = function(p) p$region) %in% n])
+    tmp = sapply(seq_along(tmp), FUN = function(i) any(tmp[[i]] %in% p_name))
+    if (!adjust_graph) if (!all(tmp)) return(list())
+    g$GraphRegion = g$GraphRegion[tmp]
   }
+  # remove ShownPop not found in obj
+  if(length(g$ShownPop) != 0 && length(g$ShownPop[[1]]) != 0) {
+    tmp = sapply(g$ShownPop, FUN = function(p) p$name %in% p_name)
+    if(!adjust_graph) if(!all(tmp)) return(list())
+    g$ShownPop = g$ShownPop[tmp]
+  }
+  # rebuild Graph, mainly to recompute order
+  g = try(do.call(what = buildGraph, args = g[!grepl("order", names(g))]), silent = TRUE)
+  if(inherits(x = g, what = "try-error")) return(list())
+  # try to draw the graph
+  drawable = try(plot_lattice(plotGraph(obj = obj, graph = g, draw = FALSE, stats_print = FALSE)), silent = TRUE)
+  if(inherits(x = drawable, what = "try-error")) return(list())
+  return(g)
 }
