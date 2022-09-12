@@ -1244,7 +1244,7 @@ adjustGraph=function(obj, selection, adjust_graph=TRUE, ...) {
           g$ShownPop = g$ShownPop[tmp]
         }
         # rebuild Graph, mainly to recompute order
-        g = do.call(what = buildGraph, args = g[!grepl("order", names(g))])
+        g = try(do.call(what = buildGraph, args = g[!grepl("order", names(g))]), silent = TRUE)
         if(inherits(x = g, what = "try-error")) return(NULL)
         # try to draw the graph
         drawable = try(plot_lattice(plotGraph(obj = obj, graph = g, draw = FALSE, stats_print = FALSE)), silent = TRUE)
