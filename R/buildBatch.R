@@ -171,8 +171,8 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
   }
   if(length(files) == 0) stop("no file to batch using 'files' argument")
   info = lapply(files, getInfo, from = "acquisition")
+  num_channels = unique(sapply(info, FUN=function(x) nrow(x$Images)))
   if(!allow_channels_dissimilarity) {
-    num_channels = unique(sapply(info, FUN=function(x) nrow(x$Images)))
     if(length(num_channels) !=1 ) stop("'files' have been acquired on different amount of channels")
     ids_channels = sapply(info, FUN=function(x) c(sum(x$in_use), x$Images$physicalChannel[x$in_use])) # maybe to remove to allow
     if(typeof(ids_channels) == "list") stop("'files' have been acquired on different physical channels") # maybe to remove
@@ -208,6 +208,7 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
     if(c_Ext == "cif") fileName_comp = compensation
   }
   if(fileName_comp=="") {
+    num_channels = 12L
     coeff = paste0(as.numeric(sapply(1:num_channels, FUN=function(x) 1:num_channels==x)), collapse="|")
   } else {
     IFD = getIFD(fileName = fileName_comp, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, bypass = FALSE)
