@@ -82,7 +82,7 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
              xlim=as.numeric(regions[[pop_pos]]$x)
              if(regions[[pop_pos]]$type == "line") {
                xlim=range(xlim)
-               pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & x>=xlim[1] & x<=xlim[2]
+               pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & x>=xlim[1] & x<=xlim[2] & !is.na(x)
              } else {
                fy_pos=which(names(features)==pop$fy)
                y=features[,fy_pos]
@@ -123,13 +123,16 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
            }, 
            "T" = {
              if(length(pop$obj) != obj_number) {
+               if(anyNA(pop$obj)) stop(paste0("trying to compute a tagged population with NAs: ", pop$name))
                Kp = typeof(pop$obj)
                if(Kp%in%c("double","integer")) {
-                 if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to compute a tagged population with element(s) outside of objects acquired: ", pop$name))
+                 if((obj_number <= max(pop$obj)) ||
+                    (min(pop$obj) < 0) ||
+                    any(duplicated(pop$obj))) stop(paste0("trying to compute a tagged population with element(s) outside of objects acquired: ", pop$name))
                  pops[[i]]$obj=rep(FALSE,obj_number)
                  pops[[i]]$obj[pop$obj+1]=TRUE
                } else {
-                 if(!Kp%in%"logical") stop(paste0("trying to compute a tagged population with element(s) outside of objects acquired: ", pop$name))
+                 if(!Kp%in%"logical") stop(paste0("trying to compute a tagged population of unknown type: ", pop$name))
                }
              }
              if(sum(pops[[i]]$obj)==0) stop(paste0("trying to compute a tagged population with element(s) outside of objects acquired: ", pop$name))
