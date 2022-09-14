@@ -179,8 +179,9 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     }
     if(viewport == "ideas") {
       if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
-      D[D[,"x2"] < Xlim[1], "x2"] <- Xlim[1] # D = D[(D[,"x2"] >= Xlim[1]) & (D[,"x2"] <= Xlim[2]), ]
-      D[D[,"x2"] > Xlim[2], "x2"] <- Xlim[2] #
+      no_nas = !is.na(D[,"x2"])
+      D[no_nas & (D[,"x2"] < Xlim[1]), "x2"] <- Xlim[1] # D = D[(D[,"x2"] >= Xlim[1]) & (D[,"x2"] <= Xlim[2]), ]
+      D[no_nas & (D[,"x2"] > Xlim[2]), "x2"] <- Xlim[2] #
     }
     if(!all(is.finite(Xlim))) {
       Xlim = c(g$xmin, g$xmax)
@@ -188,8 +189,9 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
       if(!all(is.finite(Xlim))) Xlim = c(-1, 1)
       if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
-      D[D[,"x2"] < Xlim[1], "x2"] <- Xlim[1]
-      D[D[,"x2"] > Xlim[2], "x2"] <- Xlim[2]
+      no_nas = !is.na(D[,"x2"])
+      D[no_nas & (D[,"x2"] < Xlim[1]), "x2"] <- Xlim[1]
+      D[no_nas & (D[,"x2"] > Xlim[2]), "x2"] <- Xlim[2]
     }
     smooth = (g$histogramsmoothingfactor != 0)
     br = do.breaks(Xlim, nbin)
