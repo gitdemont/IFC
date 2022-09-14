@@ -459,19 +459,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
                         display_progress = display_progress,
                         title_progress = title_progress, ...)
       
-      if(extract_stats) {
-        stats = data.frame(stringsAsFactors = FALSE, check.rows = FALSE, check.names = FALSE, t(sapply(names(pops), FUN=function(p) {
-          count = sum(pops[[p]]$obj)
-          base = pops[[p]]$base
-          type = pops[[p]]$type
-          if(base=="") base = "All"
-          parent = sum(pops[[base]]$obj)
-          c("type" = type, "parent" = base, "count" = count, "perc_parent" = count/parent*100, "perc_tot" = count/obj_number*100)
-        })))
-        stats[,3] = as.numeric(stats[,3])
-        stats[,4] = as.numeric(stats[,4])
-        stats[,5] = as.numeric(stats[,5])
-      }
+      if(extract_stats) stats = get_pops_stats(pops, obj_number)
     }
   } else {
     features = data.frame()

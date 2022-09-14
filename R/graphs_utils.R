@@ -1102,23 +1102,30 @@ plot_stats=function(obj) {
   base_n = base_n[order(base_o)]
   graph_n = obj$input$graphical
   shown_n = setdiff(rev(displayed_n), c(base_n, graph_n))
+  if("y2" %in% colnames(D)) {
+    no_nas = !(is.na(D[,"x2"]) | is.na(D[,"y2"]))
+  } else {
+    no_nas = !is.na(D[,"x2"])
+  }
   
   stats = NULL
   if(type %in% c("count","percent")) {
     coln_stats = c("count","perc","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
     stats = structure(matrix(numeric(), ncol = length(coln_stats), nrow = 0), dimnames = list(character(), coln_stats))
     base_s = lapply(base_n, FUN=function(d) {
-      np = sum(D[,d])
+      v = no_nas & D[,d]
+      np = sum(v)
       if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
-      p = c("count"=np, "perc"=100, summary(na.omit(D[D[,d],"x1"])))
+      p = c("count"=np, "perc"=100, summary(D[v,"x1"]))
     })
     kids_s = lapply(shown_n, FUN=function(s) {
       do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
-        np = sum(D[,d])
+        v = no_nas & D[,d]
+        np = sum(v)
         if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
-        isin = D[,d] & D[,s]
+        isin = v & D[,s]
         n = sum(isin)
-        c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])))
+        c("count"=n, "perc"=n/np*100, summary(D[isin,"x1"]))
       }))
     })
     kids_r = lapply(reg_n, FUN=function(r) {
@@ -1127,32 +1134,35 @@ plot_stats=function(obj) {
         reg = R[[r]]
         coords = reg["x"]
         coords$x = applyTrans(coords$x, trans_x)
-        np = sum(D[,d])
+        v = no_nas & D[,d]
+        np = sum(v)
         if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
-        isin = D[D[,d],"x2"]
+        isin = D[v,"x2"]
         isin = (isin >= min(coords$x)) & (isin <= max(coords$x))
         n = sum(isin)
-        c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])))
+        c("count"=n, "perc"=n/np*100, summary(D[v,"x1"][isin]))
       }))
     })
     stats = do.call(what=rbind, args=c(base_s, kids_s, kids_r))
     rnames = base_n
-    if(length(reg_n) > 0) rnames = c(rnames, unlist(t(sapply(base_n, FUN = function(b) {if(b == "All") {graph_n} else {paste(reg_n, b, sep = " & ") }}))))
+    if(length(reg_n) > 0) rnames = unique(c(rnames, unlist(t(sapply(base_n, FUN = function(b) {if(b == "All") {graph_n} else {paste(reg_n, b, sep = " & ") }})))))
     rownames(stats) = rnames
     colnames(stats) = c(coln_stats[1:2], paste0("x-",coln_stats[3:8]))
   } else {
     coln_stats = c("count","perc","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
     stats = structure(matrix(numeric(), ncol = length(coln_stats), nrow = 0), dimnames = list(character(), coln_stats))
     base_s = lapply(base_n, FUN=function(d) {
-      np = sum(D[,d])
+      v = no_nas & D[,d]
+      np = sum(v)
       if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
-      p = c("count"=np, "perc"=100, summary(na.omit(D[D[,d],"x1"])), summary(na.omit(D[D[,d],"y1"])))
+      p = c("count"=np, "perc"=100, summary(D[v,"x1"]), summary(D[v,"y1"]))
     })
     kids_s = lapply(shown_n, FUN=function(s) {
       do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
-        np = sum(D[,d])
+        v = no_nas & D[,d]
+        np = sum(v)
         if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
-        isin = D[,d] & D[,s]
+        isin = v & D[,s]
         n = sum(isin)
         c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])), summary(na.omit(D[isin,"y1"])))
       }))
@@ -1166,11 +1176,12 @@ plot_stats=function(obj) {
       if(reg$type=="oval") alg = 3
       if(reg$type=="rect") alg = 2
       do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
-        np = sum(D[,d])
+        v = no_nas & D[,d]
+        np = sum(v)
         if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
-        isin = cpp_pnt_in_gate(pnts = cbind(D[D[,d],"x2"],D[D[,d],"y2"]), gate = cbind(coords$x,coords$y), algorithm = alg)
+        isin = cpp_pnt_in_gate(pnts = cbind(D[v,"x2"],D[v,"y2"]), gate = cbind(coords$x,coords$y), algorithm = alg)
         n = sum(isin)
-        c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])), summary(na.omit(D[isin,"y1"])))
+        c("count"=n, "perc"=n/np*100, summary(D[v,"x1"][isin]), summary(D[v,"y1"][isin]))
       }))
     })
     stats = do.call(what=rbind, args=c(base_s, kids_r, kids_s))

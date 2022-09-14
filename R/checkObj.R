@@ -69,17 +69,6 @@ checkObj <- function(obj) {
     obj$features_def=structure(obj$features_def[order(names(obj$features_def))],class=c("list","IFC_features_def"))
   }
   attr(obj$pops[["All"]], "reserved")=TRUE
-  stats=data.frame(stringsAsFactors=FALSE,check.rows=FALSE,check.names=FALSE,t(sapply(names(obj$pops),FUN=function(p){
-    count=sum(obj$pops[[p]]$obj)
-    base=obj$pops[[p]]$base
-    type=obj$pops[[p]]$type
-    if(base == "") base="All"
-    parent=sum(obj$pops[[base]]$obj)
-    c("type"=type,"parent"=base,"count"=count,"perc_parent"=count/parent*100,"perc_tot"=count/obj_count*100)
-  })))
-  stats[,3]=as.numeric(stats[,3])
-  stats[,4]=as.numeric(stats[,4])
-  stats[,5]=as.numeric(stats[,5])
-  obj$stats=stats
+  obj$stats=get_pops_stats(obj$pops, obj_count)
   return(obj)
 }

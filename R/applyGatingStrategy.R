@@ -180,17 +180,7 @@ applyGatingStrategy = function(obj, gating, keep, display_progress = TRUE, verbo
     }, error = function(e) stop("something went wrong while creating graphs"))
     
     ##### computes stats
-    ans$stats = data.frame(stringsAsFactors = FALSE, check.rows = FALSE, check.names = FALSE, t(sapply(names(ans$pops), FUN=function(p) {
-      count = sum(ans$pops[[p]]$obj)
-      base = ans$pops[[p]]$base
-      type = ans$pops[[p]]$type
-      if(base=="") base = "All"
-      parent = sum(ans$pops[[base]]$obj)
-      c("type" = type, "parent" = base, "count" = count, "perc_parent" = count/parent*100, "perc_tot" = count/ncol(ans$features)*100)
-    })))
-    ans$stats[,3] = as.numeric(ans$stats[,3])
-    ans$stats[,4] = as.numeric(ans$stats[,4])
-    ans$stats[,5] = as.numeric(ans$stats[,5])
+    ans$stats = get_pops_stats(ans$pops, ncol(ans$features))
   },
   error = function(e) {
     stop("can't apply gating strategy:\n", e$message, call. = FALSE)

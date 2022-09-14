@@ -121,18 +121,6 @@ data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsi
 
   obj$pops = exported_pops
   obj_count = as.integer(obj$description$ID$objcount)
-  if(nrow(obj$stats)!=0) {
-    obj$stats = data.frame(stringsAsFactors = FALSE, check.rows = FALSE, check.names = FALSE, t(sapply(names(exported_pops), FUN=function(p) {
-      count = sum(exported_pops[[p]]$obj)
-      base = exported_pops[[p]]$base
-      type = exported_pops[[p]]$type
-      if(base=="") base = "All"
-      parent = sum(exported_pops[[base]]$obj)
-      c("type" = type, "parent" = base, "count" = count, "perc_parent" = count/parent*100, "perc_tot" = count/obj_count*100)
-    })))
-    obj$stats[,3] = as.numeric(obj$stats[,3])
-    obj$stats[,4] = as.numeric(obj$stats[,4])
-    obj$stats[,5] = as.numeric(obj$stats[,5])
-  }
+  if(nrow(obj$stats)!=0) obj$stats = get_pops_stats(exported_pops, as.integer(obj$description$ID$objcount))
   return(obj)
 }

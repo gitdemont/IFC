@@ -825,25 +825,7 @@ FCS_to_data <- function(fcs, ...) {
     return(p)
   })
   class(min_data$pops) <- K
-  pops = min_data$pops
-  stats = data.frame(stringsAsFactors = FALSE,
-                     check.rows = FALSE,
-                     check.names = FALSE,
-                     t(sapply(names(pops),
-                              FUN = function(p) {
-                                count = sum(pops[[p]]$obj)
-                                base = pops[[p]]$base
-                                type = pops[[p]]$type
-                                if (base == "") base = "All"
-                                parent = sum(pops[[base]]$obj)
-                                c(type = type, parent = base, count = count,
-                                  perc_parent = count/parent * 100,
-                                  perc_tot = count/obj_count * 100)
-                              })))
-  stats[, 3] = as.numeric(stats[, 3])
-  stats[, 4] = as.numeric(stats[, 4])
-  stats[, 5] = as.numeric(stats[, 5])
-  min_data$stats = stats
+  min_data$stats = get_pops_stats(min_data$pops, obj_count)
   return(min_data)
 }
 

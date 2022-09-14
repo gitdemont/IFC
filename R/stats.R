@@ -58,6 +58,29 @@ buildStats <- function(type, title, def, ...) {
   return(list("type"=type, "title"=title, "def"=def))
 }
 
+#' @title Statistics Extraction from Populations
+#' @description
+#' Extracts populations statistics
+#' @param pops list of populations
+#' @param objcount total number of objects.
+#' @return a data.frame with computed statistics.
+#' @keywords internal
+get_pops_stats <- function(pops, objcount = 0) {
+  names(pops) = sapply(pops, FUN = function(p) p$name)
+  stats = data.frame(stringsAsFactors = FALSE, check.rows = FALSE, check.names = FALSE, t(sapply(names(pops), FUN=function(p) {
+    count = sum(pops[[p]]$obj, na.rm = TRUE)
+    base = pops[[p]]$base
+    type = pops[[p]]$type
+    if(base=="") base = "All"
+    parent = sum(pops[[base]]$obj, na.rm = TRUE)
+    c("type" = type, "parent" = base, "count" = count, "perc_parent" = count/parent*100, "perc_tot" = count/objcount*100)
+  })))
+  stats[,3] = as.numeric(stats[,3])
+  stats[,4] = as.numeric(stats[,4])
+  stats[,5] = as.numeric(stats[,5])
+  stats
+}
+
 #' @title Statistics Extraction
 #' @description
 #' Extracts statistics from `IFC_data` object
@@ -68,17 +91,7 @@ buildStats <- function(type, title, def, ...) {
 #' @keywords internal
 extractStats <- function(obj, feat_name, trans="P") {
   assert(obj, cla="IFC_data")
-  stats = data.frame(stringsAsFactors = FALSE, check.rows = FALSE, check.names = FALSE, t(sapply(names(obj$pops), FUN=function(p) {
-    count = sum(obj$pops[[p]]$obj)
-    base = obj$pops[[p]]$base
-    type = obj$pops[[p]]$type
-    if(base=="") base = "All"
-    parent = sum(obj$pops[[base]]$obj)
-    c("type" = type, "parent" = base, "count" = count, "perc_parent" = count/parent*100, "perc_tot" = count/obj$description$ID$objcount*100)
-  })))
-  stats[,3] = as.numeric(stats[,3])
-  stats[,4] = as.numeric(stats[,4])
-  stats[,5] = as.numeric(stats[,5])
+  stats = get_pops_stats(obj$pops)
   if(!missing(feat_name)) {
     msg = try(assert(feat_name, len=1, alw=names(obj$features)), silent=TRUE)
     if(inherits(msg, what="try-error")) {
