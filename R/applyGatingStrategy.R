@@ -176,7 +176,7 @@ applyGatingStrategy = function(obj, gating, keep, display_progress = TRUE, verbo
     
     ##### checks that graphs are correctly defined
     tryCatch({
-      lapply(ans$graphs, FUN = function(g) plot_lattice(plotGraph(obj = ans, graph = g, draw = FALSE, stats_print = FALSE)))
+      lapply(ans$graphs, FUN = function(g) { p = plot_lattice(plotGraph(obj = ans, graph = g, draw = FALSE, stats_print = FALSE))})
     }, error = function(e) stop("something went wrong while creating graphs"))
     
     ##### computes stats
