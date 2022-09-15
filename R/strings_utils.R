@@ -106,39 +106,40 @@ protectn <- function(name) {
 
 #' @title String Decomposition with Operators
 #' @description
-#' Helper that will split population definition into chunks of names and operators.
-#' @param definition population definition to be splitted
+#' Helper that will split definition into chunks of names and operators.
+#' @param definition definition to be split
 #' @param all_names the names of all allowed populations
 #' @param operators operators used. Default is c("And", "Or", "Not", "(", ")").
 #' @param split string used for splitting. Default is "|".
+#' @param scalar whether to allow presence of scalar or not. Default is FALSE.
 #' @keywords internal
-splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(", ")"), split = "|") {
+splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(", ")"), split = "|", scalar = FALSE) {
   assert(definition, len=1, typ="character")
   assert(all_names, typ="character")
   assert(operators, typ="character")
   assert(split, len=1, typ="character")
+  assert(scalar, alw=c(TRUE,FALSE))
   
   # we create a mapping between all_names and random names
   # we also ensure that random names will not contain any specials and 
   # will not match with themselves nor with names or operators or split to substitute
   # we also order to_substitute by number of character (decreasing) to
   # be sure that longer words will be substitute first
-  to_substitute = all_names
+  to_substitute = unique(all_names)
   if((length(to_substitute) == 0) || (definition == "")) return(definition)
   to_substitute = to_substitute[order(nchar(to_substitute), decreasing = TRUE)]
   replace_with = c()
-  for(i in 1:length(to_substitute)) {
-    foo = c()
-    while((length(foo) == 0) ||
-          any(unlist(lapply(to_substitute, FUN = function(x) grepl(pattern=x, x=foo, fixed=TRUE))))) {
-      foo = random_name(n=max(9,nchar(operators))+1, special = NULL, forbidden = c(replace_with, to_substitute, operators, split)) 
-    }
-    replace_with = c(replace_with, foo)
+  n = max(9,nchar(operators))+1
+  for(i in seq_along(to_substitute)) {
+    replace_with = c(replace_with,
+                     random_name(n=n,
+                                 special = NULL,
+                                 forbidden = c(replace_with, to_substitute, operators, split)))
   }
   
   # we substitute names and operators with random names
   ans = definition
-  for(i in 1:length(to_substitute)) { 
+  for(i in seq_along(to_substitute)) { 
     ans = gsub(pattern = to_substitute[i], replacement = replace_with[i], x = ans, fixed = TRUE)
   }
   
@@ -153,6 +154,7 @@ splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(",
     if(length(foo) == 0) {
       foo = operators[x == operators]
       if(length(foo) == 0) {
+        if(scalar && !length(na.omit(suppressWarnings(as.numeric(x))))== 0) return(x)
         stop("definition contains unexpected name")
       }
     }

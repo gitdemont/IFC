@@ -8,19 +8,22 @@ splitn(
   definition,
   all_names,
   operators = c("And", "Or", "Not", "(", ")"),
-  split = "|"
+  split = "|",
+  scalar = FALSE
 )
 }
 \arguments{
-\item{definition}{population definition to be splitted}
+\item{definition}{definition to be split}
 
 \item{all_names}{the names of all allowed populations}
 
 \item{operators}{operators used. Default is c("And", "Or", "Not", "(", ")").}
 
 \item{split}{string used for splitting. Default is "|".}
+
+\item{scalar}{whether to allow presence of scalar or not. Default is FALSE.}
 }
 \description{
-Helper that will split population definition into chunks of names and operators.
+Helper that will split definition into chunks of names and operators.
 }
 \keyword{internal}
