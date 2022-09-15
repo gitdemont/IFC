@@ -96,11 +96,14 @@ data_rm_features <- function(obj, features, list_only = TRUE, adjust_graph = TRU
   LL = L - 1
   while(L != LL) {
     L = length(to_remove_features)
-    to_find = sapply(to_remove_features, protectn)
-    to_find = substr(to_find, 2, nchar(to_find) - 1)
+    to_find = to_remove_features
     for(i in 1:length(obj$features_def)) {
-      # if((obj$features_def[[i]]$type == "combined") && any(to_remove_features %in% strsplit(obj$features_def[[i]]$def, split = "|", fixed = TRUE)[[1]])) {
-      if((obj$features_def[[i]]$type == "combined") && any(sapply(to_find, grepl, obj$features_def[[i]]$def))) {
+      if((obj$features_def[[i]]$type == "combined") &&
+         any(to_remove_features %in% splitn(obj$features_def[[i]]$def,
+                                            all_names = names(obj$features),
+                                            operators = c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT"),
+                                            split = "|",
+                                            scalar = TRUE))) {
         to_remove_features = c(to_remove_features, obj$features_def[[i]]$name)
       }
     }
