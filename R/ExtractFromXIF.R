@@ -343,6 +343,8 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         features$`Object Number` = 0:(nrow(features)-1)
         warning(paste0("found duplicated objects when reading file: ", fileName))
       }
+      features = getFeaturesValues(features_def = features_def[sapply(features_def, FUN = function(f_def) f_def$type == "combined")],
+                                   features = features)[, features_names]
       rownames(features) = 0:(nrow(features)-1)
       class(features) <- c(class(features),"IFC_features")
       class(features_def) <- c(class(features_def),"IFC_features_def")

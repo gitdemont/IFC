@@ -75,6 +75,7 @@ data_add_features <- function(obj, features, ...) {
   }
   
   # defines available parameters
+  obj_count = as.integer(obj$description$ID$objcount)
   operators_pop = c("And","Or","Not","(",")")
   operators_daf = c(operators_pop, "/","+","*","-","ABS","COS","SIN","SQR","SQRT","False","True","false","true")
   # masks_avl = c("AdaptiveErode","Component","Dilate","Erode","Fill","Inspire","Intensity","Interface","LevelSet","Morphology",
@@ -98,45 +99,69 @@ data_add_features <- function(obj, features, ...) {
                           "Delta Centroid"=paste0("Delta Centroid ", c("X","Y","XY")),
                           "Two Masks and Image"=c("Intensity Concentration Ratio"),
                           "Image and Scalar"=c("Ensquared Energy", "Diameter:"))
+  
+  # check that new features are not duplicated and well defined
+  # send warning on duplicated
+  # send error on bad definition
   exported_feats = sapply(features, FUN=function(feat) {
     if(feat$name%in%names(obj$features)) {
       warning(paste0(feat$name, "\nnot exported: trying to export an already defined feature"), immediate. = TRUE, call. = FALSE)
       return(FALSE)
     }
-    def = feat$def
-    if(grepl("^H ", def)) def = gsub("|Granularity:|1|20", "", def, fixed = TRUE) # removes granularity from H features
-    def = strsplit(def, split = "|", fixed = TRUE)[[1]]
-    def = def[!(def%in%userfeatures_avl[[feat$userfeaturetype]])] # removes possible features from definition
-    if(grepl("Mask",feat$userfeaturetype)) {
-      def = def[!(def%in%c(obj$description$masks$name, 
-                           unlist(strsplit(obj$description$masks$def[obj$description$masks$name=="MC"], "|Or|", useBytes = TRUE, fixed=TRUE))))] # removes masks from definition
+    if(feat$type == "combined") {
+      def = splitn(definition = feat$def,
+                   all_names = c(names(obj$features), names(features)),
+                   operators = c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT"),
+                   split = "|",
+                   scalar = TRUE) # will error if definition is not ok
+    } else {
+      # TODO maybe we could use splitn logic here
+      def = feat$def
+      if(grepl("^H ", def)) def = gsub("|Granularity:|1|20", "", def, fixed = TRUE) # removes granularity from H features
+      def = strsplit(def, split = "|", fixed = TRUE)[[1]]
+      def = def[!(def%in%userfeatures_avl[[feat$userfeaturetype]])] # removes possible features from definition
+      if(grepl("Mask",feat$userfeaturetype)) {
+        def = def[!(def%in%c(obj$description$masks$name, 
+                             unlist(strsplit(obj$description$masks$def[obj$description$masks$name=="MC"], "|Or|", useBytes = TRUE, fixed=TRUE))))] # removes masks from definition
+      }
+      if(grepl("Image",feat$userfeaturetype)) {
+        def = def[!(def%in%obj$description$Images$name)] # removes channels names from definition
+      }
+      def = def[!(def%in%operators_daf)] # removes operators from definition
+      suppressWarnings({def = as.numeric(def)}) # converts remaining to numeric
+      if(length(def) != 0) {
+        if(!grepl("Scalar",feat$userfeaturetype) || is.na(def)) stop(paste0(feat$name, "\nbad feature definition: ", feat$def)) # if something remains which coercion to numeric produces NA, it means that features is not well defined
+      }
     }
-    if(grepl("Image",feat$userfeaturetype)) {
-      def = def[!(def%in%obj$description$Images$name)] # removes channels names from definition
-    }
-    if(grepl("Combined",feat$userfeaturetype)) {
-      def = def[!(def%in%c(names(obj$features), names(features)))] # removes features names from definition
-    }
-    def = def[!(def%in%operators_daf)] # removes operators from definition
-    suppressWarnings({def = as.numeric(def)}) # converts remaining to numeric
-    if(length(def) != 0) {
-      if(!grepl("Scalar",feat$userfeaturetype) || is.na(def)) stop(paste0(feat$name, "\nbad feature definition: ", feat$def)) # if something remains which coercion to numeric produces NA, it means that features is not well defined
-    }
-    if(length(feat$val) != as.integer(obj$description$ID$objcount)) stop(paste0(feat$name, "\nbad feature value length, expected: ",  obj$description$ID$objcount, ", but is: ", length(feat$val))) # TODO add some lines to allow function to automatically compute feat$val when missing
     return(TRUE)
   })
-  exported_feats = features[exported_feats]
+  exported_feats = features[exported_feats] # remove duplicated
   if(length(exported_feats) == 0) return(obj)
   
+  # append new features to obj$features
   names(exported_feats) = sapply(exported_feats, FUN=function(x) x$name)
-  K = class(obj$features)
-  # obj$features = cbind.data.frame(obj$features,stringsAsFactors = FALSE, fix.empty.names = FALSE,
-                       # as.data.frame.list(lapply(exported_feats, FUN=function(x) x$val), optional = TRUE, stringsAsFactors = FALSE, col.names = sapply(exported_feats, FUN=function(x) x$name)))
-  obj$features = fastCbind(obj$features, sapply(exported_feats, simplify = FALSE, FUN=function(x) x$val))
-  class(obj$features) = c(setdiff(K, "IFC_features"), "IFC_features")
-
+  obj$features = fastCbind(obj$features, sapply(exported_feats, simplify = FALSE, FUN=function(x) {
+    if(x$type == "combined") { # new "combined" features are initially filled with 0 
+      return(rep(0, obj_count))
+    } else {
+      if(length(x$val) != obj_count) stop(feat$name, "\nbad feature value length, expected: ",  obj_count, ", but is: ", length(feat$val))
+      return(x$val)
+    }
+  }))
+  
+  # record features names
+  features_names = names(obj$features)
+  
+  # append new definition to obj$features_def
   K = class(obj$features_def)
-  obj$features_def = c(obj$features_def, lapply(exported_feats, FUN=function(x) x[c("name", "type", "userfeaturetype", "def")]))
+  obj$features_def = c(obj$features_def, sapply(exported_feats, USE.NAMES = TRUE, simplify = FALSE,
+                                                FUN=function(x) x[c("name", "type", "userfeaturetype", "def")]))
   class(obj$features_def) = c(setdiff(K, "IFC_features_def"), "IFC_features_def")
+  
+  # recompute new combined feature(s) and order obj$features
+  K = class(obj$features)
+  # obj$features = getFeaturesValues(features_def = exported_feats[sapply(exported_feats, FUN = function(f_def) f_def$type == "combined")],
+                                   # features = obj$features)[, features_names]
+  class(obj$features) = c(setdiff(K, "IFC_features"), "IFC_features")
   return(obj)
 }
