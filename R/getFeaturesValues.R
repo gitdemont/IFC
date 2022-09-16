@@ -53,9 +53,14 @@ get_feat_value <- function(feat_def,
   # identify features names and operators in feature definition
   def_tmp = splitn(definition = feat_def$def, all_names = names(features), operators = operators, scalar = TRUE)
   def_names = setdiff(def_tmp, operators)
-  
-  # initialize bracket counters and variables
+
+  # variables used
   not_fun = setdiff(operators, c("+", "-", "*", "/", "(", ")"))
+  alw_fun = sapply(setdiff(tolower(operators), c(")","sqr")), USE.NAMES = TRUE, simplify = FALSE,
+                   FUN = function(x) getFromNamespace(x, asNamespace("base")))
+  alw_fun = c(alw_fun, list("sqr" = function(x) x^2))
+  
+  # initialize bracket counters
   n = 0; w = 0; def_str = c()
   
   # add necessary bracket to string definition 
@@ -85,20 +90,18 @@ get_feat_value <- function(feat_def,
     }
   }
   
-  # terminate string definition correction
+  # terminate string definition correction with remaining brackets to close
   replicate(n, { def_str <<- c(def_str, ")") })
   
   # replace features names by their values and compute result according to corrected feature definition
-  sqr <- function(x) x^2 # sqr R equivalent
   def_names=def_names[is.na(suppressWarnings(as.numeric(def_names)))]
-  comb_tmp=features[ , def_names, drop = FALSE]
   replace_with=c()
   for(i_def in seq_along(def_names)) replace_with=c(replace_with,random_name(n=10,special=NULL,forbidden=c(replace_with,def_str)))
   for(i_def in seq_along(def_names)) def_str[def_names[i_def]==def_str] <- rep(paste0("`",replace_with[i_def],"`"),sum(def_names[i_def]==def_str))
-  colnames(comb_tmp)=replace_with
-  suppressWarnings(eval(expr=parse(text=paste0(def_str,collapse=" ")),envir=as.data.frame(comb_tmp,stringsAsFactors=FALSE),enclos=new.env()))
+  e = lapply(def_names, FUN = function(x) features[ , x, drop = TRUE])
+  names(e)=replace_with
+  suppressWarnings(eval(expr=parse(text=paste0(def_str,collapse=" ")),envir=c(e, alw_fun),enclos=emptyenv()))
 }
-
 
 #' @title Features Values Extraction
 #' @name getFeaturesValues

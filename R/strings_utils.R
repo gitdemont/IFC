@@ -154,8 +154,9 @@ splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(",
     if(length(foo) == 0) {
       foo = operators[x == operators]
       if(length(foo) == 0) {
-        if(scalar && !length(na.omit(suppressWarnings(as.numeric(x))))== 0) return(x)
-        stop("definition contains unexpected name")
+        if(scalar && length(na.omit(suppressWarnings(as.numeric(x))))!= 0) return(x)
+        stop(call. = FALSE, 'definition ["',definition,'"] contains unexpected name [',x,']',
+             ifelse(!scalar && length(na.omit(suppressWarnings(as.numeric(x)))) != 0, ". Consider the use 'scalar' = TRUE", ""))
       }
     }
     return(foo)
@@ -339,8 +340,11 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
   if(length(ALPHA)!=0) assert(ALPHA, alw = LETTERS)
   if(length(alpha)!=0) assert(alpha, alw = letters)
   if(length(num)!=0) assert(num, cla="integer", alw = 0L:9L)
-  id = paste0(sample(x = c(ALPHA, alpha, num, special), size = n), collapse = "")
-  while(id %in% forbidden) { id <- random_name(n = n, ALPHA = ALPHA, alpha = alpha, num = num, special = special, forbidden = forbidden) }
+  forbidden = unique(forbidden); assert(forbidden, typ = "character")
+  id = paste0(sample(x = c(ALPHA, alpha, num, special), size = n, replace = TRUE), collapse = "")
+  while(id %in% forbidden) { 
+    id = paste0(sample(x = c(ALPHA, alpha, num, special), size = n, replace = TRUE), collapse = "")
+  }
   return(id)
 }
 
