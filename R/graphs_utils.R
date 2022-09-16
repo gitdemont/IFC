@@ -138,7 +138,11 @@ val_constr=function(x, h, type) {
 pan_smooth=function(x, type, br, normalize, fill, lwd, lty, col, alpha, ylim, bin, border, include.lowest=TRUE, right=TRUE, factor=0) {
   h=hist_constr(x, br, include.lowest=include.lowest, right=right, plot = FALSE)
   xx=val_constr(x, h, "mids")
-  yy=density(x, n=bin, na.rm=TRUE, from=min(br), to=max(br))$y
+  yy=try(density(x, n=bin, na.rm=TRUE, from=min(br), to=max(br))$y, silent = TRUE)
+  if(inherits(yy, "try-error")) {
+    warning(attr(yy, "condition")$message)
+    yy = 0
+  }
   yy[xx<min(x, na.rm=TRUE)]=0
   yy[xx>max(x, na.rm=TRUE)]=0
   # if(normalize) {yy=yy/max(yy)*max(ylim)} else {yy=yy/max(yy)*max(val_constr(x, h, type))}
@@ -363,7 +367,11 @@ base_hist_constr=function(x, type, br, normalize, fill, smooth, lwd, lty, col, a
   b["alpha",] <- alpha * b["alpha",]
   if(smooth) {
     xx=val_constr(x, h, "mids")
-    yy=density(x, n=length(br)-1, na.rm=TRUE, from=min(br), to=max(br))$y
+    yy=try(density(x, n=length(br)-1, na.rm=TRUE, from=min(br), to=max(br))$y, silent = TRUE)
+    if(inherits(yy, "try-error")) {
+      warning(attr(yy, "condition")$message)
+      yy = 0
+    }
     yy[xx<min(x, na.rm=TRUE)]=0
     yy[xx>max(x, na.rm=TRUE)]=0
     if(normalize) {yy=yy/max(yy)} else {yy=yy/max(yy)*max(val_constr(x, h, type))}
@@ -677,13 +685,22 @@ plot_base=function(obj) {
   if(any(obj$input$add_key %in% c("panel","global","both"))) {
     args_key = list(x="topleft",inset=0.025,
                     col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
-                    legend=disp_n,cex=obj$plot$par.settings$add.text$cex * 0.5,bg="#ADADAD99",pt.cex=1,bty="o",box.lty=0)
-    if(obj$input$add_key %in% c("panel","both")) do.call(args=c(list(pch=sapply(displayed, FUN=function(p) p$style)), args_key), what=legend)
+                    cex=obj$plot$par.settings$add.text$cex * 0.5,bg="#ADADAD99",pt.cex=1,bty="o",box.lty=0)
+    if(obj$input$type %in% c("percent", "count")) {
+      args_key=c(args_key, list(lty = c(1,2,3,4,6)[match(basepop[[obj$input$order[disp]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))]))
+    } else {
+      args_key=c(args_key, list(pch=sapply(displayed, FUN=function(p) p$style)))
+    }
+    args_key$legend=disp_n
+    if(obj$input$add_key %in% c("panel","both")) {
+      do.call(args= args_key, what=legend) 
+    }
     if(obj$input$add_key %in% c("global","both")) {
       args_key$x = "top"
       args_key$inset = -graphics::grconvertY(1+ length(displayed), "chars", "nfc")
       args_key$xpd = TRUE
-      do.call(args=c(list(pch=sapply(displayed, FUN=function(p) p$style)), args_key), what=legend)
+      # TODO add something better for title positioning
+      do.call(args= args_key, what=legend)
       mtext(side = 3, line = 2 + length(displayed) * obj$plot$par.settings$add.text$cex * 0.5, adj = 0.5, args_plot$main, font = 2)
       args_sub$line = 1.1 + length(displayed) * obj$plot$par.settings$par.main.text$cex * 0.8
     } 
@@ -890,10 +907,10 @@ plot_lattice=function(obj) {
   if(ylab == "") ylab = " "
   if(type %in% c("percent", "count")) {
     # define legend
-    KEY = list("text"=list(displayed_n),
-               "cex"=lt$add.text$cex * 0.5,
+    KEY = list("cex"=lt$add.text$cex * 0.5,
                "lines"=list(col = sapply(displayed_n, FUN=function(p) P[[p]][c("color","lightModeColor")][[color_mode]]),
-                            lty = sapply(displayed_n, FUN=function(r) c(1,2,3,4,6)[match(basepop[[displayed_o[r]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])))
+                            lty = sapply(displayed_n, FUN=function(r) c(1,2,3,4,6)[match(basepop[[displayed_o[r]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])),
+               "text"=list(displayed_n))
     # make histogram
     if(nrow(D) > 0) {
       br = do.breaks(Xlim, nbin)
@@ -960,10 +977,10 @@ plot_lattice=function(obj) {
     }
   } else {
     # define legend
-    KEY = list("text"=list(rev(displayed_n)),
-               "cex"=lt$add.text$cex * 0.5,
+    KEY = list("cex"=lt$add.text$cex * 0.5,
                "points"=list(col = sapply(P[rev(displayed_n)], FUN=function(p) p[c("color","lightModeColor")][[color_mode]]),
-                             pch = sapply(P[rev(displayed_n)], FUN=function(p) p$style)))
+                             pch = sapply(P[rev(displayed_n)], FUN=function(p) p$style)),
+               "text"=list(displayed_n))
     # identify groups
     groups = NULL
     if(nrow(D) > 0) if(type == "scatter") if(precision=="light") {
