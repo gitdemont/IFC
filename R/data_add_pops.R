@@ -120,7 +120,6 @@ data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsi
                               title_progress = basename(obj$fileName), ...)
 
   obj$pops = exported_pops
-  obj_count = as.integer(obj$description$ID$objcount)
   if(nrow(obj$stats)!=0) obj$stats = get_pops_stats(exported_pops, as.integer(obj$description$ID$objcount))
   return(obj)
 }

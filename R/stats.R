@@ -91,7 +91,7 @@ get_pops_stats <- function(pops, objcount = 0) {
 #' @keywords internal
 extractStats <- function(obj, feat_name, trans="P") {
   assert(obj, cla="IFC_data")
-  stats = get_pops_stats(obj$pops)
+  stats = get_pops_stats(obj$pops, as.integer(obj$description$ID$objcount))
   if(!missing(feat_name)) {
     msg = try(assert(feat_name, len=1, alw=names(obj$features)), silent=TRUE)
     if(inherits(msg, what="try-error")) {

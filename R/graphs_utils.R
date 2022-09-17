@@ -1181,7 +1181,7 @@ plot_stats=function(obj) {
         if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
         isin = v & D[,s]
         n = sum(isin)
-        c("count"=n, "perc"=n/np*100, summary(na.omit(D[isin,"x1"])), summary(na.omit(D[isin,"y1"])))
+        c("count"=n, "perc"=n/np*100, summary(D[isin,"x1"]), summary(D[isin,"y1"]))
       }))
     })
     kids_r = lapply(reg_n, FUN=function(r) {
