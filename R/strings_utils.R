@@ -108,7 +108,7 @@ protectn <- function(name) {
 #' @description
 #' Helper that will split definition into chunks of names and operators.
 #' @param definition definition to be split
-#' @param all_names the names of all allowed populations
+#' @param all_names the names of all allowed names
 #' @param operators operators used. Default is c("And", "Or", "Not", "(", ")").
 #' @param split string used for splitting. Default is "|".
 #' @param scalar whether to allow presence of scalar or not. Default is FALSE.

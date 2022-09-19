@@ -15,7 +15,7 @@ splitn(
 \arguments{
 \item{definition}{definition to be split}
 
-\item{all_names}{the names of all allowed populations}
+\item{all_names}{the names of all allowed names}
 
 \item{operators}{operators used. Default is c("And", "Or", "Not", "(", ")").}
 

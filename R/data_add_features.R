@@ -144,7 +144,7 @@ data_add_features <- function(obj, features, ...) {
     if(x$type == "combined") { # new "combined" features are initially filled with 0 
       return(rep(0, obj_count))
     } else {
-      if(length(x$val) != obj_count) stop(feat$name, "\nbad feature value length, expected: ",  obj_count, ", but is: ", length(feat$val))
+      if(length(x$val) != obj_count) stop(x$name, "\nbad feature value length, expected: ",  obj_count, ", but is: ", length(x$val))
       return(x$val)
     }
   }))
