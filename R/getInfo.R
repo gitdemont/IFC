@@ -270,22 +270,10 @@ getInfo <- function(fileName,
       if(!force_default) stop("can't determine acquisition information")
     }
     if(force_default) {
-      col_tmp = c("DarkOrchid", "Lime", "Yellow", "DarkOrange", "Red", "DeepPink")
-      col_tmp = rep(col_tmp, 2)
       node = lapply(1:12, FUN=function(i) {
-        if(infos$brightfield$channel[i]) {
-          if(infos$collectionmode == 1) {
-            sprintf('<image name="Ch%s" color="White" physicalChannel="%s" xmin="450" xmax="1000" xmid="725" ymid="127" scalemin="445" scalemax="1005" tokens="" baseimage="" function="" saturation="Cyan"/>', sprintf("%02.0f", i), i-1)
-          } else {
-            sprintf('<image name="Ch%s" color="White" physicalChannel="%s" xmin="100" xmax="300" xmid="200" ymid="127" scalemin="95" scalemax="305" tokens="" baseimage="" function="" saturation="Cyan"/>', sprintf("%02.0f", i), i-1)
-          }
-        } else {
-          if(infos$collectionmode == 1) {
-            sprintf('<image name="Ch%s" color="%s" physicalChannel="%s" xmin="0" xmax="4095" xmid="2047" ymid="127" scalemin="0" scalemax="4095" tokens="" baseimage="" function="" saturation="Cyan"/>', sprintf("%02.0f", i), col_tmp[i], i-1)
-          } else {
-            sprintf('<image name="Ch%s" color="%s" physicalChannel="%s" xmin="0" xmax="1023" xmid="511" ymid="127" scalemin="0" scalemax="1023" tokens="" baseimage="" function="" saturation="Cyan"/>', sprintf("%02.0f", i), col_tmp[i], i-1)
-          }
-        }
+        im = buildImage(physicalChannel = i, MODE = infos$collectionmode, BF = infos$brightfield$channel[i])
+        im$physicalChannel = im$physicalChannel - 1
+        as.character(xml_new_node("image", im))
       })
       tmp_last = read_xml(paste0("<Images>",paste0(node, collapse=""),"</Images>"), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
     } 
