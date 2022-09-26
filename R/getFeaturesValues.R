@@ -33,6 +33,7 @@
 #' Computes feature values from feature definition
 #' @param features a data.frame of features, typically an object of class `IFC_features`.
 #' @param feat_def a feature definition as created by \code{\link{buildFeature}}.
+#' @param alt_names vector of same length as features to use for substitution. It can be used to speed up the process.
 #' @param operators operators used. Default is c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT").
 #' @param split string used for splitting. Default is "|".
 #' @details if 'feat_def$type' is "combined" returned value will be computed according in the scope of 'features' according to 'feat_def$def'.
@@ -41,6 +42,7 @@
 #' @keywords internal
 get_feat_value <- function(feat_def,
                            features,
+                           alt_names,
                            operators = c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT"),
                            split = "|") {
   if(length(feat_def) == 0) return(NULL)
@@ -51,7 +53,8 @@ get_feat_value <- function(feat_def,
   } 
   
   # identify features names and operators in feature definition
-  def_tmp = splitn(definition = feat_def$def, all_names = names(features), operators = operators, scalar = TRUE)
+  if(missing(alt_names)) alt_names = gen_altnames(names(features))
+  def_tmp = splitn(definition = feat_def$def, all_names = names(features), alt_names = alt_names, operators = operators, scalar = TRUE)
   def_names = setdiff(def_tmp, operators)
 
   # variables used
@@ -121,9 +124,13 @@ getFeaturesValues <- function(features,
   f_names = names(features)
   d_names = sapply(features_def, FUN = function(f_def) f_def$name)
   names(features_def) = d_names
+  all_names = c(f_names, d_names)
+  alt_names = gen_altnames(all_names)
   defs = lapply(features_def, FUN = function(f_def) {
     if(f_def$type != "combined") return(NULL)
-    def_tmp = splitn(definition = f_def$def, all_names = c(f_names, d_names), operators = operators, scalar = TRUE)
+    def_tmp = splitn(definition = f_def$def,
+                     all_names = all_names, alt_names = alt_names,
+                     operators = operators, scalar = TRUE)
     setdiff(def_tmp, operators)
   })
   names(defs) = d_names
@@ -144,14 +151,16 @@ getFeaturesValues <- function(features,
   }
   
   # get features values
+  N = names(features)
+  alt_names = gen_altnames(N)
   for(i_name in unique(c(f_names, names(defs)))) {
-    N = names(features)
     if(!any(i_name == N)) {
       # i_name does not exists yet in features
       # so we compute features values according to definition
       # and add it to features
       v = get_feat_value(features = features,
                          feat_def = features_def[[i_name]],
+                         alt_names = alt_names,
                          operators = operators,
                          split = split)
       if(length(v) == nrow(features)) {
@@ -164,9 +173,10 @@ getFeaturesValues <- function(features,
     } else {                # recomputes features values
       if((i_name %in% d_names) && (features_def[[i_name]]$type == "combined")) {
         features[, i_name] = get_feat_value(features = features,
-                                                     feat_def = features_def[[i_name]],
-                                                     operators = operators,
-                                                     split = split)
+                                            feat_def = features_def[[i_name]],
+                                            alt_names = alt_names,
+                                            operators = operators,
+                                            split = split)
       }
     }
   }

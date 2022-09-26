@@ -65,6 +65,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_seqmatch
+R_len_t cpp_seqmatch(const Rcpp::StringVector x, const Rcpp::StringVector y);
+RcppExport SEXP _IFC_cpp_seqmatch(SEXP xSEXP, SEXP ySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::StringVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::StringVector >::type y(ySEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_seqmatch(x, y));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_fast_rowAny
 Rcpp::Nullable<Rcpp::LogicalVector> cpp_fast_rowAny(const Rcpp::Nullable<Rcpp::LogicalVector> M_);
 RcppExport SEXP _IFC_cpp_fast_rowAny(SEXP M_SEXP) {
@@ -721,6 +733,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_assert", (DL_FUNC) &_IFC_cpp_assert, 6},
     {"_IFC_cpp_ell_coord", (DL_FUNC) &_IFC_cpp_ell_coord, 2},
     {"_IFC_cpp_pnt_in_gate", (DL_FUNC) &_IFC_cpp_pnt_in_gate, 4},
+    {"_IFC_cpp_seqmatch", (DL_FUNC) &_IFC_cpp_seqmatch, 2},
     {"_IFC_cpp_fast_rowAny", (DL_FUNC) &_IFC_cpp_fast_rowAny, 1},
     {"_IFC_cpp_fast_listAny", (DL_FUNC) &_IFC_cpp_fast_listAny, 1},
     {"_IFC_cpp_fast_range", (DL_FUNC) &_IFC_cpp_fast_range, 1},

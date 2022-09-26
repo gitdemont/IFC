@@ -303,7 +303,9 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   }
   
   operators = c("And","Or","Not","(",")")
-  displayed_n = splitn(definition = order, all_names = c(b_names, g_names, s_names, "Selected Bin"), operators = operators)
+  all_names = c(b_names, g_names, s_names, "Selected Bin")
+  alt_names = gen_altnames(all_names)
+  displayed_n = splitn(definition = order, all_names = all_names, alt_names = alt_names, operators = operators)
   displayed_n = setdiff(displayed_n, "Selected Bin")
   tmp = displayed_n %in% c(order_tmp)
   if(!all(tmp)) stop(paste0("trying to display a population not found in supplied ShownPop, BasePop, GraphRegion names: ",  paste0(displayed_n[!tmp], collapse=", ")))

@@ -35,9 +35,11 @@
 popsGetAffiliation <- function(pops, operators = c("And","Or","Not","(",")")) {
   assert(pops, cla = "IFC_pops")
   K = class(pops)
+  all_names = names(pops)
+  alt_names = gen_altnames(all_names)
   pops = sapply(pops, USE.NAMES = TRUE, simplify = FALSE, FUN = function(p) {
     if("C" %in% p$type) {
-      p$split = splitn(definition = p$definition, all_names = names(pops), operators = operators)
+      p$split = splitn(definition = p$definition, all_names = all_names, alt_names = alt_names, operators = operators)
       p$names = setdiff(p$split, operators)
     } else {
       p$names = ""

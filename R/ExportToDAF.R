@@ -139,8 +139,9 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
   tryCatch(expr = {
     # collects important information in original daf file
     masks_daf = c(xml_attr(xml_find_all(xml_tmp, "//mask"), attr = "name"),
-                  unlist(strsplit(xml_attr(xml_find_first(xml_tmp, "//mask[@name='MC']"), attr = "def"), "|Or|", useBytes = TRUE, fixed=TRUE)))
-
+                  unlist(strsplit(xml_attr(xml_find_first(xml_tmp, "//mask[@name='MC']"), attr = "def"), "|Or|", useBytes = TRUE, fixed=TRUE),
+                         recursive = FALSE, use.names = FALSE))
+    images_daf = c(xml_attr(xml_find_all(xml_tmp, "//Images/image"), attr = "name"))
     pops_daf = xml_attr(xml_find_all(xml_tmp, "//Pop"), attr = "name")
     if(length(pops_daf)==0) stop(paste0("No population found in ", fileName)) # should not append, at least 'All' population should be there
     regions_daf_label = xml_attr(xml_find_all(xml_tmp, "//Region"), attr = "label") # what happens if empty ?
@@ -165,28 +166,8 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
 
     # defines available parameters
     operators_pop = c("And","Or","Not","(",")")
-    operators_daf = c(operators_pop, "/","+","*","-","ABS","COS","SIN","SQR","SQRT","False","True","false","true")
-    masks_avl = c("AdaptiveErode","Component","Dilate","Erode","Fill","Inspire","Intensity","Interface","LevelSet","Morphology",
-                  "Object","Peak","Range","Skeleton","Spot","System","Threshold","Valley","Watershed")
-    masks_other = c("Combined","Dim","Middle","Bright","Tight","Dark","Thin","Thick")
-    userfeatures_avl = list("Mask Only"=c("Area", "Aspect Ratio", "Length", "Width", "Height", "Angle", "Centroid X", "Centroid Y", "Circularity", "Diameter",
-                                          "Elongatedness", "Major Axis", "Minor Axis", "Perimeter", "Shape Ratio", 'Spot Area Min', "Spot Distance Min",
-                                          "Thickness Max", "Thickness Min"),
-                            "Mask and Image"=c("Aspect Ratio Intensity", "Modulation", "Contrast", "Gradient RMS", "Intensity", "Mean Pixel", "Median Pixel",
-                                               "Max Pixel", "Raw Max Pixel", "Raw Min Pixel", "Saturation Count", "Saturation Percent", "Bright Detail Intensity R3",
-                                               "Bright Detail Intensity R7", "Angle Intensity", "Centroid X Intensity", "Centroid Y Intensity", "Compactness","Gradient Max", "Internalization", 
-                                               "Lobe Count","Major Axis Intensity", "Max Contour Position", "Min Pixel", "Minor Axis Intensity", "Raw Intensity", "Raw Mean Pixel",
-                                               "Raw Median Pixel", "Spot Intensity Max", "Spot Intensity Min", "Std Dev", "Symmetry 2", "Symmetry 3", "Symmetry 4", 
-                                               "Uncompensated Intensity", "Valley X", "Valley Y"),
-                            "Image Only"=paste0("Bkgd ", c("Mean", "StdDev")),
-                            "No Parameters"=c("Time", "Object Number", "Raw Centroid X", "Raw Centroid Y", "Flow Speed", "Camera Line Number", "Camera Timer", "Objects per mL", "Objects per sec"),
-                            "Mask, Image and Scalar"=paste0(paste0("H ", rep(c("Contrast ","Correlation ","Energy ", "Entropy ", "Homogeneity ", "Variance "), each=2)), c("Mean", "Std")),
-                            "Mask and Scalar"=c("Spot Count"),
-                            "Mask and Three Images"=c("Bright Detail Colocalization 3"),
-                            "Similarity"=c("Bright Detail Similarity R3", "Shift X", "Shift Y", "Similarity", "XCorr"),
-                            "Delta Centroid"=paste0("Delta Centroid ", c("X","Y","XY")),
-                            "Two Masks and Image"=c("Intensity Concentration Ratio"),
-                            "Image and Scalar"=c("Ensquared Energy", "Diameter:"))
+    comb_operators = c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT")
+    extr_operators = c("true", "false", "True", "False")
     
     # collects important information from new nodes
     masks_new = unlist(sapply(masks, FUN=function(x) x$name))
@@ -266,37 +247,25 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
         }
       }
     }
-
-    if(length(features)!=0) {
-      for(i in 1:length(features)) {
+    if(length(features) != 0) {
+      all_names_feat = c(features_daf, names(features))
+      split_feat(features_def = features,
+                 all_names = c(features_daf, names(features)),
+                 m_names = c(masks_daf, masks_new),
+                 i_names = images_daf, 
+                 comb_operators = comb_operators,
+                 extr_operators = extr_operators,
+                 split = "|",
+                 force = FALSE)
+      for(i in seq_along(features)) {
         feat = features[[i]]
         if(verbose) cat(paste0("creating feature: ", feat$name, "\n"))
         if(feat$name%in%features_daf) {
           warning(paste0(feat$name, ", not exported: trying to export an already defined feature"), immediate. = TRUE, call. = FALSE)
           next
         }
-        def = feat$def
-        if(grepl("^H ", def)) def = gsub("|Granularity:|1|20", "", def, fixed = TRUE) # removes granularity from H features
-        def = strsplit(def, split = "|", fixed = TRUE)[[1]]
-        def = def[!(def%in%userfeatures_avl[[feat$userfeaturetype]])] # removes possible features from definition
-        if(grepl("Mask",feat$userfeaturetype)) {
-          def = def[!(def%in%c(masks_daf, masks_new))] # removes masks from definition
-        }
-        if(grepl("Image",feat$userfeaturetype)) {
-          def = def[!(def%in%channels_daf)] # removes channels names from definition
-        }
-        if(grepl("Combined",feat$userfeaturetype)) {
-          def = def[!(def%in%c(features_daf, names(features)))] # removes features names from definition
-        }
-        def = def[!(def%in%operators_daf)] # removes operators from definition
-        suppressWarnings({def = as.numeric(def)}) # converts remaining to numeric
-        if(length(def) != 0) {
-          if(!grepl("Scalar",feat$userfeaturetype) || is.na(def)) stop(paste0(feat$name, "\nbad feature definition: ", feat$def)) # if something remains which coercion to numeric produces NA, it means that features is not well defined
-        }
         if(length(feat$val) != obj_number) stop(paste0(feat$name, "\nbad feature value length, expected: ",  obj_number, ", but is: ", length(feat$val))) # TODO add some lines to allow function to automatically compute feat$val when missing
-
         new_node_features_def = sprintf('<UDF name="%s" type="%s" userfeaturetype="%s" def="%s" />', feat[["name"]], feat[["type"]], feat[["userfeaturetype"]], feat[["def"]])
-        
         if(is_binary) {
           # TODO maybe change endianness reading / writing
           new_nodes$features = c(new_nodes$features, cpp_uint32_to_raw(fid), 
@@ -314,7 +283,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
                                    charToRaw(sprintf('<UDF name="%s" type="%s" userfeaturetype="%s" def="%s" />', feat[["name"]], feat[["type"]], feat[["userfeaturetype"]], feat[["def"]])),
                                    raw_2020,
                                    collapse$features_def)
-        }
+      }
     }
     if(length(regions)!=0) for(i in 1:length(regions)) {
       reg = regions[[i]]
@@ -332,6 +301,8 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
                             collapse$regions)
     }
     pops_alw = c()
+    all_names = c(pops_daf, names(pops))
+    alt_names = gen_altnames(all_names)
     if(length(pops)!=0) for(i in 1:length(pops)) {
       pop = pops[[i]]
       pop = pop[sapply(pop, length) != 0]
@@ -340,7 +311,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
         warning(paste0(pop$name, ", not exported: trying to export an already defined population"), immediate. = TRUE, call. = FALSE)
         next
       }
-      if(!(pop$base%in%c(pops_daf, names(pops)))) {
+      if(!(pop$base%in%all_names)) {
         stop(paste0(pop$name, ", trying to export a population with unknown pop$base =", pop$base), immediate. = TRUE, call. = FALSE)
       }
       if(pop$type=="G") {
@@ -358,8 +329,8 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
         new_node_pop = to_xml_list(pop, name = "Pop")
       }
       if(pop$type=="C") {
-        tmp3 = setdiff(splitn(definition = pop$definition, all_names = c(pops_daf, names(pops)), operators = operators_pop), operators_pop)
-        tmp4 = !tmp3%in%c(pops_daf, names(pops))
+        tmp3 = setdiff(splitn(definition = pop$definition, all_names = all_names, alt_names = alt_names, operators = operators_pop), operators_pop)
+        tmp4 = !tmp3%in%all_names
         if(any(tmp4)) stop(paste0("trying to export a population with unknown population definition",ifelse(sum(tmp4)>1,"s","")," [", paste0(tmp3[tmp4], collapse=","), "] in pop$definition="), pop$definition, ": ", pop$name)
         new_node_pop = to_xml_list(pop, name = "Pop")
       }
@@ -394,10 +365,11 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     pops = pops[pops_alw]
     names(pops) = sapply(pops, FUN=function(p) p$name)
     pops_alw = c(pops_daf, names(pops))
+    alt_names = gen_altnames(pops_alw)
     ##### final check to ensure that remaining pops do not depend on a pop that has been removed
     lapply(pops, FUN = function(p) {
       if("C" %in% p$type) {
-        p$split = splitn(definition = p$definition, all_names = pops_alw, operators = operators_pop)
+        p$split = splitn(definition = p$definition, all_names = pops_alw, alt_names = alt_names, operators = operators_pop)
         p$names = setdiff(p$split, operators_pop)
         if(!all(p$names %in% pops_alw)) stop(paste0("trying to export a population with unknown population definition: ", p$definition))
       }

@@ -135,6 +135,8 @@ statsCompute <- function(obj, stats, width=80*length(stats), height=240, xlocati
                "PERCENT", # needs pop
                "MEAN","MEDIAN","STDDEV","MAD","CV","MINIMUM","MAXIMUM","GEOMETRIC_MEAN","MODE","VARIANCE","NAN", # needs feature
                "MEAN_RD","MEDIAN_RD") # needs feature and pop
+  all_names = c(names(obj$pops), names(obj$features))
+  alt_names = gen_altnames(all_names)
   stats = lapply(stats, FUN = function(i_stats) {
     i_stats = do.call(what = buildStats, args = i_stats)
     if(i_stats$type == "PERCENT") {
@@ -146,7 +148,7 @@ statsCompute <- function(obj, stats, width=80*length(stats), height=240, xlocati
         if(i_stats$title == "") i_stats$title = paste(i_stats$def, toCapFirstOnly(i_stats$type), sep = ", ")
       } else {
         if(i_stats$type %in% alw_type[16:17]) {
-          foo = try(splitn(definition = i_stats$def, all_names = c(names(obj$pops), names(obj$features)), operators = ""), silent = TRUE)
+          foo = try(splitn(definition = i_stats$def, all_names = all_names, alt_names = alt_names, operators = ""), silent = TRUE)
           if(inherits(foo, what = "try-error")) stop("can't find [",i_stats$def,"] in obj$features + obj$pops")
           if(length(foo) != 2) stop("bad stats definition length")
           if(!all(c(foo[1] %in% names(obj$features), foo[2] %in% names(obj$pops)))) stop("bad stats definition")

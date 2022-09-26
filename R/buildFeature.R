@@ -27,6 +27,32 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
+#' @title List IFC features
+#' @description
+#' Helper to give the list of available features
+#' @return a list of all features
+#' @keywords internal
+featureIFC <- function() {
+  list("Mask Only"=c("Area", "Aspect Ratio", "Length", "Width", "Height", "Angle", "Centroid X", "Centroid Y", "Circularity", "Diameter",
+                     "Elongatedness", "Major Axis", "Minor Axis", "Perimeter", "Shape Ratio", 'Spot Area Min', "Spot Distance Min",
+                     "Thickness Max", "Thickness Min"),
+       "Mask and Image"=c("Aspect Ratio Intensity", "Modulation", "Contrast", "Gradient RMS", "Intensity", "Mean Pixel", "Median Pixel",
+                          "Max Pixel", "Raw Max Pixel", "Raw Min Pixel", "Saturation Count", "Saturation Percent", "Bright Detail Intensity R3",
+                          "Bright Detail Intensity R7", "Angle Intensity", "Centroid X Intensity", "Centroid Y Intensity", "Compactness","Gradient Max", "Internalization", 
+                          "Lobe Count","Major Axis Intensity", "Max Contour Position", "Min Pixel", "Minor Axis Intensity", "Raw Intensity", "Raw Mean Pixel",
+                          "Raw Median Pixel", "Spot Intensity Max", "Spot Intensity Min", "Std Dev", "Symmetry 2", "Symmetry 3", "Symmetry 4", 
+                          "Uncompensated Intensity", "Valley X", "Valley Y"),
+       "Image Only"=paste0("Bkgd ", c("Mean", "StdDev")),
+       "No Parameters"=c("Time", "Object Number", "Raw Centroid X", "Raw Centroid Y", "Flow Speed", "Camera Line Number", "Camera Timer", "Objects per mL", "Objects per sec"),
+       "Mask, Image and Scalar"=c(paste0(paste0("H ", rep(c("Contrast ","Correlation ","Energy ", "Entropy ", "Homogeneity ", "Variance "), each=2)), c("Mean", "Std")),"Granularity:"),
+       "Mask and Scalar"=c("Spot Count"),
+       "Mask and Three Images"=c("Bright Detail Colocalization 3"),
+       "Similarity"=c("Bright Detail Similarity R3", "Shift X", "Shift Y", "Similarity", "XCorr"),
+       "Delta Centroid"=paste0("Delta Centroid ", c("X","Y","XY")),
+       "Two Masks and Image"=c("Intensity Concentration Ratio"),
+       "Image and Scalar"=c("Ensquared Energy", "Diameter:"))
+}
+
 #' @title IFC Feature Coercion
 #' @description
 #' Helper to build a list to allow feature export.
@@ -50,26 +76,9 @@ buildFeature <- function(name, type = c("single","combined","computed")[1], def 
   if(type == "single") {
     if(!(typeof(val) == "double" | typeof(val) == "integer")) stop("'val' should be coercible to numeric vector")
     feat = feat_comp[1]
-    userfeaturetype_avl = list("Mask Only"=c("Area", "Aspect Ratio", "Length", "Width", "Height", "Angle", "Centroid X", "Centroid Y", "Circularity", "Diameter",
-                                             "Elongatedness", "Major Axis", "Minor Axis", "Perimeter", "Shape Ratio", 'Spot Area Min', "Spot Count", "Spot Distance Min",
-                                             "Thickness Max", "Thickness Min"),
-                               "Mask and Image"=c("Aspect Ratio Intensity", "Modulation", "Contrast", "Gradient RMS", "Intensity", "Mean Pixel", "Median Pixel",
-                                                  "Max Pixel", "Raw Max Pixel", "Raw Min Pixel", "Saturation Count", "Saturation Percent", "Bright Detail Intensity R3",
-                                                  "Bright Detail Intensity R7", "Angle Intensity", "Centroid X Intensity", "Centroid Y Intensity", "Compactness","Gradient Max", "Internalization", 
-                                                  "Lobe Count","Major Axis Intensity", "Max Contour Position", "Min Pixel", "Minor Axis Intensity", "Raw Intensity", "Raw Mean Pixel",
-                                                  "Raw Median Pixel", "Spot Intensity Max", "Spot Intensity Min", "Std Dev", "Symmetry 2", "Symmetry 3", "Symmetry 4", 
-                                                  "Uncompensated Intensity", "Valley X", "Valley Y"),
-                               "Image Only"=paste0("Bkgd ", c("Mean", "StdDev")),
-                               "No Parameters"=c("Time", "Object Number", "Raw Centroid X", "Raw Centroid Y", "Flow Speed", "Camera Line Number", "Camera Timer", "Objects per mL", "Objects per sec"),
-                               "Mask, Image and Scalar"=paste0(paste0("H ", rep(c("Contrast ","Correlation ","Energy ", "Entropy ", "Homogeneity ", "Variance "), each=2)), c("Mean", "Std")),
-                               "Mask and Scalar"=c("Spot Count"),
-                               "Mask and Three Images"=c("Bright Detail Colocalization 3"),
-                               "Similarity"=c("Bright Detail Similarity R3", "Shift X", "Shift Y", "Similarity", "XCorr"),
-                               "Delta Centroid"=paste0("Delta Centroid ", c("X","Y","XY")),
-                               "Two Masks and Image"=c("Intensity Concentration Ratio"),
-                               "Image and Scalar"=c("Ensquared Energy", "Diameter:"))
-    type_avl = names(userfeaturetype_avl)
-    feat_type = type_avl[sapply(type_avl, FUN=function(i) {any(feat==userfeaturetype_avl[[i]])})]
+    feat_avl = featureIFC()
+    type_avl = names(feat_avl)
+    feat_type = type_avl[sapply(type_avl, FUN=function(i) {any(feat==feat_avl[[i]])})]
     if(feat == "Spot Count") {
       isScalar = feat_comp[length(feat_comp)-2]
       feat_type = "Mask Only"
@@ -78,7 +87,7 @@ buildFeature <- function(name, type = c("single","combined","computed")[1], def 
   } else {
     feat_type = "Combined"
   }
-  if(length(feat_type)==0) stop(paste0("Oops... 'def' is not correct, allowed are: ",paste(unlist(userfeaturetype_avl), collapse = ", "), "\n"))
+  if(length(feat_type)==0) stop(paste0("Oops... 'def' is not correct, allowed are: ",paste(unlist(feat_avl, recursive = FALSE, use.names = FALSE), collapse = ", "), "\n"))
   if(missing(name)) name = paste0(feat_comp, collapse = "_")
   return(list("name"=name, "type"=type, "userfeaturetype"=feat_type, "def"=def, "val"=val))
 }

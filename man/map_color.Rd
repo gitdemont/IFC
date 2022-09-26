@@ -12,7 +12,7 @@ map_color(color, toR = TRUE)
 \item{toR}{whether to convert color toR or back. Default is TRUE.}
 }
 \value{
-a character vector
+a character vector.
 }
 \description{
 Converts IDEAS/INSPIRE colors toR and inversely

@@ -92,6 +92,8 @@ data_rm_features <- function(obj, features, list_only = TRUE, adjust_graph = TRU
   }
   
   # search for features depending on input features
+  all_names = names(obj$features)
+  alt_names = gen_altnames(all_names)
   L = length(to_remove_features)
   LL = L - 1
   while(L != LL) {
@@ -99,8 +101,9 @@ data_rm_features <- function(obj, features, list_only = TRUE, adjust_graph = TRU
     to_find = to_remove_features
     for(i in 1:length(obj$features_def)) {
       if((obj$features_def[[i]]$type == "combined") &&
-         any(to_remove_features %in% splitn(obj$features_def[[i]]$def,
-                                            all_names = names(obj$features),
+         any(to_remove_features %in% splitn(definition = obj$features_def[[i]]$def,
+                                            all_names = all_names,
+                                            alt_names = alt_names,
                                             operators = c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT"),
                                             split = "|",
                                             scalar = TRUE))) {

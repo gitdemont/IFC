@@ -40,6 +40,35 @@ trunc_string = function(x, n=22) {
   return(x)
 }
 
+#' @title String Sequence Replacement
+#' @description Replaces a sequence of strings
+#' @param x,pattern,replacement non empty character vectors.
+#' @param all whether to replace all instances of 'pattern' or only the 1st one. Default is TRUE, to replace all instances.
+#' @details if 'pattern' is found within 'x', 'pattern' will be removed from 'x' and replace by 'replacement'.\cr
+#' It looks like gsub but it is different e.g.:\cr
+#' x=c("ABD","A","B")\cr
+#' pattern=c("A","B")\cr
+#' replacement=c("C")\cr
+#' - gsub(x=paste0(x,collapse=""),pattern=paste0(pattern,collapse=""),replacement=paste0(replacement,collapse=""),fixed=TRUE) will give "CDC"\cr
+#' - gseq(x=x,pattern=pattern,replacement=replacement) will give "ABD","C"\cr
+#' @return 'x' where 'pattern' is replaced by replacement.
+#' @keywords internal
+gseq <- function(x, pattern = "", replacement = character(), all = TRUE) {
+  LX <- length(x)
+  LM <- length(pattern)
+  if(all(c(pattern %in% replacement, replacement %in% pattern))) return(x)
+  if(LX >= LM) {
+    pos <- cpp_seqmatch(x, pattern)                               # return the position of 1st element found
+    if(pos) {                                                     # if something found (i.e. pos != 0)
+      a = x[seq_along(integer(pos - 1))];                         # take beg
+      b = x[LM + pos - 1 + seq_along(integer(1 + LX - LM - pos))] # take end
+      x = c(a, replacement, b)                                    # replacement is inserted
+      if(all && (length(x) > 0)) x = gseq(x, pattern)             # another run is launched to remove other match
+    }
+  }
+  x
+}
+
 #' @title File Extension Removal
 #' @description Removes file extension from file path
 #' @param x a file path
@@ -108,33 +137,36 @@ protectn <- function(name) {
 #' @description
 #' Helper that will split definition into chunks of names and operators.
 #' @param definition definition to be split
-#' @param all_names the names of all allowed names
+#' @param all_names the names of all allowed names.
+#' @param alt_names vector of same length as 'all_names' to use for substitution. It can be used to speed up the process.
 #' @param operators operators used. Default is c("And", "Or", "Not", "(", ")").
 #' @param split string used for splitting. Default is "|".
 #' @param scalar whether to allow presence of scalar or not. Default is FALSE.
+#' @param dsplit whether to allow presence of duplicated occurrences of 'split' or not. Default is FALSE.
 #' @keywords internal
-splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(", ")"), split = "|", scalar = FALSE) {
+splitn <- function(definition, all_names, alt_names, operators = c("And", "Or", "Not", "(", ")"),
+                   split = "|", scalar = FALSE, dsplit = FALSE) {
   assert(definition, len=1, typ="character")
   assert(all_names, typ="character")
   assert(operators, typ="character")
   assert(split, len=1, typ="character")
   assert(scalar, alw=c(TRUE,FALSE))
+  assert(dsplit, alw=c(TRUE,FALSE))
   
   # we create a mapping between all_names and random names
   # we also ensure that random names will not contain any specials and 
   # will not match with themselves nor with names or operators or split to substitute
   # we also order to_substitute by number of character (decreasing) to
   # be sure that longer words will be substitute first
-  to_substitute = unique(all_names)
-  if((length(to_substitute) == 0) || (definition == "")) return(definition)
+  dups = duplicated(all_names)
+  to_substitute = all_names[!dups]
   to_substitute = to_substitute[order(nchar(to_substitute), decreasing = TRUE)]
-  replace_with = c()
-  n = max(9,nchar(operators))+1
-  for(i in seq_along(to_substitute)) {
-    replace_with = c(replace_with,
-                     random_name(n=n,
-                                 special = NULL,
-                                 forbidden = c(replace_with, to_substitute, operators, split)))
+  if((length(to_substitute) == 0) || (definition == "")) return(definition)
+  if(!missing(alt_names)) {
+    if(length(all_names) != length(alt_names)) stop("when provided 'alt_names' should be of same length as 'all_names'")
+    replace_with = unname(alt_names[!dups])
+  } else {
+    replace_with = gen_altnames(x = to_substitute, n = max(9,nchar(operators))+1, forbidden = c(to_substitute, operators, split))
   }
   
   # we substitute names and operators with random names
@@ -150,6 +182,11 @@ splitn <- function(definition, all_names, operators = c("And", "Or", "Not", "(",
   # finally, can replace random names with their corresponding initial names
   # from to_substitute (i.e. all_names + operators)
   ans = sapply(ans, USE.NAMES = FALSE, FUN = function(x) {
+    if(x == "") {
+      if(dsplit) return("")
+      stop(call. = FALSE, 'definition ["',definition,'"] contains duplicated \'split\' [',split,']',
+           ifelse(!dsplit, ". Consider the use 'dsplit' = TRUE", ""))
+    }
     foo = to_substitute[x == replace_with]
     if(length(foo) == 0) {
       foo = operators[x == operators]
@@ -269,7 +306,7 @@ toCapFirstOnly <- function(text) {
 #' Converts IDEAS/INSPIRE colors toR and inversely
 #' @param color a character vector Default is missing.
 #' @param toR whether to convert color toR or back. Default is TRUE.
-#' @return a character vector
+#' @return a character vector.
 #' @keywords internal
 map_color <- function(color, toR = TRUE) {
   set1 = c("Teal", "Green", "Lime", "Control")
@@ -333,8 +370,9 @@ map_style <- function(style, toR = FALSE) {
 #' @param alpha lower case letters. Default is letters.
 #' @param num integer to use. Default is 0:9 
 #' @param special characters. Default is c("#", "@@", "?", "!", "&", "\%", "$").
-#' @param forbidden forbidden character strings. Default is character().
-#' @return a character string
+#' @param forbidden forbidden character vector. Default is character().
+#' @details 'forbidden' should not encompass all possible returned value otherwise the function will never end.
+#' @return a character string.
 #' @keywords internal
 random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, special = c("#", "@", "?", "!", "&", "%", "$"), forbidden = character()) {
   if(length(ALPHA)!=0) assert(ALPHA, alw = LETTERS)
@@ -342,11 +380,60 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
   if(length(num)!=0) assert(num, cla="integer", alw = 0L:9L)
   forbidden = unique(forbidden); assert(forbidden, typ = "character")
   id = paste0(sample(x = c(ALPHA, alpha, num, special), size = n, replace = TRUE), collapse = "")
-  while(id %in% forbidden) { 
+  while(id %in% forbidden) {
     id = paste0(sample(x = c(ALPHA, alpha, num, special), size = n, replace = TRUE), collapse = "")
   }
   return(id)
 }
+# random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, special = c("#", "@", "?", "!", "&", "%", "$"), forbidden = character()) {
+#   if(length(ALPHA)!=0) assert(ALPHA, alw = LETTERS)
+#   if(length(alpha)!=0) assert(alpha, alw = letters)
+#   if(length(num)!=0) assert(num, cla="integer", alw = 0L:9L)
+#   forbidden = setdif(unique(forbidden),""); assert(forbidden, typ = "character")
+#   id = paste0(sample(x = c(ALPHA, alpha, num, special), size = n, replace = TRUE), collapse = "")
+#   while(sum(unlist(lapply(forbidden, grepl, x = id, fixed = TRUE), recursive = FALSE, use.names = FALSE))) {
+#     id = paste0(sample(x = c(ALPHA, alpha, num, special), size = n, replace = TRUE), collapse = "")
+#   }
+#   return(id)
+# }
+
+#' @title Alternative Names Generator
+#' @name gen_altnames
+#' @description
+#' Generates unique non matching alternative names
+#' @param x a character vector.
+#' @param n number of characters of the desired returned name. Default is 10.
+#' @param forbidden forbidden character vector. Default is character().
+#' @details 'forbidden' should not encompass all possible returned value otherwise the function will never end.
+#' @return a character vector.
+#' @keywords internal.
+gen_altnames <- function(x, n = 10, forbidden = character()) {
+  if(n < 5) stop("can't generate altnames with n < 5")
+  ans = c()
+  x = unname(x[order(nchar(x), decreasing = TRUE)])
+  pat = setdiff(c(x, forbidden),"")
+  for(i in seq_along(x)) {
+    foo = random_name(n = n, special = NULL, forbidden = c(ans, pat)) 
+    while(sum(unlist(lapply(pat, grepl, x = foo, fixed = TRUE),
+                     recursive = FALSE,
+                     use.names = FALSE))) {
+      foo = random_name(n = n, special = NULL, forbidden = c(ans, pat)) 
+    }
+    ans = c(ans, foo)
+  }
+  ans
+}
+# gen_altnames <- function(x, n = 10, forbidden = NULL) {
+#   ans = c()
+#   x = unname(x[order(nchar(x), decreasing = TRUE)])
+#   for(i in seq_along(x)) {
+#     ans = c(ans,
+#             random_name(n = n,
+#                         special = NULL,
+#                         forbidden = c(ans, x, forbidden)))
+#   }
+#   ans
+# }
 
 #' @title Numeric to String Formatting
 #' @name num_to_string

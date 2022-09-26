@@ -7,21 +7,27 @@
 splitn(
   definition,
   all_names,
+  alt_names,
   operators = c("And", "Or", "Not", "(", ")"),
   split = "|",
-  scalar = FALSE
+  scalar = FALSE,
+  dsplit = FALSE
 )
 }
 \arguments{
 \item{definition}{definition to be split}
 
-\item{all_names}{the names of all allowed names}
+\item{all_names}{the names of all allowed names.}
+
+\item{alt_names}{vector of same length as 'all_names' to use for substitution. It can be used to speed up the process.}
 
 \item{operators}{operators used. Default is c("And", "Or", "Not", "(", ")").}
 
 \item{split}{string used for splitting. Default is "|".}
 
 \item{scalar}{whether to allow presence of scalar or not. Default is FALSE.}
+
+\item{dsplit}{whether to allow presence of duplicated occurrences of 'split' or not. Default is FALSE.}
 }
 \description{
 Helper that will split definition into chunks of names and operators.

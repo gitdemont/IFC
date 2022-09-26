@@ -594,8 +594,14 @@ readGatingML <- function(fileName, ...) {
             ans$BasePop[[1]] = c(ans$BasePop[[1]], foo$density)
           }
         }
-        if(length(foo$region) != 0) ans$GraphRegion=lapply(splitn(foo$region$displayed, all_names = names(regions)), FUN = function(x) list(name=x))
-        if(length(foo$overlay) != 0) ans$ShownPop=lapply(splitn(foo$overlay$displayed, all_names = names(pops)), FUN = function(x) list(name=x))
+        all_names = names(regions)
+        alt_names = gen_altnames(all_names)
+        if(length(foo$region) != 0) ans$GraphRegion=lapply(splitn(definition = foo$region$displayed, all_names = all_names, alt_names = alt_names),
+                                                           FUN = function(x) list(name=x))
+        all_names = names(pops)
+        alt_names = gen_altnames(all_names)
+        if(length(foo$overlay) != 0) ans$ShownPop=lapply(splitn(definition = foo$overlay$displayed, all_names = all_names, alt_names = alt_names),
+                                                         FUN = function(x) list(name=x))
         if(length(g$maxpoints) != 0) ans$maxpoints = g$maxpoints
         if(length(g$xtrans) != 0) ans$xtrans = g$xtrans
         if(length(g$ytrans) != 0) ans$ytrans = g$ytrans

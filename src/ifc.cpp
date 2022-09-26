@@ -129,6 +129,20 @@ Rcpp::LogicalVector cpp_pnt_in_gate (const Rcpp::NumericMatrix pnts,
 }
 // END gate
 // FROM utils
+//' @title Sequence of Strings Matching
+//' @name cpp_seqmatch
+//' @description
+//' Match a sequence of strings in another string
+//' @param x,y StringVector to match
+//' @details smallest sequence will be searched into the largest one.
+//' @return the index (starting at 1) when a match has been found. Otherwise 0.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+R_len_t cpp_seqmatch(const Rcpp::StringVector x,
+                     const Rcpp::StringVector y) {
+  return hpp_seqmatch(x,y);
+}
 //' @title Use Rcpp to Apply Any on Matrix Rows
 //' @name cpp_fast_rowAny
 //' @description

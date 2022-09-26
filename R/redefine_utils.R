@@ -432,18 +432,85 @@ redefine_masks <- function(masks, images, new_images_names = images$name, to_mat
 #' @return a string with default name
 #' @keywords internal
 feature_namer <- function(feat_def) {
-  def_def <- feat_def
-  def_def$def <- gsub("\\|((Diameter|Granularity):)?\\|1\\|20$", "", def_def$def) # for Haralick features and Ensquared
-  def_def$def <- gsub("\\|\\|(True|False)?\\|.*$", "", def_def$def) # for Spot count and Spot range
-  def_def$def <- gsub("(\\|?)(true)(\\|?)", paste0("\\1","IntensityWeighted","\\3"), def_def$def) # for Delta centroid features
-  def_def$def <- gsub("(\\|?)(false)(\\|?)", paste0("\\1","\\3"), def_def$def) # for Delta centroid features
-  def_def$def <- gsub("\\|\\|", "|", def_def$def) # for Delta centroid features
-  def_def$def <- gsub("\\|+$", "", def_def$def) # remove trailing |
-  if(feat_def$type == "combined") {
-    gsub(" \\)", ")", gsub("\\( ", "(", gsub("|", " ", def_def$def, fixed = TRUE)))
-  } else {
-    gsub("|", "_", def_def$def, fixed = TRUE)
+  if(length(feat_def$split) != 0) {
+    if(feat_def$type == "combined") {
+      return(paste0(feat_def$split, collapse = " "))
+    } else {
+      ans = feat_def$split
+      ans[ans == "true"] <- "IntensityWeighted"
+      ans = ans[!(ans %in% c("false"))]
+      ans = gseq(ans, c("Granularity:","1","20")) # TODO maybe modify things here
+      ans = gseq(ans, c("Diameter:","1","20"))    #
+      ans = gseq(ans, c("False","1","20"))        #
+      ans = gseq(ans, c("True","8","4"))          #
+      ans = gseq(ans, c("","1","20"))             #
+      return(paste0(ans[ans != ""], collapse = "_"))
+    }
   }
+  ans = feat_def$def
+  ans <- gsub("\\|((Diameter|Granularity):)?\\|1\\|20$", "", ans) # for Haralick features and Ensquared
+  ans <- gsub("\\|\\|(True|False)?\\|.*$", "", ans) # for Spot count and Spot range
+  ans <- gsub("(\\|?)(true)(\\|?)", paste0("\\1","IntensityWeighted","\\3"), ans) # for Delta centroid features
+  ans <- gsub("(\\|?)(false)(\\|?)", paste0("\\1","\\3"), ans) # for Delta centroid features
+  ans <- gsub("\\|\\|", "|", ans) # for Delta centroid features
+  ans <- gsub("\\|+$", "", ans) # remove trailing |
+  if(feat_def$type == "combined") {
+    gsub(" \\)", ")", gsub("\\( ", "(", gsub("|", " ", ans, fixed = TRUE)))
+  } else {
+    gsub("|", "_", ans, fixed = TRUE)
+  }
+}
+
+#' @title IFC_features_def Definition Splitting
+#' @description
+#' Helper to split a features definitions within IFC_features_def.
+#' @param features_def an `IFC_features_def` object or a list containing features definition. Default is missing.
+#' @param all_names the names of all allowed names.
+#' @param alt_names vector of same length as 'all_names' to use for substitution. It can be used to speed up the process.
+#' @param operators operators used. Default is c("And", "Or", "Not", "(", ")").
+#' @param m_names names of masks.
+#' @param i_names names of images.
+#' @param comb_operators operators used for combined features. Default is c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT").
+#' @param extr_operators operators used for non combined features. Default is c("true", "false", "True", "False").
+#' Those will be added to 'm_names', 'i_names' and all possible features names (as given by the getFromNamespace("featureIFC", "IFC")())
+#' @param split string used for splitting. Default is "|".
+#' @param force whether to force splitting even if split is detected
+#' @return an `IFC_features_def` object, or a list containing features definition
+#' @keywords internal
+split_feat <- function(features_def,
+                       all_names = names(features_def),
+                       alt_names = NULL,
+                       m_names = sprintf("M%02i",1:12),
+                       i_names = sprintf("Ch%02i",1:12),
+                       comb_operators = c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT"),
+                       extr_operators = c("true", "false", "True", "False"),
+                       split = "|",
+                       force = FALSE) {
+  force = as.logical(force); assert(force, len=1, alw=c(TRUE,FALSE))
+  def = features_def
+  force = force || any(sapply(def, FUN  = function(x) length(x$split)) == 0)
+  all_names_avl = c(unlist(featureIFC(), recursive = FALSE, use.names = FALSE), extr_operators, m_names, i_names)
+  alt_names_avl = gen_altnames(all_names_avl)
+  if(force) {
+    if(missing(alt_names) || (length(alt_names) != length(all_names))) alt_names = gen_altnames(all_names)
+    for(i_def in seq_along(def)) {
+      if(def[[i_def]]$type == "combined") {
+        def[[i_def]]$split <- splitn(definition = def[[i_def]]$def,
+                                     all_names = all_names,
+                                     alt_names = alt_names,
+                                     operators = comb_operators,
+                                     scalar = TRUE)
+      } else {
+        def[[i_def]]$split <- splitn(definition = def[[i_def]]$def,
+                                     all_names = all_names_avl,
+                                     alt_names = alt_names_avl,
+                                     operators = character(), 
+                                     scalar = TRUE, dsplit = TRUE)
+      }
+    }
+  }
+  class(def) = class(features_def)
+  return(def)
 }
 
 #' @title IFC_features_def Feature Redefinition
@@ -452,51 +519,86 @@ feature_namer <- function(feat_def) {
 #' @param features_def an `IFC_features_def` object or a list containing features definition. Default is missing.
 #' @param to_match_feat a string with a features_def name to use for matching 'features_def' names. Default is NULL
 #' @param to_replace_feat a string of features_def name to use for replacing 'features_def' names. Default is NULL
+#' @param force_default whether to force default names for features (except the one defined by 'to_replace_feat').
+#' This removes custom names and replaces them with default values. Default is FALSE.
 #' @param ... Other arguments to be passed.
 #' @return an `IFC_features_def` object, or a list containing features definition
 #' @keywords internal
-redefine_features_def_feat <- function(features_def, to_match_feat = NULL, to_replace_feat = NULL, ...) {
+redefine_features_def_feat <- function(features_def,
+                                       to_match_feat = NULL,
+                                       to_replace_feat = NULL,
+                                       force_default = FALSE, ...) {
+  dots = list(...)
+  force_default=as.logical(force_default); assert(force_default, len=1, alw=c(TRUE,FALSE))
   if(length(to_match_feat) != 1 || length(to_replace_feat) != 1)  stop("'to_match_feat' should be of length 1")
-  comb_operators = comb_operators = c("+", "-", "*", "/", "ABS", "COS", "SIN", "SQR", "SQRT")
+  assert(to_match_feat, typ = "character")
+  assert(to_replace_feat, typ = "character")
   def = features_def
+  # if(length(unique(names(def))) != length(def)) stop("'features_def' should have unique names")
   old_names = sapply(features_def, FUN = function(x) x$name)
-  def[[which(old_names == to_match_feat)]]$name <- to_replace_feat
+  tmp = which(old_names == to_match_feat)
+  if(length(tmp) == 0) {
+    warning("can't find [",to_match_feat,"] in features to rename")
+    return(features_def)
+  }
+  if(length(tmp) != 1) {
+    stop("[",to_match_feat,"] matches more then once in features to rename")
+  }
+  # rename desired feature
+  def[[tmp]]$name <- to_replace_feat
+  names(def)[tmp] <- to_replace_feat
   
-  exp_names = sapply(features_def, feature_namer)
-  to_modify = old_names == exp_names
-  
-  # we extract names
-  LL = length(def)
-  new_names = sapply(def, FUN = function(x) x$name)
-  cur_names = rep("", LL)
-  while(any("" == cur_names)) {
-    def = lapply(1:LL, FUN = function(i_feat) {
-      def_def = def[[i_feat]]
-      if((def_def$type == "combined")) {
-        splitted = splitn(definition = def[[i_feat]]$def, all_names = old_names, operators = comb_operators)
-        foo = sapply(splitted, USE.NAMES = FALSE, FUN = function(x) {
-          if(any(x == comb_operators)) return(x)
-          tmp = x == old_names
-          if(any(tmp)) return(new_names[tmp])
-          return("")
-        })
-        if(any(foo == "")) {
-          def_def$name = ""
-        } else {
-          def_def$def = paste0(foo, collapse = "|")
-          if(!identical(splitted, foo) && to_modify[i_feat]) {
-            new_names[i_feat] <<- c(paste0(foo, collapse = " "))
-            def_def$name = new_names[i_feat]
+  # determine which features are combined (which may be impacted by initial feature renaming)
+  cmb_feats = sapply(def, USE.NAMES = FALSE, FUN = function(x) x$type == "combined")
+  if(any(cmb_feats)) {
+    # get indices of combined features
+    cmb_feats = which(cmb_feats)
+    comb_operators = c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT")
+    # split combined features definition if not already done
+    if(any(sapply(def[cmb_feats], FUN = function(def_def) length(def_def$split)) == 0)) {
+      alt_names = gen_altnames(old_names)
+      for(i_def in cmb_feats) {
+        def[[i_def]]$split <- unname(splitn(definition = def[[i_def]]$def,
+                                            all_names = old_names,
+                                            alt_names = alt_names,
+                                            operators = comb_operators,
+                                            scalar = TRUE))
+      }
+    }
+    
+    # determine which features names can be modified, basically all when force_default is TRUE
+    # or when FALSE only the ones whose names correspond to regular default name otherwise
+    if(force_default) {
+      to_modify = rep(TRUE, length(cmb_feats)) & (names(def)[cmb_feats] != to_replace_feat)
+    } else {
+      exp_names = sapply(def[cmb_feats], USE.NAMES = FALSE, feature_namer)
+      to_modify = exp_names == names(def)[cmb_feats] 
+    }
+    
+    # recursively modify combined features definition which depend on initial feature
+    has_changed = TRUE
+    while(has_changed) {
+      has_changed = FALSE
+      for(i_comb in seq_along(cmb_feats)) {
+        i_def = cmb_feats[i_comb]
+        for(i in seq_along(to_match_feat)) {
+          tmp = def[[i_def]]$split == to_match_feat[i]
+          if(any(tmp)) {
+            def[[i_def]]$split[tmp] <- to_replace_feat[i]
+          }
+          def[[i_def]]$def = paste0(def[[i_def]]$split, collapse = "|")
+          if(to_modify[i_comb]) {
+            name = feature_namer(def[[i_def]])
+            if(name != def[[i_def]]$name) {
+              has_changed = TRUE
+              def[[i_def]]$name = name
+              names(def)[i_def] = name
+            }
           }
         }
       }
-      return(def_def)
-    })
-    new_names = sapply(def, FUN = function(def_def) def_def$name)
-    if(identical(new_names, cur_names)) break
-    cur_names = new_names
+    }
   }
-  names(def) = sapply(def, feature_namer)
   class(def) = class(features_def)
   return(def)
 }
@@ -525,11 +627,11 @@ redefine_features_def_msk_img <- function(features_def, masks, images, force_def
     to_modify = setdiff(to_modify, c("MC","None","NMC"))
     to_replace = default_names[, "name"][masks$name %in% to_modify]
     obj_default = redefine_features_def_msk_img(features_def = features_def,
-                                                  masks = masks,
-                                                  images = images,
-                                                  to_match_mask = to_modify,
-                                                  to_replace_mask = to_replace,
-                                                  force_default = FALSE)
+                                                masks = masks,
+                                                images = images,
+                                                to_match_mask = to_modify,
+                                                to_replace_mask = to_replace,
+                                                force_default = FALSE)
     features_def = obj_default$features_def
     masks = obj_default$masks
     images = obj_default$images
@@ -549,71 +651,84 @@ redefine_features_def_msk_img <- function(features_def, masks, images, force_def
   to_keep = to_match != to_replace
   to_match_image = c(to_match[to_keep], masks$name[has_changed])
   to_replace_image = c(to_replace[to_keep], M$name[has_changed])
-  
-  # matches are encapsulated within | |
-  to_find = paste0("|",to_match_image,"|")
-  to_replace_image = paste0("|",to_replace_image,"|")
+  to_find = to_match_image
+  to_replace_image = to_replace_image
   
   # ordering should ensure that names consisted of repeated pattern should be treated 1st
   order_ = order(nchar(to_find), decreasing = TRUE)
   to_find = to_find[order_]
   to_replace_image = to_replace_image[order_]
   
-  # we modify features definition with new masks and new images
-  # in addition we modify $name when original name was not customized
   def = features_def
-  L = length(to_find)
-  LL = length(features_def)
-  def = lapply(1:LL, FUN = function(i_feat) {
-    def_def <- features_def[[i_feat]]
-    sapply(1:L, FUN = function(i_pat) {
-      # features definition are encapsulated within | | 
-      # to ensure that we can capture matches at the start or end of def_def$def
-      # and then 1st and last | are removed
-      tmp = gsub(to_find[i_pat], to_replace_image[i_pat], x = paste0("|",def_def$def,"|"), fixed = TRUE) 
-      def_def$def <<- substr(tmp, 2, nchar(tmp)-1)
-    })
-    def_def$name <- feature_namer(def_def)
-    def_def
-  })
-  
-  # now we need to modify features which depend on other features if any
-  # we check which features are combined
-  comb_operators = c("+", "-", "*", "/", "ABS", "COS", "SIN", "SQR", "SQRT")
-  
-  # we extract names
-  new_names = sapply(def, FUN = function(def_def) def_def$name)
+  # if(length(unique(names(def))) != length(def)) stop("'features_def' should have unique names")
   old_names = names(features_def)
-  cur_names = rep("", LL)
-  while(any("" == cur_names)) {
-    def = lapply(1:LL, FUN = function(i_feat) {
-      def_def = def[[i_feat]]
-      if((def_def$type == "Combined")) {
-        splitted = splitn(definition = def[[i_feat]]$def, all_names = old_names, operators = comb_operators)
-        foo = sapply(splitted, USE.NAMES = FALSE, FUN = function(x) {
-          if(any(x == comb_operators)) return(x)
-          tmp = x == old_names
-          if(any(tmp)) return(new_names[tmp])
-          return("")
-        })
-        if(any(foo == "")) {
-          def_def$name = ""
-        } else {
-          def_def$def = paste0(foo, collapse = "|")
-          if(!identical(splitted, foo) && to_modify[i_feat]) {
-            new_names[i_feat] <<- c(paste0(foo, collapse = " "))
-            def_def$name = new_names[i_feat]
+  comb_operators = c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT")
+  all_msk = strsplit(masks$def[masks$name == "MC"], split = "|Or|", fixed = TRUE)[[1]]
+  
+  # we check if def has already been split otherwise we do it
+  def = split_feat(features_def = def,
+                   all_names = names(def),
+                   m_names = c(all_msk, masks$name),
+                   i_names = images$name, 
+                   comb_operators = comb_operators,
+                   extr_operators = c("true", "false", "True", "False"),
+                   split = "|",
+                   force = FALSE)
+  
+  # determine which features names can be modified, basically all when force_default is TRUE
+  # or when FALSE only the ones whose names correspond to regular default name otherwise
+  if(force_default) {
+    to_modify = rep(TRUE, length(def))
+  } else {
+    exp_names = sapply(def, USE.NAMES = FALSE, feature_namer)
+    to_modify = exp_names == names(def)
+  }
+  
+  # recursively modify features definition and keep track of modified names in
+  # to_match_feat-> to_replace_feat to allow further combined features modifications
+  to_match_feat = c()
+  to_replace_feat = c()
+  has_changed = TRUE
+  while(has_changed) {
+    has_changed = FALSE
+    for(i_def in seq_along(def)) {
+      if(def[[i_def]]$type == "combined") {
+        for(i in seq_along(to_match_feat)) {
+          tmp = def[[i_def]]$split == to_match_feat[i]
+          if(any(tmp)) {
+            def[[i_def]]$split[tmp] <- to_replace_feat[i]
+          }
+          def[[i_def]]$def = paste0(def[[i_def]]$split, collapse = "|")
+        }
+      } else {
+        for(i in seq_along(to_find)) {
+          tmp = def[[i_def]]$split == to_find[i]
+          if(any(tmp)) {
+            def[[i_def]]$split[tmp] <- to_replace_image[i]
           }
         }
+        def[[i_def]]$def <- paste0(def[[i_def]]$split, collapse = "|")
       }
-      return(def_def)
-    })
-    new_names = sapply(def, FUN = function(def_def) def_def$name)
-    if(identical(new_names, cur_names)) break
-    cur_names = new_names
+      if(to_modify[i_def]) {
+        name = feature_namer(def[[i_def]])
+        if(name != def[[i_def]]$name) {
+          has_changed = TRUE
+          names(def)[i_def] = name
+          to_match_feat =  c(to_match_feat, def[[i_def]]$name)
+          to_replace_feat = c(to_replace_feat, name)
+          tmp = duplicated(to_match_feat)
+          if(length(to_replace_feat[tmp]) > 1) {
+            stop("features redefinition results in multiple matches",
+                 paste0("\n-\t", paste0(to_match_feat[tmp], " -> ", to_replace_feat[tmp])))
+          } else {
+            to_match_feat = to_match_feat[!tmp]
+            to_replace_feat = to_replace_feat[!tmp]
+          }
+          def[[i_def]]$name = name
+        }
+      }
+    }
   }
-  if(any(new_names == "")) stop("can't rename features")
-  names(def) = new_names
   class(def) <- class(features_def)
   return(list(features_def = def,
               masks = M,
@@ -658,7 +773,7 @@ redefine_obj <- function(obj, new_feat_def, ...) {
   # we check which features names have been modified
   old_names = names(obj$features_def)
   new_names = names(new_feat_def$features_def)
-  to_modify = old_names != new_names
+  to_modify = !old_names %in% new_names
   
   # modify features names
   names(obj$features) = sapply(names(obj$features), FUN = function(x) {
@@ -668,7 +783,9 @@ redefine_obj <- function(obj, new_feat_def, ...) {
   })
   
   # modify features definition
-  obj$features_def <- new_feat_def$features_def
+  obj$features_def <- sapply(USE.NAMES = TRUE, simplify = FALSE, new_feat_def$features_def, FUN = function(x) {
+    x[c("name","type","userfeaturetype","def")] # remove split
+  })
   
   # modify graphs
   K = class(obj$graphs)
@@ -721,7 +838,6 @@ redefine_obj <- function(obj, new_feat_def, ...) {
 #' @keywords internal
 usedefault_obj <- function(obj, ...) {
   assert(obj, cla = "IFC_data")
-  
   new_feat_def =  redefine_features_def_msk_img(features_def = obj$features_def,
                                                 masks = obj$description$masks,
                                                 images = obj$description$Images,
@@ -729,36 +845,73 @@ usedefault_obj <- function(obj, ...) {
   return(redefine_obj(obj = obj, new_feat_def = new_feat_def))
 }
 
-#' @title IFC_data Channel Swap
+#' @title Channel Switch
 #' @description
-#' Helper to swap channels in a `IFC_data` object.
-#' @param obj an `IFC_data` object. Default is missing.
-#' @param from,to integer, determining channels to swap
-#' @details it allows to apply all computation based on channel 'from' onto channel 'to', and reversely 
-#' @param ... Other arguments to be passed.
-#' @return an `IFC_data` object.
+#' Switches Channel in `IFC_data` object
+#' @param obj an `IFC_data` object extracted with features extracted.
+#' @param from,to an integer index of channel. 'from' and 'to' should be different.
+#' @param BF should 'from' channel be considered as brightfield. Default is TRUE.
+#' @param MODE collection mode (as retrieved by getInfo) determining the range. Default is 1.
+#' @details 'BF' and 'MODE' will be used only if 'to' is not found in 'obj'.
+#' @return a list, intended to be passed to 'new_feat_def' argument of getFromNamespace("redefine_obj", "IFC") whose members are:\cr
+#' -features_def, an 'IFC_features_def' object, or a list containing features definition\cr
+#' -masks, an 'IFC_masks' object or a data.frame containing masks definition and name.\cr
+#' -images, a data.frame containing images definition.
 #' @keywords internal
-switch_channel <- function(obj, from, to) {
-  assert(obj, cla = "IFC_data")
-  
+switch_channel <- function(obj, from, to, BF = TRUE, MODE = 1) {
   # check that from and to can be found in obj
-  from = as.integer(from); assert(from, len = 1, alw = obj$description$Images$physicalChannel)
-  to = as.integer(to); assert(to, len = 1, alw = obj$description$Images$physicalChannel)
+  from = as.integer(from); assert(from, len = 1, alw = 1:12) #obj$description$Images$physicalChannel)
+  to = as.integer(to); assert(to, len = 1, alw = setdiff(1:12, from))
   from_msk = sprintf("M%02i", from)
-  from_img = obj$description$Images[obj$description$Images$physicalChannel == from, "name"]
+  
+  # set mask and image defaults for from
+  if(any(obj$description$Images$physicalChannel == from)) {
+    from_img = obj$description$Images[obj$description$Images$physicalChannel == from, "name"]
+  } else {
+    warning("'from'[",sprintf("%02i",from),"] does not exist in 'obj'. Be careful when using the result.", immediate. = TRUE)
+    BF = as.logical(BF); assert(BF, len = 1, alw = c(TRUE, FALSE))
+    MODE = as.integer(MODE); assert(MODE, len = 1)
+    from_img = sprintf("Ch%02i", from)
+    obj$description$masks[obj$description$masks$name == "MC", "def"] = paste0(sprintf("M%02i", sort(c(from,obj$description$Images$physicalChannel))), collapse = "|Or|")
+    def_img = rbind(buildImage(physicalChannel = from, name = from_img, BF = BF, MODE = MODE))
+    def_img = def_img[,colnames(def_img) %in% colnames(obj$description$Images)]
+    obj$description$Images = rbind(obj$description$Images, def_img)
+    obj$description$Images = obj$description$Images[order(obj$description$Images$physicalChannel), , drop = FALSE]
+  }
+  
+  # set mask and image defaults for to
   to_msk = sprintf("M%02i", to)
-  to_img = obj$description$Images[obj$description$Images$physicalChannel == to, "name"]
+  if(any(obj$description$Images$physicalChannel == to)) {
+    to_img = obj$description$Images[obj$description$Images$physicalChannel == to, "name"]
+  } else {
+    warning("'to'[",sprintf("%02i",to),"] does not exist in 'obj'. Be careful when using the result.", immediate. = TRUE)
+    BF = as.logical(BF); assert(BF, len = 1, alw = c(TRUE, FALSE))
+    MODE = as.integer(MODE); assert(MODE, len = 1)
+    to_img = sprintf("Ch%02i", to)
+    obj$description$masks[obj$description$masks$name == "MC", "def"] = paste0(sprintf("M%02i", sort(c(to,obj$description$Images$physicalChannel))), collapse = "|Or|")
+    def_img = rbind(buildImage(physicalChannel = to, name = to_img, BF = BF, MODE = MODE))
+    def_img = def_img[,colnames(def_img) %in% colnames(obj$description$Images)]
+    obj$description$Images = rbind(obj$description$Images, def_img)
+    obj$description$Images = obj$description$Images[order(obj$description$Images$physicalChannel), , drop = FALSE]
+  }
   
-  # recover default masks names
-  obj_default = redefine_features_def_msk_img(obj$features_def,
-                                              masks = obj$description$masks,
-                                              images = obj$description$Images,
-                                              force_default = TRUE)
-  has_changed_default = !sapply(1:length(obj$features_def), FUN = function(i) {
-    identical(obj$features_def[[i]]$def, obj_default$features_def[[i]]$def)
-  })
+  obj_default = list(masks = obj$description$masks,
+                     images = obj$description$Images,
+                     features_def = obj$features_def)
   
-  # add an extra image and mask to allow mask and image swap
+  comb_operators = c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT")
+  all_msk = strsplit(obj_default$masks$def[obj_default$masks$name == "MC"], split = "|Or|", fixed = TRUE)[[1]]
+  
+  # create split for obj_default$features_def
+  obj_default$features_def = split_feat(features_def = obj_default$features_def,
+                                        m_names = c(all_msk, obj_default$masks$name),
+                                        i_names = obj_default$images$name, 
+                                        comb_operators = comb_operators,
+                                        extr_operators = c("true", "false", "True", "False"),
+                                        split = "|",
+                                        force = FALSE)
+  
+  # add an extra image and mask to allow mask and image modifications
   obj_default$masks = rbind.data.frame(obj_default$masks[1, ], obj_default$masks, stringsAsFactors = TRUE)
   obj_default$images = rbind.data.frame(obj_default$images[1, ],obj_default$images, stringsAsFactors = FALSE)
   obj_default$images[1, "name"] = random_name(forbidden = obj$description$Images$name)
@@ -773,19 +926,10 @@ switch_channel <- function(obj, from, to) {
   obj_from = redefine_features_def_msk_img(obj_default$features_def,
                                            masks = obj_default$masks, 
                                            images = obj_default$images,
-                                           force_default = FALSE,
                                            to_match_mask = to_msk,
                                            to_replace_mask = from_msk,
-                                           new_images_names = new_images_names)
-  has_changed_from_feat = !sapply(1:length(obj_default$features_def), FUN = function(i) {
-    identical(obj_default$features_def[[i]]$def, obj_from$features_def[[i]]$def)
-  })
-  has_changed_from_mask = !sapply(1:nrow(obj_default$masks), FUN = function(i) {
-    identical(obj_default$masks[i, "def"], obj_from$masks[i, "def"])
-  })
-  has_changed_from_img = !sapply(1:nrow(obj_default$images), FUN = function(i) {
-    identical(obj_default$images[i, "name"], obj_from$images[i, "name"])
-  })
+                                           new_images_names = new_images_names,
+                                           force_default = TRUE)
   
   # replace all 'from' masks and images by 'to' into obj_default
   new_images_names = obj_default$images$name
@@ -796,41 +940,117 @@ switch_channel <- function(obj, from, to) {
   obj_to = redefine_features_def_msk_img(obj_default$features_def,
                                          masks = obj_default$masks, 
                                          images = obj_default$images,
-                                         force_default = FALSE,
                                          to_match_mask = from_msk,
                                          to_replace_mask = to_msk,
-                                         new_images_names = new_images_names)
-  has_changed_to_feat = !sapply(1:length(obj_default$features_def), FUN = function(i) {
-    identical(obj_default$features_def[[i]]$def, obj_to$features_def[[i]]$def)
-  })
-  has_changed_to_mask = !sapply(1:nrow(obj_default$masks), FUN = function(i) {
-    identical(obj_default$masks[i, "def"], obj_to$masks[i, "def"])
-  })
-  has_changed_to_img = !sapply(1:nrow(obj_default$images), FUN = function(i) {
-    identical(obj_default$images[i, "name"], obj_to$images[i, "name"])
-  })
+                                         new_images_names = new_images_names,
+                                         force_default = TRUE)
   
-  # copy 'to' into 'from'
-  obj_final = obj_from
-  obj_final$features_def[has_changed_to_feat] <- obj_to$features_def[has_changed_to_feat]
-  names(obj_final$features_def)[has_changed_to_feat] <- names(obj_to$features_def)[has_changed_to_feat]
-  obj_final$masks[!(has_changed_from_mask & !has_changed_to_mask), ] <- obj_to$masks[!(has_changed_from_mask & !has_changed_to_mask), ]
-  obj_final$images[(has_changed_from_img & !has_changed_to_img), ] <- obj_to$images[(has_changed_from_img & !has_changed_to_img), ]
+  # compute all masks names that have changed
+  msk_names_from = buildMask(obj_from$masks, obj_from$images, definition = FALSE)
+  msk_names_to = buildMask(obj_to$masks, obj_to$images, definition = FALSE)
   
-  # recover default masks and images
+  # compute final obj
+  obj_final = redefine_features_def_msk_img(obj_to$features_def,
+                                            masks = obj_to$masks, 
+                                            images = obj_to$images,
+                                            to_match_mask = msk_names_from,
+                                            to_replace_mask = msk_names_to,
+                                            new_images_names = new_images_names,
+                                            force_default = FALSE)
+  
+  # remove duplicated images
+  obj_final$images[obj_final$images$physicalChannel == from, "physicalChannel"] <- to
   obj_final$images = obj_final$images[-1, ]
-  obj_final$masks = obj_final$masks[-1, ]
+  obj_final$images[obj$description$Images$physicalChannel == to, "physicalChannel"] <- from
+  obj_final$images[obj$description$Images$physicalChannel == to, "name"] <- from_img
+  obj_final$images = obj_final$images[order(as.integer(obj_final$images$physicalChannel)), ]
   
-  # CHECK THIS, could it lead to error
-  # when from is the first channel ?
+  # recover default mask
+  obj_final$masks = obj_final$masks[-1, ]
   obj_final$masks[obj_final$masks$name %in% c("MC","None","NMC"), ] <- obj$description$masks[obj$description$masks$name %in% c("MC","None","NMC"), ]
   
-  map = list(initial = names(obj$features_def)[has_changed_to_feat],
-             from = names(obj_from$features_def)[has_changed_to_feat],
-             to = names(obj_final$features_def)[has_changed_to_feat],
-             idx = has_changed_to_feat)
+  # remove duplicated features names
+  no_dup = !duplicated(names(obj_final$features_def))
+  obj_final$features_def = obj_final$features_def[no_dup]
   
-  ret = redefine_obj(obj, obj_final)
-  attr(x = ret, which = "map") <- map
-  return(ret)
+  # create mapping between input and output names
+  map = list(initial = names(obj$features_def)[no_dup],
+             from = names(obj_from$features_def)[no_dup],
+             to = names(obj_final$features_def),
+             dup = names(obj$features_def)[!no_dup])
+  
+  attr(x = obj_final, which = "map") <- map
+  return(obj_final)
+}
+
+#' @title Channel Swap
+#' @description
+#' Swaps Channels within `IFC_data` object
+#' @param obj an `IFC_data` object extracted with features extracted.
+#' @param chan1,chan2 an integer index of channel. 'chan1' and 'chan2' should be different.
+#' @param BF should 'from' channel be considered as brightfield. Default is TRUE.
+#' @param MODE collection mode (as retrieved by getInfo) determining the range. Default is 1.
+#' @details 'BF' and 'MODE' will be used only if 'chan1' or 'chan2' is not found in 'obj'.\cr
+#' /!\ NOTE: In case of conflict between resulting names, 'chan2' will be preferred, maximizing number of features with 'chan2'.
+#' @return a list, intended to be passed to 'new_feat_def' argument of getFromNamespace("redefine_obj", "IFC") whose members are:\cr
+#' -features_def, an 'IFC_features_def' object, or a list containing features definition\cr
+#' -masks, an 'IFC_masks' object or a data.frame containing masks definition and name.\cr
+#' -images, a data.frame containing images definition.
+#' @keywords internal
+swap_channel <- function(obj, chan1, chan2, BF = TRUE, MODE = 1) {
+  # compute the results of changing channel name chan1 -> chan2
+  obj_FT = switch_channel(obj, chan1, chan2, BF, MODE)
+  # compute the results of changing channel name chan2 -> chan1
+  obj_TF = switch_channel(obj, chan2, chan1, BF, MODE)
+  
+  # determine features names mapping
+  map_TF = attr(obj_TF, "map")
+  map_FT = attr(obj_FT, "map")
+  
+  # names which remains identical in both version chan1 -> chan2 and chan2 -> chan1
+  keep0 = intersect(map_TF$to, map_FT$to)
+  names(keep0) = keep0
+  
+  # all different except both for chan1 -> chan2 and chan2 -> chan1
+  tmp1 = (map_FT$to != map_FT$initial) & !(map_FT$to %in% keep0)
+  keep1 = map_FT$to[tmp1]
+  names(keep1) = map_FT$initial[tmp1]
+  tmp2 = (map_TF$to != map_TF$initial) & !(map_FT$to %in% keep0)
+  keep2 = map_TF$to[tmp2]
+  names(keep2) = map_TF$initial[tmp2]
+  
+  # conflict between names chan1 -> chan2 and chan2 -> chan1
+  conflict = intersect(names(keep1), names(keep2))
+  conflict = structure(map_FT$to[map_FT$initial %in% conflict], names = conflict) # we keep chan1 in case of conflict
+  keep1 = keep1[!names(keep1) %in% names(conflict)]
+  keep2 = keep2[!names(keep2) %in% names(conflict)]
+  
+  # build final object
+  obj_final = list(features_def = list(),
+                   masks = data.frame(),
+                   images = data.frame())
+  obj_final$masks = rbind(obj_TF$masks, obj_FT$masks)
+  obj_final$masks = obj_final$masks[!duplicated(obj_final$masks$name), ]
+  
+  obj_final$images = obj_FT$images
+  obj_final$features_def = c(obj_FT$features_def[keep0],
+                             obj_FT$features_def[keep1],
+                             obj_TF$features_def[keep2],
+                             obj_FT$features_def[conflict]) # we keep chan1 in case of conflict
+  keep = c(keep0, keep1, keep2, conflict)
+  
+  # finally we had remaining features which results from duplicated names
+  dups = intersect(map_TF$dup, map_TF$dup)
+  more = unique(c(map_FT$initial[sapply(map_FT$to, FUN = function(x) x %in% dups)],
+                  map_TF$initial[sapply(map_TF$to, FUN = function(x) x %in% dups)]))
+  obj_final$features_def = c(obj_final$features_def,
+                             obj_FT$features_def[names(obj_FT$features_def) %in% more],
+                             obj_TF$features_def[names(obj_TF$features_def) %in% more])
+  
+  # determine new mapping
+  map = list(initial = names(obj$features_def),
+             from = c(names(keep), more), # there can be duplicates here, e.g. Intensity_MC_Ch01 <-> Intensity_MC_Ch02
+             to = c(unname(keep), more))
+  attr(x = obj_final, which = "map") <- map
+  return(obj_final)
 }

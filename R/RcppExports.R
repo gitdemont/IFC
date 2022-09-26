@@ -51,6 +51,16 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title Sequence of Strings Matching
+#' @name cpp_seqmatch
+#' @description
+#' Match a sequence of strings in another string
+#' @param x,y StringVector to match
+#' @details smallest sequence will be searched into the largest one.
+#' @return the index (starting at 1) when a match has been found. Otherwise 0.
+#' @keywords internal
+NULL
+
 #' @title Use Rcpp to Apply Any on Matrix Rows
 #' @name cpp_fast_rowAny
 #' @description
@@ -734,6 +744,10 @@ cpp_ell_coord <- function(bound_x, bound_y) {
 
 cpp_pnt_in_gate <- function(pnts, gate, algorithm = 1L, epsilon = 0.000000000001) {
     .Call(`_IFC_cpp_pnt_in_gate`, pnts, gate, algorithm, epsilon)
+}
+
+cpp_seqmatch <- function(x, y) {
+    .Call(`_IFC_cpp_seqmatch`, x, y)
 }
 
 cpp_fast_rowAny <- function(M_ = NULL) {

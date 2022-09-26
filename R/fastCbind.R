@@ -39,74 +39,80 @@
 #' @return a combined object
 #' @keywords internal
 fastCbind <- function(obj1, obj2, add_id = FALSE) {
-  # fun to check and create columns names
-  get_colnames <- function(obj1, obj2, add_id = FALSE) {
-    N1 = names(obj1); N1 = N1[N1 != ""]
-    N2 = names(obj2); N2 = N2[N2 != ""]
-    s1 = ncol(obj1); if(length(s1) == 0) s1 = length(obj1)
-    s2 = ncol(obj2); if(length(s2) == 0) s2 = length(obj2)
-    while(length(N1) != s1) N1 = c(N1, random_name(special = NULL, forbidden = c(N1, N2)))
-    while(length(N2) != s2) N2 = c(N2, random_name(special = NULL, forbidden = c(N1, N2))) 
-    N = NULL
-    if(add_id) N = random_name(special = NULL, forbidden = c(N1, N2))
-    all_names = c(N, N1, N2)
-    if(anyDuplicated(all_names)) stop("names should be unique")
-    return(all_names)
+  old <- options("stringsAsFactors")
+  on.exit(options(old))
+  options("stringsAsFactors" = FALSE)
+  d1 = dim(obj1); l1 = length(d1); t1 = typeof(obj1)
+  d2 = dim(obj2); l2 = length(d2); t2 = typeof(obj2)
+  if(typeof(obj1) == "list") {
+    N1 = names(obj1)
+  } else {
+    N1 = dimnames(obj1)[[2]]
   }
-  if(inherits(obj1, "data.frame") && inherits(obj2, "data.frame")) {
-    all_names = get_colnames(obj1, obj2, add_id)
-    return(structure(cpp_fast_cbind_DF_DF(obj1, obj2, add_id = add_id), names = all_names, class = class(obj1)))
+  if(typeof(obj2) == "list") {
+    N2 = names(obj2)
+  } else {
+    N2 = dimnames(obj2)[[2]]
   }
-  if(inherits(obj1, "data.frame")) {
-    if(inherits(obj2, "list")) {
-      ans = cpp_fast_cbind_DF_L(obj1, obj2, add_id = add_id)
-      class(ans) = class(obj1)
-      colnames(ans) = get_colnames(obj1, obj2, add_id)
-      return(ans)
-    }
-    if(inherits(obj2, "matrix")) {
-      ans = cpp_fast_cbind_DF_M(obj1, obj2, add_id = add_id)
-      class(ans) = class(obj1)
-      colnames(ans) = get_colnames(obj1, obj2, add_id)
-      if(typeof(obj2) == "logical") lapply(colnames(obj2), FUN = function(x) {ans[, x] <<- as.logical(ans[, x])})
-      if(typeof(obj2) == "integer") lapply(colnames(obj2), FUN = function(x) {ans[, x] <<- as.integer(ans[, x])})
-      return(ans)
+  if((l1 == 2) || (l2 == 2)) {
+    if((l1 == 0) && (typeof(obj1) == "list")) obj1 = do.call(what = ifelse(t2 == "list", "data.frame", "cbind"), args = obj1)
+    if((l2 == 0) && (typeof(obj2) == "list")) obj2 = do.call(what = ifelse(t1 == "list", "data.frame", "cbind"), args = obj2)
+  }
+  if(l1 != 2) {
+    if(typeof(obj1) == "list") {
+      obj1 = do.call(what = ifelse(t2 == "list", "data.frame", "cbind"), args = obj1)
     } else {
-      M2 = as.matrix(obj2)
-      ans = cpp_fast_cbind_DF_M(obj1, M2, add_id = add_id)
-      class(ans) = class(obj1)
-      colnames(ans) = get_colnames(obj1, M2, add_id)
-      if(typeof(M2) == "logical") lapply(colnames(M2), FUN = function(x) {ans[, x] <<- as.logical(ans[, x])})
-      if(typeof(M2) == "integer") lapply(colnames(M2), FUN = function(x) {ans[, x] <<- as.integer(ans[, x])})
-      return(ans) 
+      obj1 = do.call(what = ifelse(t2 == "list", "data.frame", "cbind"), args = list(obj1))
     }
   }
-  if(inherits(obj2, "data.frame")) {
-    if(inherits(obj2, "list")) {
-      ans = cpp_fast_cbind_L_DF(obj1, obj2, add_id = add_id)
-      class(ans) = class(obj2)
-      colnames(ans) = get_colnames(obj1, obj2, add_id)
-      return(ans)
-    }
-    if(inherits(obj1, "matrix")) {
-      ans = cpp_fast_cbind_M_DF(obj1, obj2, add_id = add_id)
-      class(ans) = class(obj2)
-      colnames(ans) = get_colnames(obj1, obj2, add_id)
-      if(typeof(obj1) == "logical") lapply(colnames(obj1), FUN = function(x) {ans[, x] <<- as.logical(ans[, x])})
-      if(typeof(obj1) == "integer") lapply(colnames(obj1), FUN = function(x) {ans[, x] <<- as.integer(ans[, x])})
-      return(ans)
+  if(l2 != 2) {
+    if(typeof(obj2) == "list") {
+      obj2 = do.call(what = ifelse(t1 == "list", "data.frame", "cbind"), args = obj2)
     } else {
-      M1 = as.matrix(obj1)
-      ans = cpp_fast_cbind_M_DF(M1, obj2, add_id = add_id)
-      class(ans) = class(obj2)
-      colnames(ans) = get_colnames(M1, obj2, add_id)
-      if(typeof(M1) == "logical") lapply(colnames(M1), FUN = function(x) {ans[, x] <<- as.logical(ans[, x])})
-      if(typeof(M1) == "integer") lapply(colnames(M1), FUN = function(x) {ans[, x] <<- as.integer(ans[, x])})
-      return(ans)
+      obj2 = do.call(what = ifelse(t1 == "list", "data.frame", "cbind"), args = list(obj2))
     }
   }
-  M1 = as.matrix(obj1)
-  M2 = as.matrix(obj2)
-  all_names = get_colnames(M1, M2, add_id)
-  return(structure(cpp_fast_cbind_M_M(M1, M2, add_id = add_id), colnames = all_names))
+  d1 = dim(obj1); l1 = length(d1)
+  d2 = dim(obj2); l2 = length(d2)
+  if((t1 != "list") && (t2 != "list")) {
+    ans = matrix(ncol = 0, nrow = 0)
+  } else {
+    ans = data.frame() 
+  }
+  if((l1 == 2) && (l2 == 2)) {
+    if(d1[1] == 0) ans = cbind(obj2, deparse.level = 0)
+    if(d2[1] == 0) ans = cbind(obj1, deparse.level = 0)
+    if((d1[1] != 0) && (d2[1] != 0)) ans = cbind(obj1, obj2, deparse.level = 0)
+    if((d1[1] == 0) && (d2[1] == 0)) ans = cbind(obj1, obj2, deparse.level = 0)
+    s1 = ncol(obj1)
+    s2 = ncol(obj2)
+  } else {
+    if(l1 == 2) {
+      ans = cbind(obj1, deparse.level = 0)
+      s1 = ncol(ans); s2 = 0
+    }
+    if(l2 == 2) {
+      ans = cbind(obj2, deparse.level = 0)
+      s2 = ncol(ans); s1 = 0
+    }
+  }
+  if(length(N1) == 0) replicate(s1, N1 <<- c(N1, random_name(special = NULL, forbidden = as.character(c(N1, N2)))))
+  if(length(N2) == 0) replicate(s2, N2 <<- c(N2, random_name(special = NULL, forbidden = as.character(c(N1, N2)))))
+  while(length(N1 == "") != s1) {
+    tmp = which(N1=="")[1]
+    N1[ifelse(is.na(tmp),1,tmp)] <- random_name(special = NULL, forbidden = as.character(c(N1, N2)))
+  }
+  while(length(N2 == "") != s2) {
+    tmp = which(N2=="")[1]
+    N2[ifelse(is.na(tmp),1,tmp)] <- random_name(special = NULL, forbidden = as.character(c(N1, N2)))
+  }
+  N = NULL
+  if(add_id) {
+    ans = cbind(seq_along(integer(nrow(ans))), ans, deparse.level = 0)
+    N = random_name(special = NULL, forbidden = as.character(c(N1, N2)))
+  }
+  all_names = c(N, N1, N2)
+  if(anyDuplicated(all_names)) stop("names should be unique")
+  colnames(ans) = all_names
+  return(ans)
 }

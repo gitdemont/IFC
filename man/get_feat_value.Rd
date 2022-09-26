@@ -7,6 +7,7 @@
 get_feat_value(
   feat_def,
   features,
+  alt_names,
   operators = c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT"),
   split = "|"
 )
@@ -15,6 +16,8 @@ get_feat_value(
 \item{feat_def}{a feature definition as created by \code{\link{buildFeature}}.}
 
 \item{features}{a data.frame of features, typically an object of class `IFC_features`.}
+
+\item{alt_names}{vector of same length as features to use for substitution. It can be used to speed up the process.}
 
 \item{operators}{operators used. Default is c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT").}
 

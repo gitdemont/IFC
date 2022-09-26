@@ -48,6 +48,7 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
   if(any(new_names %in% c(character(), "", NA_character_, "All"))) stop("'new_names' should not be NA, \"\", nor \"All\"")
   if(length(old_names) != length(new_names)) stop("'old_names' and 'new_names' should be character vectors of same length")
   ori_names <- names(obj$pops)
+  alt_names = gen_altnames(ori_names)
   tmp1 = old_names %in% ori_names
   tmp2 = new_names %in% ori_names
   if(!all(tmp1)) warning("can't find population",ifelse(sum(!tmp1) > 1, "s", "")," to rename:\n",
@@ -129,7 +130,7 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
       gg
     })
     # check if title is default or has been given by user, when default try to modify it
-    bar = try(splitn(trimws(g$title), all_names = ori_names, split = " , "), silent = TRUE)
+    bar = try(trimws(splitn(definition = g$title, all_names = ori_names, alt_names = alt_names, split = " , ")), silent = TRUE)
     if(!inherits(bar, "try-error")) {
       g$title = paste0(sapply(bar, FUN = function(x) {
         foo = mutation %in% x
@@ -138,7 +139,7 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
       }), collapse = " , ")
     } 
     # change population in order
-    bar = try(splitn(g$order, all_names = ori_names), silent = TRUE)
+    bar = try(splitn(definition = g$order, all_names = ori_names, alt_names = alt_names), silent = TRUE)
     if(!inherits(bar, "try-error")) {
       g$order = paste0(sapply(bar, FUN = function(x) {
         foo = mutation %in% x

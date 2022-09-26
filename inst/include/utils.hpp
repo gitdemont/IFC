@@ -87,6 +87,41 @@ bool lNotisNULL(const Rcpp::Nullable<Rcpp::LogicalVector> x_ = R_NilValue) {
   return false;
 }
 
+//' @title Sequence of Strings Matching
+//' @name cpp_seqmatch
+//' @description
+//' Match a sequence of strings in another string
+//' @param x,y StringVector to match
+//' @details smallest sequence will be searched into the largest one.
+//' @return the index (starting at 1) when a match has been found. Otherwise 0.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+R_len_t hpp_seqmatch(const Rcpp::StringVector x,
+                     const Rcpp::StringVector y) {
+  R_len_t i = 0, j = 0, k = 0;
+  if(x.size() < y.size()) {
+    return hpp_seqmatch(y, x);
+  } else {
+    while((k < y.size()) && (i < x.size())) {
+      Rcpp::checkUserInterrupt();
+      j = 0;
+      k = 0;
+      while((k == j) && (i < x.size()) && (j < y.size())) {
+        Rcpp::checkUserInterrupt();
+        if(x[i] == y[j]) {
+          k++;
+          i++;
+        }
+        j++;
+        if(i >= x.size()) break;
+      }
+      if(k == 0) i++;
+    }
+  }
+  return ((k == j) && (k == y.size())) ? (1 + i - y.size()) : 0;
+}
+
 //' @title Use Rcpp to Apply Any on Matrix Rows
 //' @name cpp_fast_rowAny
 //' @description

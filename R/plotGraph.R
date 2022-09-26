@@ -128,7 +128,9 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   graph_n = unlist(lapply(g$GraphRegion, FUN=function(x) x$def))
   
   operators = c("And","Or","Not","(",")")
-  displayed_n = unique(splitn(definition = g$order, all_names = c(base_n, graph_n, shown_n, "Selected Bin"), operators = operators))
+  all_names = c(base_n, graph_n, shown_n, "Selected Bin")
+  alt_names = gen_altnames(all_names)
+  displayed_n = unique(splitn(definition = g$order, all_names = all_names, alt_names = alt_names, operators = operators))
   displayed_n = setdiff(displayed_n, "Selected Bin")
   displayed_r = rev(displayed_n)
   tmp = displayed_n %in% names(P)

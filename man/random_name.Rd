@@ -24,12 +24,15 @@ random_name(
 
 \item{special}{characters. Default is c("#", "@", "?", "!", "&", "\%", "$").}
 
-\item{forbidden}{forbidden character strings. Default is character().}
+\item{forbidden}{forbidden character vector. Default is character().}
 }
 \value{
-a character string
+a character string.
 }
 \description{
 Generates random name
+}
+\details{
+'forbidden' should not encompass all possible returned value otherwise the function will never end.
 }
 \keyword{internal}
