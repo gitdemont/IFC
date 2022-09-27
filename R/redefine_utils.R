@@ -770,36 +770,58 @@ redefine_features_def <- function(features_def, masks, images, to_match_feat = N
 redefine_obj <- function(obj, new_feat_def, ...) {
   assert(obj, cla = "IFC_data")
   
-  # we check which features names have been modified
-  old_names = names(obj$features_def)
-  new_names = names(new_feat_def$features_def)
-  to_modify = !old_names %in% new_names
-  
-  # modify features names
-  names(obj$features) = sapply(names(obj$features), FUN = function(x) {
-    tmp = (x == old_names) & to_modify
-    if(any(tmp)) return(new_names[tmp][1])
-    return(x)
-  })
+  # retrieve mapping if any
+  map = attr(new_feat_def, "map")
+  if(length(map) == 0) map = list(initial = names(obj$features), to = names(obj$features_def))
   
   # modify features definition
+  K = class(obj$features_def)
   obj$features_def <- sapply(USE.NAMES = TRUE, simplify = FALSE, new_feat_def$features_def, FUN = function(x) {
     x[c("name","type","userfeaturetype","def")] # remove split
   })
   
+  # identify and remove duplicated features
+  names(obj$features_def) = sapply(obj$features_def, FUN = function(x) x$name)
+  dup = duplicated(names(obj$features_def))
+  if(any(dup)) {
+    warning("'obj' redefinition led to features with same name which have been discarded:\n\t-", paste0(names(obj$features_def)[dup], collapse = "\n\t-"))
+  }
+  map = sapply(map, simplify = FALSE, FUN = function(x) x[!dup])
+  obj$features_def = obj$features_def[!dup]
+  class(obj$features_def) = K
+  
+  # modify features values, at 1st create empty and then copy with mapping
+  new_feat = as.data.frame(matrix(NaN, nrow = nrow(obj$features), ncol = length(obj$features_def)),
+                           stringsAsFactors = FALSE, make.names = FALSE)
+  colnames(new_feat) = names(obj$features_def)
+  done = c()
+  for(i in names(obj$features_def)) {
+    tmp = map$to == i
+    if(any(tmp)) {
+      j = map$initial[tmp]
+      tmp = names(obj$features) %in% j
+      if(any(tmp)) {
+        k = names(obj$features)[tmp]
+        if(!any(k %in% done)) new_feat[, i] <- obj$features[, k[1]]
+        done = c(done, k)
+      }
+    }
+  }
+  obj$features = structure(new_feat, class = class(obj$features))
+  
   # modify graphs
   K = class(obj$graphs)
   obj$graphs = lapply(obj$graphs, FUN = function(g) {
-    tmp = (g$f1 == old_names) & to_modify
+    tmp = g$f1 == map$initial
     if(any(tmp)) {
-      if(g$f1 == g$xlabel) g$xlabel <- new_names[tmp][1]
-      g$f1 <- new_names[tmp][1]
+      if(g$f1 == g$xlabel) g$xlabel <- map$to[tmp][1]
+      g$f1 <- map$to[tmp][1]
     }
     if(g$type != "histogram") {
-      tmp = (g$f2 == old_names) & to_modify
+      tmp = g$f2 == map$initial
       if(any(tmp)) {
-        if(g$f2 == g$ylabel) g$ylabel <- new_names[tmp][1]
-        g$f2 <- new_names[tmp][1]
+        if(g$f2 == g$ylabel) g$ylabel <- map$to[tmp][1]
+        g$f2 <- map$to[tmp][1]
       }
     }
     return(g)
@@ -810,12 +832,12 @@ redefine_obj <- function(obj, new_feat_def, ...) {
   K = class(obj$pops)
   obj$pops = lapply(obj$pops, FUN = function(p) {
     if("fx" %in% names(p)) {
-      tmp = (p$fx == old_names) & to_modify
-      if(any(tmp)) p$fx <- new_names[tmp][1]
+      tmp = p$fx == map$initial
+      if(any(tmp)) p$fx <- map$to[tmp][1]
     }
     if("fy" %in% names(p)) {
-      tmp = (p$fy == old_names) & to_modify
-      if(any(tmp)) p$fy <- new_names[tmp][1]
+      tmp = p$fy == map$initial
+      if(any(tmp)) p$fy <- map$to[tmp][1]
     }
     return(p)
   })
@@ -852,7 +874,12 @@ usedefault_obj <- function(obj, ...) {
 #' @param from,to an integer index of channel. 'from' and 'to' should be different.
 #' @param BF should 'from' channel be considered as brightfield. Default is TRUE.
 #' @param MODE collection mode (as retrieved by getInfo) determining the range. Default is 1.
-#' @details 'BF' and 'MODE' will be used only if 'to' is not found in 'obj'.
+#' @details 'BF' and 'MODE' will be used only if 'to' is not found in 'obj'.\cr
+#' If switching channel results in duplicated features definition, e.g. "Intensity_M01_Ch01" and "Intensity_M04_Ch04" exists in 'from'
+#' and user called switch_channel(obj, 4, 1). So, "Intensity_M01_Ch01" will become "Intensity_M01_Ch01" (the same) and,
+#' "Intensity_M04_Ch04" will become "Intensity_M01_Ch01". Meaning that resulting "Intensity_M01_Ch01" can originate from
+#' either "Intensity_M01_Ch01" or "Intensity_M04_Ch04". In such case duplicates will be collected in 'dup' member of attr(, "map").\cr
+#' /!\ Note also that 'initial' member of attr(, "map") will always be the one of 'from', i.e. "Intensity_M01_Ch01" will be mapped with "Intensity_M04_Ch04" .
 #' @return a list, intended to be passed to 'new_feat_def' argument of getFromNamespace("redefine_obj", "IFC") whose members are:\cr
 #' -features_def, an 'IFC_features_def' object, or a list containing features definition\cr
 #' -masks, an 'IFC_masks' object or a data.frame containing masks definition and name.\cr
@@ -917,6 +944,12 @@ switch_channel <- function(obj, from, to, BF = TRUE, MODE = 1) {
   obj_default$images[1, "name"] = random_name(forbidden = obj$description$Images$name)
   obj_default$images[1, "physicalChannel"] = 0
   
+  # use default names
+  obj_default = redefine_features_def_msk_img(obj_default$features_def,
+                                              masks = obj_default$masks, 
+                                              images = obj_default$images,
+                                              force_default = TRUE)
+  
   # replace all 'to' masks and images by 'from' into obj_default
   new_images_names = obj_default$images$name
   new_images_names[new_images_names == to_img] <- from_img
@@ -929,7 +962,7 @@ switch_channel <- function(obj, from, to, BF = TRUE, MODE = 1) {
                                            to_match_mask = to_msk,
                                            to_replace_mask = from_msk,
                                            new_images_names = new_images_names,
-                                           force_default = TRUE)
+                                           force_default = FALSE)
   
   # replace all 'from' masks and images by 'to' into obj_default
   new_images_names = obj_default$images$name
@@ -943,7 +976,7 @@ switch_channel <- function(obj, from, to, BF = TRUE, MODE = 1) {
                                          to_match_mask = from_msk,
                                          to_replace_mask = to_msk,
                                          new_images_names = new_images_names,
-                                         force_default = TRUE)
+                                         force_default = FALSE)
   
   # compute all masks names that have changed
   msk_names_from = buildMask(obj_from$masks, obj_from$images, definition = FALSE)
@@ -971,14 +1004,22 @@ switch_channel <- function(obj, from, to, BF = TRUE, MODE = 1) {
   
   # remove duplicated features names
   no_dup = !duplicated(names(obj_final$features_def))
-  obj_final$features_def = obj_final$features_def[no_dup]
+  dup = names(obj_final$features_def)[!no_dup]
+  names(dup) = names(obj$features_def)[!no_dup]
+  dup_i = names(obj$features_def)[!no_dup]         # initial names, including custom
+  dup_o = names(obj_default$features_def)[!no_dup] # initial names, using default naming (i.e. without custom)
+  dup_f = names(obj_from$features_def)[!no_dup]
+  dup_t = names(obj_final$features_def)[!no_dup]
+  tmp = which(dup_o == dup_f)
   
   # create mapping between input and output names
   map = list(initial = names(obj$features_def)[no_dup],
-             from = names(obj_from$features_def)[no_dup],
-             to = names(obj_final$features_def),
-             dup = names(obj$features_def)[!no_dup])
-  
+             to = names(obj_final$features_def)[no_dup],
+             dup = structure(dup_t[tmp], names = dup_i[tmp]))
+  # replace initial names by their duplicated value
+  for(i in tmp) map$initial[map$initial == dup_t[i]] <- dup_i[i]
+   
+  obj_final$features_def = obj_final$features_def[no_dup]
   attr(x = obj_final, which = "map") <- map
   return(obj_final)
 }
@@ -1009,7 +1050,7 @@ swap_channel <- function(obj, chan1, chan2, BF = TRUE, MODE = 1) {
   
   # names which remains identical in both version chan1 -> chan2 and chan2 -> chan1
   keep0 = intersect(map_TF$to, map_FT$to)
-  names(keep0) = keep0
+  names(keep0) = sapply(keep0, FUN = function(x) map_FT$initial[map_FT$to == x])
   
   # all different except both for chan1 -> chan2 and chan2 -> chan1
   tmp1 = (map_FT$to != map_FT$initial) & !(map_FT$to %in% keep0)
@@ -1021,7 +1062,8 @@ swap_channel <- function(obj, chan1, chan2, BF = TRUE, MODE = 1) {
   
   # conflict between names chan1 -> chan2 and chan2 -> chan1
   conflict = intersect(names(keep1), names(keep2))
-  conflict = structure(map_FT$to[map_FT$initial %in% conflict], names = conflict) # we keep chan1 in case of conflict
+  conflict = map_FT$to[map_FT$initial %in% conflict]
+  names(conflict) = sapply(conflict, FUN = function(x) map_FT$initial[map_FT$to == x])
   keep1 = keep1[!names(keep1) %in% names(conflict)]
   keep2 = keep2[!names(keep2) %in% names(conflict)]
   
@@ -1036,21 +1078,13 @@ swap_channel <- function(obj, chan1, chan2, BF = TRUE, MODE = 1) {
   obj_final$features_def = c(obj_FT$features_def[keep0],
                              obj_FT$features_def[keep1],
                              obj_TF$features_def[keep2],
-                             obj_FT$features_def[conflict]) # we keep chan1 in case of conflict
+                             obj_FT$features_def[conflict]) # we keep chan2 in case of conflict
   keep = c(keep0, keep1, keep2, conflict)
-  
-  # finally we had remaining features which results from duplicated names
-  dups = intersect(map_TF$dup, map_TF$dup)
-  more = unique(c(map_FT$initial[sapply(map_FT$to, FUN = function(x) x %in% dups)],
-                  map_TF$initial[sapply(map_TF$to, FUN = function(x) x %in% dups)]))
-  obj_final$features_def = c(obj_final$features_def,
-                             obj_FT$features_def[names(obj_FT$features_def) %in% more],
-                             obj_TF$features_def[names(obj_TF$features_def) %in% more])
-  
+
   # determine new mapping
-  map = list(initial = names(obj$features_def),
-             from = c(names(keep), more), # there can be duplicates here, e.g. Intensity_MC_Ch01 <-> Intensity_MC_Ch02
-             to = c(unname(keep), more))
+  map = list(initial = names(keep),
+             to = unname(keep))
+  
   attr(x = obj_final, which = "map") <- map
   return(obj_final)
 }

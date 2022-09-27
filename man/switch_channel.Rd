@@ -25,6 +25,11 @@ a list, intended to be passed to 'new_feat_def' argument of getFromNamespace("re
 Switches Channel in `IFC_data` object
 }
 \details{
-'BF' and 'MODE' will be used only if 'to' is not found in 'obj'.
+'BF' and 'MODE' will be used only if 'to' is not found in 'obj'.\cr
+If switching channel results in duplicated features definition, e.g. "Intensity_M01_Ch01" and "Intensity_M04_Ch04" exists in 'from'
+and user called switch_channel(obj, 4, 1). So, "Intensity_M01_Ch01" will become "Intensity_M01_Ch01" (the same) and,
+"Intensity_M04_Ch04" will become "Intensity_M01_Ch01". Meaning that resulting "Intensity_M01_Ch01" can originate from
+either "Intensity_M01_Ch01" or "Intensity_M04_Ch04". In such case duplicates will be collected in 'dup' member of attr(, "map").\cr
+/!\ Note also that 'initial' member of attr(, "map") will always be the one of 'from', i.e. "Intensity_M01_Ch01" will be mapped with "Intensity_M04_Ch04" .
 }
 \keyword{internal}
