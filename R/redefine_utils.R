@@ -1018,8 +1018,21 @@ switch_channel <- function(obj, from, to, BF = TRUE, MODE = 1) {
              dup = structure(dup_t[tmp], names = dup_i[tmp]))
   # replace initial names by their duplicated value
   for(i in tmp) map$initial[map$initial == dup_t[i]] <- dup_i[i]
-   
   obj_final$features_def = obj_final$features_def[no_dup]
+  
+  # keep only necessary masks
+  S = sapply(obj_final$features_def, FUN = function(x) x$split)
+  m_used = names(which(sapply(obj_final$mask$name, FUN = function(x) any(sapply(S, FUN = function(y) x %in% y)))))
+  m_deps = sapply(obj_final$mask$name, FUN = function(x) which(sapply(obj_final$mask$def, FUN = function(y) x %in% strsplit(y, "|", fixed = TRUE)[[1]])))
+  m_need = which(obj_final$mask$name %in% c("MC","None","NMC", m_used))
+  LL = -1
+  while(length(m_need) != LL) {
+    LL = length(m_need)
+    m_need = sort(unique(c(m_need, which(sapply(m_deps, FUN = function(x) any(sapply(m_need, FUN = function(y) y %in% x)))))))
+  }
+  obj_final$masks = obj_final$masks[m_need, ]
+  obj_final$masks = obj_final$masks[!duplicated(obj_final$masks$name), ]
+  
   attr(x = obj_final, which = "map") <- map
   return(obj_final)
 }
@@ -1080,7 +1093,20 @@ swap_channel <- function(obj, chan1, chan2, BF = TRUE, MODE = 1) {
                              obj_TF$features_def[keep2],
                              obj_FT$features_def[conflict]) # we keep chan2 in case of conflict
   keep = c(keep0, keep1, keep2, conflict)
-
+  
+  # keep only necessary masks
+  S = sapply(obj_final$features_def, FUN = function(x) x$split)
+  m_used = names(which(sapply(obj_final$mask$name, FUN = function(x) any(sapply(S, FUN = function(y) x %in% y)))))
+  m_deps = sapply(obj_final$mask$name, FUN = function(x) which(sapply(obj_final$mask$def, FUN = function(y) x %in% strsplit(y, "|", fixed = TRUE)[[1]])))
+  m_need = which(obj_final$mask$name %in% c("MC","None","NMC", m_used))
+  LL = -1
+  while(length(m_need) != LL) {
+    LL = length(m_need)
+    m_need = sort(unique(c(m_need, which(sapply(m_deps, FUN = function(x) any(sapply(m_need, FUN = function(y) y %in% x)))))))
+  }
+  obj_final$masks = obj_final$masks[m_need, ]
+  obj_final$masks = obj_final$masks[!duplicated(obj_final$masks$name), ]
+  
   # determine new mapping
   map = list(initial = names(keep),
              to = unname(keep))
