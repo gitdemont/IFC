@@ -107,19 +107,18 @@ R_len_t hpp_seqmatch(const Rcpp::StringVector x,
       Rcpp::checkUserInterrupt();
       j = 0;
       k = 0;
-      while((k == j) && (i < x.size()) && (j < y.size())) {
+      while((i < x.size()) && (j < y.size())) {
         Rcpp::checkUserInterrupt();
         if(x[i] == y[j]) {
           k++;
           i++;
         }
         j++;
-        if(i >= x.size()) break;
       }
       if(k == 0) i++;
     }
   }
-  return ((k == j) && (k == y.size())) ? (1 + i - y.size()) : 0;
+  return (k == y.size()) ? (1 + i - y.size()) : 0;
 }
 
 //' @title Use Rcpp to Apply Any on Matrix Rows

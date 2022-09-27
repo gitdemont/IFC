@@ -23,7 +23,7 @@ It looks like gsub but it is different e.g.:\cr
 x=c("ABD","A","B")\cr
 pattern=c("A","B")\cr
 replacement=c("C")\cr
-- gsub(x=paste0(x,collapse=""),pattern=paste0(pattern,collapse=""),replacement=paste0(replacement,collapse=""),fixed=TRUE) will give "CDC"\cr
-- gseq(x=x,pattern=pattern,replacement=replacement) will give "ABD","C"\cr
+- gsub(x=paste0(x,collapse=""),pattern=paste0(pattern,collapse=""),replacement=paste0(replacement,collapse=""),fixed=TRUE) will give "CDC",\cr
+- gseq(x=x,pattern=pattern,replacement=replacement) will give "ABD","C".
 }
 \keyword{internal}
