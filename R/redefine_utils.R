@@ -663,7 +663,7 @@ redefine_features_def_msk_img <- function(features_def, masks, images, force_def
   # if(length(unique(names(def))) != length(def)) stop("'features_def' should have unique names")
   old_names = names(features_def)
   comb_operators = c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT")
-  all_msk = strsplit(masks$def[masks$name == "MC"], split = "|Or|", fixed = TRUE)[[1]]
+  all_msk = unlist(strsplit(masks$def[masks$name %in% "MC"], split = "|Or|", fixed = TRUE), recursive = FALSE, use.names = FALSE)
   
   # we check if def has already been split otherwise we do it
   def = split_feat(features_def = def,
@@ -927,7 +927,7 @@ switch_channel <- function(obj, from, to, BF = TRUE, MODE = 1) {
                      features_def = obj$features_def)
   
   comb_operators = c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT")
-  all_msk = strsplit(obj_default$masks$def[obj_default$masks$name == "MC"], split = "|Or|", fixed = TRUE)[[1]]
+  all_msk = unlist(strsplit(obj_default$masks$def[obj_default$masks$name %in% "MC"], split = "|Or|", fixed = TRUE), recursive = FALSE, use.names = FALSE)
   
   # create split for obj_default$features_def
   obj_default$features_def = split_feat(features_def = obj_default$features_def,

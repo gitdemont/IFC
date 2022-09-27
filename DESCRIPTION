@@ -2,7 +2,7 @@ Package: IFC
 Encoding: UTF-8
 Type: Package
 Title: Tools for Imaging Flow Cytometry
-Version: 0.1.6.9001
+Version: 0.1.6.9002
 Date: 2022-09-27
 Maintainer: Yohann Demont <git.demont@gmail.com>
 Authors@R: c(person(given = 'Yohann', family = 'Demont', email = 'git.demont@gmail.com', role = c('aut', 'cre')), person(given = 'Gautier', family = 'Stoll', role = 'ctb'), person(given = 'Guido', family = 'Kroemer', role = 'ldr'), person(given = 'Jean-Pierre', family = 'Marolleau', role = 'ldr'), person(given = 'Loïc', family = 'Garçon', role = 'ldr'))

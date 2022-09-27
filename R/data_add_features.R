@@ -82,7 +82,7 @@ data_add_features <- function(obj, features, ...) {
   # send error on bad definition
   all_names_comb = c(names(obj$features), names(features))
   alt_names_comb = gen_altnames(all_names_comb)
-  all_msk = strsplit(obj$description$masks$def[obj$description$masks$name == "MC"], split = "|Or|", fixed = TRUE)[[1]]
+  all_msk = unlist(strsplit(obj$description$masks$def[obj$description$masks$name %in% "MC"], split = "|Or|", fixed = TRUE), recursive = FALSE, use.names = FALSE)
   all_names_avl = unname(c("true", "false", "True", "False",
                            all_msk, obj$description$masks$name,
                            obj$description$Images$name,

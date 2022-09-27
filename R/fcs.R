@@ -725,7 +725,7 @@ FCS_to_data <- function(fcs, ...) {
                                        "Images" = data.frame("name" = NULL, "color" = NULL, "physicalChannel" = NULL, "xmin" = NULL,
                                                              "xmax" = NULL, "xmid" = NULL, "ymid"= NULL, "scalemin"= NULL, "scalemax"= NULL,
                                                              "tokens"= NULL, "baseimage"= NULL, "function"= NULL),
-                                       "masks" = data.frame()),
+                                       "masks" = data.frame(matrix(character(),nrow = 0, ncol = 3, dimnames = list(list(),list("type","name","def"))))),
                   "Merged_fcs" = character(),
                   "Keywords" = list(),
                   "fileName" = character(),
