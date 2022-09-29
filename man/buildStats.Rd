@@ -4,28 +4,49 @@
 \alias{buildStats}
 \title{IFC Statistics Coercion}
 \usage{
-buildStats(type, title, def, ...)
+buildStats(
+  obj,
+  stats = list(list(type = "COUNT", title = "Count", def = ""), list(type =
+    "PERCENT_GATED", title = "\%Gated", def = "")),
+  width = 80 * (1 + length(stats)),
+  height = 240,
+  xlocation = 0,
+  ylocation = 0,
+  ...
+)
 }
 \arguments{
-\item{type}{stats's type. Allowed are "COUNT","PERCENT_GATED","CONCENTRATION","PERCENT","MEAN","MEDIAN","STDDEV","MAD","CV","MINIMUM","MAXIMUM","GEOMETRIC_MEAN","MODE","VARIANCE","NAN","MEAN_RD","MEDIAN_RD".}
+\item{obj}{an `IFC_data` object}
 
-\item{title}{stats's title. If missing, it will be determined thanks to def.}
+\item{stats}{list of statistics instructions, whose members are list containing 3 instructions:\cr
+- 'type' stats's type. Allowed are "COUNT","PERCENT_GATED","CONCENTRATION","PERCENT","MEAN","MEDIAN","STDDEV","MAD","CV","MINIMUM","MAXIMUM","GEOMETRIC_MEAN","MODE","VARIANCE","NAN","MEAN_RD","MEDIAN_RD".\cr
+- 'title' stats's title. If missing, it will be determined thanks to def.\cr
+- 'def' definition of the stats.\cr
+Default is:\cr
+list(list(type="COUNT",title="Count",def=""),\cr
+     list(type="PERCENT_GATED",title="\%Gated",def=""))}
 
-\item{def}{definition of the stats.}
+\item{width}{desired width. Default is 80 * (1 + length(stats)).}
+
+\item{height}{desired height Default is 400.}
+
+\item{xlocation}{x location in analysis workspace. Default is 0.}
+
+\item{ylocation}{y location in analysis workspace. Default is 0.}
 
 \item{...}{Other arguments to be passed.}
 }
 \value{
-a list containing all statistics information.
+an object of class `IFC_stats`.
 }
 \description{
 Helper to build a list to allow statistics export.
 }
 \details{
-when 'type' is:\cr
-- "COUNT","PERCENT_GATED","CONCENTRATION", 'def' will be "",
-- "PERCENT", 'def' has to be a population name,
-- "MEAN_RD","MEDIAN_RD" 'def' has to be the concatenation of a feature name and a population name collapse with "|". e.g. "Area_MC|All",
-- otherwise, 'def' has to be a feature name.
+when stats$type is:\cr
+- "COUNT","PERCENT_GATED","CONCENTRATION", stats$def will be "",\cr
+- "PERCENT", stats$def has to be a population name,\cr
+- "MEAN_RD","MEDIAN_RD" stats$def has to be the concatenation of a feature name and a population name collapse with "|". e.g. "Area_MC|All",\cr
+- otherwise, stats$def has to be a feature name.
 }
 \keyword{internal}

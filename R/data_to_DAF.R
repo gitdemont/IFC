@@ -259,7 +259,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
                                       list(type="PERCENT_GATED",title="%Gated",def=""))
   yloc = unlist(lapply(obj$graphs, FUN = function(g) g[["ylocation"]]))
   size = unlist(lapply(obj$graphs, FUN = function(g) g[["ysize"]]))
-  stats = statsCompute(obj, stats, width = 80 * (1 + length(stats)), height = 240, xlocation = 0, ylocation = max(c(yloc + size, 0)))
+  stats = buildStats(obj, stats, width = 80 * (1 + length(stats)), height = 240, xlocation = 0, ylocation = max(c(yloc + size, 0)))
   disp_nodes = list(toXML2_stats(stats, verbose = verbose))
   if(length(obj$graphs) > 0) disp_nodes = c(disp_nodes, toXML2_graphs(obj$graphs, verbose = verbose))
   xml_add_child(root, .value =   xml_new_node(name = "Displays", attrs = list(count = num_to_string(1+length(obj$graphs)), 

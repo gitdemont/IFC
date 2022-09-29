@@ -27,36 +27,14 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
-#' @title IFC Statistics Coercion
-#' @description
-#' Helper to build a list to allow statistics export.
-#' @param type stats's type. Allowed are "COUNT","PERCENT_GATED","CONCENTRATION","PERCENT","MEAN","MEDIAN","STDDEV","MAD","CV","MINIMUM","MAXIMUM","GEOMETRIC_MEAN","MODE","VARIANCE","NAN","MEAN_RD","MEDIAN_RD".
-#' @param title stats's title. If missing, it will be determined thanks to def.
-#' @param def definition of the stats.
-#' @details when 'type' is:\cr
-#' - "COUNT","PERCENT_GATED","CONCENTRATION", 'def' will be "",
-#' - "PERCENT", 'def' has to be a population name,
-#' - "MEAN_RD","MEDIAN_RD" 'def' has to be the concatenation of a feature name and a population name collapse with "|". e.g. "Area_MC|All",
-#' - otherwise, 'def' has to be a feature name.
-#' @param ... Other arguments to be passed.
-#' @return a list containing all statistics information.
-#' @keywords internal
-buildStats <- function(type, title, def, ...) {
-  alw_type = c("COUNT","PERCENT_GATED","CONCENTRATION","PERCENT","MEAN","MEDIAN","STDDEV","MAD",
-               "CV","MINIMUM","MAXIMUM","GEOMETRIC_MEAN","MODE","VARIANCE","NAN","MEAN_RD","MEDIAN_RD")
-  type <- match.arg(type, choices = alw_type, several.ok = FALSE)
-  if(missing(title)) {
-    title = ""
-  } else {
-    title=as.character(title); assert(title, len=1)
-  }
-  if(type %in% alw_type[1:3]) {
-    def = "";
-  } else {
-    def=as.character(def); def=setdiff(def, ""); assert(def, len=1)   
-  }
-  return(list("type"=type, "title"=title, "def"=def))
-}
+################################################################################
+#             functions described hereunder are experimental                   #
+#              inputs and outputs may change in the future                     #
+################################################################################
+
+################################################################################
+#       functions to compute features / pops stats from IFC_data object        #
+################################################################################
 
 #' @title Statistics Extraction from Populations
 #' @description
@@ -111,19 +89,35 @@ extractStats <- function(obj, feat_name, trans="P") {
   return(stats)
 }
 
-#' @title IFC_stats Computation
+################################################################################
+#       functions to build ad export statistics panel inside daf file          #
+################################################################################
+
+#' @title IFC Statistics Coercion
 #' @description
-#' Function used to compute `IFC_stats` object\cr
+#' Helper to build a list to allow statistics export.
 #' @param obj an `IFC_data` object
-#' @param stats list of statistics. It will be coerced by buildStats()
+#' @param stats list of statistics instructions, whose members are list containing 3 instructions:\cr
+#' - 'type' stats's type. Allowed are "COUNT","PERCENT_GATED","CONCENTRATION","PERCENT","MEAN","MEDIAN","STDDEV","MAD","CV","MINIMUM","MAXIMUM","GEOMETRIC_MEAN","MODE","VARIANCE","NAN","MEAN_RD","MEDIAN_RD".\cr
+#' - 'title' stats's title. If missing, it will be determined thanks to def.\cr
+#' - 'def' definition of the stats.\cr
+#' Default is:\cr
+#' list(list(type="COUNT",title="Count",def=""),\cr
+#'      list(type="PERCENT_GATED",title="\%Gated",def=""))
+#' @details when stats$type is:\cr
+#' - "COUNT","PERCENT_GATED","CONCENTRATION", stats$def will be "",\cr
+#' - "PERCENT", stats$def has to be a population name,\cr
+#' - "MEAN_RD","MEDIAN_RD" stats$def has to be the concatenation of a feature name and a population name collapse with "|". e.g. "Area_MC|All",\cr
+#' - otherwise, stats$def has to be a feature name.
 #' @param width desired width. Default is 80 * (1 + length(stats)).
 #' @param height desired height Default is 400.
 #' @param xlocation x location in analysis workspace. Default is 0.
 #' @param ylocation y location in analysis workspace. Default is 0.
 #' @param ... Other arguments to be passed.
-#' @return an object of class `IFC_pops`.
+#' @return an object of class `IFC_stats`.
 #' @keywords internal
-statsCompute <- function(obj, stats, width=80*length(stats), height=240, xlocation=0, ylocation=0, ...) {
+buildStats <- function(obj, stats = list(list(type="COUNT",title="Count",def=""), list(type="PERCENT_GATED",title="%Gated",def="")), 
+                       width=80*(1 + length(stats)), height=240, xlocation=0, ylocation=0, ...) {
   dots=list(...)
   dots=dots[!grepl("stats", names(dots))]
   assert(obj, cla="IFC_data")
@@ -137,8 +131,22 @@ statsCompute <- function(obj, stats, width=80*length(stats), height=240, xlocati
                "MEAN_RD","MEDIAN_RD") # needs feature and pop
   all_names = c(names(obj$pops), names(obj$features))
   alt_names = gen_altnames(all_names)
+  check_stats <- function(type, title, def, ...) {
+    type <- match.arg(type, choices = alw_type, several.ok = FALSE)
+    if(missing(title)) {
+      title = ""
+    } else {
+      title=as.character(title); assert(title, len=1)
+    }
+    if(type %in% alw_type[1:3]) {
+      def = "";
+    } else {
+      def=as.character(def); def=setdiff(def, ""); assert(def, len=1)   
+    }
+    return(list("type"=type, "title"=title, "def"=def))
+  }
   stats = lapply(stats, FUN = function(i_stats) {
-    i_stats = do.call(what = buildStats, args = i_stats)
+    i_stats = do.call(what = check_stats, args = i_stats)
     if(i_stats$type == "PERCENT") {
       if(!i_stats$def %in% names(obj$pops)) stop("can't find [",i_stats$def,"] in obj$pops")
       if(i_stats$title == "") i_stats$title = paste0("%",i_stats$def)
@@ -183,4 +191,166 @@ toXML2_stats = function(stats, verbose = FALSE) {
                  xml_new_node(name = "StatisticColumn",
                               attrs = i_stats)
                }))
+}
+
+################################################################################
+#            functions to extract and generate statistics report               #
+################################################################################
+
+#' @title Statistics Report Template Extraction
+#' @description
+#' Retrieves statistics report template from .ast / .daf files.
+#' @param fileName path to file..
+#' @param ... other arguments to be passed.
+#' @details Allowed "statistics" names are: "Count","Mean","%Total","%Gated","%","Objects/mL","RD - Mean",
+#' "Median","CV","stddev","NaN","MAD","min","RD - Median","Variance","max","geomean","Mode".\cr
+#' For "%Total","%Gated","%","RD - Mean","RD - Median", "type" has to be ratio and both 'population1'
+#' and 'population2' should be provided. Otherwise, 'type' is "value" and only 'population1' is mandatory.\cr
+#' /!\ Note that "Mode" and "Objects/mL" can't be determined and will result in NA.
+#' @return a 6-columns character matrix describing report instructions:\cr
+#' - 'name', for the desired name of exported 'statistics',\cr
+#' - 'type', for the type of stats to return (either "value" or "ratio"),\cr
+#' - 'population1', determines the population on which 'statistics' will be performed,\cr
+#' - 'population2', determines the reference population (when 'type' is "ratio", see Details),\cr
+#' - 'feature', determines the feature's name on which 'statistics' will be computed,\cr
+#' - 'statistics', controls the mathematical function that will be applied (See Details).
+#' @keywords internal
+getSTATSREPORT <- function(fileName) {
+  if(length(fileName) != 1) stop("'fileName' should be of length 1")
+  if(!file.exists(fileName)) stop(paste0("can't find ",fileName))
+  file_extension = getFileExt(fileName)
+  assert(file_extension, len = 1, alw = c("daf","ast"))
+  fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
+  end_node = ifelse(file_extension == "daf", '</Assay>', '</AssayTemplate>')
+  toskip = cpp_scanFirst(fileName, charToRaw(end_node), start = 0, end = 0)
+  if(toskip == 0) stop(fileName, "\ndoes not seem to be well formatted: ", end_node, " not found")
+  toskip = toskip + nchar(end_node) - 1
+  tmp_daf = read_xml(readBin(con = fileName, what = "raw", n = toskip), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
+  alw_names = c("name","type","population1","population2","feature","statistics")
+  stats_node = xml_find_all(tmp_daf, "//StatisticsReports/StatisticsReportColumn")
+  if(length(stats_node) == 0) return(data.frame(matrix(nrow = 0, ncol = length(alw_names), dimnames = c(list(NULL),list(alw_names)))))
+  do.call(what = rbind,
+          args = sapply(stats_node,
+                        USE.NAMES = FALSE, simplify = FALSE,
+                        FUN = function(x) {
+                          foo = xml_attrs(x)
+                          names(foo)[names(foo) == "population"] <- "population1"
+                          structure(sapply(alw_names, USE.NAMES = FALSE, FUN = function(n) foo[n]), names = alw_names)
+                        }))
+}
+
+#' @title Statistical Report Generation
+#' @description
+#' Generates stats report from `IFC_data` object.
+#' @param obj an `IFC_data` object.
+#' @param stats template defining stats to compute as extracted by getSTATSREPORT().
+#' @return a named vector with extracted statistics.
+#' @keywords internal
+StatsReport <- function(obj, stats) {
+  # alw_stats = c("Count","Mean","%Total","%Gated","%","Objects/mL","RD - Mean", "Median","CV","stddev",
+  #               "NaN","MAD","min","RD - Median","Variance","max","geomean","Mode")
+  if(!any(nrow(stats))) return(c())
+  structure(apply(stats, 1, FUN = function(x) {
+    n1 = x["population1"]
+    n2 = x["population2"]
+    n3 = ""
+    fn = x["feature"]
+    p1 = NA; p2 = NA; p3 = NA; fv1 = NA; fv2 = NA
+    if(n1 %in% names(obj$pops)) {
+      p1 = obj$pops[[n1]]$obj
+      n3 = obj$pops[[x["population1"]]]$base
+    }
+    if(n2 %in% names(obj$pops)) {
+      p2 = obj$pops[[n2]]$obj
+    }
+    if(n3 %in% names(obj$pops)) p3 = obj$pops[[n3]]$obj
+    if(fn %in% names(obj$features)) {
+      fv1 = obj$features[p1, fn, drop = TRUE]
+      if(n2 %in% names(obj$pops)) fv2 = obj$features[p2, fn, drop = TRUE]
+    }
+    switch (x["statistics"],
+            "Count" = sum(p1, na.rm = TRUE),
+            "Mean" = mean(fv1, na.rm = TRUE),
+            "%Total" = 100 * sum(p1, na.rm = TRUE) / length(p1),
+            "%Gated" = 100 * sum(p1, na.rm = TRUE) / sum(p3, na.rm = TRUE),
+            "%" = 100 * sum(p1, na.rm = TRUE) / sum(p2, na.rm = TRUE),
+            "Objects/mL" = {
+              # How to compute concentration ?
+              NA_real_
+            },
+            "RD - Mean" =  abs(mean(fv1, na.rm = TRUE) - mean(fv2, na.rm = TRUE)) /
+              (sd(fv1, na.rm = TRUE) + sd(fv2, na.rm = TRUE)),
+            "Median" = median(fv1, na.rm = TRUE),
+            "CV" = 100 * sd(fv1, na.rm = TRUE) / mean(fv1, na.rm = TRUE),
+            "stddev" = sd(fv1, na.rm = TRUE),
+            "NaN" = ifelse(n1 %in% names(obj$pops) && fn %in% names(obj$features),sum(is.na(fv1)), 0),
+            "MAD" = mad(fv1, na.rm = TRUE),
+            "min" = ifelse(length(na.omit(fv1)) == 0, NaN, min(fv1, na.rm = TRUE)),
+            "RD - Median" = abs(median(fv1, na.rm = TRUE) - median(fv2, na.rm = TRUE)) /
+              (mad(fv1, na.rm = TRUE) + mad(fv2, na.rm = TRUE)),
+            "Variance" = var(fv1, na.rm = TRUE),
+            "max" = ifelse(length(na.omit(fv1)) == 0, NaN, max(fv1, na.rm = TRUE)),
+            "geomean" = exp(mean(log(na.omit(fv1)))),
+            "Mode" = {
+              # What to do here ? the following does not work
+              # 1/ as.numeric(names(which.max(table(fv1, useNA = "no"))))
+              # 2/ mean(as.numeric(strsplit(gsub("\\(|\\]","",names(which.max(table(cut(fv1, breaks = 128))))),",",fixed = TRUE)[[1]]))
+              NA_real_
+            },
+            {
+              stop("statistics [" , x["statistics"], "] is not allowed")
+            })
+  }), names = stats[,"name"])
+}
+
+#' @title Batch Generation of Statistic Report
+#' @description
+#' Generates statistics report on batch of files or `IFC_data` objects.
+#' @param fileName,obj either one or the other. Path to file(s) to read from for 'fileName' or list of `IFC_data` objects for obj.
+#' @param stats template defining stats to compute as extracted by getSTATSREPORT().
+#' @param gating an `IFC_gating` object as extracted by readGatingStrategy(). Default is missing.
+#' If not missing, each `IFC_data` provided in 'obj' or read from 'fileName' will be passed to applyGatingStrategy() before creating the report.
+#' @param ... other parameters to be passed.
+#' @return a data.frame of statistics
+#' @keywords internal
+BatchStatsReport <- function(fileName, obj, stats, gating, ...) {
+  # check fileName or obj
+  if(missing(obj) && missing(fileName)) stop("you should provide either 'fileName' or 'obj'")
+  if(!missing(fileName) && !missing(obj)) stop("you should provide either 'fileName' or 'obj' not both")
+  if(!missing(fileName) && is.list(fileName) && inherits(fileName[[1]], what="IFC_data")) {
+    warning("'fileName' will be treated as a list of `IFC_data` objects")
+    obj = fileName
+  }
+  is_obj = FALSE
+  if(!missing(obj)) {
+    is_obj = TRUE
+    fileName = sapply(seq_along(obj), FUN = function(i_obj) {
+      assert(obj[[i_obj]], cla="IFC_data")
+      obj[[i_obj]]$fileName
+    })
+  }
+  assert(fileName, typ = "character")
+  apply_gating = FALSE
+  if(!missing(gating)) apply_gating = TRUE
+  ans = lapply(seq_along(fileName), FUN = function(i_file) {
+    tryCatch({
+      if(is_obj) {
+        i_obj = obj[[i_file]]
+      } else {
+        i_obj = readIFC(fileName=fileName[i_file], display_progress=FALSE,
+                        extract_features=TRUE, extract_images=FALSE,
+                        extract_offsets=FALSE, extract_stats=FALSE)
+      }
+      if(apply_gating) i_obj = applyGatingStrategy(obj=i_obj, gating=gating, display_progress=FALSE)
+      foo = statsReportCompute(i_obj, stats)
+      if(length(foo) == 0) return(list())
+      foo
+    }, error = function(e) {
+      warning("can't extract stats for fileName [", fileName[i_file],"]\n", e$message, call. = FALSE, immediate. = TRUE)
+      return(list())
+    })
+  })
+  no_err = sapply(ans, length) != 0
+  if(!any(no_err)) no_err = rep(TRUE, length(no_err))
+  cbind("File" = basename(fileName[no_err]), data.frame(do.call(rbind, args = ans[no_err]), check.names = FALSE, check.rows = FALSE), deparse.level = 0)
 }
