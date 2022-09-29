@@ -559,8 +559,8 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
       obj[[i_obj]]$fileName
     })
   }
-  
   # check file(s) can be created
+  assert(fileName, typ = "character")
   can_write = tryReportFileCreation(fileName[1], write_to, overwrite)
   export_to_csv = can_write$csv
   export_to_pdf = can_write$pdf
