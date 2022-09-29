@@ -342,7 +342,7 @@ BatchStatsReport <- function(fileName, obj, stats, gating, ...) {
                         extract_offsets=FALSE, extract_stats=FALSE)
       }
       if(apply_gating) i_obj = applyGatingStrategy(obj=i_obj, gating=gating, display_progress=FALSE)
-      foo = statsReportCompute(i_obj, stats)
+      foo = StatsReport(i_obj, stats)
       if(length(foo) == 0) return(list())
       foo
     }, error = function(e) {
