@@ -38,9 +38,12 @@ popsGetAffiliation <- function(pops, operators = c("And","Or","Not","(",")")) {
   all_names = names(pops)
   alt_names = gen_altnames(all_names)
   pops = sapply(pops, USE.NAMES = TRUE, simplify = FALSE, FUN = function(p) {
+    if(!p$base%in%c(all_names,"")) stop(p$name, ', trying to compute a population with unknown base ["', p$base, '"]')
     if("C" %in% p$type) {
-      p$split = splitn(definition = p$definition, all_names = all_names, alt_names = alt_names, operators = operators)
-      p$names = setdiff(p$split, operators)
+      tmp = try(splitn(definition = p$definition, all_names = all_names, alt_names = alt_names, operators = operators), silent = TRUE)
+      if(inherits(tmp, "try-error")) stop(p$name, ', trying to compute a population with unknown definition ["', p$definition, '"]', call. = FALSE)
+      p$split = tmp
+      p$names = setdiff(tmp, operators)
     } else {
       p$names = ""
     }

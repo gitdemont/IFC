@@ -80,7 +80,9 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
            }, 
            "G" = {
              pop_pos=which(names(regions)==pop$region) # here there should be only one !
+             if(length(pop_pos)!=1) stop(pop$name, ', trying to compute a graphical population with a non-defined region: ["', pop$region, '"]', call. = FALSE)
              fx_pos=which(names(features)==pop$fx)
+             if(length(fx_pos)!=1) stop(pop$name, ', trying to compute a graphical population with an unknown fx ["', pop$fx, '"]', call. = FALSE)
              x=features[,fx_pos]
              xlim=as.numeric(regions[[pop_pos]]$x)
              if(regions[[pop_pos]]$type == "line") {
@@ -88,6 +90,7 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
                pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & x>=xlim[1] & x<=xlim[2] & !is.na(x)
              } else {
                fy_pos=which(names(features)==pop$fy)
+               if(length(fy_pos)!=1) stop(pop$name, ', trying to compute a graphical population with an unknown fy ["', pop$fy, '"]', call. = FALSE)
                y=features[,fy_pos]
                ylim=as.numeric(regions[[pop_pos]]$y)
                Xtrans = regions[[pop_pos]]$xtrans; if(length(Xtrans) == 0) Xtrans = regions[[pop_pos]]$xlogrange
@@ -124,20 +127,20 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
            }, 
            "T" = {
              if(length(pop$obj) != obj_number) {
-               if(anyNA(pop$obj)) stop(paste0("trying to compute a tagged population with NAs: ", pop$name))
+               if(anyNA(pop$obj)) stop(pop$name, ", trying to compute a tagged population containing NA/NaN")
                Kp = typeof(pop$obj)
                if(Kp%in%c("double","integer")) {
                  if((obj_number <= max(pop$obj)) ||
                     (min(pop$obj) < 0) ||
-                    any(duplicated(pop$obj))) stop(paste0("trying to compute a tagged population with element(s) outside of objects acquired: ", pop$name))
+                    any(duplicated(pop$obj))) stop(pop$name, ", trying to compute a tagged population with element(s) outside of objects acquired")
                  pops[[i]]$obj=rep(FALSE,obj_number)
                  pops[[i]]$obj[pop$obj+1]=TRUE
                } else {
-                 if(!Kp%in%"logical") stop(paste0("trying to compute a tagged population of unknown type: ", pop$name))
+                 if(!Kp%in%"logical") stop(pop$name, ', trying to compute a tagged population of unknown type ["',Kp,'"]')
                }
              }
-             if(sum(pops[[i]]$obj)==0) stop(paste0("trying to compute a tagged population with element(s) outside of objects acquired: ", pop$name))
-             if(obj_number != length(pops[[i]]$obj)) stop(paste0("trying to compute a tagged population with element(s) outside of objects acquired: ", pop$name))
+             if(sum(pops[[i]]$obj)==0) stop(pop$name, ", trying to compute a tagged population of length = 0")
+             if(obj_number != length(pops[[i]]$obj)) stop(pop$name, ", trying to compute a tagged population with more element(s) than total number of objects acquired")
            })
     if(display_progress) {
       setPB(pb, value = i, title = title_progress, label = "extacting populations")

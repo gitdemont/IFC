@@ -76,31 +76,32 @@ data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsi
   # removes duplicated inputs
   tmp = duplicated(names(pops))
   if(any(tmp)) {
-    warning(paste0("duplicated pops automatically removed: ", names(pops)[tmp]), immediate. = TRUE, call. = FALSE)
+    warning("duplicated pops automatically removed:\n\t-", paste0(names(pops)[tmp], collapse = "\n\t-"), immediate. = TRUE, call. = FALSE)
     pops = pops[!tmp]
   }
   
   exported_pops = sapply(1:length(pops), FUN=function(i_pop) {
     pop = pops[[i_pop]]
     if(pop$name%in%names(obj$pops)) {
-      warning(paste0(pop$name, ", not exported: trying to export an already defined population"), immediate. = TRUE, call. = FALSE)
+      warning(pop$name, ", not added: trying to add an already defined population", immediate. = TRUE, call. = FALSE)
       return(FALSE)
     }
     if(pop$type=="T") {
+      if(anyNA(pop$obj)) stop(pop$name, ", trying to add a tagged population containing NA/NaN")
       K = typeof(pop$obj)
       if(length(pop$obj)==0) {
-        warning(paste0(pop$name, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
+        warning(pop$name, ", not exported: trying to add a tagged population of length = 0", immediate. = TRUE, call. = FALSE)
         return(FALSE)
       }
       if(K%in%"logical") {
-        if(sum(pop$obj)==0) {
-          warning(paste0(pop$name, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
+        if(sum(pop$obj) ==0) {
+          warning(pop$name, ", not exported: trying to add a tagged population of length = 0", immediate. = TRUE, call. = FALSE)
           return(FALSE)
         }
-        if(obj_number != length(pop$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+        if(obj_number != length(pop$obj)) stop(pop$name, ", trying to add a tagged population with more element(s) than total number of objects acquired")
       }
       if(K%in% c("double","integer")) {
-        if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
+        if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(pop$name, ", trying to add a tagged population with element(s) outside of objects acquired")
         log_obj = rep(FALSE, obj_number)
         log_obj[pop$obj + 1] = TRUE
         pops[[i_pop]]$obj <<- log_obj

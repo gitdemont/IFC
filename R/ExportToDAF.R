@@ -114,7 +114,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
   overwritten = FALSE
   if(file.exists(write_to)) {
     write_to = enc2native(normalizePath(write_to, winslash = "/"))
-    if(!overwrite) stop(paste0("file ",write_to," already exists"))
+    if(!overwrite) stop("file ",write_to," already exists")
     if(tolower(fileName) == tolower(write_to)) stop("you are trying to overwrite source file which is not allowed")
     xmlEND_export = cpp_scanFirst(write_to, charToRaw('</Assay>'), start = 0, end = 0)
     if(xmlEND_export > 0) {
@@ -124,16 +124,16 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
       }, finally = rm(xml_export))
       if(length(is_fromR)==0) stop("you are trying to overwrite an original file which is not allowed")
     } else {
-      stop(paste0(write_to, "\ndoes not seem to be well formatted: </Assay> not found")) 
+      stop(write_to, "\ndoes not seem to be well formatted: </Assay> not found")
     }
     tmp_file = tempfile()
     overwritten = TRUE
   }
   dir_name = dirname(write_to)
-  if(!dir.exists(dir_name)) if(!dir.create(dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dir_name))
+  if(!dir.exists(dir_name)) if(!dir.create(dir_name, recursive = TRUE, showWarnings = FALSE)) stop("can't create\n", dir_name)
   file_w = ifelse(overwritten, tmp_file, write_to)
   xmlEND = cpp_scanFirst(fileName, charToRaw('</Assay>'), start = 0, end = 0)
-  if(xmlEND == 0) stop(paste0(fileName, "\ndoes not seem to be well formatted: </Assay> not found")) 
+  if(xmlEND == 0) stop(fileName, "\ndoes not seem to be well formatted: </Assay> not found")
   xmlEND = xmlEND + nchar("</Assay>") - 1
   xml_tmp = read_xml(readBin(con = fileName, what = "raw", n = xmlEND), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
   tryCatch(expr = {
@@ -143,16 +143,16 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
                          recursive = FALSE, use.names = FALSE))
     images_daf = c(xml_attr(xml_find_all(xml_tmp, "//Images/image"), attr = "name"))
     pops_daf = xml_attr(xml_find_all(xml_tmp, "//Pop"), attr = "name")
-    if(length(pops_daf)==0) stop(paste0("No population found in ", fileName)) # should not append, at least 'All' population should be there
+    if(length(pops_daf)==0) stop("No population found in ", fileName) # should not append, at least 'All' population should be there
     regions_daf_label = xml_attr(xml_find_all(xml_tmp, "//Region"), attr = "label") # what happens if empty ?
     regions_daf_type = xml_attr(xml_find_all(xml_tmp, "//Region"), attr = "type") # what happens if empty ?
     features_daf = xml_attr(xml_find_all(xml_tmp, "//UDF"), attr = "name")
     fid = length(features_daf)
     channels_daf = xml_attr(xml_find_all(xml_tmp, "//image"), attr = "name")
-    if(length(channels_daf)==0) stop(paste0("No channel found in ", fileName)) # should not happen, at least one channel should be there
+    if(length(channels_daf)==0) stop("No channel found in ", fileName) # should not happen, at least one channel should be there
     obj_number = as.numeric(na.omit(xml_attr(xml_find_first(xml_tmp, "//SOD"), attr = "objcount")))
     # checksum = as.numeric(na.omit(xml_attr(xml_find_first(xml_tmp, "//SOD"), attr = "checksum")))
-    if(length(obj_number)==0) stop(paste0("No object found in ", fileName)) # should not happen, at least one object should be there
+    if(length(obj_number)==0) stop("No object found in ", fileName) # should not happen, at least one object should be there
     is_binary = as.logical(na.omit(xml_attr(xml_find_first(xml_tmp, "//Assay"), attr = "binaryfeatures")))
     if(length(is_binary)==0) {is_binary=FALSE}
 
@@ -175,22 +175,22 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     # removes duplicated inputs
     tmp = duplicated(masks_new)
     if(any(tmp)) {
-      warning(paste0("duplicated masks automatically removed: ", masks_new[tmp]), immediate. = TRUE, call. = FALSE)
+      warning("duplicated masks automatically removed:\n\t-", paste0(masks_new[tmp],collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
       masks = masks[!tmp]
     }
     tmp = duplicated(names(pops))
     if(any(tmp)) {
-      warning(paste0("duplicated pops automatically removed: ", names(pops)[tmp]), immediate. = TRUE, call. = FALSE)
+      warning("duplicated pops automatically removed:\n\t-", paste0(names(pops)[tmp],collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
       pops = pops[!tmp]
     }
     tmp = duplicated(names(regions))
     if(any(tmp)) {
-      warning(paste0("duplicated regions automatically removed: ", names(regions)[tmp]), immediate. = TRUE, call. = FALSE)
+      warning("duplicated regions automatically removed:\n\t-", paste0(names(regions)[tmp],collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
       regions = regions[!tmp]
     }
     tmp = duplicated(names(features))
     if(any(tmp)) {
-      warning(paste0("duplicated features automatically removed: ", names(features)[tmp]), immediate. = TRUE, call. = FALSE)
+      warning("duplicated features automatically removed:\n\t-", paste0(names(features)[tmp],collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
       features = features[!tmp]
     }
 
@@ -264,7 +264,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
           warning(paste0(feat$name, ", not exported: trying to export an already defined feature"), immediate. = TRUE, call. = FALSE)
           next
         }
-        if(length(feat$val) != obj_number) stop(paste0(feat$name, "\nbad feature value length, expected: ",  obj_number, ", but is: ", length(feat$val))) # TODO add some lines to allow function to automatically compute feat$val when missing
+        if(length(feat$val) != obj_number) stop(feat$name, "\nbad feature value length, expected: ",  obj_number, ", but is: ", length(feat$val)) # TODO add some lines to allow function to automatically compute feat$val when missing
         new_node_features_def = sprintf('<UDF name="%s" type="%s" userfeaturetype="%s" def="%s" />', feat[["name"]], feat[["type"]], feat[["userfeaturetype"]], feat[["def"]])
         if(is_binary) {
           # TODO maybe change endianness reading / writing
@@ -301,80 +301,82 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
                             collapse$regions)
     }
     pops_alw = c()
-    all_names = c(pops_daf, names(pops))
-    alt_names = gen_altnames(all_names)
-    if(length(pops)!=0) for(i in 1:length(pops)) {
-      pop = pops[[i]]
-      pop = pop[sapply(pop, length) != 0]
-      if(verbose) cat(paste0("creating population: ", pop$name, "\n"))
-      if(pop$name%in%pops_daf) {
-        warning(paste0(pop$name, ", not exported: trying to export an already defined population"), immediate. = TRUE, call. = FALSE)
-        next
-      }
-      if(!(pop$base%in%all_names)) {
-        stop(paste0(pop$name, ", trying to export a population with unknown pop$base =", pop$base), immediate. = TRUE, call. = FALSE)
-      }
-      if(pop$type=="G") {
-        tmp1 = which(regions_daf_label%in%pop$region)
-        tmp2 = which(names(regions)%in%pop$region)
-        if(length(tmp1)==0 & length(tmp2)==0) stop(paste0("trying to export a graphical population with a non-defined region: ", pop$region))
-        if(length(tmp1)!=0) reg = list("label"=regions_daf_label[tmp1], "type"=regions_daf_type[tmp1])
-        if(length(tmp2)!=0) reg = regions[[tmp2[1]]]
-        if(!pop$fx%in%c(features_daf, names(features))) stop(paste0("trying to export a graphical population with an unknwon fx: ", pop$fx))
-        if(length(pop$fy)!=0 & reg$type=="line") {
-          pop = pop[-which(names(pop=="fy"))]
-          warning(paste0(pop$name, ", trying to export a graphical population based on a region of type 'line' with a fy feature; exported but fy has been automatically removed"), immediate. = TRUE, call. = FALSE)
-        }
-        if(reg$type!="line") if(!(pop$fy%in%c(features_daf, names(features)))) stop(paste0("trying to export a graphical population with an unknwon fy: ", pop$fy))
-        new_node_pop = to_xml_list(pop, name = "Pop")
-      }
-      if(pop$type=="C") {
-        tmp3 = setdiff(splitn(definition = pop$definition, all_names = all_names, alt_names = alt_names, operators = operators_pop), operators_pop)
-        tmp4 = !tmp3%in%all_names
-        if(any(tmp4)) stop(paste0("trying to export a population with unknown population definition",ifelse(sum(tmp4)>1,"s","")," [", paste0(tmp3[tmp4], collapse=","), "] in pop$definition="), pop$definition, ": ", pop$name)
-        new_node_pop = to_xml_list(pop, name = "Pop")
-      }
-      if(pop$type=="T") {
-        K = typeof(pop$obj)
-        if(length(pop$obj)==0) {
-          warning(paste0(pop$name, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
+    if(length(pops) != 0) {
+      for(i in 1:length(pops)) {
+        pop = pops[[i]]
+        pop = pop[sapply(pop, length) != 0]
+        if(verbose) cat(paste0("creating population: ", pop$name, "\n"))
+        if(pop$name%in%pops_daf) {
+          warning(pop$name, ", not exported: trying to export an already defined population", immediate. = TRUE, call. = FALSE)
           next
         }
-        if(K%in%"logical") {
-          if(sum(pop$obj)==0) {
-            warning(paste0(pop$name, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
+        if(pop$type=="G") {
+          tmp1 = which(regions_daf_label%in%pop$region)
+          tmp2 = which(names(regions)%in%pop$region)
+          if(length(tmp1)==0 & length(tmp2)==0) stop(pop$name, ', trying to export a graphical population with a non-defined region: ["', pop$region, '"]', call. = FALSE)
+          if(length(tmp1)!=0) reg = list("label"=regions_daf_label[tmp1], "type"=regions_daf_type[tmp1])
+          if(length(tmp2)!=0) reg = regions[[tmp2[1]]]
+          if(!pop$fx%in%c(features_daf, names(features))) stop(pop$name, ', trying to export a graphical population with an unknown fx ["', pop$fx, '"]', call. = FALSE)
+          if(length(pop$fy)!=0 & reg$type=="line") {
+            pop = pop[-which(names(pop=="fy"))]
+            warning(pop$name, ", trying to export a graphical population based on a region of type 'line' with a fy feature; exported but fy has been automatically removed", immediate. = TRUE, call. = FALSE)
+          }
+          if(reg$type!="line") if(!(pop$fy%in%c(features_daf, names(features)))) stop(pop$name, ', trying to export a graphical population with an unknown fy ["', pop$fy, '"]', call. = FALSE)
+          new_node_pop = to_xml_list(pop, name = "Pop")
+        }
+        if(pop$type=="C") {
+          new_node_pop = to_xml_list(pop, name = "Pop")
+        }
+        if(pop$type=="T") {
+          if(anyNA(pop$obj)) stop(pop$name, ", trying to export a tagged population containing NA/NaN")
+          K = typeof(pop$obj)
+          if(length(pop$obj)==0) {
+            warning(pop$name, ", not exported: trying to export a tagged population of length = 0", immediate. = TRUE, call. = FALSE)
             next
           }
-          if(obj_number != length(pop$obj)) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
-          new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,raw_2020)),
-                                     kids = lapply(num_to_string(which(pop$obj)-1), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
+          if(K%in%"logical") {
+            if(sum(pop$obj)==0) {
+              warning(paste0(pop$name, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
+              next
+            }
+            if(obj_number != length(pop$obj)) stop(pop$name, ", trying to export a tagged population with more element(s) than total number of objects acquired")
+            new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,raw_2020)),
+                                       kids = lapply(num_to_string(which(pop$obj)-1), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
+          }
+          if(K%in% c("double","integer")) {
+            if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(pop$name, ", trying to export a tagged population with element(s) outside of objects acquired")
+            new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,raw_2020)),
+                                       kids = lapply(num_to_string(pop$obj), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
+          }
         }
-        if(K%in% c("double","integer")) {
-          if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(paste0("trying to export a tagged population with element(s) outside of objects acquired: ", pop$name))
-          new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,raw_2020)),
-                                     kids = lapply(num_to_string(pop$obj), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
-        }
+        pops_alw = c(pops_alw, i)
+        new_nodes$pops = c(new_nodes$pops,
+                           raw_2020, 
+                           charToRaw(new_node_pop),
+                           raw_2020,
+                           collapse$pops)
       }
-      pops_alw = c(pops_alw, i)
-      new_nodes$pops = c(new_nodes$pops,
-                         raw_2020, 
-                         charToRaw(new_node_pop),
-                         raw_2020,
-                         collapse$pops)
+      pops = pops[pops_alw]
+      names(pops) = sapply(pops, FUN=function(p) p$name)
+      all_names = c(pops_daf, names(pops))
+      ##### final check to ensure that remaining pops do not depend on a pop that has been removed
+      if(any(sapply(pops, FUN = function(pop) {
+        if(!(pop$base%in%all_names)) {
+          stop(pop$name, ', trying to export a population with unknown base ["', pop$base, '"]')
+        }
+        pop$type == "C"
+      }))) {
+        alt_names = gen_altnames(all_names)
+        lapply(pops, FUN = function(pop) {
+          if("C" %in% pop$type) {
+            tmp3 = try(splitn(definition = pop$definition, all_names = all_names, alt_names = alt_names, operators = operators_pop), silent = TRUE)
+            if(inherits(tmp3, "try-error")) stop(pop$name, ', trying to export a population with unknown definition ["', pop$definition, '"]', call. = FALSE)
+          }
+          return(NULL)
+        })
+      }
     }
-    pops = pops[pops_alw]
-    names(pops) = sapply(pops, FUN=function(p) p$name)
     pops_alw = c(pops_daf, names(pops))
-    alt_names = gen_altnames(pops_alw)
-    ##### final check to ensure that remaining pops do not depend on a pop that has been removed
-    lapply(pops, FUN = function(p) {
-      if("C" %in% p$type) {
-        p$split = splitn(definition = p$definition, all_names = pops_alw, alt_names = alt_names, operators = operators_pop)
-        p$names = setdiff(p$split, operators_pop)
-        if(!all(p$names %in% pops_alw)) stop(paste0("trying to export a population with unknown population definition: ", p$definition))
-      }
-      return(p)
-    })
     # TODO add graph export
 
     offset = NULL
