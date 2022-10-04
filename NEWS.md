@@ -1,4 +1,7 @@
 # NEWS
+## 0.1.7
+- CRAN submission
+
 ## 0.1.6.xxx
 
 - Redefine (Internally)
