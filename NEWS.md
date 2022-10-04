@@ -1,4 +1,127 @@
 # NEWS
+## 0.1.6.xxx
+
+- Redefine (Internally)
+
+improve and document logic behind **switch_channel** (used to allow changing all images/masks/features definition of one channel to another one)
+
+create **swap_channel** function (which use **switch_channel**) to operate channel swap (basically, switch to one channel, switch to other channel, and merge)
+
+- Definition Parsing (Internally)
+
+Internally, the framework used for parsing definitions (features/pops/masks) has been consolidated to enhance accuracy and security. This is mostly based on **splitn** (for pops and features) which split definition into chunks according to allowed names and operators and ensure 1-to-1 replacement of them with unique random names created thanks to **gen_altnames** and **random_name**
+
+create dedicated **gen_altnames** function to map allowed names to unique id
+
+adapt **splitn** to handle features definition, simplify logic, make use of **gen_altnames** ancillary function, and avoid unnecessary unique id creation thanks to new `alt_names` argument and add `scalar` and `dsplit` arguments
+
+add dedicated **split_feat** (based on **splitn** and **get_altnames**) for features to avoid repeated splitting loop
+
+- Features (obj$features, in `IFC_data` object)
+
+create **featureIFC** for static features types/names (used to validate definition and also determine name of a feature)
+
+create **gseq**/**cpp_seqmatch** to match string sequence, used by **feature_namer**
+
+modify **feature_namer** (used to determine name of a feature)
+
+"combined" features resulted in wrong values when extracted (dedicated internal **get_feat_value** and **getFeaturesValues** are now here to solve this)
+
+**data_rm_features** caused the removal of more features than it should (due to wrong pattern used for features names matching)
+
+- Populations (obj$pops, in `IFC_data` object)
+
+fix potential bug with NAs / NaNs values, e.g. when graphically defined on features containing NAs / NaNs, the resulted event should be 'FALSE' and not 'NA' to flag that it does **NOT** belong to the population
+
+limit the scope of evaluation for features and populations computation
+
+adding/exporting "tagged" population containing NAs / NaNs value is not allowed
+
+warning/error messages are now more informative during population add/compute/export
+
+- Stats
+
+improve and dry code for stats extraction / computation
+
+group internal **buildStats** and **statsCompute** functions into **buildStats**
+
+add internal functions to extract and generate Statistics Report
+
+fix bug leading to error (pops reported count was NAs) when features contained NAs
+
+fix bug in **plotGraph**, **ExportToReport**, and **BatchReport** in feature summary computation for graphs containing overlay of populations (1D and 2D) for values of the region(s) drawn
+
+- Graphs
+
+catch errors in density computation for histogram and send warning instead but allow graph to be created as far as possible (already catched in **plot_lattice** but not with **plot_base** nor **plot_raster**)
+
+swap labels and symbols when using **plot_lattice** to gain in homogeneity with **plot_base** and **plot_raster**
+
+"histogram" legend were ok for **plot_lattice** but not for **plot_base** and **plot_raster** which were displaying `pch` instead of `lty`
+
+'NA' is now an allowed value for `adjust_graph` argument in **data_rm** functions to force graph(s) removal
+
+implement and export new **data_add_graphs** **data_rm_graphs** functions
+
+**adjustGraphs** now internally uses graph as intput rather than indice(s) of graph(s) from `IFC_data` object (which is more versatile and allows for testing any graphs in the context of 'obj')
+
+catch error in **adjustGraphs**
+
+fix bugs when trying to adjust graph in several places
+
+1 - when testing if drawable which was not working since about https://github.com/gitdemont/IFC/commit/030df2bfb25680e3159aa4a15bf0d550543d4188
+
+2 - when applied GraphRegion(s) result(s) in not found pop(s)
+
+3 - when trying to applyGatingStrategy which did not actually test if graph(s) could be produced
+
+fix bug in **plotGraph**, **ExportToReport**, and **BatchReport** in feature summary computation for graphs containing overlay of populations (1D and 2D) for values of the region(s) drawn
+
+- Fix **objectExtract**
+
+fix the fix https://github.com/gitdemont/IFC/commit/34f33de1f916673855c2bc69c0c1e686bd608c58 which did not allow to correctly pass extra parameters to dots ...
+
+- Fix **ExportToBatch**/**buildBatch**
+
+absence of predefined report in the analysis file induced error when building the batch
+
+fix bug when no compensation was provided
+
+- FCS I/O
+
+replace `first_only` argument in **readFCS** by `dataset` to allow user to choose which `dataset` to extract rather than only '1st' or 'All' (default behavior remains unchanged, however)
+
+allow import/export of keywords
+
+fix potential bug with extra keywords due to wrong regex identification
+
+- Speed Gain
+
+gray -> rgb color conversion improvement
+
+use Rcpp::no_init when possible
+
+modify internal **fastCbind** (the underlying hpp/cpp functions induced more overhead than R cbind)
+
+- Misc
+
+for progressbar, check if session missing and class rather than if length is 0
+
+remove gc from fcs functions
+
+allow to pass NULL and NA in **texttomatrix** / **addText** (before an error was thrown)
+
+implement internal function **data_to_AST** to allow the creation of .ast file from `IFC_data` object
+
+#### This leads to the following visible changes for the user
+*See the bugs fix above*
+
+*`first_only` argument is replaced by `dataset` for FCS reading*
+
+*`IFC_data` object returned by ExtracFromFCS has gained an new `Keywords` member*
+
+*new data_add_graphs and data_rm_graphs functions are now exported*
+
 ## 0.1.6
 - CRAN submission
 
