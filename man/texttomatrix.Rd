@@ -4,7 +4,7 @@
 \alias{texttomatrix}
 \title{Text to Image Conversion}
 \usage{
-texttomatrix(text)
+texttomatrix(text = NULL)
 }
 \arguments{
 \item{text}{a character string.}

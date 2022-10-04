@@ -41,8 +41,7 @@
 #' @keywords internal
 addText <- function(image, text, color, xoff = 0, yoff = 0, corner = "TL") {
   # several checks
-  text = na.omit(as.character(text))
-  assert(text, len = 1, typ = "character")
+  if(missing(text) || (length(text) == 0)) return(image)
   color = na.omit(as.character(color))
   assert(color, len = 1, typ = "character")
   xoff = na.omit(as.integer(xoff)); xoff = xoff[xoff>=0]
