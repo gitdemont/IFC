@@ -772,7 +772,7 @@ redefine_obj <- function(obj, new_feat_def, ...) {
   
   # retrieve mapping if any
   map = attr(new_feat_def, "map")
-  if(length(map) == 0) map = list(initial = names(obj$features), to = names(obj$features_def))
+  if(length(map) == 0) map = list(initial = names(obj$features_def), to = names(new_feat_def$features_def))
   
   # modify features definition
   K = class(obj$features_def)
@@ -784,7 +784,7 @@ redefine_obj <- function(obj, new_feat_def, ...) {
   names(obj$features_def) = sapply(obj$features_def, FUN = function(x) x$name)
   dup = duplicated(names(obj$features_def))
   if(any(dup)) {
-    warning("'obj' redefinition led to features with same name which have been discarded:\n\t-", paste0(names(obj$features_def)[dup], collapse = "\n\t-"))
+    warning("'obj' redefinition led to features with same name which have been discarded:\n\t-", paste0(unique(names(obj$features_def)[dup]), collapse = "\n\t-"))
   }
   map = sapply(map, simplify = FALSE, FUN = function(x) x[!dup])
   obj$features_def = obj$features_def[!dup]
