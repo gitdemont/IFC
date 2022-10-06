@@ -15,7 +15,8 @@ data_add_pop_sample(obj, pop, size, new_name, random_seed = NULL, ...)
 
 \item{new_name}{name of the exported population. When missing the default, a random name will be given.}
 
-\item{random_seed}{a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base}. Default is NULL.}
+\item{random_seed}{a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when 'add_noise' is set to TRUE. Default is NULL.
+Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.}
 
 \item{...}{Other arguments to be passed.}
 }

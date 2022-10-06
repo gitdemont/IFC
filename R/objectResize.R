@@ -33,16 +33,20 @@
 #' @param mat a numeric matrix.
 #' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(0,0) for no change.
 #' @param add_noise if TRUE adds normal noise when size is larger than mat dimensions using rnorm(), from \pkg{Rcpp}. Default is TRUE.
-#' @param random_seed a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base} when 'add_noise' is set to TRUE. Default is NULL.
+#' @param random_seed a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when 'add_noise' is set to TRUE. Default is NULL.
+#' Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}. 
 #' @param bg mean value of the background added if add_noise is TRUE. Default is 0.
 #' @param sd standard deviation of the background added if add_noise is TRUE. Default is 0.
 #' @return a resized matrix with padding background if desired size is larger than original mat dimensions.
 #' @keywords internal
 objectResize <- function(mat, size = c(0,0), add_noise = TRUE, random_seed = NULL, bg = 0, sd = 0) {
   if(length(size) != 2) return(mat)
+  f = function(x) { x }
   if(add_noise) {
-    set.seed(random_seed)
-    on.exit(set.seed(NULL))
+    f = function(x) { 
+      SEED = fetch_seed(random_seed)
+      with_seed(x, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind)
+    }
   }
-  return(cpp_resize(mat = mat, new_height = size[1], new_width = size[2], add_noise = add_noise, bg = bg, sd= sd))
+  return(f(cpp_resize(mat = mat, new_height = size[1], new_width = size[2], add_noise = add_noise, bg = bg, sd= sd)))
 }

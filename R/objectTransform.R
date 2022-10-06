@@ -37,7 +37,8 @@
 #' @param mode color mode export. Either "rgb", "gray" or "raw".
 #' @param type image object type.
 #' @param add_noise logical, if TRUE adds normal noise to background using rnorm(), from \pkg{Rcpp}. Default is TRUE.
-#' @param random_seed a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base} when 'add_noise' is set to TRUE. Default is NULL.
+#' @param random_seed a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when 'add_noise' is set to TRUE. Default is NULL.
+#' Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.
 #' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(0,0) for no change.
 #' @param bg_mean mean value of the background added. Default is 0.
 #' @param bg_sd standard deviation of the background added. Default is 0.

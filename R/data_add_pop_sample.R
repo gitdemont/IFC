@@ -34,7 +34,8 @@
 #' @param pop name of the population to sample.
 #' @param size a non-negative integer giving the number of items to choose.
 #' @param new_name name of the exported population. When missing the default, a random name will be given.
-#' @param random_seed a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base}. Default is NULL.
+#' @param random_seed a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when 'add_noise' is set to TRUE. Default is NULL.
+#' Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.
 #' @param ... Other arguments to be passed.
 #' @details population is exported as tagged population.
 #' @return an IFC_data object with sampled pop added.
@@ -47,10 +48,12 @@ data_add_pop_sample = function(obj, pop, size, new_name, random_seed = NULL, ...
   pop = as.character(pop); assert(pop, len = 1)
   random_seed = as.integer(random_seed[na.omit(random_seed)]); if(length(random_seed) == 0) random_seed = NULL
   if(!any(pop == names(obj$pops))) stop("can't find 'pop': \"",pop,"\" in 'obj$pops'")
-  set.seed(random_seed)
-  on.exit(set.seed(NULL))
+  f = function(x) { 
+    SEED = fetch_seed(random_seed)
+    with_seed(x, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind)
+  }
   if(missing(new_name)) {
-    new_name = random_name(special = NULL, forbidden = names(obj$pops))
+    new_name = f(random_name(special = NULL, forbidden = names(obj$pops)))
   } else {
     new_name = as.character(new_name); new_name = new_name[new_name != ""]; assert(new_name, len = 1);
   }
@@ -61,7 +64,7 @@ data_add_pop_sample = function(obj, pop, size, new_name, random_seed = NULL, ...
   } else {
     foo = integer()
     if(length(idx) != 0) {
-      foo = sample(x = idx, size = size, replace = FALSE)
+      foo = f(sample(x = idx, size = size, replace = FALSE))
     }
   }
   data_add_pops(pops = list(list(name = new_name, type = "T",

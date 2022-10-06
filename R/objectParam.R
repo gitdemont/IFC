@@ -65,7 +65,8 @@
 #' Note that this parameter will be ordered.\cr
 #' Default is "all" to extract all acquired channels.\cr
 #' Use "none" to only extract composite.
-#' @param random_seed a single value, interpreted as an integer, or NULL to be used with set.seed() from \pkg{base} when 'add_noise' is set to TRUE. Default is NULL.
+#' @param random_seed a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when 'add_noise' is set to TRUE. Default is NULL.
+#' Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.
 #' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(0,0) for no change.
 #' @param force_width whether to use information in 'info' to fill size. Default is TRUE.
 #' When set to TRUE, width of 'size' argument will be overwritten.
@@ -147,10 +148,6 @@ objectParam <- function(...,
   spatial_correction = as.logical(spatial_correction); assert(spatial_correction, alw = c(TRUE, FALSE))
   assert(export, len = 1, alw = c("file", "matrix", "base64")) 
   assert(mode, len = 1, alw = c("rgb", "gray", "raw")) 
-  if(!missing(random_seed) && length(random_seed) != 0) { # allow to input NULL
-    random_seed = na.omit(as.integer(random_seed[is.finite(random_seed)]))
-    assert(random_seed, len = 1, typ = "integer")
-  }
   overwrite = as.logical(overwrite); assert(overwrite, alw = c(TRUE, FALSE))
   
   ##### retrieve channels
@@ -260,7 +257,7 @@ objectParam <- function(...,
              composite_desc = composite_desc,
              extract_msk = max(channels[, "removal"]), 
              size = size,
-             random_seed = random_seed,
+             random_seed = fetch_seed(random_seed),
              objcount = info$objcount,
              channelwidth = info$channelwidth,
              in_use = info$in_use,

@@ -150,9 +150,12 @@ objectExtract <- function(ifd,
   n_ifd = names(ifd)
   
   # set seed if any
+  f = function(x) { x }
   if(param$add_noise) {
-    set.seed(param$random_seed)
-    on.exit(set.seed(NULL))
+    SEED = param$random_seed
+    f = function(x) {
+      with_seed(x, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind)
+    }
   }
   if(sum(names(param$channels) %in% c("spatial_X","spatial_Y")) == 2) {
     spatialX = param$channels$spatial_X
@@ -163,7 +166,7 @@ objectExtract <- function(ifd,
   }
 
   # extracts
-  foo = lapply(1:l_ifd, FUN=function(i_ifd) {
+  foo = f(lapply(1:l_ifd, FUN=function(i_ifd) {
     img = cpp_extract(fname = enc2native(param$fileName_image), 
                       ifd = ifd[[i_ifd]], 
                       colors = param$colors,  
@@ -244,7 +247,7 @@ objectExtract <- function(ifd,
     attr(img, "channel_id") <- c(chan_to_keep, composite) # adds channel_id (physical's one) number so as to be able to create a Gallery
     attr(img, "removal") <- param$removal
     return(img)
-  })
+  }))
   if(param$export == "file") {
     return(invisible(foo))
   }
