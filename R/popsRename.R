@@ -48,15 +48,13 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
   if(any(new_names %in% c(character(), "", NA_character_, "All"))) stop("'new_names' should not be NA, \"\", nor \"All\"")
   if(length(old_names) != length(new_names)) stop("'old_names' and 'new_names' should be character vectors of same length")
   ori_names <- names(obj$pops)
-  alt_names = gen_altnames(ori_names)
-  tmp1 = old_names %in% ori_names
-  tmp2 = new_names %in% ori_names
-  if(!all(tmp1)) warning("can't find population",ifelse(sum(!tmp1) > 1, "s", "")," to rename:\n",
-                         paste0("\t- ", old_names[!tmp1], collapse="\n"))
-  if(any(tmp2)) warning("trying to rename population",ifelse(sum(tmp2) > 1, "s", ""),"with already existing name",ifelse(sum(tmp2) > 1, "s", ""),":\n",
-                        paste0("\t- ", new_names[tmp2], collapse="\n"))
-  mutation <- old_names[tmp1 & !tmp2]
-  names(mutation) <- new_names[tmp1 & !tmp2]
+  tmp = old_names %in% ori_names
+  if(!all(tmp)) warning("can't find population",ifelse(sum(!tmp) > 1, "s", "")," to rename:\n",
+                         paste0("\t- ", old_names[!tmp], collapse="\n"))
+  if(!any(tmp)) return(obj)
+  alt_names = gen_altnames(new_names[tmp], forbidden = c(names(obj$pops), new_names[tmp]))
+  mutations = list(structure(old_names[tmp], names = alt_names),
+                   structure(alt_names, names = new_names[tmp]))
   
   # create function for sorting unique values (and keeping names)
   sort_unique <- function(x) {
@@ -67,94 +65,94 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
   }
   
   # start population(s) renaming
-  mutation = sort_unique(mutation)
-  mutation_back = structure(character(), names = character())
-  count = 0L 
-  K <- class(obj$pops)
-  while(!identical(mutation, mutation_back) || (count > loops)) {
-    count = count + 1L
-    mutation_back = mutation
-    N = names(mutation)
-    obj$pops <- lapply(obj$pops, FUN = function(p) {
-      foo <- mutation %in% p$name
-      if(any(foo)) p$name <- N[foo]
-      if(p$type == "C"){
-        foo <- mutation %in% p$names
-        if(any(foo)) {
-          p$names[p$names == mutation[foo]] <- N[foo]
-          p$split[p$split == mutation[foo]] <- N[foo]
-          p$definition = paste0(p$split, collapse = "|")
+  for(i in 1:2) {
+    mutation = sort_unique(mutations[[i]])
+    mutation_back = structure(character(), names = character())
+    count = 0L 
+    K <- class(obj$pops)
+    while(!identical(mutation, mutation_back) || (count > loops)) {
+      count = count + 1L
+      mutation_back = mutation
+      N = names(mutation)
+      for(i_pop in seq_along(obj$pops)) {
+        foo = mutation %in% obj$pops[[i_pop]]$name
+        if(any(foo)) obj$pops[[i_pop]]$name <- N[foo]
+        if(obj$pops[[i_pop]]$type == "C"){
+          foo <- which(mutation %in% obj$pops[[i_pop]]$names)
+          for(i in foo) {
+            obj$pops[[i_pop]]$names[obj$pops[[i_pop]]$names == mutation[i]] <- N[i]
+            obj$pops[[i_pop]]$split[obj$pops[[i_pop]]$split == mutation[i]] <- N[i]
+            obj$pops[[i_pop]]$definition = paste0(obj$pops[[i_pop]]$split, collapse = "|")
+          }
         }
-      }
-      foo <- mutation %in% p$base
-      if(any(foo)) {
-        p$base <- N[foo]
-        if(p$type == "G") {
-          bar = gsub(paste0(p$region, " & "), "", p$name, fixed = TRUE)
-          foo = mutation %in% bar
-          if(any(foo)) {
-            g_name <- paste0(p$region, " & ", N[foo])
-            mutation <<- sort_unique(c(mutation, structure(p$name, names = g_name)))
-            N <<- names(mutation)
-            p$name <- g_name
-            
+        foo <- mutation %in% obj$pops[[i_pop]]$base
+        if(any(foo)) {
+          obj$pops[[i_pop]]$base <- N[foo]
+          if(obj$pops[[i_pop]]$type == "G") {
+            bar = sub(paste0(obj$pops[[i_pop]]$region, " & "), "", obj$pops[[i_pop]]$name, fixed = TRUE)
+            foo = mutation %in% bar
+            if(any(foo)) {
+              g_name <- paste0(obj$pops[[i_pop]]$region, " & ", N[foo])
+              mutation <- sort_unique(c(mutation, structure(obj$pops[[i_pop]]$name, names = g_name)))
+              N <- names(mutation)
+              obj$pops[[i_pop]]$name <- g_name
+            }
           }
         }
       }
-      p
-    })
+    }
     names(obj$pops) = sapply(obj$pops, FUN = function(p) p$name)
+    N = names(mutation)
+    
+    # now modify graphs
+    obj$graphs <- sapply(obj$graphs, simplify = FALSE, USE.NAMES = TRUE, FUN = function(g) {
+      # modify parameters that depend on populations
+      g$BasePop = sapply(g$BasePop, simplify = FALSE, USE.NAMES = TRUE, FUN = function(gg) {
+        foo <- mutation %in% gg$name
+        if(any(foo)) gg$name <- N[foo]
+        gg
+      })
+      g$GraphRegion = sapply(g$GraphRegion, simplify = FALSE, USE.NAMES = TRUE, FUN = function(gg) {
+        foo <- mutation %in% gg$def
+        if(any(foo)) gg$def <- N[foo]
+        gg
+      })
+      g$ShownPop = sapply(g$ShownPop, simplify = FALSE, USE.NAMES = TRUE, FUN = function(gg) {
+        foo <- mutation %in% gg$name
+        if(any(foo)) gg$name <- N[foo]
+        gg
+      })
+      # check if title is default or has been given by user, when default try to modify it
+      bar = try(trimws(splitn(definition = g$title, all_names = ori_names, alt_names = alt_names, split = " , ")), silent = TRUE)
+      if(!inherits(bar, "try-error")) {
+        g$title = paste0(sapply(bar, FUN = function(x) {
+          foo = mutation %in% x
+          if(any(foo)) return(N[foo])
+          x
+        }), collapse = " , ")
+      } 
+      # change population in order
+      bar = try(splitn(definition = g$order, all_names = ori_names, alt_names = alt_names), silent = TRUE)
+      if(!inherits(bar, "try-error")) {
+        g$order = paste0(sapply(bar, FUN = function(x) {
+          foo = mutation %in% x
+          if(any(foo)) return(N[foo])
+          x
+        }), collapse = "|")
+      } else { # something went wrong: g$order is reset and will be recomputed by buildGraph
+        g$order <- NULL
+      }
+      g$xstatsorder <- NULL
+      do.call(buildGraph, args = g)
+    })
   }
+  
   class(obj$pops) <- K
   if(count >= loops) stop("can't rename population(s), max number of recursive loops reached")
-  N = names(mutation)
-  
-  # now modify graphs
-  obj$graphs <- sapply(obj$graphs, simplify = FALSE, USE.NAMES = TRUE, FUN = function(g) {
-    # modify parameters that depend on populations
-    g$BasePop = sapply(g$BasePop, simplify = FALSE, USE.NAMES = TRUE, FUN = function(gg) {
-      foo <- mutation %in% gg$name
-      if(any(foo)) gg$name <- N[foo]
-      gg
-    })
-    g$GraphRegion = sapply(g$GraphRegion, simplify = FALSE, USE.NAMES = TRUE, FUN = function(gg) {
-      foo <- mutation %in% gg$name
-      if(any(foo)) gg$name <- N[foo]
-      foo <- mutation %in% gg$def
-      if(any(foo)) gg$def <- N[foo]
-      gg
-    })
-    g$ShownPop = sapply(g$ShownPop, simplify = FALSE, USE.NAMES = TRUE, FUN = function(gg) {
-      foo <- mutation %in% gg$name
-      if(any(foo)) gg$name <- N[foo]
-      gg
-    })
-    # check if title is default or has been given by user, when default try to modify it
-    bar = try(trimws(splitn(definition = g$title, all_names = ori_names, alt_names = alt_names, split = " , ")), silent = TRUE)
-    if(!inherits(bar, "try-error")) {
-      g$title = paste0(sapply(bar, FUN = function(x) {
-        foo = mutation %in% x
-        if(any(foo)) return(N[foo])
-        x
-      }), collapse = " , ")
-    } 
-    # change population in order
-    bar = try(splitn(definition = g$order, all_names = ori_names, alt_names = alt_names), silent = TRUE)
-    if(!inherits(bar, "try-error")) {
-      g$order = paste0(sapply(bar, FUN = function(x) {
-        foo = mutation %in% x
-        if(any(foo)) return(N[foo])
-        x
-      }), collapse = "|")
-    } else { # something went wrong: g$order is reset and will be recomputed by buildGraph
-      g$order <- NULL
-    }
-    g$xstatsorder <- NULL
-    do.call(buildGraph, args = g)
-  })
+  if(anyDuplicated(names(obj$pops))) stop("population renaming results in duplicated names")
   if(verbose) {
     if(length(mutation) > 0) {
-      message("population",ifelse(length(mutation) > 1,"s have"," has")," been successfully renamed:\n\t- ", paste(mutation, names(mutation), sep = " -> ", collapse = "\n\t- "))
+      message("population",ifelse(length(mutation) > 1,"s have"," has")," been successfully renamed:\n\t- ", paste(old_names, new_names, sep = " -> ", collapse = "\n\t- "))
     } else {
       message("no population was renamed")
     }
