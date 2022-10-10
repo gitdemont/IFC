@@ -437,72 +437,6 @@ NULL
 #' @keywords internal
 NULL
 
-#' @title Fast Dataframe and Matrix Column Binding
-#' @name cpp_fast_cbind_DF_M
-#' @description
-#' Combines data.frame and matrix by columns
-#' @param Df_ a Nullable DataFrame.
-#' @param M_ a Nullable NumericVector. /!\ But cast to NumericMatrix.
-#' @param add_id a bool determining if 1st column of returned object should be given 1 to nrow integers
-#' @return a DataFrame.
-#' @keywords internal
-NULL
-
-#' @title Fast Matrix and Dataframe Column Binding
-#' @name cpp_fast_cbind_M_DF
-#' @description
-#' Combines matrix and data.frame by columns
-#' @param M_ a Nullable NumericVector. /!\ But cast to NumericMatrix.
-#' @param Df_ a Nullable DataFrame.
-#' @param add_id a bool determining if 1st column of returned object should be given 1 to nrow integers
-#' @return a DataFrame.
-#' @keywords internal
-NULL
-
-#' @title Dataframe and Dataframe Column Binding
-#' @name cpp_fast_cbind_DF_DF
-#' @description
-#' Combines numeric matrix by columns
-#' @param Df1_ a Nullable DataFrame.
-#' @param Df2_ a Nullable DataFrame.
-#' @param add_id a bool determining if 1st column of returned object should be given 1 to nrow integers
-#' @return a DataFrame.
-#' @keywords internal
-NULL
-
-#' @title Matrix and Matrix Column Binding
-#' @name cpp_fast_cbind_M_M
-#' @description
-#' Combines numeric matrix by columns
-#' @param M1_ a Nullable NumericVector. /!\ But cast to NumericMatrix.
-#' @param M2_ a Nullable NumericVector. /!\ But cast to NumericMatrix.
-#' @param add_id a bool determining if 1st column of returned object should be given 1 to nrow integers
-#' @return a NumericVector.
-#' @keywords internal
-NULL
-
-#' @title Fast Dataframe and List Column Binding
-#' @name cpp_fast_cbind_DF_L
-#' @description
-#' Combines data.frame and list by columns
-#' @param Df_ a Nullable DataFrame.
-#' @param L_ a Nullable List.
-#' @param add_id a bool determining if 1st column of returned object should be given 1 to nrow integers
-#' @return a DataFrame.
-#' @keywords internal
-NULL
-
-#' @title Fast List and Dataframe Column Binding
-#' @name cpp_fast_cbind_L_DF
-#' @description
-#' Combines list and data.frame by columns
-#' @param L_ a Nullable List.
-#' @param Df_ a Nullable DataFrame.
-#' @param add_id a bool determining if 1st column of returned object should be given 1 to nrow integers
-#' @return a DataFrame.
-#' @keywords internal
-NULL
-
 #' @title Matrix Cropping
 #' @name cpp_crop
 #' @description
@@ -890,30 +824,6 @@ cpp_draw <- function(img, coords = matrix(1,2), mask = matrix(1), color = matrix
 
 cpp_raster <- function(width, height, obj, bg_ = NULL) {
     .Call(`_IFC_cpp_raster`, width, height, obj, bg_)
-}
-
-cpp_fast_cbind_DF_M <- function(Df_ = NULL, M_ = NULL, add_id = FALSE) {
-    .Call(`_IFC_cpp_fast_cbind_DF_M`, Df_, M_, add_id)
-}
-
-cpp_fast_cbind_M_DF <- function(M_ = NULL, Df_ = NULL, add_id = FALSE) {
-    .Call(`_IFC_cpp_fast_cbind_M_DF`, M_, Df_, add_id)
-}
-
-cpp_fast_cbind_DF_DF <- function(Df1_ = NULL, Df2_ = NULL, add_id = FALSE) {
-    .Call(`_IFC_cpp_fast_cbind_DF_DF`, Df1_, Df2_, add_id)
-}
-
-cpp_fast_cbind_M_M <- function(M1_ = NULL, M2_ = NULL, add_id = FALSE) {
-    .Call(`_IFC_cpp_fast_cbind_M_M`, M1_, M2_, add_id)
-}
-
-cpp_fast_cbind_DF_L <- function(Df_ = NULL, L_ = NULL, add_id = FALSE) {
-    .Call(`_IFC_cpp_fast_cbind_DF_L`, Df_, L_, add_id)
-}
-
-cpp_fast_cbind_L_DF <- function(L_ = NULL, Df_ = NULL, add_id = FALSE) {
-    .Call(`_IFC_cpp_fast_cbind_L_DF`, L_, Df_, add_id)
 }
 
 cpp_crop <- function(mat, new_height = 0L, new_width = 0L) {
