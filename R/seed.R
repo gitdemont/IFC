@@ -40,7 +40,7 @@ fetch_seed <- function(seed = NA_integer_) {
   if(typeof(seed) == "list") {
     Ns = names(seed)
     Na = names(ans) 
-    if(anyDuplicated(Ns)) stop("found duplicated names in 'seed'")
+    if(anyDuplicated(setdiff(Ns, ""))) stop("found duplicated names in 'seed'")
     a = c()
     b = c()
     for(ii in 1:4) {            # pass by name
@@ -95,15 +95,20 @@ with_seed <- function(expr, seed = NA_integer_, kind = NULL, normal.kind = NULL,
   cur_kind = RNGkind()
   e = globalenv()
   cur_seed <- e$.Random.seed
-  on.exit(suspendInterrupts({
-    do.call(args = list(kind = cur_kind[1], normal.kind = cur_kind[2], sample.kind = cur_kind[3]), what = RNGkind)
-    if (is.null(cur_seed)) {
-      rm(".Random.seed", envir = e, inherits = FALSE)
-    } else {
-      assign(".Random.seed", value = cur_seed, envir = e, inherits = FALSE)
-    }
-  }))
-  RNGkind(kind = kind, normal.kind = normal.kind, sample.kind = sample.kind)
-  if(!is.na(seed)) set.seed(seed = seed)
+  if((length(seed) == 0) || (length(seed) != 0) && !is.na(seed)) {
+    on.exit(suspendInterrupts({
+      do.call(args = list(kind = cur_kind[1], normal.kind = cur_kind[2], sample.kind = cur_kind[3]), what = RNGkind)
+      if (is.null(cur_seed)) {
+        rm(".Random.seed", envir = e, inherits = FALSE)
+      } else {
+        assign(".Random.seed", value = cur_seed, envir = e, inherits = FALSE)
+      }
+    }))
+  }
+  if((length(seed) == 0) || !is.na(seed)) {
+    set.seed(seed = seed, kind = kind, normal.kind = normal.kind, sample.kind = sample.kind)
+  } else {
+    RNGkind(kind = kind, normal.kind = normal.kind, sample.kind = sample.kind)
+  }
   force(expr)
 }
