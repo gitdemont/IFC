@@ -4,7 +4,12 @@
 \alias{gen_altnames}
 \title{Alternative Names Generator}
 \usage{
-gen_altnames(x, n = 10, forbidden = character())
+gen_altnames(
+  x,
+  n = 10,
+  forbidden = character(),
+  random_seed = list(seed = 252, "L'Ecuyer-CMRG", "Inversion", "Rejection")
+)
 }
 \arguments{
 \item{x}{a character vector.}
@@ -12,6 +17,10 @@ gen_altnames(x, n = 10, forbidden = character())
 \item{n}{number of characters of the desired returned name. Default is 10.}
 
 \item{forbidden}{forbidden character vector. Default is character().}
+
+\item{random_seed}{a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL.
+Default is list(seed = 0xFC, "L'Ecuyer-CMRG", "Inversion", "Rejection").
+Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.}
 }
 \value{
 a character vector.

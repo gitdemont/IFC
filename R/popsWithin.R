@@ -60,7 +60,6 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
   alw_fun = sapply(c("&","|","!","("), USE.NAMES = TRUE, simplify = FALSE,
                    FUN = function(x) getFromNamespace(x, asNamespace("base")))
   obj_number = nrow(features)
-  
   if(display_progress) {
     pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
@@ -118,8 +117,7 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
              pop_def_tmp[pop_def_tmp=="And"] <- "&"
              pop_def_tmp[pop_def_tmp=="Or"] <- "|"
              pop_def_tmp[pop_def_tmp=="Not"] <- "!"
-             replace_with=c()
-             for(i_def in seq_along(pop$names)) replace_with=c(replace_with,random_name(n=10,special=NULL,forbidden=c(replace_with,pop_def_tmp)))
+             replace_with=gen_altnames(pop$names,forbidden=c(pop_def_tmp))
              for(i_def in seq_along(pop$names)) pop_def_tmp[pop$names[i_def] == pop_def_tmp] <- rep(paste0("`",replace_with[i_def],"`"), sum(pop$names[i_def] == pop_def_tmp))
              e = lapply(pops[pop$names], FUN=function(i_pop) i_pop$obj)
              names(e) = replace_with

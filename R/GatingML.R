@@ -265,7 +265,7 @@ toXML2_boolpop_gs <- function(obj, pop) {
     ele <- as.character(unlist(x))
     if(ele %in% c("|", "&", "!")) { # an operator is encountered
       # we generate a random id for the population resulting of the operation
-      id = random_name(special = NULL, alpha = NULL, forbidden = c(ids, names(obj$pops)))
+      id = gen_altnames("foo", forbidden = c(ids, names(obj$pops)))
       pop_name = children
       take = 2 # set default number of pop_name we will use for the boolean operation
       if(length(pop_name) >= 2) {

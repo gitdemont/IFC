@@ -96,20 +96,20 @@ fastCbind <- function(obj1, obj2, add_id = FALSE) {
       s2 = ncol(ans); s1 = 0
     }
   }
-  if(length(N1) == 0) replicate(s1, N1 <<- c(N1, random_name(special = NULL, forbidden = as.character(c(N1, N2)))))
-  if(length(N2) == 0) replicate(s2, N2 <<- c(N2, random_name(special = NULL, forbidden = as.character(c(N1, N2)))))
+  if(length(N1) == 0) replicate(s1, N1 <<- c(N1, gen_altnames("foo", forbidden = as.character(c(N1, N2)))))
+  if(length(N2) == 0) replicate(s2, N2 <<- c(N2, gen_altnames("foo", forbidden = as.character(c(N1, N2)))))
   while(length(N1 == "") != s1) {
     tmp = which(N1=="")[1]
-    N1[ifelse(is.na(tmp),1,tmp)] <- random_name(special = NULL, forbidden = as.character(c(N1, N2)))
+    N1[ifelse(is.na(tmp),1,tmp)] <- gen_altnames("foo", forbidden = as.character(c(N1, N2)))
   }
   while(length(N2 == "") != s2) {
     tmp = which(N2=="")[1]
-    N2[ifelse(is.na(tmp),1,tmp)] <- random_name(special = NULL, forbidden = as.character(c(N1, N2)))
+    N2[ifelse(is.na(tmp),1,tmp)] <- gen_altnames("foo", forbidden = as.character(c(N1, N2)))
   }
   N = NULL
   if(add_id) {
     ans = cbind(seq_along(integer(nrow(ans))), ans, deparse.level = 0)
-    N = random_name(special = NULL, forbidden = as.character(c(N1, N2)))
+    N = gen_altnames("foo", forbidden = as.character(c(N1, N2)))
   }
   all_names = c(N, N1, N2)
   if(anyDuplicated(all_names)) stop("names should be unique")

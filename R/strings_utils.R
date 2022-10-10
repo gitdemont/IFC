@@ -385,17 +385,6 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
   }
   return(id)
 }
-# random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, special = c("#", "@", "?", "!", "&", "%", "$"), forbidden = character()) {
-#   if(length(ALPHA)!=0) assert(ALPHA, alw = LETTERS)
-#   if(length(alpha)!=0) assert(alpha, alw = letters)
-#   if(length(num)!=0) assert(num, cla="integer", alw = 0L:9L)
-#   forbidden = setdif(unique(forbidden),""); assert(forbidden, typ = "character")
-#   id = paste0(sample(x = c(ALPHA, alpha, num, special), size = n, replace = TRUE), collapse = "")
-#   while(sum(unlist(lapply(forbidden, grepl, x = id, fixed = TRUE), recursive = FALSE, use.names = FALSE))) {
-#     id = paste0(sample(x = c(ALPHA, alpha, num, special), size = n, replace = TRUE), collapse = "")
-#   }
-#   return(id)
-# }
 
 #' @title Alternative Names Generator
 #' @name gen_altnames
@@ -404,36 +393,35 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
 #' @param x a character vector.
 #' @param n number of characters of the desired returned name. Default is 10.
 #' @param forbidden forbidden character vector. Default is character().
+#' @param random_seed a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL.
+#' Default is list(seed = 0xFC, "L'Ecuyer-CMRG", "Inversion", "Rejection").
+#' Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.
 #' @details 'forbidden' should not encompass all possible returned value otherwise the function will never end.
 #' @return a character vector.
 #' @keywords internal.
-gen_altnames <- function(x, n = 10, forbidden = character()) {
+gen_altnames <- function(x, n = 10, forbidden = character(),
+                         random_seed = list(seed = 0xFC, "L'Ecuyer-CMRG", "Inversion", "Rejection")) {
   if(n < 5) stop("can't generate altnames with n < 5")
-  ans = c()
-  x = unname(x[order(nchar(x), decreasing = TRUE)])
-  pat = setdiff(c(x, forbidden),"")
-  for(i in seq_along(x)) {
-    foo = random_name(n = n, special = NULL, forbidden = c(ans, pat)) 
-    while(sum(unlist(lapply(pat, grepl, x = foo, fixed = TRUE),
-                     recursive = FALSE,
-                     use.names = FALSE))) {
-      foo = random_name(n = n, special = NULL, forbidden = c(ans, pat)) 
+  x = as.character(x); assert(x, typ = "character")
+  forbidden = unique(as.character(forbidden)); assert(forbidden, typ = "character")
+  xx = unique(x)
+  xx = unname(xx[order(nchar(xx), decreasing = TRUE)])
+  pat = setdiff(c(xx, forbidden),"")
+  spat = pat[nchar(pat) <= n]
+  let = setdiff(letters, pat)
+  LET = setdiff(LETTERS, pat)
+  NUM = setdiff(0:9, suppressWarnings(na.omit(as.integer(pat))))
+  SEED = fetch_seed(random_seed)
+  with_seed({
+    ans = c()
+    for(i in seq_along(x)) {
+      foo = paste0(sample(x = c(LET, let, NUM), size = n, replace = TRUE), collapse = "")
+      while(cpp_mpfmatch(x = foo, pattern = spat)) foo = paste0(sample(x = c(LET, let, NUM), size = n, replace = TRUE), collapse = "")
+      ans <- c(ans, foo)
     }
-    ans = c(ans, foo)
-  }
-  ans
+    ans
+  }, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind)
 }
-# gen_altnames <- function(x, n = 10, forbidden = NULL) {
-#   ans = c()
-#   x = unname(x[order(nchar(x), decreasing = TRUE)])
-#   for(i in seq_along(x)) {
-#     ans = c(ans,
-#             random_name(n = n,
-#                         special = NULL,
-#                         forbidden = c(ans, x, forbidden)))
-#   }
-#   ans
-# }
 
 #' @title Numeric to String Formatting
 #' @name num_to_string
@@ -497,7 +485,7 @@ validate_bool = function(x = "", all_names = "") {
   operators = c("And", "Or", "Not", "(", ")")
   all_names = setdiff(all_names, c(operators, ""))
   if(!any(all_names %in% x)) stop("object definition is not possible: no match found")
-  obj_alias = random_name(special = NULL, forbidden = unique(c("", operators, all_names, x)))
+  obj_alias = gen_altnames("foo", forbidden = c("", operators, all_names, x))
   count = 0L
   alw = c("Not", "(", obj_alias)
   lapply(1:length(x), FUN = function(i) {

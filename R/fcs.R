@@ -128,7 +128,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   # we also ensure that this delim is not found elsewhere in the file
   found = 1
   while(found) {
-    delim_esc = random_name(n = 20)
+    delim_esc = gen_altnames("foo", random_seed = list(seed=found,"L'Ecuyer-CMRG","Inversion","Rejection"))
     delim_esc = strsplit(x = delim_esc, split = delimiter, fixed = TRUE)[[1]]
     delim_esc = delim_esc[delim_esc!=""]
     delim_esc = paste0(delim_esc, collapse="")

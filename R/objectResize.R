@@ -43,8 +43,8 @@ objectResize <- function(mat, size = c(0,0), add_noise = TRUE, random_seed = NUL
   if(length(size) != 2) return(mat)
   f = function(x) { x }
   if(add_noise) {
+    SEED = fetch_seed(random_seed)
     f = function(x) { 
-      SEED = fetch_seed(random_seed)
       with_seed(x, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind)
     }
   }

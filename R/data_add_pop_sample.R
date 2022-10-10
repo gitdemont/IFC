@@ -48,12 +48,12 @@ data_add_pop_sample = function(obj, pop, size, new_name, random_seed = NULL, ...
   pop = as.character(pop); assert(pop, len = 1)
   random_seed = as.integer(random_seed[na.omit(random_seed)]); if(length(random_seed) == 0) random_seed = NULL
   if(!any(pop == names(obj$pops))) stop("can't find 'pop': \"",pop,"\" in 'obj$pops'")
+  SEED = fetch_seed(random_seed)
   f = function(x) { 
-    SEED = fetch_seed(random_seed)
     with_seed(x, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind)
   }
   if(missing(new_name)) {
-    new_name = f(random_name(special = NULL, forbidden = names(obj$pops)))
+    new_name = gen_altnames("foo", forbidden = names(obj$pops), random_seed = random_seed)
   } else {
     new_name = as.character(new_name); new_name = new_name[new_name != ""]; assert(new_name, len = 1);
   }

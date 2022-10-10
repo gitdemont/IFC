@@ -941,7 +941,7 @@ switch_channel <- function(obj, from, to, BF = TRUE, MODE = 1) {
   # add an extra image and mask to allow mask and image modifications
   obj_default$masks = rbind.data.frame(obj_default$masks[1, ], obj_default$masks, stringsAsFactors = TRUE)
   obj_default$images = rbind.data.frame(obj_default$images[1, ],obj_default$images, stringsAsFactors = FALSE)
-  obj_default$images[1, "name"] = random_name(forbidden = obj$description$Images$name)
+  obj_default$images[1, "name"] = gen_altnames("foo", forbidden = obj$description$Images$name)
   obj_default$images[1, "physicalChannel"] = 0
   
   # use default names
