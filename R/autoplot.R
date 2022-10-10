@@ -326,7 +326,8 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
         new_pops = list()
         for(b in ss) {
           for(g in foo$GraphRegion) {
-            p = list(name = paste(g$name, b, sep = " & "), type = "G", base = b, 
+            p = list(name = ifelse(b == "All", g$name, paste(g$name, b, sep = " & ")),
+                     type = "G", base = b, 
                      color = obj$regions[[g$name]]$color,
                      lightModeColor = obj$regions[[g$name]]$lightcolor,
                      fx = foo$f1, fy = foo$f2,
@@ -334,7 +335,8 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
                      region = g$name,
                      obj = obj$pops[[g$name]]$obj & obj$pops[[b]]$obj,
                      names = "")
-            
+            n = 0
+            while(p$name %in% names(obj$pops)) { n = n + 1; p$name = paste0(p$name, n) }
             new_pops = c(new_pops, list(p))
           }
         }
