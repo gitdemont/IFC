@@ -87,11 +87,15 @@ data_modify_regions <- function(obj, regions, display_progress = TRUE, ...) {
       if(any(found)) {
         foo = sub(paste0(ans$pops[[i_pop]]$region, " & "), "", ans$pops[[i_pop]]$name, fixed = TRUE)
         if(foo != ans$pops[[i_pop]]$region) {
-          old_pop_names <- c(old_pop_names, ans$pops[[i_pop]]$name)
-          new_pop_names <- c(new_pop_names, paste(names(mutation[found]), foo, sep = " & "))
+          if(names(mutation[found]) != mutation[found]) {
+            old_pop_names <- c(old_pop_names, ans$pops[[i_pop]]$name)
+            new_pop_names <- c(new_pop_names, paste(names(mutation[found]), foo, sep = " & "))
+          }
         } else {
-          old_pop_names <- c(old_pop_names, ans$pops[[i_pop]]$name)
-          new_pop_names <- c(new_pop_names, names(mutation[found]))
+          if(names(mutation[found]) != mutation[found]) {
+            old_pop_names <- c(old_pop_names, ans$pops[[i_pop]]$name)
+            new_pop_names <- c(new_pop_names, names(mutation[found]))
+          }
         }
         ans$pops[[i_pop]]$region <- names(mutation[found])
       }
@@ -112,7 +116,7 @@ data_modify_regions <- function(obj, regions, display_progress = TRUE, ...) {
     found = TRUE
     n = 1
     while(found) {
-      tmp = new_pop_names %in% names(ans$pops)
+      tmp = new_pop_names %in% setdiff(names(ans$pops),old_pop_names) 
       found = any(tmp)
       if(found) new_pop_names[tmp] = paste0(new_pop_names_back[tmp], n)
       n = n + 1
