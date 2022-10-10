@@ -51,6 +51,16 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title Multiple Pattern Fixed Matching
+#' @name cpp_mpfmatch
+#' @description
+#' String matching with multiple pattern.
+#' @param x,pattern Nullable Rcpp CharacterVector.
+#' @details equivalent of as.logical(sum(unlist(lapply(pattern, grepl, x = x, fixed = TRUE)))).
+#' @return a bool
+#' @keywords internal
+NULL
+
 #' @title Sequence of Strings Matching
 #' @name cpp_seqmatch
 #' @description
@@ -744,6 +754,10 @@ cpp_ell_coord <- function(bound_x, bound_y) {
 
 cpp_pnt_in_gate <- function(pnts, gate, algorithm = 1L, epsilon = 0.000000000001) {
     .Call(`_IFC_cpp_pnt_in_gate`, pnts, gate, algorithm, epsilon)
+}
+
+cpp_mpfmatch <- function(x = NULL, pattern = NULL) {
+    .Call(`_IFC_cpp_mpfmatch`, x, pattern)
 }
 
 cpp_seqmatch <- function(x, y) {
