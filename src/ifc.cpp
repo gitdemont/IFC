@@ -129,6 +129,21 @@ Rcpp::LogicalVector cpp_pnt_in_gate (const Rcpp::NumericMatrix pnts,
 }
 // END gate
 // FROM utils
+//' @title Multiple Pattern Fixed Matching
+//' @name cpp_mpfmatch
+//' @description
+//' String matching with multiple pattern.
+//' @param x,pattern Nullable Rcpp CharacterVector.
+//' @details equivalent of as.logical(sum(unlist(lapply(pattern, grepl, x = x, fixed = TRUE)))).
+//' @return a bool
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+bool cpp_mpfmatch(const Rcpp::Nullable<Rcpp::CharacterVector> x = R_NilValue,
+                  const Rcpp::Nullable<Rcpp::CharacterVector> pattern = R_NilValue) {
+  return hpp_mpfmatch(x, pattern);
+}
+
 //' @title Sequence of Strings Matching
 //' @name cpp_seqmatch
 //' @description

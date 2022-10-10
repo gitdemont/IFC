@@ -87,6 +87,39 @@ bool lNotisNULL(const Rcpp::Nullable<Rcpp::LogicalVector> x_ = R_NilValue) {
   return false;
 }
 
+//' @title Multiple Pattern Fixed Matching
+//' @name cpp_mpfmatch
+//' @description
+//' String matching with multiple pattern.
+//' @param x,pattern Nullable Rcpp CharacterVector.
+//' @details equivalent of as.logical(sum(unlist(lapply(pattern, grepl, x = x, fixed = TRUE)))).
+//' @return a bool
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+bool hpp_mpfmatch(const Rcpp::Nullable<Rcpp::CharacterVector> x = R_NilValue,
+                  const Rcpp::Nullable<Rcpp::CharacterVector> pattern = R_NilValue) {
+  bool found = false;
+  if(x.isNotNull()) {
+    Rcpp::CharacterVector xx(x);
+    if(xx.size() > 0) {
+      std::string str = std::string(xx[0]);
+      if(pattern.isNotNull()) {
+        Rcpp::CharacterVector pat(pattern);
+        for(R_len_t i = 0; i < pat.size(); i++) {
+          if((i % 100) == 0) Rcpp::checkUserInterrupt();
+          std::string p = std::string(pat[i]);
+          if(str.find(p) != std::string::npos) {
+            found = true;
+            break;
+          }
+        }
+      }
+    }
+  }
+  return found;
+}
+
 //' @title Sequence of Strings Matching
 //' @name cpp_seqmatch
 //' @description
