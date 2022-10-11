@@ -1265,8 +1265,8 @@ adjustGraph=function(obj, graph, adjust_graph=TRUE, ...) {
                    })
       if(length(foo) == 0) return(NULL)
       foo = names(which(foo))
-      if(length(foo) != 1) return(NULL)
-      return(c(r, list(def = foo)))
+      if(length(foo) != length(g$BasePop)) return(NULL)
+      return(list(name = r$name , def = foo))
     })
     g$GraphRegion = g$GraphRegion[sapply(g$GraphRegion, length) != 0]
     tmp = length(g$GraphRegion) == length(graph$GraphRegion)
@@ -1279,6 +1279,9 @@ adjustGraph=function(obj, graph, adjust_graph=TRUE, ...) {
     if(!adjust_graph) if(!all(tmp)) return(list())
     g$ShownPop = g$ShownPop[tmp]
   }
+  
+  # remove title if BasePop has changed
+  if(length(g$BasePop) != length(graph$BasePop)) g = g[!grepl("title", x = names(g), fixed = TRUE)]
   
   # rebuild Graph, mainly to recompute order
   g = try(do.call(what = buildGraph, args = g[!grepl("order", x = names(g))]), silent = TRUE)
