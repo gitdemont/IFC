@@ -153,31 +153,8 @@ applyGatingStrategy = function(obj, gating, keep, display_progress = TRUE, verbo
                            display_progress = display_progress, ...)
     
     ##### retrieves name(s) of graphical population created by region applied in graph
-    if(length(ans$graphs) > 0) {
-      ans$graphs = lapply(ans$graphs, FUN = function(g) {
-        if(length(g$GraphRegion) != 0) {
-          g$GraphRegion = lapply(g$GraphRegion, FUN = function(r) {
-            foo = sapply(ans$pops,
-                         FUN = function(p) {
-                           bar = (p$type == "G") && 
-                             (p$region == r$name) && 
-                             (p$base %in% unique(unlist(lapply(g$BasePop, FUN = function(b) b$name)))) &&
-                             (g$f1 == p$fx)
-                           if(ans$regions[[r$name]]$type != "line") bar = bar && (g$f2 == p$fy)
-                           return(bar)
-                         })
-            return(c(r, list(def = names(which(foo)))))
-          })
-        }
-        return(do.call(buildGraph, args = g))
-      })
-    }
+    ans$graphs = sapply(ans$graphs, FUN = function(g) adjustGraph(ans, g, adjust_graph = TRUE))
     class(ans$graphs) <- "IFC_graphs"
-    
-    ##### checks that graphs are correctly defined
-    tryCatch({
-      lapply(ans$graphs, FUN = function(g) { p = plot_lattice(plotGraph(obj = ans, graph = g, draw = FALSE, stats_print = FALSE))})
-    }, error = function(e) stop("something went wrong while creating graphs"))
     
     ##### computes stats
     ans$stats = get_pops_stats(ans$pops, ncol(ans$features))
