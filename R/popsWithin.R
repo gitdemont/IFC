@@ -48,6 +48,9 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
   assert(pops, cla = c("IFC_pops","Affiliated","Ordered"))
   assert(regions, cla = "IFC_regions")
   assert(features, cla = "IFC_features")
+  if(anyDuplicated(names(pops))) stop("found populations with duplicated names")
+  if(anyDuplicated(names(regions))) stop("found regions with duplicated names")
+  if(anyDuplicated(names(features))) stop("found features with duplicated names")
   pnt_in_poly_algorithm = as.integer(pnt_in_poly_algorithm); assert(pnt_in_poly_algorithm, len = 1, alw = 1)
   pnt_in_poly_epsilon = as.numeric(pnt_in_poly_epsilon); pnt_in_poly_epsilon = pnt_in_poly_epsilon[pnt_in_poly_epsilon>0]; pnt_in_poly_epsilon = pnt_in_poly_epsilon[is.finite(pnt_in_poly_epsilon)]
   assert(pnt_in_poly_epsilon, len = 1, typ = "numeric")
@@ -73,6 +76,7 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
     # changes colors to R compatible
     pops[[i]]$color = map_color(pops[[i]]$color)
     pops[[i]]$lightModeColor = map_color(pops[[i]]$lightModeColor)
+    if(pop$base == pop$name) stop(pop$name, ", trying to compute a population with recursive 'base' reference")
     switch(pop$type,
            "B" = { 
              pops[[i]]$obj=rep(TRUE,obj_number)
@@ -113,6 +117,7 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
              }
            }, 
            "C" = {
+             if(any(pop$name %in% pop$names)) stop(pop$name, ", trying to compute a boolean population with recursive \'definition\' ['",pop$definition,"']")
              pop_def_tmp=pop$split
              pop_def_tmp[pop_def_tmp=="And"] <- "&"
              pop_def_tmp[pop_def_tmp=="Or"] <- "|"

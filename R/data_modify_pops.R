@@ -84,6 +84,7 @@ data_modify_pops <- function(obj, pops, display_progress = TRUE, ...){
     p$color <- P[[i_p]]$color
     p$lightModeColor <- P[[i_p]]$lightModeColor
     p$style <- P[[i_p]]$style
+    p$base <- P[[i_p]]$base
     if(p$type == "T") p$obj = P[[i_p]]$obj
     if(p$type == "C") {
       operators = c("And", "Or", "Not", "(", ")")
@@ -102,8 +103,12 @@ data_modify_pops <- function(obj, pops, display_progress = TRUE, ...){
                                     display_progress = display_progress),
                                dots[setdiff(names(dots),c("pops","features"))]))
   
+  # modify graphs (needed for example when base from a graphical population is changed)
+  for(i_graph in seq_along(ans$graphs)) ans$graphs[[i_graph]] = adjustGraph(ans, ans$graphs[[i_graph]])
+
   # modify attributes
   for(i in names(mutation)) {
+    attributes(ans$pops[[i]])[setdiff(names(attributes(ans$pops[[i]])), "names")] <- NULL
     for(k in setdiff(names(attributes(pops[[mutation[i]]])),"names")) {
       attr(ans$pops[[i]], k) <- attr(pops[[mutation[i]]], k)
     }

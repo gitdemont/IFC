@@ -70,7 +70,14 @@ data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsi
   obj_number = obj$description$ID$objcount
   
   # try to coerce inputs to compatible daf format
+  P = pops
   pops = lapply(pops, FUN=function(x) do.call(what=buildPopulation, args=x))
+  for(i in seq_along(P)) {
+    attributes(pops[[i]])[setdiff(names(attributes(pops[[i]])), "names")] <- NULL
+    for(k in setdiff(names(attributes(P[[i]])),"names")) {
+      attr(pops[[i]], k) <- attr(P[[i]], k)
+    }
+  }
   names(pops) = sapply(pops, FUN=function(x) x$name)
 
   # removes duplicated inputs

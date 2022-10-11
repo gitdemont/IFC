@@ -37,18 +37,17 @@ popsGetAffiliation <- function(pops, operators = c("And","Or","Not","(",")")) {
   K = class(pops)
   all_names = names(pops)
   alt_names = gen_altnames(all_names)
-  pops = sapply(pops, USE.NAMES = TRUE, simplify = FALSE, FUN = function(p) {
-    if(!p$base%in%c(all_names,"")) stop(p$name, ', trying to compute a population with unknown base ["', p$base, '"]')
-    if("C" %in% p$type) {
-      tmp = try(splitn(definition = p$definition, all_names = all_names, alt_names = alt_names, operators = operators), silent = TRUE)
-      if(inherits(tmp, "try-error")) stop(p$name, ', trying to compute a population with unknown definition ["', p$definition, '"]', call. = FALSE)
-      p$split = tmp
-      p$names = setdiff(tmp, operators)
+  for(i in seq_along(pops)) {
+    if(!pops[[i]]$base%in%c(all_names,"")) stop(pops[[i]]$name, ', trying to compute a population with unknown base ["', pops[[i]]$base, '"]')
+    if("C" %in% pops[[i]]$type) {
+      tmp = try(splitn(definition = pops[[i]]$definition, all_names = all_names, alt_names = alt_names, operators = operators), silent = TRUE)
+      if(inherits(tmp, "try-error")) stop(pops[[i]]$name, ', trying to compute a population with unknown definition ["', pops[[i]]$definition, '"]', call. = FALSE)
+      pops[[i]]$split = tmp
+      pops[[i]]$names = setdiff(tmp, operators)
     } else {
-      p$names = ""
+      pops[[i]]$names = ""
     }
-    return(p)
-  })
+  }
   class(pops) = c(K, "Affiliated")
   return(pops)
 }

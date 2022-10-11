@@ -52,9 +52,10 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
   if(!all(tmp)) warning("can't find population",ifelse(sum(!tmp) > 1, "s", "")," to rename:\n",
                          paste0("\t- ", old_names[!tmp], collapse="\n"))
   if(!any(tmp)) return(obj)
-  alt_names = gen_altnames(new_names[tmp], forbidden = c(names(obj$pops), new_names[tmp]))
+  alt_names = gen_altnames(new_names[tmp], forbidden = c(ori_names, new_names[tmp]))
   mutations = list(structure(old_names[tmp], names = alt_names),
                    structure(alt_names, names = new_names[tmp]))
+  P = obj$pops[old_names[tmp]]
   
   # create function for sorting unique values (and keeping names)
   sort_unique <- function(x) {
@@ -64,6 +65,8 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
     sort(xx)
   }
   
+  Kp = class(obj$pops)
+  Kg = class(obj$graphs)
   # start population(s) renaming
   for(i in 1:2) {
     mutation = sort_unique(mutations[[i]])
@@ -101,10 +104,13 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
         }
       }
     }
+    all_names = names(obj$pops)
+    alt_names = gen_altnames(names(obj$pops), forbidden = c(names(obj$pops), c(ori_names[tmp], new_names[tmp])))
     names(obj$pops) = sapply(obj$pops, FUN = function(p) p$name)
     N = names(mutation)
     
     # now modify graphs
+    K = class(obj$graphs)
     obj$graphs <- sapply(obj$graphs, simplify = FALSE, USE.NAMES = TRUE, FUN = function(g) {
       # modify parameters that depend on populations
       g$BasePop = sapply(g$BasePop, simplify = FALSE, USE.NAMES = TRUE, FUN = function(gg) {
@@ -123,7 +129,7 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
         gg
       })
       # check if title is default or has been given by user, when default try to modify it
-      bar = try(trimws(splitn(definition = g$title, all_names = ori_names, alt_names = alt_names, split = " , ")), silent = TRUE)
+      bar = try(trimws(splitn(definition = g$title, all_names = all_names, alt_names = alt_names, split = " , ")), silent = TRUE)
       if(!inherits(bar, "try-error")) {
         g$title = paste0(sapply(bar, FUN = function(x) {
           foo = mutation %in% x
@@ -132,7 +138,7 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
         }), collapse = " , ")
       } 
       # change population in order
-      bar = try(splitn(definition = g$order, all_names = ori_names, alt_names = alt_names), silent = TRUE)
+      bar = try(splitn(definition = g$order, all_names = all_names, alt_names = alt_names), silent = TRUE)
       if(!inherits(bar, "try-error")) {
         g$order = paste0(sapply(bar, FUN = function(x) {
           foo = mutation %in% x
@@ -146,8 +152,16 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
       do.call(buildGraph, args = g)
     })
   }
+  # modify attributes
+  for(i in seq_along(old_names[tmp])) {
+    attributes(obj$pops[[new_names[tmp][i]]])[setdiff(names(attributes(obj$pops[[new_names[tmp][i]]])), "names")] <- NULL
+    for(k in setdiff(names(attributes(P[[old_names[tmp][i]]])),"names")) {
+      attr(obj$pops[[new_names[tmp][i]]], k) <- attr(P[[old_names[tmp][i]]], k)
+    }
+  }
+  class(obj$pops) <- Kp
+  class(obj$graphs) <- Kg
   
-  class(obj$pops) <- K
   if(count >= loops) stop("can't rename population(s), max number of recursive loops reached")
   if(anyDuplicated(names(obj$pops))) stop("population renaming results in duplicated names")
   if(verbose) {

@@ -47,8 +47,14 @@ popsCompute <- function(pops, regions, features,
                         pnt_in_poly_algorithm = 1, pnt_in_poly_epsilon = 1e-12,
                         display_progress = TRUE, title_progress = "", ...) {
   dots = list(...)
-  # coerce pops to buildPopulation() checking
-  pops = lapply(pops, FUN=function(p) do.call(what = "buildPopulation", args = p))
+  P = pops
+  pops = sapply(pops, simplify = FALSE, USE.NAMES = TRUE, FUN=function(p) do.call(what=buildPopulation, args=p))
+  for(i in seq_along(P)) {
+    attributes(pops[[i]])[setdiff(names(attributes(pops[[i]])), "names")] <- NULL
+    for(k in setdiff(names(attributes(P[[i]])),"names")) {
+      attr(pops[[i]], k) <- attr(P[[i]], k)
+    }
+  }
   class(pops) = "IFC_pops"
   
   # compute pops
