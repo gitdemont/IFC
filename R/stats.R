@@ -247,10 +247,12 @@ getSTATSREPORT <- function(fileName) {
 #' @return a named vector with extracted statistics.
 #' @keywords internal
 StatsReport <- function(obj, stats) {
-  # alw_stats = c("Count","Mean","%Total","%Gated","%","Objects/mL","RD - Mean", "Median","CV","stddev",
-  #               "NaN","MAD","min","RD - Median","Variance","max","geomean","Mode")
-  if(!any(nrow(stats))) return(c())
+  if(!any(nrow(stats))) return(numeric(0))
+  alw_stats1 = c("Count","%Total","%Gated","%","Objects/mL")
+  alw_stats2 = c("Mean","RD - Mean","Median","CV","stddev","NaN","MAD",
+                 "min","RD - Median","Variance","max","geomean","Mode")
   structure(apply(stats, 1, FUN = function(x) {
+    if(!any(x["statistics"] %in% c(alw_stats1, alw_stats2))) stop("statistics [" , x["statistics"], "] is not allowed")
     n1 = x["population1"]
     n2 = x["population2"]
     n3 = ""
@@ -268,38 +270,49 @@ StatsReport <- function(obj, stats) {
       fv1 = obj$features[p1, fn, drop = TRUE]
       if(n2 %in% names(obj$pops)) fv2 = obj$features[p2, fn, drop = TRUE]
     }
-    switch (x["statistics"],
-            "Count" = sum(p1, na.rm = TRUE),
-            "Mean" = mean(fv1, na.rm = TRUE),
-            "%Total" = 100 * sum(p1, na.rm = TRUE) / length(p1),
-            "%Gated" = 100 * sum(p1, na.rm = TRUE) / sum(p3, na.rm = TRUE),
-            "%" = 100 * sum(p1, na.rm = TRUE) / sum(p2, na.rm = TRUE),
-            "Objects/mL" = {
-              # How to compute concentration ?
-              NA_real_
-            },
-            "RD - Mean" =  abs(mean(fv1, na.rm = TRUE) - mean(fv2, na.rm = TRUE)) /
-              (sd(fv1, na.rm = TRUE) + sd(fv2, na.rm = TRUE)),
-            "Median" = median(fv1, na.rm = TRUE),
-            "CV" = 100 * sd(fv1, na.rm = TRUE) / mean(fv1, na.rm = TRUE),
-            "stddev" = sd(fv1, na.rm = TRUE),
-            "NaN" = ifelse(n1 %in% names(obj$pops) && fn %in% names(obj$features),sum(is.na(fv1)), 0),
-            "MAD" = mad(fv1, na.rm = TRUE),
-            "min" = ifelse(length(na.omit(fv1)) == 0, NaN, min(fv1, na.rm = TRUE)),
-            "RD - Median" = abs(median(fv1, na.rm = TRUE) - median(fv2, na.rm = TRUE)) /
-              (mad(fv1, na.rm = TRUE) + mad(fv2, na.rm = TRUE)),
-            "Variance" = var(fv1, na.rm = TRUE),
-            "max" = ifelse(length(na.omit(fv1)) == 0, NaN, max(fv1, na.rm = TRUE)),
-            "geomean" = exp(mean(log(na.omit(fv1)))),
-            "Mode" = {
-              # What to do here ? the following does not work
-              # 1/ as.numeric(names(which.max(table(fv1, useNA = "no"))))
-              # 2/ mean(as.numeric(strsplit(gsub("\\(|\\]","",names(which.max(table(cut(fv1, breaks = 128))))),",",fixed = TRUE)[[1]]))
-              NA_real_
-            },
-            {
-              stop("statistics [" , x["statistics"], "] is not allowed")
-            })
+    V1 = sum(p1, na.rm = TRUE)
+    if(V1 == 0) return(ifelse(any(x["statistics"] %in% alw_stats1), 0, NaN))
+    if(!("NaN" %in% x["statistics"]) &&
+       (length(na.omit(fv1)) == 0) &&
+       any(x["statistics"] %in% alw_stats2)) return(NaN)
+    switch(
+      x["statistics"],
+      "Count"       = V1,
+      "Mean"        = mean(fv1, na.rm = TRUE),
+      "%Total"      = 100 * V1 / length(p1),
+      "%Gated"      = {
+        V3 = sum(p3, na.rm = TRUE)
+        ifelse(V3 == 0, NaN, 100 * V1 / V3)
+      },
+      "%"           = {
+        V2 = sum(p2, na.rm = TRUE)
+        ifelse(V2 == 0, NaN, 100 * V1 / V2)
+      },
+      "Objects/mL"  = {
+        # How to compute concentration ?
+        NA_real_
+      },
+      "RD - Mean"   = ifelse(length(na.omit(fv2)) == 0, NaN,
+                             abs(mean(fv1, na.rm = TRUE) - mean(fv2, na.rm = TRUE)) /
+                               (sd(fv1, na.rm = TRUE) + sd(fv2, na.rm = TRUE))),
+      "Median"      = median(fv1, na.rm = TRUE),
+      "CV"          = 100 * sd(fv1, na.rm = TRUE) / mean(fv1, na.rm = TRUE),
+      "stddev"      = sd(fv1, na.rm = TRUE),
+      "NaN"         = ifelse(n1 %in% names(obj$pops) && fn %in% names(obj$features),sum(is.na(fv1)), 0),
+      "MAD"         = mad(fv1, na.rm = TRUE),
+      "min"         = min(fv1, na.rm = TRUE),
+      "RD - Median" = ifelse(length(na.omit(fv2)) == 0, NaN, 
+                             abs(median(fv1, na.rm = TRUE) - median(fv2, na.rm = TRUE)) /
+                               (mad(fv1, na.rm = TRUE) + mad(fv2, na.rm = TRUE))),
+      "Variance"    = var(fv1, na.rm = TRUE),
+      "max"         = max(fv1, na.rm = TRUE),
+      "geomean"     = exp(mean(log(na.omit(fv1)))),
+      "Mode"        = {
+        # What to do here ? the following does not work
+        # 1/ as.numeric(names(which.max(table(fv1, useNA = "no"))))
+        # 2/ mean(as.numeric(strsplit(gsub("\\(|\\]","",names(which.max(table(cut(fv1, breaks = 128))))),",",fixed = TRUE)[[1]]))
+        NA_real_
+      })
   }), names = stats[,"name"])
 }
 
@@ -310,11 +323,13 @@ StatsReport <- function(obj, stats) {
 #' @param stats template defining stats to compute as extracted by getSTATSREPORT().
 #' @param gating an `IFC_gating` object as extracted by readGatingStrategy(). Default is missing.
 #' If not missing, each `IFC_data` provided in 'obj' or read from 'fileName' will be passed to applyGatingStrategy() before creating the report.
+#' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other parameters to be passed.
 #' @return a data.frame of statistics
 #' @keywords internal
-BatchStatsReport <- function(fileName, obj, stats, gating, ...) {
+BatchStatsReport <- function(fileName, obj, stats, gating, display_progress = FALSE, ...) {
   # check fileName or obj
+  dots = list(...)
   if(missing(obj) && missing(fileName)) stop("you should provide either 'fileName' or 'obj'")
   if(!missing(fileName) && !missing(obj)) stop("you should provide either 'fileName' or 'obj' not both")
   if(!missing(fileName) && is.list(fileName) && inherits(fileName[[1]], what="IFC_data")) {
@@ -330,8 +345,13 @@ BatchStatsReport <- function(fileName, obj, stats, gating, ...) {
     })
   }
   assert(fileName, typ = "character")
+  display_progress = as.logical(display_progress); assert(display_progress, alw = c(TRUE,FALSE))
   apply_gating = FALSE
   if(!missing(gating)) apply_gating = TRUE
+  if(display_progress) {
+    pb = newPB(session = dots$session, min = 0, max = length(fileName), initial = 0, style = 3)
+    on.exit(endPB(pb))
+  }
   ans = lapply(seq_along(fileName), FUN = function(i_file) {
     tryCatch({
       if(is_obj) {
@@ -348,6 +368,8 @@ BatchStatsReport <- function(fileName, obj, stats, gating, ...) {
     }, error = function(e) {
       warning("can't extract stats for fileName [", fileName[i_file],"]\n", e$message, call. = FALSE, immediate. = TRUE)
       return(list())
+    }, finally = {
+      if(display_progress) setPB(pb, value = i_file, title = "Computing Batch Stats", label = basename(fileName[i_file]))
     })
   })
   no_err = sapply(ans, length) != 0

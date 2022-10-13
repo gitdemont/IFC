@@ -4,7 +4,7 @@
 \alias{BatchStatsReport}
 \title{Batch Generation of Statistic Report}
 \usage{
-BatchStatsReport(fileName, obj, stats, gating, ...)
+BatchStatsReport(fileName, obj, stats, gating, display_progress = FALSE, ...)
 }
 \arguments{
 \item{fileName, obj}{either one or the other. Path to file(s) to read from for 'fileName' or list of `IFC_data` objects for obj.}
@@ -13,6 +13,8 @@ BatchStatsReport(fileName, obj, stats, gating, ...)
 
 \item{gating}{an `IFC_gating` object as extracted by readGatingStrategy(). Default is missing.
 If not missing, each `IFC_data` provided in 'obj' or read from 'fileName' will be passed to applyGatingStrategy() before creating the report.}
+
+\item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
 \item{...}{other parameters to be passed.}
 }
