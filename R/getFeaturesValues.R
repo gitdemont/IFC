@@ -101,8 +101,10 @@ get_feat_value <- function(feat_def,
   replace_with=gen_altnames(def_names,forbidden=c(def_names,def_str))
   for(i_def in seq_along(def_names)) def_str[def_names[i_def]==def_str] <- rep(paste0("`",replace_with[i_def],"`"),sum(def_names[i_def]==def_str))
   e = lapply(def_names, FUN = function(x) features[ , x, drop = TRUE])
-  names(e)=replace_with
-  suppressWarnings(eval(expr=parse(text=paste0(def_str,collapse=" ")),envir=c(e, alw_fun),enclos=emptyenv()))
+  names(e) = replace_with
+  ans = suppressWarnings(eval(expr=parse(text=paste0(def_str,collapse=" ")),envir=c(e, alw_fun),enclos=emptyenv()))
+  ans[!is.finite(ans)] <- NaN
+  ans
 }
 
 #' @title Features Values Extraction

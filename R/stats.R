@@ -288,7 +288,7 @@ StatsReport <- function(obj, stats) {
         "NaN"         = {
           if(n1 %in% names(obj$pops) && fn %in% names(obj$features)) {
             fv = as.numeric(obj$features[p1, fn, drop = TRUE])
-            v = sum(is.infinite(fv))
+            v = sum(!is.finite(fv))
             return(ifelse((length(p1) - v == 0), NaN, ifelse(any(is.finite(fv)), v, NaN)))
           } else {
             return(0)
