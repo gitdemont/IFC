@@ -268,6 +268,7 @@ StatsReport <- function(obj, stats) {
     }
     # /!\ in R sd(1) == NA_real_, whereas with IDEAS stddev of a feature with 1 unique value gives 0
     # /!\ in R sd(numeric()) == NA_real_, whereas with IDEAS stddev of a NULL feature gives NaN
+    # same for var
     ans = suppressWarnings(
       switch(
         x["statistics"],
@@ -284,13 +285,22 @@ StatsReport <- function(obj, stats) {
         "Median"      = median(fv1),
         "CV"          = 100 * ifelse(length(fv1) == 1, 0, sd(fv1)) / mean(fv1),
         "stddev"      = ifelse(length(fv1) == 1, 0, sd(fv1)),
-        "NaN"         = ifelse(n1 %in% names(obj$pops) && fn %in% names(obj$features),
+        "NaN"         = {
+          if(n1 %in% names(obj$pops) && fn %in% names(obj$features)) {
+            fv = as.numeric(obj$features[p1, fn, drop = TRUE])
+            v = sum(is.infinite(fv))
+            return(ifelse((length(p1) - v == 0), NaN, ifelse(any(is.finite(fv)), v, NaN)))
+          } else {
+            return(0)
+          }
+          ifelse(n1 %in% names(obj$pops) && fn %in% names(obj$features),
                                sum(is.na(as.numeric(obj$features[p1, fn, drop = TRUE]))),
-                               0),
+                               0)
+        },
         "MAD"         = mad(fv1),
         "min"         = min(fv1),
         "RD - Median" = abs(median(fv1) - median(fv2)) / (mad(fv1) + mad(fv2)),
-        "Variance"    = var(fv1),
+        "Variance"    = ifelse(length(fv1) == 1, 0, var(fv1)),
         "max"         = max(fv1),
         "geomean"     = exp(mean(log(fv1))),
         "Mode" = {
