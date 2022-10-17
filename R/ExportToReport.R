@@ -251,10 +251,10 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
     pb_gr = newPB(session = dots$session, min = 0, max = gl, initial = 0, style = 3)
     on.exit(endPB(pb_gr), add = TRUE)
   }
-  default_stats_1D = matrix(NA, nrow = 1, ncol = 8)
+  default_stats_1D = matrix(NaN, nrow = 1, ncol = 8)
   colnames(default_stats_1D) = c("count","perc",
                                  "x-Min.","x-1st Qu.","x-Median","x-Mean","x-3rd Qu.","x-Max.")
-  default_stats_2D = matrix(NA, nrow = 1, ncol = 14)
+  default_stats_2D = matrix(NaN, nrow = 1, ncol = 14)
   colnames(default_stats_2D) = c("count","perc",
                                  "x-Min.","x-1st Qu.","x-Median","x-Mean","x-3rd Qu.","x-Max.",
                                  "y-Min.","y-1st Qu.","y-Median","y-Mean","y-3rd Qu.","y-Max.")

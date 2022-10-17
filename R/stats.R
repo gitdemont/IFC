@@ -75,13 +75,21 @@ extractStats <- function(obj, feat_name, trans="P") {
     if(inherits(msg, what="try-error")) {
       warning(attr(msg, "condition")$message, call.=FALSE, immediate.=TRUE)
     } else {
+      col_stats = c("Min.","1st Qu.","Median","Mean","3rd Qu.","Max.","mad","sd","var","NaN")
       trans_s = parseTrans(trans)
       val = sapply(rownames(stats), FUN = function(p) {
-        foo = obj$features[obj$pops[[p]]$obj, feat_name]
-        foo = na.omit(foo)
-        if(length(foo) == 0) return(structure(rep(NA, 6), names = c("Min.", "1st Qu.", "Median", "Mean", "3rd Qu.", "Max.")))
+        fv = as.numeric(obj$features[obj$pops[[p]]$obj, feat_name])
+        no_nas = na.omit(fv)
+        foo = fv[is.finite(fv)]
+        if(length(foo) == 0) return(structure(rep(NaN, length(col_stats)), names = col_stats))
         foo = applyTrans(foo, trans_s)
-        return(summary(foo))
+        vv = c(summary(foo)[1:6], 
+               mad(foo),
+               ifelse(length(no_nas) == 1, 0, sd(foo)),
+               ifelse(length(no_nas) == 1, 0, var(foo)),
+               sum(!is.finite(fv))) # ifelse(any(is.finite(fv)), sum(!is.finite(fv)), NaN))
+        vv[!is.finite(vv)] <- NaN
+        return(structure(vv, names = col_stats))
       })
       stats = cbind(stats, t(val))
     }
@@ -125,10 +133,10 @@ buildStats <- function(obj, stats = list(list(type="COUNT",title="Count",def="")
   height=as.integer(na.omit(height)); height=height[height>=0]; assert(height, len=1)
   xlocation=as.integer(na.omit(xlocation)); xlocation=xlocation[xlocation>=0]; assert(xlocation, len=1)
   ylocation=as.integer(na.omit(ylocation)); ylocation=ylocation[ylocation>=0]; assert(ylocation, len=1)
-  alw_type = c("COUNT","PERCENT_GATED","CONCENTRATION", # no def
-               "PERCENT", # needs pop
+  alw_type = c("COUNT","PERCENT_GATED","CONCENTRATION",                                                          # no def
+               "PERCENT",                                                                                        # needs pop
                "MEAN","MEDIAN","STDDEV","MAD","CV","MINIMUM","MAXIMUM","GEOMETRIC_MEAN","MODE","VARIANCE","NAN", # needs feature
-               "MEAN_RD","MEDIAN_RD") # needs feature and pop
+               "MEAN_RD","MEDIAN_RD")                                                                            # needs feature and pop
   all_names = c(names(obj$pops), names(obj$features))
   alt_names = gen_altnames(all_names)
   check_stats <- function(type, title, def, ...) {

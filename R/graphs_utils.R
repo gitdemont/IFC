@@ -1119,48 +1119,42 @@ plot_stats=function(obj) {
   base_n = base_n[order(base_o)]
   graph_n = obj$input$graphical
   shown_n = setdiff(rev(displayed_n), c(base_n, graph_n))
-  if("y2" %in% colnames(D)) {
-    no_nas = !(is.na(D[,"x2"]) | is.na(D[,"y2"]))
-  } else {
-    no_nas = !is.na(D[,"x2"])
-  }
+  finite_only_x = is.finite(D[,"x2"])
+  finite_only_y = finite_only_x
+  if("y2" %in% colnames(D)) finite_only_y = is.finite(D[,"y2"])
   
   stats = NULL
   if(type %in% c("count","percent")) {
     coln_stats = c("count","perc","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
     stats = structure(matrix(numeric(), ncol = length(coln_stats), nrow = 0), dimnames = list(character(), coln_stats))
     base_s = lapply(base_n, FUN=function(d) {
-      v = no_nas & D[,d]
-      np = sum(v)
-      if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
-      p = c("count"=np, "perc"=100, summary(D[v,"x1"]))
+      np = sum(D[,d], na.rm = TRUE)
+      vv = summary(D[finite_only_x & D[,d],"x1"])
+      vv[!is.finite(vv)] <- NaN
+      c("count"=np, "perc"=100, vv[1:6])
     })
-    kids_s = lapply(shown_n, FUN=function(s) {
-      do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
-        v = no_nas & D[,d]
-        np = sum(v)
-        if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
-        isin = v & D[,s]
-        n = sum(isin)
-        c("count"=n, "perc"=n/np*100, summary(D[isin,"x1"]))
-      }))
-    })
+    # no kids_s in 1D graph
     kids_r = lapply(reg_n, FUN=function(r) {
       do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
-        alg = 3
         reg = R[[r]]
         coords = reg["x"]
         coords$x = applyTrans(coords$x, trans_x)
-        v = no_nas & D[,d]
-        np = sum(v)
-        if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
-        isin = D[v,"x2"]
-        isin = (isin >= min(coords$x)) & (isin <= max(coords$x))
-        n = sum(isin)
-        c("count"=n, "perc"=n/np*100, summary(D[v,"x1"][isin]))
+        v = which(na.omit(finite_only_x & D[,d]))
+        if(length(v) == 0) {
+          foo = structure(rep(NaN, length(coln_stats)), names = coln_stats)
+          foo["count"] <- 0
+          foo["perc"] <- 0
+          return(foo)
+        }
+        np = sum(D[,d], na.rm = TRUE)
+        isin = (D[v,"x2"] >= min(coords$x)) & (D[v,"x2"] <= max(coords$x))
+        n = sum(isin, na.rm = TRUE)
+        vv = summary(D[v,"x1"][isin])
+        vv[!is.finite(vv)] <- NaN
+        c("count"=n, "perc"=n/np*100, vv[1:6])
       }))
     })
-    stats = do.call(what=rbind, args=c(base_s, kids_s, kids_r))
+    stats = do.call(what=rbind, args=c(base_s, kids_r))
     rnames = base_n
     if(length(reg_n) > 0) rnames = unique(c(rnames, unlist(t(sapply(base_n, FUN = function(b) {if(b == "All") {graph_n} else {paste(reg_n, b, sep = " & ") }})))))
     rownames(stats) = rnames
@@ -1169,19 +1163,22 @@ plot_stats=function(obj) {
     coln_stats = c("count","perc","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
     stats = structure(matrix(numeric(), ncol = length(coln_stats), nrow = 0), dimnames = list(character(), coln_stats))
     base_s = lapply(base_n, FUN=function(d) {
-      v = no_nas & D[,d]
-      np = sum(v)
-      if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
-      p = c("count"=np, "perc"=100, summary(D[v,"x1"]), summary(D[v,"y1"]))
+      np = sum(D[,d], na.rm = TRUE)
+      vv = summary(D[finite_only_x & D[,d],"x1"])
+      vv[!is.finite(vv)] <- NaN
+      ww = summary(D[finite_only_y & D[,d],"y1"])
+      ww[!is.finite(ww)] <- NaN
+      c("count"=np, "perc"=100, vv[1:6], ww[1:6])
     })
     kids_s = lapply(shown_n, FUN=function(s) {
       do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
-        v = no_nas & D[,d]
-        np = sum(v)
-        if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
-        isin = v & D[,s]
-        n = sum(isin)
-        c("count"=n, "perc"=n/np*100, summary(D[isin,"x1"]), summary(D[isin,"y1"]))
+        np = sum(D[,d], na.rm = TRUE)
+        n = sum(D[,d] & D[,s], na.rm = TRUE)
+        vv = summary(D[finite_only_x & D[,d] & D[,s],"x1"])
+        vv[!is.finite(vv)] <- NaN
+        ww = summary(D[finite_only_y & D[,d] & D[,s],"y1"])
+        ww[!is.finite(ww)] <- NaN
+        c("count"=n, "perc"=n/np*100, vv[1:6], ww[1:6])
       }))
     })
     kids_r = lapply(reg_n, FUN=function(r) {
@@ -1193,12 +1190,21 @@ plot_stats=function(obj) {
       if(reg$type=="oval") alg = 3
       if(reg$type=="rect") alg = 2
       do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
-        v = no_nas & D[,d]
-        np = sum(v)
-        if(np == 0) return(structure(rep(NA, length(coln_stats)), names = coln_stats))
+        v = na.omit(which(finite_only_x & finite_only_y & D[, d]))
+        if(length(v) == 0) {
+          foo = structure(rep(NaN, length(coln_stats)), names = coln_stats)
+          foo["count"] <- 0
+          foo["perc"] <- 0
+          return(foo)
+        }
+        np = sum(D[,d], na.rm = TRUE)
         isin = cpp_pnt_in_gate(pnts = cbind(D[v,"x2"],D[v,"y2"]), gate = cbind(coords$x,coords$y), algorithm = alg)
-        n = sum(isin)
-        c("count"=n, "perc"=n/np*100, summary(D[v,"x1"][isin]), summary(D[v,"y1"][isin]))
+        n = sum(isin, na.rm = TRUE)
+        vv = summary(D[v,"x1"][isin])
+        vv[!is.finite(vv)] <- NaN
+        ww = summary(D[v,"y1"][isin])
+        ww[!is.finite(ww)] <- NaN
+        c("count"=n, "perc"=n/np*100, vv[1:6], ww[1:6])
       }))
     })
     stats = do.call(what=rbind, args=c(base_s, kids_r, kids_s))
