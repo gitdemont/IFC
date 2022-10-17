@@ -235,9 +235,10 @@ toXML2_graphpop_gs <- function(pop, reg, verbose = FALSE) {
 #' Helper to convert boolean population to XML nodes in GatingML files.
 #' @param obj an `IFC_data` object.
 #' @param pop a member of `IFC_pops` object.
+#' @param already already attributed names. Default is character().
 #' @return a list of xml_node.
 #' @keywords internal
-toXML2_boolpop_gs <- function(obj, pop) {
+toXML2_boolpop_gs <- function(obj, pop, already = character()) {
   # recover definition
   pop_def <- pop$split
   pop_def[pop_def == "And"]="&"
@@ -247,6 +248,9 @@ toXML2_boolpop_gs <- function(obj, pop) {
   pop_def[pop_names] = paste0("`",pop_def[pop_names],"`")
   pop_def = str2lang(paste0(pop_def,collapse = " "))
   pch = map_style(pop$style, toR = FALSE)
+  
+  # define pseudo seed for id creation
+  SEED = fetch_seed(list(seed = pseudo_seed(pop$definition), "Mersenne-Twister", "Inversion", "Rounding"))
   
   # recover arithmetic tree
   expand_tree = function(x) {
@@ -265,7 +269,7 @@ toXML2_boolpop_gs <- function(obj, pop) {
     ele <- as.character(unlist(x))
     if(ele %in% c("|", "&", "!")) { # an operator is encountered
       # we generate a random id for the population resulting of the operation
-      id = gen_altnames("foo", forbidden = c(ids, names(obj$pops)))
+      id = gen_altnames("foo", n = 8, forbidden = c(ids, names(obj$pops), already), random_seed = SEED)
       pop_name = children
       take = 2 # set default number of pop_name we will use for the boolean operation
       if(length(pop_name) >= 2) {
@@ -312,17 +316,18 @@ toXML2_boolpop_gs <- function(obj, pop) {
   # id of the last operation is the population name
   op[[length(op)]]$id <- pop$name
 
-  # create nodes
-  lapply(1:length(op), FUN = function(i) {
-    x=op[[i]]
-    bool = switch(x$bool, "|" = "or", "&" = "and", "!" = "not")
-    xml_new_node(name = "_ns_gating_ns_BooleanGate", attrs = list("_ns_gating_ns_id" = x$id),
-                 .children = list(xml_new_node(name = "_ns_data-type_ns_custom_info", attrs = list(op=paste0(pop$name,"_",i),pch=pch, colors=pop$colors)),
-                                  xml_new_node(name = paste0("_ns_gating_ns_", bool),
-                                               .children = lapply(x$def, FUN = function(def) {
-                                                 xml_new_node(name = "_ns_gating_ns_gateReference", attrs = list("_ns_gating_ns_ref" = def))
-                                               }))))
-  })
+  # create nodes and keep track of already attributed names
+  list(already = ids, 
+       xml = lapply(1:length(op), FUN = function(i) {
+         x=op[[i]]
+         bool = switch(x$bool, "|" = "or", "&" = "and", "!" = "not")
+         xml_new_node(name = "_ns_gating_ns_BooleanGate", attrs = list("_ns_gating_ns_id" = x$id),
+                      .children = list(xml_new_node(name = "_ns_data-type_ns_custom_info", attrs = list(op=paste0(pop$name,"_",i),pch=pch, colors=pop$colors)),
+                                       xml_new_node(name = paste0("_ns_gating_ns_", bool),
+                                                    .children = lapply(x$def, FUN = function(def) {
+                                                      xml_new_node(name = "_ns_gating_ns_gateReference", attrs = list("_ns_gating_ns_ref" = def))
+                                                    }))))
+       }))
 }
 
 #' @title GatingML Conversion from XML2

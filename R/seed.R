@@ -27,6 +27,20 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
+#' @title Pseudo Seed
+#' @description
+#' Creates seed from a string
+#' @param x a string.
+#' @return an integer.
+#' @keywords internal
+pseudo_seed <- function(x) {
+  a = suppressWarnings(try(charToRaw(enc2native(x)), silent = TRUE))
+  if(inherits(a, "try-error")) return(0xFC)
+  a = readBin(a, "integer", n = length(a), size = 1, signed = FALSE)
+  b = rep(c(TRUE, FALSE), length.out = length(a))
+  sum(a[b]) - sum(a[!b])
+}
+
 #' @title Seed Instructions Extraction
 #' @description
 #' Retrieve seed instructions from input
@@ -88,17 +102,31 @@ fetch_seed <- function(seed = NA_integer_) {
 #' @param seed a single value, interpreted as an integer, or NULL, with the exception that NA can be provided to prevent passing 'seed' argument. Default is NA_integer_.
 #' @param kind character or NULL. If kind is a character string, set R's RNG to the kind desired. Use "default" to return to the R default.
 #' @param normal.kind	character string or NULL. If it is a character string, set the method of Normal generation. Use "default" to return to the R default. NULL makes no change.
-#' @param sample.kind	character string or NULL. If it is a character string, set the method of discrete uniform generation (used in sample, for instance). Use "default" to return to the R default. NULL makes no change.
+#' @param sample.kind	character string or NULL. If it is a character string, set the method of discrete uniform generation (used in sample, for instance). Use "default" to return to the R default. NULL makes no change. Only applies on R version >= 3.6.0.
 #' @details see ‘Details’, from  \link[base]{set.seed}, with the exception of 'seed'
 #' @keywords internal
 with_seed <- function(expr, seed = NA_integer_, kind = NULL, normal.kind = NULL, sample.kind = NULL) {
+  # old R version of RNGkind() and set.seed() does not have `sample.kind` argument
+  # so depending of current R version this argument will be passed or not
+  R_is_old = getRversion() < R_system_version("3.6.0", strict = TRUE)
+  if(R_is_old && !all(sample.kind %in% c("Rounding", "default"))) warning("'sample.kind' argument will be ignored in current R version `", getRversion(), "`")
   cur_kind = RNGkind()
   e = globalenv()
   cur_seed <- e$.Random.seed
   if((length(seed) == 0) || (length(seed) != 0) && !is.na(seed)) {
     on.exit(suspendInterrupts({
-      do.call(args = list(kind = cur_kind[1], normal.kind = cur_kind[2], sample.kind = cur_kind[3]), what = RNGkind)
-      if (is.null(cur_seed)) {
+      # part to exactly restore RNGkind as it was
+      # since we restore RNGkind, we suppress any warning because user has already been informed
+      suppressWarnings({
+        if(R_is_old) {
+          RNGkind(kind = cur_kind[1], normal.kind = cur_kind[2])
+        } else {
+          RNGkind(kind = cur_kind[1], normal.kind = cur_kind[2], sample.kind = cur_kind[3])
+        }
+      })
+      # part to exactly restore .Random.seed as it was,
+      # /!\ it NEEDS to assign to global
+      if(is.null(cur_seed)) {
         rm(".Random.seed", envir = e, inherits = FALSE)
       } else {
         assign(".Random.seed", value = cur_seed, envir = e, inherits = FALSE)
@@ -106,9 +134,17 @@ with_seed <- function(expr, seed = NA_integer_, kind = NULL, normal.kind = NULL,
     }))
   }
   if((length(seed) == 0) || !is.na(seed)) {
-    set.seed(seed = seed, kind = kind, normal.kind = normal.kind, sample.kind = sample.kind)
+    if(R_is_old) {
+      set.seed(seed = seed, kind = kind, normal.kind = normal.kind)
+    } else {
+      set.seed(seed = seed, kind = kind, normal.kind = normal.kind, sample.kind = sample.kind)
+    }
   } else {
-    RNGkind(kind = kind, normal.kind = normal.kind, sample.kind = sample.kind)
+    if(R_is_old) {
+      RNGkind(kind = kind, normal.kind = normal.kind)
+    } else {
+      RNGkind(kind = kind, normal.kind = normal.kind, sample.kind = sample.kind)
+    }
   }
   force(expr)
 }

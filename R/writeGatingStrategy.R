@@ -169,17 +169,20 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   if(length(obj$description$spillover) != 0) gatingML_comp = c(gatingML_comp, list(toXML2_spillover_gs(obj$description$spillover, name = "spillover")))
   lapply(gatingML_comp, FUN = function(gatingML_node) xml_add_child(gating, gatingML_node))
   
+  # keep track of already used ids
+  already = character()
   # Now, we fill GatingML with Boolean and Graphical pop + regions (C and G) in gating node
   pop_nodes = lapply(obj$pops, FUN = function(pop) {
     # color conversion
     pop$colors = paste0(map_color(c(pop$color,pop$lightModeColor), FALSE),collapse="|")
     # only keep what is need
     pop = pop[!(names(pop) %in% c("color","lightModeColor","names"))]
-    
     gatingML_node = switch(pop$type, 
                            "C" = {
                              pop = pop[!(names(pop) %in% "obj")]
-                             toXML2_boolpop_gs(obj, pop)
+                             foo = toXML2_boolpop_gs(obj, pop, already)
+                             already <<- c(already, foo[["already"]])
+                             foo[["xml"]]
                            },
                            "G" = {
                              pop = pop[!(names(pop) %in% "obj")]

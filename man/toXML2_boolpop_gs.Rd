@@ -4,12 +4,14 @@
 \alias{toXML2_boolpop_gs}
 \title{Boolean Population GatingML Conversion to XML2}
 \usage{
-toXML2_boolpop_gs(obj, pop)
+toXML2_boolpop_gs(obj, pop, already = character())
 }
 \arguments{
 \item{obj}{an `IFC_data` object.}
 
 \item{pop}{a member of `IFC_pops` object.}
+
+\item{already}{already attributed names. Default is character().}
 }
 \value{
 a list of xml_node.

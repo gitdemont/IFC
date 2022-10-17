@@ -70,13 +70,18 @@ buildRegion <- function(type, label, cx, cy, color, lightcolor, ismarker="false"
     if(tmp<0) stop("'ylogrange' should be either \"P\" or coercible to a positive numeric")
     ylogrange = as.character(tmp)
   }
+  # back compatible with old R version, no need for accuracy since it is just for electing a color
+  SEED = fetch_seed(list(pseudo_seed(label), "Mersenne-Twister", "Inversion", "Rounding"))
+  f = function(x) { 
+    suppressWarnings(with_seed(x, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind))
+  }
   if(missing(color)) {
     if(missing(lightcolor)) {
-      tmp = sample(nrow(paletteIFC("")),1)
+      tmp = f(sample(nrow(paletteIFC("")),1))
     } else {
       assert(lightcolor, len=1, alw=unlist(paletteIFC("")))
       tmp = which(paletteIFC("")%in%lightcolor, arr.ind=TRUE)[1]
-      if(is.na(tmp)) tmp = sample(nrow(paletteIFC("")),1) 
+      if(is.na(tmp)) tmp = f(sample(nrow(paletteIFC("")),1))
     }
     color = paletteIFC("")$color[tmp]
     lightcolor = paletteIFC("")$lightModeColor[tmp]
@@ -86,11 +91,11 @@ buildRegion <- function(type, label, cx, cy, color, lightcolor, ismarker="false"
   }
   if(missing(lightcolor)) {
     if(missing(color)) {
-      tmp = sample(nrow(paletteIFC("")),1)
+      tmp = f(sample(nrow(paletteIFC("")),1))
     } else {
       assert(color, len=1, alw=unlist(paletteIFC("")))
       tmp = which(color==paletteIFC(""), arr.ind=TRUE)[1]
-      if(is.na(tmp)) tmp = sample(nrow(paletteIFC("")),1)
+      if(is.na(tmp)) tmp = f(sample(nrow(paletteIFC("")),1))
     }
     color = paletteIFC("")$color[tmp]
     lightcolor = paletteIFC("")$lightModeColor[tmp]

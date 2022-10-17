@@ -70,14 +70,19 @@ buildPopulation <- function(name, type, base="All", color, lightModeColor, style
   }
   assert(type, len=1)
   if(name=="All" && type!="B") stop("when 'name' is \"All\", 'type' has to be \"B\"")
+  # back compatible with old R version, no need for accuracy since it is just for electing a color/style
+  SEED = fetch_seed(list(pseudo_seed(name), "Mersenne-Twister", "Inversion", "Rounding"))
+  f = function(x) { 
+    suppressWarnings(with_seed(x, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind))
+  }
   if(missing(color)) {
     if(missing(lightModeColor)) {
-      tmp = sample(nrow(paletteIFC("")),1)
+      tmp = f(sample(nrow(paletteIFC("")),1))
       if(type == "B") color = "White"
     } else {
       assert(lightModeColor, len=1, alw=unlist(paletteIFC("")))
       tmp = which(paletteIFC("")%in%lightModeColor, arr.ind=TRUE)[1]
-      if(is.na(tmp)) tmp = sample(nrow(paletteIFC("")),1) 
+      if(is.na(tmp)) tmp = f(sample(nrow(paletteIFC("")),1))
     }
     color = paletteIFC("")$color[tmp]
     lightModeColor = paletteIFC("")$lightModeColor[tmp]
@@ -87,12 +92,12 @@ buildPopulation <- function(name, type, base="All", color, lightModeColor, style
   }
   if(missing(lightModeColor)) {
     if(missing(color)) {
-      tmp = sample(nrow(paletteIFC("")),1)
+      tmp = f(sample(nrow(paletteIFC("")),1))
       if(type == "B") lightModeColor = "Black"
     } else {
       assert(color, len=1, alw=unlist(paletteIFC("")))
       tmp = which(color==paletteIFC(""), arr.ind=TRUE)[1]
-      if(is.na(tmp)) tmp = sample(nrow(paletteIFC("")),1)
+      if(is.na(tmp)) tmp = f(sample(nrow(paletteIFC("")),1))
     }
     color = paletteIFC("")$color[tmp]
     lightModeColor = paletteIFC("")$lightModeColor[tmp]
@@ -103,7 +108,7 @@ buildPopulation <- function(name, type, base="All", color, lightModeColor, style
   tmp_style = c(20, 4, 3, 1, 5, 0, 2, 18, 15, 17)
   names(tmp_style)=c("Simple Dot","Cross","Plus","Empty Circle","Empty Diamond","Empty Square","Empty Triangle","Solid Diamond","Solid Square","Solid Triangle")
   if(missing(style)) {
-    style = names(sample(tmp_style, 1))
+    style = f(names(sample(tmp_style, 1)))
     if(type == "B") style = "Simple Dot"
   } else {
     foo = suppressWarnings(as.integer(style))
@@ -111,7 +116,7 @@ buildPopulation <- function(name, type, base="All", color, lightModeColor, style
     if(style%in%names(tmp_style)) {
       style = names(tmp_style[which(style==names(tmp_style))][1])
     } else {
-      style = names(sample(tmp_style, 1))
+      style = f(names(sample(tmp_style, 1)))
     }
   }
   assert(style, len=1, alw=names(tmp_style))

@@ -263,7 +263,13 @@ ExportToGallery <- function(...,
     }
   }
   extract_max = as.integer(min(extract_max, length(objects)))
-  if(sampling) {objects=sample(objects,extract_max)} else {objects=objects[1:extract_max]}
+  if(sampling) {
+    SEED = param$random_seed
+    if(!is.list(SEED)) SEED = do.call(fetch_seed, list(seed = SEED))
+    with_seed({objects=sample(objects,extract_max)}, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind)
+  } else {
+    objects=objects[1:extract_max]
+  }
   if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width should be provided when 'object' length not equal to one")
   
   # check export/write_to

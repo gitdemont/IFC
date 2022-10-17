@@ -21,7 +21,7 @@ with_seed(
 
 \item{normal.kind}{character string or NULL. If it is a character string, set the method of Normal generation. Use "default" to return to the R default. NULL makes no change.}
 
-\item{sample.kind}{character string or NULL. If it is a character string, set the method of discrete uniform generation (used in sample, for instance). Use "default" to return to the R default. NULL makes no change.}
+\item{sample.kind}{character string or NULL. If it is a character string, set the method of discrete uniform generation (used in sample, for instance). Use "default" to return to the R default. NULL makes no change. Only applies on R version >= 3.6.0.}
 }
 \description{
 Evaluates expression with a seed and resets to initial seed state on exit

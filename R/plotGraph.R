@@ -258,10 +258,15 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     }
     if(nrow(D) > 0) {
       xy_subset = rep(FALSE, nrow(D))
+      # back compatible with old R version, no need for accuracy since it is just graphical viz
+      SEED = fetch_seed(list(pseudo_seed(paste0(g$f1,g$f2)), "Mersenne-Twister", "Inversion", "Rounding"))
+      f = function(x) { 
+        suppressWarnings(with_seed(x, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind))
+      }
       if(g$maxpoints <= 1) {
-        xy_subset[cpp_fast_sample(n = nrow(D), size = g$maxpoints * nrow(D), replace = FALSE)] <- TRUE
+        f({xy_subset[cpp_fast_sample(n = nrow(D), size = g$maxpoints * nrow(D), replace = FALSE)] <- TRUE})
       } else {
-        xy_subset[cpp_fast_sample(n = nrow(D), size = min(g$maxpoints,nrow(D)), replace = FALSE)] <- TRUE
+        f({xy_subset[cpp_fast_sample(n = nrow(D), size = min(g$maxpoints,nrow(D)), replace = FALSE)] <- TRUE})
       }
     }
     if(!is_fun && (trans!="return")) {

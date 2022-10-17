@@ -394,13 +394,14 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
 #' @param n number of characters of the desired returned name. Default is 10.
 #' @param forbidden forbidden character vector. Default is character().
 #' @param random_seed a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL.
-#' Default is list(seed = 0xFC, "L'Ecuyer-CMRG", "Inversion", "Rejection").
+#' Default is list(seed = 0xFC, "Mersenne-Twister", "Inversion", "Rounding").
 #' Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.
+#' Note also that the default is chosen because it is compatible with old R version.
 #' @details 'forbidden' should not encompass all possible returned value otherwise the function will never end.
 #' @return a character vector.
 #' @keywords internal.
 gen_altnames <- function(x, n = 10, forbidden = character(),
-                         random_seed = list(seed = 0xFC, "L'Ecuyer-CMRG", "Inversion", "Rejection")) {
+                         random_seed = list(seed = 0xFC, "Mersenne-Twister", "Inversion", "Rounding")) {
   if(n < 5) stop("can't generate altnames with n < 5")
   x = as.character(x); assert(x, typ = "character")
   forbidden = unique(as.character(forbidden)); assert(forbidden, typ = "character")
@@ -412,7 +413,10 @@ gen_altnames <- function(x, n = 10, forbidden = character(),
   LET = setdiff(LETTERS, pat)
   NUM = setdiff(0:9, suppressWarnings(na.omit(as.integer(pat))))
   SEED = fetch_seed(random_seed)
-  with_seed({
+  # the suppressWarning is here to silence the "Rounding" stuff because gen_altnames function 
+  # is used to generates alternative names internally for splitting definitions or else where
+  # there is no need be statistically relevant
+  suppressWarnings(with_seed({
     ans = c()
     for(i in seq_along(x)) {
       foo = paste0(sample(x = c(LET, let, NUM), size = n, replace = TRUE), collapse = "")
@@ -420,7 +424,7 @@ gen_altnames <- function(x, n = 10, forbidden = character(),
       ans <- c(ans, foo)
     }
     ans
-  }, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind)
+  }, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind))
 }
 
 #' @title Numeric to String Formatting

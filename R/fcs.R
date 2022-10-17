@@ -128,7 +128,8 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
   # we also ensure that this delim is not found elsewhere in the file
   found = 1
   while(found) {
-    delim_esc = gen_altnames("foo", random_seed = list(seed=found,"L'Ecuyer-CMRG","Inversion","Rejection"))
+    # back compatible with old R version, no need for accuracy since it is just for finding a non existing string that allow parsing
+    delim_esc = gen_altnames("foo", random_seed = list(seed=found,"Mersenne-Twister", "Inversion", "Rounding"))
     delim_esc = strsplit(x = delim_esc, split = delimiter, fixed = TRUE)[[1]]
     delim_esc = delim_esc[delim_esc!=""]
     delim_esc = paste0(delim_esc, collapse="")

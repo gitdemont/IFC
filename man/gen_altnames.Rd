@@ -8,7 +8,7 @@ gen_altnames(
   x,
   n = 10,
   forbidden = character(),
-  random_seed = list(seed = 252, "L'Ecuyer-CMRG", "Inversion", "Rejection")
+  random_seed = list(seed = 252, "Mersenne-Twister", "Inversion", "Rounding")
 )
 }
 \arguments{
@@ -19,8 +19,9 @@ gen_altnames(
 \item{forbidden}{forbidden character vector. Default is character().}
 
 \item{random_seed}{a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL.
-Default is list(seed = 0xFC, "L'Ecuyer-CMRG", "Inversion", "Rejection").
-Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.}
+Default is list(seed = 0xFC, "Mersenne-Twister", "Inversion", "Rounding").
+Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.
+Note also that the default is chosen because it is compatible with old R version.}
 }
 \value{
 a character vector.
