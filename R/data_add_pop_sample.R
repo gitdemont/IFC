@@ -33,7 +33,7 @@
 #' @param obj an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
 #' @param pop name of the population to sample.
 #' @param size a non-negative integer giving the number of items to choose.
-#' @param new_name name of the exported population. When missing the default, a random name will be given.
+#' @param new_name name of the exported population.
 #' @param random_seed a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when 'add_noise' is set to TRUE. Default is NULL.
 #' Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.
 #' @param ... Other arguments to be passed.
@@ -46,16 +46,13 @@ data_add_pop_sample = function(obj, pop, size, new_name, random_seed = NULL, ...
   obj_number = obj$description$ID$objcount
   size = as.integer(size[!is.na(size) & (size >= 0)]); assert(size, len = 1)
   pop = as.character(pop); assert(pop, len = 1)
-  random_seed = as.integer(random_seed[na.omit(random_seed)]); if(length(random_seed) == 0) random_seed = NULL
   if(!any(pop == names(obj$pops))) stop("can't find 'pop': \"",pop,"\" in 'obj$pops'")
+  if(missing(new_name)) stop("'new_name' can't be missing")
+  new_name = as.character(new_name); assert(new_name, len = 1, typ = "character")
+  if(any(new_name == names(obj$pops))) stop("'new_name': \"",new_name,"\" should be different from already existing names of 'obj$pops'")
   SEED = fetch_seed(random_seed)
   f = function(x) { 
     with_seed(x, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind)
-  }
-  if(missing(new_name)) {
-    new_name = gen_altnames("foo", forbidden = names(obj$pops), random_seed = random_seed)
-  } else {
-    new_name = as.character(new_name); new_name = new_name[new_name != ""]; assert(new_name, len = 1);
   }
   idx = which(obj$pops[[pop]]$obj) - 1
   if(length(idx) < size) {
