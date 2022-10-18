@@ -982,7 +982,7 @@ Rcpp::NumericMatrix cpp_mark (const Rcpp::NumericMatrix A,
 //' @param gamma correction. Default is 1, for no correction.
 //' @param spatialX X offset correction. Default is 0.0 for no change.
 //' @param spatialY Y offset correction. Default is 0.0 for no change.
-//' @details When add_noise is false, backgound will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
+//' @details When add_noise is false, background will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
 //' when a mask is detected, add_noise, full_range and force_range are set to false, background mean and sd to 0, and input_range to [0,3].\cr
 //' @keywords internal
 ////' @export

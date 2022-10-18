@@ -420,7 +420,7 @@ Rcpp::List hpp_extract (const std::string fname,
     break;
   }
   default: { // not allowed type
-    Rcpp::stop("hpp_extract: trying to extract a unknow object");
+    Rcpp::stop("hpp_extract: trying to extract an unknown object");
   }
   }
   

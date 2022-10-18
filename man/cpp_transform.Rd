@@ -42,7 +42,7 @@ Note that this parameter takes the precedence over 'input_range' and 'full_range
 Function to normalize, colorize and add background to images.
 }
 \details{
-When add_noise is false, backgound will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
+When add_noise is false, background will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
 when a mask is detected, add_noise, full_range and force_range are set to false, background mean and sd to 0, and input_range to [0,3].\cr
 }
 \keyword{internal}
