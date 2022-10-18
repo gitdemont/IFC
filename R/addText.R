@@ -61,7 +61,7 @@ addText <- function(image, text, color, xoff = 0, yoff = 0, corner = "TL") {
     new_w = dt[2]
     if(dt[1] + yoff > di[1]) new_h = di[1] - yoff
     if(dt[2] + xoff > di[2]) new_w = di[2] - xoff
-    txt_msk = cpp_resize(mat = txt_msk, new_height = new_h, new_width = new_w, add_noise = FALSE, bg = 0, sd= 0)
+    txt_msk = with_seed(cpp_resize(mat = txt_msk, new_height = new_h, new_width = new_w, add_noise = FALSE, bg = 0, sd= 0), NA_integer_)
   }
   
   # modify xoff, yoff according to corner anchorage
