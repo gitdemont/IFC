@@ -35,7 +35,7 @@
 #' @param size a non-negative integer giving the number of items to choose.
 #' @param new_name name of the exported population.
 #' @param random_seed a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when 'add_noise' is set to TRUE. Default is NULL.
-#' Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.
+#' Note that NA_integer_ or list(seed = NA_integer_) can be used to not call \link[base]{set.seed} at all.
 #' @param ... Other arguments to be passed.
 #' @details population is exported as tagged population.
 #' @return an IFC_data object with sampled pop added.

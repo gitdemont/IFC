@@ -395,7 +395,7 @@ random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, s
 #' @param forbidden forbidden character vector. Default is character().
 #' @param random_seed a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL.
 #' Default is list(seed = 0xFC, "Mersenne-Twister", "Inversion", "Rounding").
-#' Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.
+#' Note that NA_integer_ or list(seed = NA_integer_) can be used to not call \link[base]{set.seed} at all.
 #' Note also that the default is chosen because it is compatible with old R version.
 #' @details 'forbidden' should not encompass all possible returned value otherwise the function will never end.
 #' @return a character vector.

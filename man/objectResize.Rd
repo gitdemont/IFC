@@ -21,7 +21,7 @@ objectResize(
 \item{add_noise}{if TRUE adds normal noise when size is larger than mat dimensions using rnorm(), from \pkg{Rcpp}. Default is TRUE.}
 
 \item{random_seed}{a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when 'add_noise' is set to TRUE. Default is NULL.
-Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}.}
+Note that NA_integer_ or list(seed = NA_integer_) can be used to not call \link[base]{set.seed} at all.}
 
 \item{bg}{mean value of the background added if add_noise is TRUE. Default is 0.}
 

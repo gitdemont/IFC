@@ -27,6 +27,7 @@ with_seed(
 Evaluates expression with a seed and resets to initial seed state on exit
 }
 \details{
-see ‘Details’, from  \link[base]{set.seed}, with the exception of 'seed'
+see ‘Details’, from  \link[base]{set.seed}, with the exception of 'seed'. Using seed = NA_integer_, NOTHING will be passed to \link[base]{set.seed} nor \link[base]{RNGkind} and NOTHING will be restored once done.
+Otherwise, \link[base]{set.seed} will be used and once done \link[base]{RNGkind} will be restored and ".Random.seed" from \link[base]{globalenv} set back to its initial value (included removed if it did not exist).
 }
 \keyword{internal}

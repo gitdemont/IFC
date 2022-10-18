@@ -34,7 +34,7 @@
 #' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(0,0) for no change.
 #' @param add_noise if TRUE adds normal noise when size is larger than mat dimensions using rnorm(), from \pkg{Rcpp}. Default is TRUE.
 #' @param random_seed a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when 'add_noise' is set to TRUE. Default is NULL.
-#' Note that NA_integer_ or list(seed = NA_integer_) can be used to prevent 'seed' argument from being passed to \link[base]{set.seed}. 
+#' Note that NA_integer_ or list(seed = NA_integer_) can be used to not call \link[base]{set.seed} at all.
 #' @param bg mean value of the background added if add_noise is TRUE. Default is 0.
 #' @param sd standard deviation of the background added if add_noise is TRUE. Default is 0.
 #' @return a resized matrix with padding background if desired size is larger than original mat dimensions.

@@ -103,17 +103,18 @@ fetch_seed <- function(seed = NA_integer_) {
 #' @param kind character or NULL. If kind is a character string, set R's RNG to the kind desired. Use "default" to return to the R default.
 #' @param normal.kind	character string or NULL. If it is a character string, set the method of Normal generation. Use "default" to return to the R default. NULL makes no change.
 #' @param sample.kind	character string or NULL. If it is a character string, set the method of discrete uniform generation (used in sample, for instance). Use "default" to return to the R default. NULL makes no change. Only applies on R version >= 3.6.0.
-#' @details see ‘Details’, from  \link[base]{set.seed}, with the exception of 'seed'
+#' @details see ‘Details’, from  \link[base]{set.seed}, with the exception of 'seed'. Using seed = NA_integer_, NOTHING will be passed to \link[base]{set.seed} nor \link[base]{RNGkind} and NOTHING will be restored once done.
+#' Otherwise, \link[base]{set.seed} will be used and once done \link[base]{RNGkind} will be restored and ".Random.seed" from \link[base]{globalenv} set back to its initial value (included removed if it did not exist).
 #' @keywords internal
 with_seed <- function(expr, seed = NA_integer_, kind = NULL, normal.kind = NULL, sample.kind = NULL) {
-  # old R version of RNGkind() and set.seed() does not have `sample.kind` argument
-  # so depending of current R version this argument will be passed or not
-  R_is_old = getRversion() < R_system_version("3.6.0", strict = TRUE)
-  if(R_is_old && !all(sample.kind %in% c("Rounding", "default"))) warning("'sample.kind' argument will be ignored in current R version `", getRversion(), "`")
-  cur_kind = RNGkind()
-  e = globalenv()
-  cur_seed <- e$.Random.seed
-  if((length(seed) == 0) || (length(seed) != 0) && !is.na(seed)) {
+  if((length(seed) == 0) || !is.na(seed)) {
+    # old R version of RNGkind() and set.seed() does not have `sample.kind` argument
+    # so depending of current R version this argument will be passed or not
+    R_is_old = getRversion() < R_system_version("3.6.0", strict = TRUE)
+    if(R_is_old && !all(sample.kind %in% c("Rounding", "default"))) warning("'sample.kind' argument will be ignored in current R version `", getRversion(), "`")
+    cur_kind = RNGkind()
+    e = globalenv()
+    cur_seed <- e$.Random.seed
     on.exit(suspendInterrupts({
       # part to exactly restore RNGkind as it was
       # since we restore RNGkind, we suppress any warning because user has already been informed
@@ -132,18 +133,10 @@ with_seed <- function(expr, seed = NA_integer_, kind = NULL, normal.kind = NULL,
         assign(".Random.seed", value = cur_seed, envir = e, inherits = FALSE)
       }
     }))
-  }
-  if((length(seed) == 0) || !is.na(seed)) {
     if(R_is_old) {
       set.seed(seed = seed, kind = kind, normal.kind = normal.kind)
     } else {
       set.seed(seed = seed, kind = kind, normal.kind = normal.kind, sample.kind = sample.kind)
-    }
-  } else {
-    if(R_is_old) {
-      RNGkind(kind = kind, normal.kind = normal.kind)
-    } else {
-      RNGkind(kind = kind, normal.kind = normal.kind, sample.kind = sample.kind)
     }
   }
   force(expr)
