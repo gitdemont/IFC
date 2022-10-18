@@ -53,7 +53,9 @@ newPB <- function(session,
                   file = "") {
   fun = stop
   args = list("newPB: can't create progress bar")
-  if(!(missing(session)) && requireNamespace("shiny", quietly = TRUE) && inherits(session, "ShinySession")) {
+  if(!(missing(session)) &&
+     inherits(session, "ShinySession") &&
+     with_seed(requireNamespace("shiny", quietly = TRUE), NULL)) {
     args = list(session = session,
                 min = 0,
                 max = steps- 1)
