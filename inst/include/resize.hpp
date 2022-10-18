@@ -44,7 +44,7 @@ using namespace Rcpp;
 //' @return a cropped matrix.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix hpp_crop (Rcpp::NumericMatrix mat,
                               const R_len_t new_height = 0,
                               const R_len_t new_width = 0) {

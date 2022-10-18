@@ -42,7 +42,7 @@ using namespace Rcpp;
 //' @return a logical matrix.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_AND_M(const Rcpp::List list) {
   R_len_t L = list.length();
   if(L < 1) Rcpp::stop("hpp_AND_M: 'list' should contain at least 1 matrix");
@@ -67,7 +67,7 @@ Rcpp::LogicalMatrix hpp_AND_M(const Rcpp::List list) {
 //' @return a logical matrix.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_OR_M(const Rcpp::List list) {
   R_len_t L = list.length();
   if(L < 1) Rcpp::stop("hpp_OR_M: 'list' should contain at least 1 matrix");
@@ -92,7 +92,7 @@ Rcpp::LogicalMatrix hpp_OR_M(const Rcpp::List list) {
 //' @return a logical matrix.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_NEG_M(const Rcpp::LogicalMatrix mat) {
   Rcpp::LogicalMatrix OUT_M = Rcpp::no_init_matrix(mat.nrow(), mat.ncol());
   for(R_len_t i_col = 0; i_col < mat.ncol(); i_col++) {

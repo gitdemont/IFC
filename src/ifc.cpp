@@ -59,7 +59,7 @@ using namespace Rcpp;
 //' @return a NumericMatrix.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix cpp_align(const Rcpp::NumericMatrix mat,
                               const double dx = NA_REAL,
                               const double dy = NA_REAL) {
@@ -80,7 +80,7 @@ Rcpp::NumericMatrix cpp_align(const Rcpp::NumericMatrix mat,
 //' fun is placed in cpp_assert() in order to check it is correct before being used in assert() function.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalVector cpp_assert(const RObject x,
                                const Rcpp::Nullable<Rcpp::IntegerVector> len = R_NilValue,
                                const Rcpp::Nullable<Rcpp::CharacterVector> cla = R_NilValue,
@@ -100,7 +100,7 @@ Rcpp::LogicalVector cpp_assert(const RObject x,
 //' @param bound_y NumericVector, y-boundaries of the ellipse.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericVector cpp_ell_coord (const Rcpp::NumericVector bound_x,
                                    const Rcpp::NumericVector bound_y) {
   return hpp_ell_coord (bound_x, bound_y);
@@ -119,7 +119,7 @@ Rcpp::NumericVector cpp_ell_coord (const Rcpp::NumericVector bound_x,
 //' @param epsilon double, epsilon threshold value. Default is 0.000000000001
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalVector cpp_pnt_in_gate (const Rcpp::NumericMatrix pnts,
                                      const Rcpp::NumericMatrix gate,
                                      const int algorithm = 1,
@@ -137,7 +137,7 @@ Rcpp::LogicalVector cpp_pnt_in_gate (const Rcpp::NumericMatrix pnts,
 //' @return a bool
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 bool cpp_mpfmatch(const Rcpp::Nullable<Rcpp::CharacterVector> x = R_NilValue,
                   const Rcpp::Nullable<Rcpp::CharacterVector> pattern = R_NilValue) {
   return hpp_mpfmatch(x, pattern);
@@ -152,7 +152,7 @@ bool cpp_mpfmatch(const Rcpp::Nullable<Rcpp::CharacterVector> x = R_NilValue,
 //' @return the index (starting at 1) when a match has been found. Otherwise 0.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 R_len_t cpp_seqmatch(const Rcpp::StringVector x,
                      const Rcpp::StringVector y) {
   return hpp_seqmatch(x,y);
@@ -165,7 +165,7 @@ R_len_t cpp_seqmatch(const Rcpp::StringVector x,
 //' @return a LogicalVector.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::Nullable<Rcpp::LogicalVector> cpp_fast_rowAny(const Rcpp::Nullable<Rcpp::LogicalVector> M_ = R_NilValue) {
   return hpp_fast_rowAny(M_);
 }
@@ -178,7 +178,7 @@ Rcpp::Nullable<Rcpp::LogicalVector> cpp_fast_rowAny(const Rcpp::Nullable<Rcpp::L
 //' @return a LogicalVector.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::Nullable<Rcpp::LogicalVector> cpp_fast_listAny(const Rcpp::Nullable<Rcpp::List> L_ = R_NilValue) {
   return hpp_fast_listAny(L_);
 }
@@ -192,7 +192,7 @@ Rcpp::Nullable<Rcpp::LogicalVector> cpp_fast_listAny(const Rcpp::Nullable<Rcpp::
 //' @return a NumericVector.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericVector cpp_fast_range(const Rcpp::Nullable<Rcpp::NumericVector> x_ = R_NilValue) {
   return hpp_fast_range(x_);
 }
@@ -223,7 +223,7 @@ Rcpp::IntegerVector cpp_fast_sample(const R_len_t n = 0,
 //' @param rev bool whether to reverse order or not. Default is false.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::Nullable<Rcpp::IntegerVector> cpp_get_bytes_order (const R_len_t obj = 0,
                                                          const Rcpp::Nullable<Rcpp::IntegerVector> byt_ = R_NilValue,
                                                          const Rcpp::Nullable<Rcpp::IntegerVector> ord_ = R_NilValue,
@@ -239,7 +239,7 @@ Rcpp::Nullable<Rcpp::IntegerVector> cpp_get_bytes_order (const R_len_t obj = 0,
 //' @param by a double used as replcaement value. Default is 0.0
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::Nullable<Rcpp::NumericVector> cpp_replace_non_finite(const Rcpp::Nullable<Rcpp::NumericVector> V_ = R_NilValue,
                                                            const double by = 0.0) {
   return hpp_replace_non_finite (V_, by);
@@ -252,7 +252,7 @@ Rcpp::Nullable<Rcpp::NumericVector> cpp_replace_non_finite(const Rcpp::Nullable<
 //' @param V named NumericVector of channel display properties containing 'xmin', 'xmax', 'xmid' and 'ymid'.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 double cpp_computeGamma (const Rcpp::NumericVector V) {
   return hpp_computeGamma (V);
 }
@@ -265,7 +265,7 @@ double cpp_computeGamma (const Rcpp::NumericVector V) {
 //' @return a string, representing the base64 encoding of x.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 std::string cpp_base64_encode (const Rcpp::RawVector x) {
   return hpp_base64_encode (x);
 }
@@ -277,7 +277,7 @@ std::string cpp_base64_encode (const Rcpp::RawVector x) {
 //' @param image, a [0,1] normalized image matrix or 3D array. If 3D array, 3rd dimension should be of length 1 or 3.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::RawVector cpp_writeBMP (const Rcpp::NumericVector image) {
  return hpp_writeBMP (image); 
 }
@@ -295,7 +295,7 @@ Rcpp::RawVector cpp_writeBMP (const Rcpp::NumericVector image) {
 //' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 std::string cpp_checkTIFF (const std::string fname) {
   return hpp_checkTIFF(fname);
 }
@@ -313,7 +313,7 @@ std::string cpp_checkTIFF (const std::string fname) {
 //' @return an integer vector with offsets of IFDs found.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerVector cpp_getoffsets_noid(const std::string fname, 
                                         const R_len_t obj_count = 0, 
                                         const bool display_progress = false,
@@ -336,7 +336,7 @@ Rcpp::IntegerVector cpp_getoffsets_noid(const std::string fname,
 //' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::List cpp_getTAGS (const std::string fname, 
                         const uint32_t offset, 
                         const bool verbose = false, 
@@ -355,7 +355,7 @@ Rcpp::List cpp_getTAGS (const std::string fname,
 //' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::List cpp_fastTAGS (const std::string fname, 
                         const uint32_t offset, 
                         const bool verbose = false) {
@@ -375,7 +375,7 @@ Rcpp::List cpp_fastTAGS (const std::string fname,
 //' @return a list of integer vectors with OBJECT_ID, TYPE and OFFSET of IFDs found.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::List cpp_getoffsets_wid(const std::string fname, 
                               const R_len_t obj_count = 0, 
                               const bool display_progress = false, 
@@ -392,7 +392,7 @@ Rcpp::List cpp_getoffsets_wid(const std::string fname,
 //' @return an integer vector with offsets of IFDs found.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 std::size_t cpp_checksum(const std::string fname) {
   return hpp_checksum(fname);
 }
@@ -413,7 +413,7 @@ std::size_t cpp_checksum(const std::string fname) {
 //' - 3rd Dim is RGB
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericVector cpp_M_HSV2RGB (const Rcpp::NumericMatrix mat,
                                    const double h = 0.0,
                                    const double s = 0.0) {
@@ -434,7 +434,7 @@ Rcpp::NumericVector cpp_M_HSV2RGB (const Rcpp::NumericMatrix mat,
 //' @param lin_comp double, value that is used to smooth transition between Lin/Log.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericVector cpp_smoothLinLog (const Rcpp::NumericVector x,
                                       const double hyper = 1000.0,
                                       const double base = 10.0,
@@ -454,7 +454,7 @@ Rcpp::NumericVector cpp_smoothLinLog (const Rcpp::NumericVector x,
 //' @param lin_comp double, value that is used to smooth transition between Lin/Log.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericVector cpp_inv_smoothLinLog (const Rcpp::NumericVector x,
                                           const double hyper = 1000.0,
                                           const double base = 10.0,
@@ -469,7 +469,7 @@ Rcpp::NumericVector cpp_inv_smoothLinLog (const Rcpp::NumericVector x,
 //' @param x uint32_t.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::RawVector cpp_uint32_to_raw (const uint32_t x) {
   return hpp_uint32_to_raw (x);
 }
@@ -481,7 +481,7 @@ Rcpp::RawVector cpp_uint32_to_raw (const uint32_t x) {
 //' @param x int32_t.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 uint32_t cpp_int32_to_uint32 (const int32_t x) {
   return hpp_int32_to_uint32 (x);
 }
@@ -493,7 +493,7 @@ uint32_t cpp_int32_to_uint32 (const int32_t x) {
 //' @param x uint32_t.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 int32_t cpp_uint32_to_int32 (const uint32_t x) {
   return hpp_uint32_to_int32 (x);
 }
@@ -505,7 +505,7 @@ int32_t cpp_uint32_to_int32 (const uint32_t x) {
 //' @param x int64_t.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 uint64_t cpp_int64_to_uint64 (const int64_t x) {
   return hpp_int64_to_uint64 (x);
 }
@@ -517,7 +517,7 @@ uint64_t cpp_int64_to_uint64 (const int64_t x) {
 //' @param x uint64_t.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 int64_t cpp_uint64_to_int64 (const uint64_t x) {
   return hpp_uint64_to_int64 (x);
 }
@@ -529,7 +529,7 @@ int64_t cpp_uint64_to_int64 (const uint64_t x) {
 //' @param V a NumericVector
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::Nullable<Rcpp::NumericVector> cpp_v_int32_to_uint32 (Rcpp::Nullable<Rcpp::NumericVector> V = R_NilValue) {
   return hpp_v_int32_to_uint32(V);
 }
@@ -541,7 +541,7 @@ Rcpp::Nullable<Rcpp::NumericVector> cpp_v_int32_to_uint32 (Rcpp::Nullable<Rcpp::
 //' @param V a NumericVector
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::Nullable<Rcpp::NumericVector> cpp_v_int64_to_uint64 (Rcpp::Nullable<Rcpp::NumericVector> V = R_NilValue) {
   return hpp_v_int64_to_uint64(V);
 }
@@ -565,7 +565,7 @@ Rcpp::Nullable<Rcpp::NumericVector> cpp_v_int64_to_uint64 (Rcpp::Nullable<Rcpp::
 //' @return size_t index of first target character found within target plus 1 or 0 if not found.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 std::size_t cpp_scanFirst(const std::string fname, 
                           const Rcpp::RawVector raw, 
                           const std::size_t start = 0, 
@@ -592,7 +592,7 @@ std::size_t cpp_scanFirst(const std::string fname,
 //' and "lvs" the total number of unique values found (including NA).
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 SEXP cpp_fast_factor( SEXP x, 
                       const bool handleNA = true) {
   return hpp_fast_factor(x, handleNA);
@@ -606,7 +606,7 @@ SEXP cpp_fast_factor( SEXP x,
 //' @return an IntegerVector with the resulting global grouping factor and a "table" attribute representing the amount of scalar in each resulting level.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerVector cpp_group_df(const Rcpp::DataFrame df) {
   return hpp_group_df(df);
 }
@@ -622,7 +622,7 @@ Rcpp::IntegerVector cpp_group_df(const Rcpp::DataFrame df) {
 //' @return a 2 columns IntegerMatrix of x and y pixels coordinates.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerMatrix cpp_coord_to_px (const Rcpp::NumericVector x,
                                      const Rcpp::NumericVector y,
                                      const Rcpp::NumericVector param) {
@@ -636,7 +636,7 @@ Rcpp::IntegerMatrix cpp_coord_to_px (const Rcpp::NumericVector x,
 //' @return a nativeRaster IntegerMatrix
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerMatrix cpp_as_nativeRaster(const Rcpp::IntegerVector x) {
   return hpp_as_nativeRaster(x);
 }
@@ -661,7 +661,7 @@ Rcpp::IntegerMatrix cpp_as_nativeRaster(const Rcpp::IntegerVector x) {
 //' @keywords internal
 //' @return /!\ nothing is returned but img is modified in-place
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerVector cpp_draw (const Rcpp::IntegerVector img,
                               const Rcpp::IntegerMatrix coords = Rcpp::IntegerMatrix(1,2),
                               const Rcpp::LogicalMatrix mask = Rcpp::LogicalMatrix(1),
@@ -698,7 +698,7 @@ Rcpp::IntegerVector cpp_draw (const Rcpp::IntegerVector img,
 //' @return an IntegerVector with dimensions [height, width, 4]
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerVector cpp_raster (const uint16_t width,
                                 const uint16_t height,
                                 const Rcpp::List obj,
@@ -718,7 +718,7 @@ Rcpp::IntegerVector cpp_raster (const uint16_t width,
 //' @return a cropped matrix.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix cpp_crop (Rcpp::NumericMatrix mat,
                               const R_len_t new_height = 0,
                               const R_len_t new_width = 0) {
@@ -800,7 +800,7 @@ Rcpp::NumericMatrix cpp_resize (const Rcpp::NumericMatrix mat,
 //' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::List cpp_decomp (const std::string fname, 
                        const uint32_t offset, 
                        const uint32_t nbytes, 
@@ -858,7 +858,7 @@ Rcpp::List cpp_decomp (const std::string fname,
 //' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::RawVector cpp_rawdecomp (const std::string fname, 
                                const uint32_t offset, 
                                const uint32_t nbytes, 
@@ -887,7 +887,7 @@ Rcpp::RawVector cpp_rawdecomp (const std::string fname,
 //' @param gamma correction. Default is 1, for no correction.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix cpp_normalize (const Rcpp::NumericMatrix mat, 
                                    const Rcpp::NumericVector input_range = Rcpp::NumericVector::create(0.0,4095.0),
                                    const bool full_range = false,
@@ -928,7 +928,7 @@ Rcpp::NumericMatrix cpp_cleanse (const Rcpp::NumericMatrix mat,
 //' @param mask a NumericMatrix.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix cpp_mask (const Rcpp::NumericMatrix A,
                               const Rcpp::NumericMatrix B,
                               const Rcpp::NumericMatrix mask) {
@@ -949,7 +949,7 @@ Rcpp::NumericMatrix cpp_mask (const Rcpp::NumericMatrix A,
 //' When true, values of 1-B are written into A when mask is not 0.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix cpp_mark (const Rcpp::NumericMatrix A,
                               const Rcpp::NumericMatrix B,
                               const Rcpp::NumericMatrix mask,

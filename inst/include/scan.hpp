@@ -53,7 +53,7 @@ using namespace Rcpp;
 //' @return size_t index of first target character found within target plus 1 or 0 if not found.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 std::size_t hpp_scanFirst(const std::string fname, 
                           const Rcpp::RawVector raw,
                           const std::size_t start = 0, 

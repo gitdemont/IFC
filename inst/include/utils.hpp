@@ -96,7 +96,7 @@ bool lNotisNULL(const Rcpp::Nullable<Rcpp::LogicalVector> x_ = R_NilValue) {
 //' @return a bool
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 bool hpp_mpfmatch(const Rcpp::Nullable<Rcpp::CharacterVector> x = R_NilValue,
                   const Rcpp::Nullable<Rcpp::CharacterVector> pattern = R_NilValue) {
   bool found = false;
@@ -129,7 +129,7 @@ bool hpp_mpfmatch(const Rcpp::Nullable<Rcpp::CharacterVector> x = R_NilValue,
 //' @return the index (starting at 1) when a match has been found. Otherwise 0.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 R_len_t hpp_seqmatch(const Rcpp::StringVector x,
                      const Rcpp::StringVector y) {
   R_len_t i = 0, j = 0, k = 0;
@@ -162,7 +162,7 @@ R_len_t hpp_seqmatch(const Rcpp::StringVector x,
 //' @return a LogicalVector.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::Nullable<Rcpp::LogicalVector> hpp_fast_rowAny(const Rcpp::Nullable<Rcpp::LogicalVector> M_ = R_NilValue) {
   if(!lNotisNULL(M_)) return M_;
   Rcpp::LogicalVector V(M_.get());
@@ -188,7 +188,7 @@ Rcpp::Nullable<Rcpp::LogicalVector> hpp_fast_rowAny(const Rcpp::Nullable<Rcpp::L
 //' @return a LogicalVector.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::Nullable<Rcpp::LogicalVector> hpp_fast_listAny(const Rcpp::Nullable<Rcpp::List> L_ = R_NilValue) {
   if(L_.isNotNull()) {
     Rcpp::List L(L_.get());
@@ -220,7 +220,7 @@ Rcpp::Nullable<Rcpp::LogicalVector> hpp_fast_listAny(const Rcpp::Nullable<Rcpp::
 //' @return a NumericVector.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericVector hpp_fast_range(const Rcpp::Nullable<Rcpp::NumericVector> x_ = R_NilValue) {
   double xmax = R_NegInf, xmin = R_PosInf;
   if(nNotisNULL(x_)) {
@@ -262,7 +262,7 @@ Rcpp::IntegerVector hpp_fast_sample(const R_len_t n = 0,
 //' @param rev bool whether to reverse order or not. Default is false.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::Nullable<Rcpp::IntegerVector> hpp_get_bytes_order (const R_len_t obj = 0,
                                                          const Rcpp::Nullable<Rcpp::IntegerVector> byt_ = R_NilValue,
                                                          const Rcpp::Nullable<Rcpp::IntegerVector> ord_ = R_NilValue,
@@ -318,7 +318,7 @@ std::string to_string(const uint16_t x) {
 //' @param by a double used as replacement value. Default is 0.0
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::Nullable<Rcpp::NumericVector> hpp_replace_non_finite(const Rcpp::Nullable<Rcpp::NumericVector> V_ = R_NilValue,
                                                            const double by = 0.0) {
   if(nNotisNULL(V_)) {
@@ -374,7 +374,7 @@ Rcpp::NumericVector hpp_check_range(const Rcpp::NumericVector x) {
 //' @param V named NumericVector of channel display properties containing 'xmin', 'xmax', 'xmid' and 'ymid'.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 double hpp_computeGamma (const Rcpp::NumericVector V) {
   double V_w = V["xmax"], V_m = V["xmid"], V_y = V["ymid"];
   V_w -= V["xmin"];
@@ -390,7 +390,7 @@ double hpp_computeGamma (const Rcpp::NumericVector V) {
 //' @return a string, representing the base64 encoding of x.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 std::string hpp_base64_encode (const Rcpp::RawVector x) {
   R_len_t i = 0, a = x.size() / 3, b = x.size() % 3;
   std::string out;
@@ -428,7 +428,7 @@ std::string hpp_base64_encode (const Rcpp::RawVector x) {
 //' @param image, a [0,1] normalized image matrix or 3D array. If 3D array, 3rd dimension should be of length 1 or 3.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::RawVector hpp_writeBMP (const Rcpp::NumericVector image) {
   if(nNotisNULL(image)) {
     Rcpp::IntegerVector d = image.attr("dim");

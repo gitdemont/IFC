@@ -87,7 +87,7 @@ void hpp_HSV2RGB(double *r, double *g, double *b,
 //' - 3rd Dim is RGB
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericVector hpp_M_HSV2RGB (const Rcpp::NumericMatrix mat, 
                                    const double h = 0.0,
                                    const double s = 0.0) {

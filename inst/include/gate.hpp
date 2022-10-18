@@ -119,7 +119,7 @@ bool pnt_in_ell (const Rcpp::NumericVector pnt,
 //' @param bound_y NumericVector, y-boundaries of the ellipse.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericVector hpp_ell_coord (const Rcpp::NumericVector bound_x,
                                    const Rcpp::NumericVector bound_y) {
   double xmin, ymin, xmax, ymax;
@@ -148,7 +148,7 @@ Rcpp::NumericVector hpp_ell_coord (const Rcpp::NumericVector bound_x,
 //' @param epsilon double, epsilon threshold value. Default is 0.000000000001
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalVector hpp_pnt_in_gate (const Rcpp::NumericMatrix pnts,
                                      const Rcpp::NumericMatrix gate,
                                      const int algorithm = 1,

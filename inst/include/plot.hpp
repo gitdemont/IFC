@@ -38,7 +38,7 @@ using namespace Rcpp;
 
 // dilate mask by 1 pix, used to mimic lwd
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_dilate(const Rcpp::LogicalMatrix mat, 
                                const R_len_t typ = 0,
                                const bool odd = true) {
@@ -84,7 +84,7 @@ Rcpp::LogicalMatrix hpp_dilate(const Rcpp::LogicalMatrix mat,
 
 // dilate mask by iter / 2 pix, used to mimic lwd
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_dilate_iter(const Rcpp::LogicalMatrix mat, 
                                     const R_len_t typ = 0,
                                     const R_len_t iter = 0) {
@@ -102,7 +102,7 @@ Rcpp::LogicalMatrix hpp_dilate_iter(const Rcpp::LogicalMatrix mat,
 
 // create square shape logical matrix
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_square(const R_len_t size = 3, const R_len_t lwd = 0) {
   Rcpp::LogicalMatrix out(size, size);
   if(size == 0) return out;
@@ -119,7 +119,7 @@ Rcpp::LogicalMatrix hpp_square(const R_len_t size = 3, const R_len_t lwd = 0) {
 
 // create filled square shape logical matrix
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_square_filled(const R_len_t size = 3, const R_len_t lwd = 0) {
   Rcpp::LogicalMatrix out(size, size);
   if(size == 0) return out;
@@ -140,7 +140,7 @@ double hpp_dist(const R_len_t x1, const R_len_t y1,
 // draw line from point x1, y1 to point x2, y2
 // in a LogicalMatrix M
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_line(const R_len_t x1, const R_len_t y1,
                              const R_len_t x2, const R_len_t y2,
                              const Rcpp::LogicalMatrix M) {
@@ -174,7 +174,7 @@ Rcpp::LogicalMatrix hpp_line(const R_len_t x1, const R_len_t y1,
 
 // determines triangle vertices coordinates 
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerMatrix hpp_tr_vertices(const R_len_t size = 3) {
   Rcpp::IntegerMatrix out(3, 2);
   if(size == 0) return out;
@@ -192,7 +192,7 @@ Rcpp::IntegerMatrix hpp_tr_vertices(const R_len_t size = 3) {
 
 // create triangle shape logical matrix
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_triangle(const R_len_t size = 3, const R_len_t lwd = 0) {
   if(size <= 1) return hpp_square_filled(1);
   Rcpp::LogicalMatrix out(size, size);
@@ -205,7 +205,7 @@ Rcpp::LogicalMatrix hpp_triangle(const R_len_t size = 3, const R_len_t lwd = 0) 
 
 // create filled triangle shape logical matrix
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_triangle_filled(const R_len_t size = 3, const R_len_t lwd = 0) {
   if(size <= 1) return hpp_square_filled(1);
   Rcpp::LogicalMatrix out = hpp_triangle(size);
@@ -232,7 +232,7 @@ Rcpp::LogicalMatrix hpp_triangle_filled(const R_len_t size = 3, const R_len_t lw
 
 // create triangle inside square shape
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_fourteen(const R_len_t size = 3, const R_len_t lwd = 0) {
   if(size <= 1) return hpp_square_filled(1);
   Rcpp::LogicalMatrix out(size, size);
@@ -253,7 +253,7 @@ Rcpp::LogicalMatrix hpp_fourteen(const R_len_t size = 3, const R_len_t lwd = 0) 
 
 // create filled circle shape logical matrix
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_circle_filled(const R_len_t size = 3, const R_len_t lwd = 0) {
   if(size <= 1) return hpp_square_filled(1);
   Rcpp::LogicalMatrix out(size, size);
@@ -272,7 +272,7 @@ Rcpp::LogicalMatrix hpp_circle_filled(const R_len_t size = 3, const R_len_t lwd 
 
 // create circle shape logical matrix
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_circle(const R_len_t size = 3, const R_len_t lwd = 0) {
   if(size <= 1) return hpp_square_filled(1);
   Rcpp::LogicalMatrix out(size, size);
@@ -293,7 +293,7 @@ Rcpp::LogicalMatrix hpp_circle(const R_len_t size = 3, const R_len_t lwd = 0) {
 
 // create filled diamond shape logical matrix
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_diamond_filled(const R_len_t size = 3, const R_len_t lwd = 0) {
   if(size <= 1) return hpp_square_filled(1);
   Rcpp::LogicalMatrix out(size, size);
@@ -320,7 +320,7 @@ Rcpp::LogicalMatrix hpp_diamond_filled(const R_len_t size = 3, const R_len_t lwd
 
 // create diamond shape logical matrix
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_diamond(const R_len_t size = 3, const R_len_t lwd = 0) {
   if(size <= 1) return hpp_square_filled(1);
   Rcpp::LogicalMatrix out(size, size);
@@ -350,7 +350,7 @@ Rcpp::LogicalMatrix hpp_diamond(const R_len_t size = 3, const R_len_t lwd = 0) {
 
 // create plus shape logical matrix
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_plus(const R_len_t size = 3, const R_len_t lwd = 0) {
   if(size <= 1) return hpp_square_filled(1);
   Rcpp::LogicalMatrix out(size, size);
@@ -362,7 +362,7 @@ Rcpp::LogicalMatrix hpp_plus(const R_len_t size = 3, const R_len_t lwd = 0) {
 
 // create cross shape logical matrix
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_cross(const R_len_t size = 3, const R_len_t lwd = 0) {
   if(size <= 1) return hpp_square_filled(1);
   Rcpp::LogicalMatrix out(size, size);
@@ -376,7 +376,7 @@ Rcpp::LogicalMatrix hpp_cross(const R_len_t size = 3, const R_len_t lwd = 0) {
 
 // reverse shape
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_shape_rev(const Rcpp::LogicalMatrix M) {
   Rcpp::LogicalMatrix out = Rcpp::no_init(M.nrow(), M.ncol());
   for(R_len_t i = 0; i < M.size(); i++) out[i] = M[M.size() - 1 - i];
@@ -385,7 +385,7 @@ Rcpp::LogicalMatrix hpp_shape_rev(const Rcpp::LogicalMatrix M) {
 
 // combine 2 shapes to create a new one
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_shape_combine(const Rcpp::LogicalMatrix M1,
                                       const Rcpp::LogicalMatrix M2) {
   Rcpp::LogicalMatrix out;
@@ -447,7 +447,7 @@ Rcpp::IntegerVector get_dim(Rcpp::IntegerVector img) {
 //' @return a nativeRaster IntegerMatrix
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerMatrix hpp_as_nativeRaster(const Rcpp::IntegerVector x) {
   Rcpp::IntegerVector V = get_dim(x);
   R_len_t h = V[0], w = V[1];
@@ -476,7 +476,7 @@ Rcpp::IntegerMatrix hpp_as_nativeRaster(const Rcpp::IntegerVector x) {
 //' @return a 2 columns IntegerMatrix of x and y pixels coordinates.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
                                     const Rcpp::NumericVector y,
                                     const Rcpp::NumericVector param) {
@@ -543,7 +543,7 @@ Rcpp::IntegerMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
 //' @keywords internal
 //' @return /!\ nothing is returned but img is modified in-place
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 void hpp_draw(Rcpp::IntegerVector img,
               const Rcpp::IntegerMatrix coords = Rcpp::IntegerMatrix(1,2),
               const Rcpp::LogicalMatrix mask = Rcpp::LogicalMatrix(1),
@@ -712,7 +712,7 @@ void hpp_draw(Rcpp::IntegerVector img,
 //' @keywords internal
 //' @return an IntegerVector with dimensions [height, width, 4]
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerVector hpp_raster(const uint16_t width,
                                const uint16_t height,
                                const Rcpp::List obj,

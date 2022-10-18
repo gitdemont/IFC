@@ -121,7 +121,7 @@ Rcpp::IntegerVector fast_factor_T( const Rcpp::Vector<RTYPE>& x,
 //' and "lvs" the total number of unique values found (including NA).
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 SEXP hpp_fast_factor( SEXP x,
                       const bool handleNA = true) {
   switch( TYPEOF(x) ) {
@@ -143,7 +143,7 @@ SEXP hpp_fast_factor( SEXP x,
 //' @return an IntegerVector with the resulting global grouping factor and a "table" attribute representing the amount of scalar in each resulting level.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerVector hpp_group_df(const Rcpp::DataFrame df) {
   R_len_t ll = 0;
   Rcpp::IntegerVector bar(df.nrows());                           // will hold global df[, ] factor

@@ -45,7 +45,7 @@ using namespace Rcpp;
 //' @return a NumericMatrix.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix hpp_align_img(const Rcpp::NumericMatrix mat,
                                   const double dx = NA_REAL,
                                   const double dy = NA_REAL) {
@@ -103,7 +103,7 @@ Rcpp::NumericMatrix hpp_align_img(const Rcpp::NumericMatrix mat,
 //' @return a IntegerMatrix.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerMatrix hpp_align_msk(const Rcpp::IntegerMatrix msk,
                                   const double dx = NA_REAL,
                                   const double dy = NA_REAL) {
@@ -161,7 +161,7 @@ Rcpp::IntegerMatrix hpp_align_msk(const Rcpp::IntegerMatrix msk,
 //' @return a NumericMatrix.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix hpp_align(const Rcpp::NumericMatrix mat,
                               const double dx = NA_REAL,
                               const double dy = NA_REAL) {

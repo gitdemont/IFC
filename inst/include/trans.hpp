@@ -47,7 +47,7 @@ using namespace Rcpp;
 //' @param lin_comp double, value that is used to smooth transition between Lin/Log.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericVector hpp_smoothLinLog (const Rcpp::NumericVector x,
                                       const double hyper = 1000.0,
                                       const double base = 10.0,
@@ -83,7 +83,7 @@ Rcpp::NumericVector hpp_smoothLinLog (const Rcpp::NumericVector x,
 //' @param lin_comp double, value that is used to smooth transition between Lin/Log.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericVector hpp_inv_smoothLinLog (const Rcpp::NumericVector x,
                                           const double hyper = 1000.0, 
                                           const double base = 10.0, 
@@ -114,7 +114,7 @@ Rcpp::NumericVector hpp_inv_smoothLinLog (const Rcpp::NumericVector x,
 //' @param x uint32_t.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::RawVector hpp_uint32_to_raw(const uint32_t x) {
   Rcpp::RawVector out(4);
   out[3] = (x >> 24) & 0xff;
@@ -131,7 +131,7 @@ Rcpp::RawVector hpp_uint32_to_raw(const uint32_t x) {
 //' @param x int32_t.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 uint32_t hpp_int32_to_uint32 (const int32_t x) {
   uint32_t out = x;
   return out;
@@ -144,7 +144,7 @@ uint32_t hpp_int32_to_uint32 (const int32_t x) {
 //' @param x uint32_t.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 int32_t hpp_uint32_to_int32 (const uint32_t x) {
   int32_t out = x;
   return out;
@@ -157,7 +157,7 @@ int32_t hpp_uint32_to_int32 (const uint32_t x) {
 //' @param x int64_t.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 uint64_t hpp_int64_to_uint64 (const int64_t x) {
   uint64_t out = x;
   return out;
@@ -170,7 +170,7 @@ uint64_t hpp_int64_to_uint64 (const int64_t x) {
 //' @param x uint64_t.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 int64_t hpp_uint64_to_int64 (const uint64_t x) {
   int64_t out = x;
   return out;
@@ -183,7 +183,7 @@ int64_t hpp_uint64_to_int64 (const uint64_t x) {
 //' @param V a NumericVector
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::Nullable<Rcpp::NumericVector> hpp_v_int32_to_uint32 (Rcpp::Nullable<Rcpp::NumericVector> V = R_NilValue) {
   if(nNotisNULL(V)) {
     Rcpp::NumericVector out(V.get());
@@ -200,7 +200,7 @@ Rcpp::Nullable<Rcpp::NumericVector> hpp_v_int32_to_uint32 (Rcpp::Nullable<Rcpp::
 //' @param V a NumericVector
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::Nullable<Rcpp::NumericVector> hpp_v_int64_to_uint64 (Rcpp::Nullable<Rcpp::NumericVector> V = R_NilValue) {
   if(nNotisNULL(V)) {
     Rcpp::NumericVector out(V.get());

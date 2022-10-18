@@ -85,7 +85,7 @@ using namespace Rcpp;
 //' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::List hpp_rle_Decomp (const std::string fname, 
                            const uint32_t offset,
                            const uint32_t nbytes,
@@ -243,7 +243,7 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
 //' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::List hpp_gray_Decomp (const std::string fname, 
                             const uint32_t offset, 
                             const uint32_t nbytes,
@@ -363,7 +363,7 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
 //' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::List hpp_decomp (const std::string fname, 
                        const uint32_t offset, 
                        const uint32_t nbytes, 
@@ -426,7 +426,7 @@ Rcpp::List hpp_decomp (const std::string fname,
 //' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname, 
                                     const uint32_t offset, 
                                     const uint32_t nbytes,
@@ -716,7 +716,7 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
 //' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::RawVector hpp_rawdecomp (const std::string fname, 
                                const uint32_t offset, 
                                const uint32_t nbytes, 

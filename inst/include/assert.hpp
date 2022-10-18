@@ -170,7 +170,7 @@ bool hpp_allowed (const RObject x, const RObject alw) {
 //' fun is placed in cpp_assert() in order to check it is correct before being used in assert() function.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::LogicalVector hpp_assert(const RObject x,
                                const Rcpp::Nullable<Rcpp::IntegerVector> len = R_NilValue,
                                const Rcpp::Nullable<Rcpp::CharacterVector> cla = R_NilValue,

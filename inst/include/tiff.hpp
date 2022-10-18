@@ -64,7 +64,7 @@ template <typename T> T bytes_swap(T val) {
 //' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 std::string hpp_checkTIFF (const std::string fname) {
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   std::string out = "";
@@ -295,7 +295,7 @@ Rcpp::IntegerVector hpp_getoffsets_noid_obj_ok(const std::string fname,
 //' @return an integer vector with offsets of IFDs found.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname, 
                                         const R_len_t obj_count = 0, 
                                         const bool display_progress = false,
@@ -322,7 +322,7 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
 //' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::List hpp_getTAGS (const std::string fname, 
                         const uint32_t offset, 
                         const bool verbose = false, 
@@ -872,7 +872,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
                               _["next_IFD_offset"] = NA_REAL);
 }
 
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::List hpp_fastTAGS (const std::string fname, 
                          const uint32_t offset, 
                          const bool verbose = false) {
@@ -1152,7 +1152,7 @@ Rcpp::List hpp_getoffsets_wid_obj_ok(const std::string fname,
 //' @return a list of integer vectors with OBJECT_ID, TYPE and OFFSET of IFDs found.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::List hpp_getoffsets_wid(const std::string fname, 
                               const R_len_t obj_count = 0, 
                               const bool display_progress = false, 
@@ -1173,7 +1173,7 @@ Rcpp::List hpp_getoffsets_wid(const std::string fname,
 //' @return an integer vector with offsets of IFDs found.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 std::size_t hpp_checksum(const std::string fname) {
   bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
   

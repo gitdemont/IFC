@@ -56,7 +56,7 @@ using namespace Rcpp;
 //' @param gamma correction. Default is 1, for no correction.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix hpp_normalize (const Rcpp::NumericMatrix mat, 
                                    const Rcpp::NumericVector input_range = NumericVector::create(0.0,4095.0),
                                    const bool full_range = false,
@@ -148,7 +148,7 @@ Rcpp::NumericMatrix hpp_cleanse (const Rcpp::NumericMatrix mat,
 //' @param mask a NumericMatrix.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix hpp_mask (const Rcpp::NumericMatrix A,
                               const Rcpp::NumericMatrix B,
                               const Rcpp::NumericMatrix mask) {
@@ -173,7 +173,7 @@ Rcpp::NumericMatrix hpp_mask (const Rcpp::NumericMatrix A,
 //' When true, values of 1-B are written into A when mask is not 0.
 //' @keywords internal
 ////' @export
-// [[Rcpp::export]]
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix hpp_mark (const Rcpp::NumericMatrix A,
                               const Rcpp::NumericMatrix B,
                               const Rcpp::NumericMatrix mask,
