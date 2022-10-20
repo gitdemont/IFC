@@ -5,7 +5,6 @@
 \title{Progress Bar Initializer}
 \usage{
 newPB(
-  session,
   title,
   label,
   min = 0,
@@ -19,8 +18,6 @@ newPB(
 )
 }
 \arguments{
-\item{session}{the shiny session object, as provided by shinyServer to the server function. Default is missing, to use "txtProgressBar" or "winProgressBar" (on Windows).}
-
 \item{title, label}{character strings, giving the 'title'(='message' for shiny progress bar) and the 'label'(='detail' for shiny progress bar).}
 
 \item{min, max}{(finite) numeric values for the extremes of the progress bar. Must have 'min' < 'max'.}
@@ -29,7 +26,7 @@ newPB(
 
 \item{steps}{(finite) numeric value for the number of individual chunk of the progress bar. Default is 21.}
 
-\item{width}{only apply when 'session' is missing,the width of the progress bar. If missing, the default, will be NA for "txtProgressBar" and 300 for "winProgressBar".}
+\item{width}{the width of the progress bar. If missing, the default, will be NA for "txtProgressBar" and 300 for "winProgressBar".}
 
 \item{style}{does not apply for "winProgressBar", the style of the bar. If missing, the default, will be 3 "txtProgressBar" and getShinyOption("progress.style", default = "notification") for shiny progress bar}
 

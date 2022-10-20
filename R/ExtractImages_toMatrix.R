@@ -155,7 +155,7 @@ ExtractImages_toMatrix <- function(...,
     return(NULL)
   }
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+    pb = newPB(min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) {
      setPB(pb, value = i, title = title_progress, label = "exporting images to matrix")

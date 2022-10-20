@@ -69,7 +69,9 @@ popsNetwork = function(obj, hierarchical=TRUE, color_mode="white", highlight=NUL
   size = c(length(size), max(size))
   width = NULL
   height = NULL
-  if(hierarchical && length(dots$session) != 0) {
+  session = NULL
+  if(with_seed(requireNamespace("shiny", quietly = TRUE), NULL)) session = shiny::getDefaultReactiveDomain()
+  if(hierarchical && (length(session) != 0)) {
     width = size[1] * 75
     height = size[2] * 75
   }

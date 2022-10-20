@@ -64,7 +64,7 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
                    FUN = function(x) getFromNamespace(x, asNamespace("base")))
   obj_number = nrow(features)
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+    pb = newPB(min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
   }
   for(i in 1:L) {

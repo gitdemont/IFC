@@ -236,7 +236,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
     pos = 4
     
     if(display_progress) {
-      pb1 = newPB(session = dots$session, title = title_progress, label = "objects subsetting", min = 0, max = L, initial = 0, style = 3)
+      pb1 = newPB(title = title_progress, label = "objects subsetting", min = 0, max = L, initial = 0, style = 3)
       on.exit(endPB(pb1), add = TRUE)
     }
     OBJECT_ID = NULL
@@ -311,7 +311,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
                   
                   title_progress = basename(f)
                   if(display_progress) {
-                    pb3 = newPB(session = dots$session, title = title_progress, label = "extracting features information", min = 0, max = obj_number, initial = 0, style = 3)
+                    pb3 = newPB(title = title_progress, label = "extracting features information", min = 0, max = obj_number, initial = 0, style = 3)
                     tryCatch({
                       features = c(features, lapply(1:obj_number, FUN = function(i_obj) {
                         setPB(pb3, value = i_obj, title = title_progress, label = "extracting features information")

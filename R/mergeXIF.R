@@ -187,8 +187,8 @@ mergeXIF <- function (fileName, write_to,
     IFD_first = getIFD(fileName = file_first, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE)
     toread1 = file(description = file_first, open = "rb")
     if(display_progress) {
-      pb1 = newPB(session = dots$session, title = title_progress, label = "extracting 1st IFD", min = 0, max = length(IFD_first[[1]]$tags), initial = 0, style = 3)
-      pb2 = newPB(session = dots$session, title = title_progress, label = " ", min = 0, max = final_obj * XIF_step, initial = 0, style = 3)
+      pb1 = newPB(title = title_progress, label = "extracting 1st IFD", min = 0, max = length(IFD_first[[1]]$tags), initial = 0, style = 3)
+      pb2 = newPB(title = title_progress, label = " ", min = 0, max = final_obj * XIF_step, initial = 0, style = 3)
       on.exit(endPB(pb2), add = TRUE)
     }
     tryCatch(expr = {

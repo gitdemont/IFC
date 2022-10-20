@@ -124,7 +124,7 @@ getIFD <- function(fileName, offsets = "first", trunc_bytes = 12, force_trunc = 
     if((length(obj_number) == 1) && (L == obj_number*2)) K = c("IFC_ifd_list", "IFC_full_ifd")
     VER = ifelse(verbose & (verbosity==2), TRUE, FALSE)
     if(display_progress) { 
-      pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+      pb = newPB(min = 0, max = L, initial = 0, style = 3)
       on.exit(endPB(pb), add = TRUE)
       ans = lapply(1:L, FUN=function(i_off) {
         setPB(pb, value = i_off, title = title_progress, label = "extracting IFDs")

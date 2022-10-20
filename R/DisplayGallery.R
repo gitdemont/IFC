@@ -260,7 +260,7 @@ DisplayGallery <- function(...,
   }
   tryCatch({
     if(display_progress) {
-      pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+      pb = newPB(min = 0, max = L, initial = 0, style = 3)
       ans = lapply(1:L, FUN=function(i) {
         setPB(pb, value = i, title = title_progress, label = "exporting objects")
         do.call(what = "objectExtract", args = c(list(ifd = lapply(sel[[i]],

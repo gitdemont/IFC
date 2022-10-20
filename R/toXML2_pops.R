@@ -49,7 +49,7 @@ toXML2_pops = function(pops, verbose = FALSE, display_progress = TRUE, title_pro
   names(tmp_style)=c("Simple Dot","Cross","Plus","Empty Circle","Empty Diamond","Empty Square","Empty Triangle","Solid Diamond","Solid Square","Solid Triangle")
   L = length(pops)
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+    pb = newPB(min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     pops_nodes = xml_new_node(name = "Pops", .children = lapply(1:L, FUN=function(i_pop) {
       setPB(pb, value = i_pop, title = title_progress, label = "converting pops (xml)")

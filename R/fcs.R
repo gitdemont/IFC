@@ -239,7 +239,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
       } else {
         raw = readBin(toread, what = "raw", n = data_bytes)
         if(display_progress) {
-          pb = newPB(session = dots$session, min = 0, max = n_par, initial = 0, style = 3)
+          pb = newPB(min = 0, max = n_par, initial = 0, style = 3)
           tryCatch({
             data = sapply(1:n_par, FUN = function(i_par) {
               setPB(pb, value = i_par, title = title_progress, label = "data-type[A]: extracting values")
@@ -398,7 +398,7 @@ readFCS <- function(fileName, options = list(header = list(start = list(at = 0, 
         
         if(display_progress) {
           lab = sprintf("data-type[%s]: extracting values", type)
-          pb = newPB(session = dots$session, min = 0, max = n_par, initial = 0, style = 3)
+          pb = newPB(min = 0, max = n_par, initial = 0, style = 3)
           on.exit(endPB(pb), add = TRUE)
         }
         
@@ -535,7 +535,7 @@ FCS_merge_dataset <- function(fcs, ...) {
   L = length(fcs)
   if(L > 1) {
     if(display_progress) {
-      pb = newPB(session = dots$session, label = "FCS", min = 0, max = L)
+      pb = newPB(label = "FCS", min = 0, max = L)
       on.exit(endPB(pb))
     }
     features = Reduce(function(x, y) {
@@ -623,7 +623,7 @@ FCS_merge_sample <- function(fcs, ...) {
   L = length(fcs)
   if(L > 1) {
     if(display_progress) {
-      pb = newPB(session = dots$session, label = "FCS", min = 0, max = L)
+      pb = newPB(label = "FCS", min = 0, max = L)
       on.exit(endPB(pb))
     }
     features = Reduce(function(x, y) {
@@ -831,16 +831,15 @@ FCS_to_data <- function(fcs, ...) {
   # foo = grep("^\\$P|^\\@P|^\\$D|^@D|^flowCore", names(fcs@description), value = TRUE, invert = TRUE)
   # min_data$info = fcs@description[foo]
   min_data$description$FCS = c(min_data$description$ID, list(instrument = paste0(instrument, collapse = ", "), spillover = spillover))
-  min_data = suppressWarnings(IFC::data_add_features(obj = min_data, features = features_def, session = dots$session))
+  min_data = suppressWarnings(IFC::data_add_features(obj = min_data, features = features_def))
   min_data = IFC::data_add_pops(obj = min_data,
                                 pops = list(buildPopulation(name = "All", type = "B",
                                                             color = "White", lightModeColor = "Black",
                                                             obj = rep(TRUE, obj_count))),
-                                display_progress = display_progress,
-                                session = dots$session)
+                                display_progress = display_progress)
   # min_data$features_comp = min_data$features[, grep("^FS.*$|^SS.*$|LOG|^Object Number$|TIME", names(min_data$features), value = TRUE, invert = TRUE, ignore.case = TRUE)]
   if(multiple) {
-    min_data = IFC::data_add_pops(obj = min_data, pops = pops, display_progress = display_progress, session = dots$session)
+    min_data = IFC::data_add_pops(obj = min_data, pops = pops, display_progress = display_progress)
   }
   K = class(min_data$pops)
   min_data$pops = lapply(min_data$pops, FUN = function(p) {
@@ -887,7 +886,7 @@ ExtractFromFCS <- function(fileName, ...) {
   # read the fcs file and extract features and description
   L = length(fileName)
   if(display_progress) {
-    pb = newPB(session = dots$session, label = "reading files", min = 0, max = L)
+    pb = newPB(label = "reading files", min = 0, max = L)
     on.exit(endPB(pb))
   }
   fcs = lapply(1:L, FUN = function(i_file) {
@@ -1050,8 +1049,8 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   text_segment1 = text_segment1[sapply(text_segment1, nchar) != 0]
   # removes duplicated keywords (priority order is important here)
   text_segment1 = text_segment1[!duplicated(names(text_segment1))]
-  # removes not allowed keywords (e.g. in text_segment2 ($PnN, $PnS, $PnB, $PnE, $PnR) or session, "")
-  text_segment1 = text_segment1[setdiff(names(text_segment1),c("session", ""))]
+  # removes not allowed keywords (e.g. in text_segment2 ($PnN, $PnS, $PnB, $PnE, $PnR) or "")
+  text_segment1 = text_segment1[setdiff(names(text_segment1),c(""))]
   text_segment1 = text_segment1[!grepl("^\\$P\\d.*[N|S|B|E|R]$", names(text_segment1))]
 
   # determines length of data

@@ -248,7 +248,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   
   # backup last state of graphic device
   if(display_progress) {
-    pb_gr = newPB(session = dots$session, min = 0, max = gl, initial = 0, style = 3)
+    pb_gr = newPB(min = 0, max = gl, initial = 0, style = 3)
     on.exit(endPB(pb_gr), add = TRUE)
   }
   default_stats_1D = matrix(NaN, nrow = 1, ncol = 8)
@@ -415,7 +415,7 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
     }
     if(create_pdf) {
       if(display_progress) {
-        pb_pdf = newPB(session = dots$session, title = title_progress,
+        pb_pdf = newPB(title = title_progress,
                        label = ifelse(foo$onepage, "writing to pdf (no update but file is being processed)","writing to pdf"),
                        min = 0, max = gl, initial = 0, style = 3)
         on.exit(endPB(pb_pdf), add = TRUE)
@@ -475,7 +475,7 @@ DisplayReport = function(obj, display_progress = TRUE, ...) {
   foo = do.call(what = CreateGraphReport, args = dots)
   gl = length(foo$graphs)
   if(display_progress) {
-    pb_pdf = newPB(session = dots$session, title = title_progress,
+    pb_pdf = newPB(title = title_progress,
                    label = ifelse(foo$onepage, "plotting graph merge (no update but file is being processed)","plotting each graph"),
                    min = 0, max = gl, initial = 0, style = 3)
     on.exit(endPB(pb_pdf), add = TRUE)
@@ -618,7 +618,7 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
   # backup last state of graphic device
   dv = dev.list()
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = length(fileName), initial = 0, style = 3)
+    pb = newPB(min = 0, max = length(fileName), initial = 0, style = 3)
     on.exit(endPB(pb), add = TRUE)
   }
   tryCatch({

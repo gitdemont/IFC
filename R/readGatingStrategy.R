@@ -123,7 +123,7 @@ readGatingStrategy <- function(fileName, ...) {
   if(length(pops)>0) {
     names(pops)=lapply(pops, FUN=function(x) x$name)
     if((length(dots$display_progress) != 0) && dots$display_progress) {
-      pb_pops = newPB(session = dots$session, min = 0, max = length(pops), initial = 0, style = 3)
+      pb_pops = newPB(min = 0, max = length(pops), initial = 0, style = 3)
       tryCatch({
         pops_=lapply(1:length(pops), FUN=function(i_pop) {
           setPB(pb_pops, value = i_pop, title = title_progress, label = "extracting tagged population objects")

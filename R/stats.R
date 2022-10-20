@@ -359,7 +359,7 @@ BatchStatsReport <- function(fileName, obj, stats, gating, display_progress = FA
   apply_gating = FALSE
   if(!missing(gating)) apply_gating = TRUE
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = length(fileName), initial = 0, style = 3)
+    pb = newPB(min = 0, max = length(fileName), initial = 0, style = 3)
     on.exit(endPB(pb))
   }
   ans = lapply(seq_along(fileName), FUN = function(i_file) {

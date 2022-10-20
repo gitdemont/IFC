@@ -60,7 +60,7 @@ toBIN_images = function(images, endianness = .Platform$endian,
   extra = as.raw(c(0x00, 0x00, 0x00, 0x00))
   
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+    pb = newPB(min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     if(endianness == .Platform$endian)  {
       imgs = lapply(1:L, FUN=function(i_image) {

@@ -30,20 +30,18 @@
 #' @title Progress Bar Initializer
 #' @description
 #' Initializes a progress bar.
-#' @param session the shiny session object, as provided by shinyServer to the server function. Default is missing, to use "txtProgressBar" or "winProgressBar" (on Windows).
 #' @param title,label character strings, giving the 'title'(='message' for shiny progress bar) and the 'label'(='detail' for shiny progress bar).
 #' @param min,max (finite) numeric values for the extremes of the progress bar. Must have 'min' < 'max'.
 #' @param initial initial value for the progress bar.
 #' @param steps (finite) numeric value for the number of individual chunk of the progress bar. Default is 21.
-#' @param width only apply when 'session' is missing,the width of the progress bar. If missing, the default, will be NA for "txtProgressBar" and 300 for "winProgressBar".
+#' @param width the width of the progress bar. If missing, the default, will be NA for "txtProgressBar" and 300 for "winProgressBar".
 #' @param style does not apply for "winProgressBar", the style of the bar. If missing, the default, will be 3 "txtProgressBar" and getShinyOption("progress.style", default = "notification") for shiny progress bar
 #' @param char only apply for "txtProgressBar", the character (or character string) to form the progress bar.
 #' @param file only apply for "txtProgressBar", an open connection object or "" which indicates the console: stderr() might be useful here. Default is "".
 #' @details shiny progress bar will be available only if shiny package is found. 
 #' @return pb an object of class `IFC_progress` containing a progress bar of class `txtProgressBar`, `winProgressBar` or `Progress`.
 #' @keywords internal
-newPB <- function(session,
-                  title, label, 
+newPB <- function(title, label, 
                   min = 0, max = 1,
                   initial = 0,
                   steps = 21,
@@ -53,9 +51,9 @@ newPB <- function(session,
                   file = "") {
   fun = stop
   args = list("newPB: can't create progress bar")
-  if(!(missing(session)) &&
-     inherits(session, "ShinySession") &&
-     with_seed(requireNamespace("shiny", quietly = TRUE), NULL)) {
+  session = NULL
+  if(with_seed(requireNamespace("shiny", quietly = TRUE), NULL)) session = shiny::getDefaultReactiveDomain()
+  if((length(session) != 0) && inherits(session, "ShinySession")) {
     args = list(session = session,
                 min = 0,
                 max = steps- 1)

@@ -57,7 +57,7 @@ toBIN_features = function(features, endianness = .Platform$endian,
     obj_number = rev(obj_number)
   }
   if(display_progress) {
-    pb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+    pb = newPB(min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     if(endianness == .Platform$endian) {
       feat = lapply(1:L, FUN=function(i_feat) {

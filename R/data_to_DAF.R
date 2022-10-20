@@ -286,7 +286,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
         if(verbose) message("writing features binary values")
         writeBin(c(as.raw(c(0x0a, 0, 30)), feat_version, feat_number, obj_number), con = towrite)
         if(display_progress) {
-          pb_feb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+          pb_feb = newPB(min = 0, max = L, initial = 0, style = 3)
           tryCatch({
           if(endianness == .Platform$endian) {
             feat = lapply(1:L, FUN=function(i_feat) {
@@ -337,7 +337,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
         if(verbose) message("writing images binary values")
         writeBin(object = SO_number, con = towrite)
         if(display_progress) {
-          pb_imb = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+          pb_imb = newPB(min = 0, max = L, initial = 0, style = 3)
           tryCatch({
           if(endianness == .Platform$endian) {
             imgs = lapply(1:L, FUN=function(i_image) {
@@ -465,7 +465,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
       L = length(obj$features)
       cat(indent1, file = file_w, append = TRUE, "<FeatureValues>\n")
       if(display_progress) {
-        pb_fen = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+        pb_fen = newPB(min = 0, max = L, initial = 0, style = 3)
         tryCatch({
         lapply(1:L, FUN=function(i_feat) {
           setPB(pb_fen, value = i_feat, title = title_progress, label = "writing features values (xml)")
@@ -489,7 +489,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
       if(is_fcs) {
         L = as.integer(obj$description$ID$objcount)
         if(display_progress) {
-          pb_imn = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+          pb_imn = newPB(min = 0, max = L, initial = 0, style = 3)
           tryCatch({
             lapply(0:(L-1), FUN=function(i_img) {
               setPB(pb_imn, value = i_img, title = title_progress, label = "writing images values (xml)")
@@ -507,7 +507,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
         }
       } else {
         if(display_progress) {
-          pb_imn = newPB(session = dots$session, min = 0, max = L, initial = 0, style = 3)
+          pb_imn = newPB(min = 0, max = L, initial = 0, style = 3)
           tryCatch({
             lapply(1:L, FUN=function(i_img) {
               setPB(pb_imn, value = i_img, title = title_progress, label = "writing images values (xml)")
