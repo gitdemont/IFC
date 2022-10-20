@@ -35,10 +35,11 @@
 #' @param initial initial value for the progress bar.
 #' @param steps (finite) numeric value for the number of individual chunk of the progress bar. Default is 21.
 #' @param width the width of the progress bar. If missing, the default, will be NA for "txtProgressBar" and 300 for "winProgressBar".
-#' @param style does not apply for "winProgressBar", the style of the bar. If missing, the default, will be 3 "txtProgressBar" and getShinyOption("progress.style", default = "notification") for shiny progress bar
+#' @param style does not apply for "winProgressBar", the style of the bar. If missing, the default, will be 3 "txtProgressBar" and getShinyOption("progress.style", default = "notification") for shiny progress bar.
 #' @param char only apply for "txtProgressBar", the character (or character string) to form the progress bar.
 #' @param file only apply for "txtProgressBar", an open connection object or "" which indicates the console: stderr() might be useful here. Default is "".
-#' @details shiny progress bar will be available only if shiny package is found. 
+#' @param ... Other arguments to be passed.
+#' @details shiny progress bar will be available only if shiny package is found and within a shiny app. 
 #' @return pb an object of class `IFC_progress` containing a progress bar of class `txtProgressBar`, `winProgressBar` or `Progress`.
 #' @keywords internal
 newPB <- function(title, label, 
@@ -48,7 +49,7 @@ newPB <- function(title, label,
                   width,
                   style,
                   char = "=",
-                  file = "") {
+                  file = "", ...) {
   fun = stop
   args = list("newPB: can't create progress bar")
   session = NULL

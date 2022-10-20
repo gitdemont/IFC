@@ -14,7 +14,8 @@ newPB(
   width,
   style,
   char = "=",
-  file = ""
+  file = "",
+  ...
 )
 }
 \arguments{
@@ -28,11 +29,13 @@ newPB(
 
 \item{width}{the width of the progress bar. If missing, the default, will be NA for "txtProgressBar" and 300 for "winProgressBar".}
 
-\item{style}{does not apply for "winProgressBar", the style of the bar. If missing, the default, will be 3 "txtProgressBar" and getShinyOption("progress.style", default = "notification") for shiny progress bar}
+\item{style}{does not apply for "winProgressBar", the style of the bar. If missing, the default, will be 3 "txtProgressBar" and getShinyOption("progress.style", default = "notification") for shiny progress bar.}
 
 \item{char}{only apply for "txtProgressBar", the character (or character string) to form the progress bar.}
 
 \item{file}{only apply for "txtProgressBar", an open connection object or "" which indicates the console: stderr() might be useful here. Default is "".}
+
+\item{...}{Other arguments to be passed.}
 }
 \value{
 pb an object of class `IFC_progress` containing a progress bar of class `txtProgressBar`, `winProgressBar` or `Progress`.
@@ -41,6 +44,6 @@ pb an object of class `IFC_progress` containing a progress bar of class `txtProg
 Initializes a progress bar.
 }
 \details{
-shiny progress bar will be available only if shiny package is found.
+shiny progress bar will be available only if shiny package is found and within a shiny app.
 }
 \keyword{internal}
