@@ -235,8 +235,8 @@ buildBatch <- function(files, compensation, analysis, default_batch_dir, config_
                     .children=lapply(info, FUN=function(x) do.call(what=xml_new_node, args=list(name="file", attrs = list(name=x$fileName, objectCount=ifelse(getFileExt(x$fileName)!="rif","0",format(x$objcount,scientific=FALSE))))))),
                list(name="statfiles",
                     .children=lapply(unlist(lapply(info, FUN=function(x) {
-                      if(getFileExt(x$fileName) == "daf") return(paste0(suffix,basename(x$fileName)))
-                      if(getFileExt(x$fileName) == "cif") return(paste0(suffix,gsub("cif$","daf",basename(x$fileName_image))))
+                      if(getFileExt(x$fileName) == "daf") return(gsub("\\.daf$",paste0(suffix,".daf"),basename(x$fileName)))
+                      if(getFileExt(x$fileName) == "cif") return(gsub("\\.cif$",paste0(suffix,".daf"),basename(x$fileName_image)))
                       # segment_rif only applies to rif
                       foo = 1
                       if(segment_rif!="None") foo = ceiling(x$objcount/chunk)
