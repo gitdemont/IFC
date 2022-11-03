@@ -10,7 +10,7 @@ cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2
 \arguments{
 \item{fname}{string, path to file.}
 
-\item{offset}{uint32_t, position of the beginning of compressed image.}
+\item{offset}{std::size_t, position of the beginning of compressed image.}
 
 \item{nbytes}{uint32_t, number of bytes of compressed image.}
 

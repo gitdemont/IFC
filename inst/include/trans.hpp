@@ -150,6 +150,57 @@ int32_t hpp_uint32_to_int32 (const uint32_t x) {
   return out;
 }
 
+//' @title Offset to Raw Conversion
+//' @name cpp_offset_to_raw
+//' @description
+//' Converts offset to raw
+//' @param x double.
+//' @param swap bool, whether to swap or not.
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+Rcpp::RawVector hpp_offset_to_raw (const double x, const bool swap = false) {
+  uint32_t a = x / 4294967296;
+  uint32_t b = x - (a * 4294967296);
+  if(swap) {
+    Rcpp::RawVector aa = rev(hpp_uint32_to_raw(a));
+    Rcpp::RawVector bb = rev(hpp_uint32_to_raw(b));
+    return c_vector(bb, aa);
+  }
+  return c_vector(hpp_uint32_to_raw(b), hpp_uint32_to_raw(a));
+}
+
+//' @title Offset to Raw Conversion
+//' @name cpp_raw_to_offset
+//' @description
+//' Converts raw to offset
+//' @param x RawVector.
+//' @param swap bool, whether to swap or not.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+double hpp_raw_to_offset (const Rcpp::RawVector x, const bool swap = false) {
+  if(x.size() != 8) Rcpp::stop("cpp_raw_to_offset: 'x' should be a raw vector of length 8");
+  if(swap) {
+    return hpp_int32_to_uint32((x[3] & 0xff) + 
+                               ((x[2] & 0xff) <<  8) +
+                               ((x[1] & 0xff) << 16) +
+                               ((x[0] & 0xff) << 24)) +
+    4294967296 * hpp_int32_to_uint32((x[7] & 0xff) + 
+                               ((x[6] & 0xff) <<  8) +
+                               ((x[5] & 0xff) << 16) +
+                               ((x[4] & 0xff) << 24));
+  }
+  return hpp_int32_to_uint32((x[0] & 0xff) + 
+                             ((x[1] & 0xff) <<  8) +
+                             ((x[2] & 0xff) << 16) +
+                             ((x[3] & 0xff) << 24)) +
+  4294967296 * hpp_int32_to_uint32((x[4] & 0xff) + 
+                             ((x[5] & 0xff) <<  8) +
+                             ((x[6] & 0xff) << 16) +
+                             ((x[7] & 0xff) << 24));
+}
+
 //' @title Int64 to Uint64 64bits Conversion
 //' @name cpp_int64_to_uint64
 //' @description

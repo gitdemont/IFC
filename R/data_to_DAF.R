@@ -171,7 +171,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
     
     if(fullname) {
       found = FALSE
-      checksum = attr(obj$offsets, "checksum")
+      checksum = attr(obj$checksum, "checksum")
       
       fileName_image = file.path(cifdir, basename(obj$description$ID$file)) # look in cifdir 1st
       if(file.exists(fileName_image)) {
@@ -272,173 +272,12 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
       tryCatch({
         write_xml(root, file = towrite, encoding = "utf-8")
         seek(con = towrite, where = seek(towrite)-1, origin = "start")
-        L = ncol(obj$features)
-        feat_version = cpp_uint32_to_raw(1)
-        feat_number = cpp_uint32_to_raw(ncol(obj$features))
-        obj_number = cpp_uint32_to_raw(nrow(obj$features))
-        if(endianness != .Platform$endian) {
-          feat_version = rev(feat_version)
-          feat_number = rev(feat_number)
-          obj_number = rev(obj_number)
-        }
-        
         # writing features
-        if(verbose) message("writing features binary values")
-        writeBin(c(as.raw(c(0x0a, 0, 30)), feat_version, feat_number, obj_number), con = towrite)
-        if(display_progress) {
-          pb_feb = newPB(min = 0, max = L, initial = 0, style = 3)
-          tryCatch({
-          if(endianness == .Platform$endian) {
-            feat = lapply(1:L, FUN=function(i_feat) {
-              setPB(pb_feb, value = i_feat, title = title_progress, label = "writing features values (binary)")
-              writeBin(object = cpp_uint32_to_raw(i_feat-1), con = towrite)
-              writeBin(object = obj$features[[i_feat]], con = towrite, size = 8, endian = endianness)
-            })
-          } else {
-            feat = lapply(1:L, FUN=function(i_feat) {
-              setPB(pb_feb, value = i_feat, title = title_progress, label = "writing features values (binary)")
-              writeBin(object = rev(cpp_uint32_to_raw(i_feat-1)), con = towrite)
-              writeBin(object = obj$features[[i_feat]], con = towrite, size = 8, endian = endianness)
-            })
-          }
-        }, error = function(e) {
-          stop(e$message)
-        }, finally = endPB(pb_feb))
-        } else {
-          if(endianness == .Platform$endian) {
-            feat = lapply(1:L, FUN=function(i_feat) {
-              writeBin(object = cpp_uint32_to_raw(i_feat-1), con = towrite)
-              writeBin(object = obj$features[[i_feat]], con = towrite, size = 8, endian = endianness)
-            })
-          } else {
-            feat = lapply(1:L, FUN=function(i_feat) {
-              writeBin(object = rev(cpp_uint32_to_raw(i_feat-1)), con = towrite)
-              writeBin(object = obj$features[[i_feat]], con = towrite, size = 8, endian = endianness)
-            })
-          }
-        }
-        
-        L = nrow(obj$images)
-        n_m = cpp_uint32_to_raw(length(bgm))
-        n_s = cpp_uint32_to_raw(length(bgs))
-        n_c = cpp_uint32_to_raw(length(satc))
-        n_p = cpp_uint32_to_raw(length(satp))
-        SO_number = cpp_uint32_to_raw(L)
-        if(endianness != .Platform$endian) {
-          n_m = rev(n_m)
-          n_s = rev(n_s)
-          n_c = rev(n_c)
-          n_p = rev(n_p)
-          SO_number = rev(SO_number)
-        }
-        extra = as.raw(c(0x00, 0x00, 0x00, 0x00))
-        
+        toBIN_features(features = obj$features, w_con = towrite, endianness = endianness,
+                       display_progress = display_progress, verbose = verbose, title = title_progress)
         # writing images
-        if(verbose) message("writing images binary values")
-        writeBin(object = SO_number, con = towrite)
-        if(display_progress) {
-          pb_imb = newPB(min = 0, max = L, initial = 0, style = 3)
-          tryCatch({
-          if(endianness == .Platform$endian) {
-            imgs = lapply(1:L, FUN=function(i_image) {
-              setPB(pb_imb, value = i_image, title = title_progress, label = "writing images values (binary)")
-              writeBin(object = c(cpp_uint32_to_raw(obj$images[i_image,"id"]),
-                                  c(cpp_uint32_to_raw(obj$images[i_image,"imgIFD"]), extra),
-                                  c(cpp_uint32_to_raw(obj$images[i_image,"mskIFD"]), extra),
-                                  c(cpp_uint32_to_raw(obj$images[i_image,"spIFD"]), extra),
-                                  writeBin(obj$images[i_image,"w"], con = raw(), endian = endianness, size = 8),
-                                  writeBin(obj$images[i_image,"l"], con = raw(), endian = endianness, size = 8),
-                                  writeBin(obj$images[i_image,"fs"], con = raw(), endian = endianness, size = 8),
-                                  cpp_uint32_to_raw(obj$images[i_image,"cl"]),
-                                  cpp_uint32_to_raw(obj$images[i_image,"ct"]),
-                                  writeBin(obj$images[i_image,"objCenterX"], con = raw(), endian = endianness, size = 8),
-                                  writeBin(obj$images[i_image,"objCenterY"], con = raw(), endian = endianness, size = 8),
-                                  n_s,
-                                  writeBin(unlist(obj$images[i_image, bgs]), con = raw(), endian = endianness, size = 8),
-                                  n_m,
-                                  writeBin(unlist(obj$images[i_image, bgm]), con = raw(), endian = endianness, size = 8),
-                                  n_c,
-                                  writeBin(unlist(obj$images[i_image, satc]), con = raw(), endian = endianness, size = 8),
-                                  n_p,
-                                  writeBin(unlist(obj$images[i_image, satp]), con = raw(), endian = endianness, size = 8)),
-                       con = towrite)
-            })
-          } else {
-            imgs = lapply(1:L, FUN=function(i_image) {
-              setPB(pb_imb, value = i_image, title = title_progress, label = "writing images values (binary)")
-              writeBin(object = c(rev(cpp_uint32_to_raw(obj$images[i_image,"id"])),
-                                  rev(c(cpp_uint32_to_raw(obj$images[i_image,"imgIFD"]), extra)),
-                                  rev(c(cpp_uint32_to_raw(obj$images[i_image,"mskIFD"]), extra)),
-                                  rev(c(cpp_uint32_to_raw(obj$images[i_image,"spIFD"]), extra)),
-                                  writeBin(obj$images[i_image,"w"], con = raw(), endian = endianness, size = 8),
-                                  writeBin(obj$images[i_image,"l"], con = raw(), endian = endianness, size = 8),
-                                  writeBin(obj$images[i_image,"fs"], con = raw(), endian = endianness, size = 8),
-                                  rev(cpp_uint32_to_raw(obj$images[i_image,"cl"])),
-                                  rev(cpp_uint32_to_raw(obj$images[i_image,"ct"])), 
-                                  writeBin(obj$images[i_image,"objCenterX"], con = raw(), endian = endianness, size = 8),
-                                  writeBin(obj$images[i_image,"objCenterY"], con = raw(), endian = endianness, size = 8),
-                                  n_s,
-                                  writeBin(unlist(obj$images[i_image, bgs]), con = raw(), endian = endianness, size = 8),
-                                  n_m,
-                                  writeBin(unlist(obj$images[i_image, bgm]), con = raw(), endian = endianness, size = 8),
-                                  n_c,
-                                  writeBin(unlist(obj$images[i_image, satc]), con = raw(), endian = endianness, size = 8),
-                                  n_p,
-                                  writeBin(unlist(obj$images[i_image, satp]), con = raw(), endian = endianness, size = 8)),
-                       con = towrite)
-            })
-          }
-        }, error = function(e) {
-          stop(e$message)
-        }, finally = endPB(pb_imb))
-        } else {
-          if(endianness == .Platform$endian) {
-            imgs = lapply(1:L, FUN=function(i_image) {
-              writeBin(object = c(cpp_uint32_to_raw(obj$images[i_image,"id"]),
-                                  c(cpp_uint32_to_raw(obj$images[i_image,"imgIFD"]), extra),
-                                  c(cpp_uint32_to_raw(obj$obj$images[i_image,"mskIFD"]), extra),
-                                  c(cpp_uint32_to_raw(obj$images[i_image,"spIFD"]), extra), # add 4 bytes of extra 0
-                                  writeBin(obj$images[i_image,"w"], con = raw(), endian = endianness, size = 8),
-                                  writeBin(obj$images[i_image,"l"], con = raw(), endian = endianness, size = 8),
-                                  writeBin(obj$images[i_image,"fs"], con = raw(), endian = endianness, size = 8),
-                                  cpp_uint32_to_raw(obj$images[i_image,"cl"]),
-                                  cpp_uint32_to_raw(obj$images[i_image,"ct"]),
-                                  writeBin(obj$images[i_image,"objCenterX"], con = raw(), endian = endianness, size = 8),
-                                  writeBin(obj$images[i_image,"objCenterY"], con = raw(), endian = endianness, size = 8),
-                                  n_s,
-                                  writeBin(unlist(obj$images[i_image, bgs]), con = raw(), endian = endianness, size = 8),
-                                  n_m,
-                                  writeBin(unlist(obj$images[i_image, bgm]), con = raw(), endian = endianness, size = 8),
-                                  n_c,
-                                  writeBin(unlist(obj$images[i_image, satc]), con = raw(), endian = endianness, size = 8),
-                                  n_p,
-                                  writeBin(unlist(obj$images[i_image, satp]), con = raw(), endian = endianness, size = 8)),
-                       con = towrite)
-            })
-          } else {
-            imgs = lapply(1:L, FUN=function(i_image) {
-              writeBin(object = c(rev(cpp_uint32_to_raw(obj$images[i_image,"id"])),
-                                  rev(c(cpp_uint32_to_raw(obj$images[i_image,"imgIFD"]), extra)),
-                                  rev(c(cpp_uint32_to_raw(obj$images[i_image,"mskIFD"]), extra)),
-                                  rev(c(cpp_uint32_to_raw(obj$images[i_image,"spIFD"]), extra)),
-                                  writeBin(obj$images[i_image,"l"], con = raw(), endian = endianness, size = 8),
-                                  writeBin(obj$images[i_image,"fs"], con = raw(), endian = endianness, size = 8),
-                                  rev(cpp_uint32_to_raw(obj$images[i_image,"cl"])),
-                                  rev(cpp_uint32_to_raw(obj$images[i_image,"ct"])),  
-                                  writeBin(obj$images[i_image,"objCenterX"], con = raw(), endian = endianness, size = 8),
-                                  writeBin(obj$images[i_image,"objCenterY"], con = raw(), endian = endianness, size = 8),
-                                  n_s,
-                                  writeBin(unlist(obj$images[i_image, bgs]), con = raw(), endian = endianness, size = 8),
-                                  n_m,
-                                  writeBin(unlist(obj$images[i_image, bgm]), con = raw(), endian = endianness, size = 8),
-                                  n_c,
-                                  writeBin(unlist(obj$images[i_image, satc]), con = raw(), endian = endianness, size = 8),
-                                  n_p,
-                                  writeBin(unlist(obj$images[i_image, satp]), con = raw(), endian = endianness, size = 8)),
-                       con = towrite)
-            })
-          }
-        }
+        toBIN_images(images = obj$images, w_con = towrite, endianness = endianness,
+                     display_progress = display_progress, verbose = verbose, title = title_progress)
       }, error = function(e) {
         stop(e$message, call. = FALSE)
       }, finally = close(towrite))

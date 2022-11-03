@@ -108,7 +108,7 @@ checksumDAF <- function(fileName, endianness = .Platform$endian, ...) {
     ##### loop over xml SO nodes for id and img/msk offsets
     while((length(obj) != 0) && (i_image < SO_number)) {
       i_image = i_image + 1
-      val = as.integer(xml_attrs(nodes[[i_image]])[1:2])
+      val = as.numeric(xml_attrs(nodes[[i_image]])[1:2])
       if(val[1] %in% obj) {
         if(warn) if(val[1] != obj[1]) { # ensure it is stored in ascending order
           warning("raw object are not stored in expected order")

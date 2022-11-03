@@ -32,12 +32,35 @@
 #define IFC_TIFF_HPP
 
 #include <Rcpp.h>
-// [[Rcpp::depends(RcppProgress)]]
-#include <progress.hpp>
 #include <iostream>
 #include <fstream>
+#include <string>
+#include "trans.hpp"
 #include "utils.hpp"
 using namespace Rcpp;
+
+// import setPB from 'IFC' package
+void hpp_setPB (SEXP pb,
+                double value = 0.0,
+                const std::string title = "",
+                const std::string label = "") {
+  Rcpp::Function asNamespace("asNamespace");
+  Rcpp::Environment IFC = asNamespace("IFC");
+  Rcpp::Function setPB = IFC["setPB"];
+  if(TYPEOF(pb) != NILSXP) setPB(pb, value, title, label);
+}
+
+// import basename from 'base' package
+std::string hpp_basename (const std::string fname) {
+  Environment base("package:base");
+  Function basename = base["basename"];
+  Rcpp::Nullable<Rcpp::CharacterVector> out_ = basename(fname);
+  if(out_.isNotNull()) {
+    Rcpp::CharacterVector out(out_.get());
+    return as<std::string>(out[0]);
+  }
+  return "";
+}
 
 static int sizes[13] = {0,1,1,2,4,4,1,1,2,4,4,4,8};
 static int multi[13] = {0,1,1,1,1,2,1,1,1,1,2,1,1};
@@ -69,7 +92,6 @@ std::string hpp_checkTIFF (const std::string fname) {
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   std::string out = "";
   if (fi.is_open()) {
-    try {
       fi.seekg(0, std::ios::end);
       std::size_t filesize = fi.tellg();
       if(filesize < 22) { // the 4 magic bytes + 1st Offset (4 bytes) + Count of Entry (2 bytes) + at least 1 IFD Entry (12 bytes) + last offset (4 bytes)
@@ -81,205 +103,16 @@ std::string hpp_checkTIFF (const std::string fname) {
       
       if(magic == 18761) out = "little"; // 49,49
       if(magic == 19789) out = "big"; // 4D,4D
-      if(out == "") {
-        Rcpp::stop("hpp_checkTIFF: File is not a XIF file: No magic bytes 0-1");
-      }
+      if(out == "") Rcpp::stop("hpp_checkTIFF: File is not a XIF file: No magic bytes 0-1");
       fi.read((char *)&magic,sizeof(magic));
       if(out == "big") magic = bytes_swap(magic);
-      if(magic != 42) {
-        Rcpp::stop("hpp_checkTIFF: File is not a XIF file: No magic bytes 2-3");
-      }
-      fi.close();
+      if(magic != 42) Rcpp::stop("hpp_checkTIFF: File is not a XIF file: No magic bytes 2-3");
       return out;
-    }
-    catch(std::exception &ex) {	
-      fi.close();
-      forward_exception_to_r(ex);
-    }
-    catch(...) { 
-      Rcpp::stop("hpp_checkTIFF: c++ exception (unknown reason)"); 
-    }
   }
   else {
     Rcpp::stop("hpp_checkTIFF: Unable to open file");
   }
   return "";
-}
-
-Rcpp::IntegerVector hpp_getoffsets_noid_obj_unk(const std::string fname, 
-                                                const bool verbose = false) {
-  bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
-  
-  std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-  if (fi.is_open()) {
-    try {
-      fi.seekg(0, std::ios::end);
-      std::size_t filesize = fi.tellg(); // offsets are uint32 so we can't go further
-      uint32_t offset = 4; // offsets are uint32 
-      std::size_t pos;
-      Rcpp::IntegerVector out;
-      char buf_entries [2];
-      char buf_offset [4];
-      uint16_t entries; // entries are uint16
-      
-      if(verbose) Rcout << "Extracting offsets from " << fname << std::endl;
-      fi.seekg(offset, std::ios::beg);
-      fi.read((char*)&buf_offset, sizeof(buf_offset));
-      std::memcpy(&offset, buf_offset, sizeof(offset));
-      
-      if(swap) {
-        offset = bytes_swap(offset);
-        if(!offset) {
-          Rcpp::stop("hpp_getoffsets_noid: No IFD offsets found");
-        }
-        while(offset) {
-          out.push_back(offset);
-          fi.seekg(offset, std::ios::beg);
-          fi.read((char*)buf_entries, sizeof(buf_entries));
-          std::memcpy(&entries, buf_entries, sizeof(entries));
-          entries = bytes_swap(entries);
-          pos = 2 + offset + 12 * entries;
-          if((pos > filesize) || (pos >= 0xffffffff)) { // can't read to more than 4,294,967,295
-            Rcpp::stop("hpp_getoffsets_noid: Buffer overrun");
-          }
-          fi.seekg(pos, std::ios::beg);
-          fi.read((char*)buf_offset, sizeof(buf_offset));
-          std::memcpy(&offset, buf_offset, sizeof(offset));
-          offset = bytes_swap(offset);
-        }
-      } else {
-        if(!offset) {
-          Rcpp::stop("hpp_getoffsets_noid: No IFD offsets found");
-        }
-        while(offset) {
-          out.push_back(offset);
-          fi.seekg(offset, std::ios::beg);
-          fi.read((char*)buf_entries, sizeof(buf_entries));
-          std::memcpy(&entries, buf_entries, sizeof(entries));
-          pos = 2 + offset + 12 * entries;
-          if((pos > filesize) || (pos >= 0xffffffff)) { // can't read to more than 4,294,967,295
-            Rcpp::stop("hpp_getoffsets_noid: Buffer overrun");
-          }
-          fi.seekg(pos, std::ios::beg);
-          fi.read((char*)buf_offset, sizeof(buf_offset));
-          std::memcpy(&offset, buf_offset, sizeof(offset));
-        }
-      }
-      fi.close();
-      return out;
-    }
-    catch(std::exception &ex) {	
-      fi.close();
-      forward_exception_to_r(ex);
-    }
-    catch(...) { 
-      Rcpp::stop("hpp_getoffsets_noid: c++ exception (unknown reason)"); 
-    }
-  }
-  else {
-    Rcpp::stop("hpp_getoffsets_noid: Unable to open file");
-  }
-  return Rcpp::IntegerVector::create(0);
-}
-
-Rcpp::IntegerVector hpp_getoffsets_noid_obj_ok(const std::string fname,
-                                               const R_len_t obj_count = 0,
-                                               const bool display_progress = false,
-                                               const bool verbose = false) {
-  bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
-  Rcpp::IntegerVector out = Rcpp::no_init(obj_count * 2);
-  bool show_pb = display_progress;
-  if(obj_count <= 0) show_pb = false;
-  
-  std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-  if (fi.is_open()) {
-    Progress p(obj_count * 2 + 1, show_pb);
-    try {
-      fi.seekg(0, std::ios::end);
-      std::size_t filesize = fi.tellg(); // offsets are uint32 so we can't go further
-      uint32_t offset = 4; // offsets are uint32 
-      std::size_t pos;
-      char buf_entries [2];
-      char buf_offset [4];
-      R_len_t i_obj = 0;
-      uint16_t entries; // entries are uint16
-      
-      if(verbose) Rcout << "Extracting offsets from " << fname << std::endl;
-      fi.seekg(offset, std::ios::beg);
-      fi.read((char*)&buf_offset, sizeof(buf_offset));
-      std::memcpy(&offset, buf_offset, sizeof(offset));
-      
-      if(swap) {
-        offset = bytes_swap(offset);
-        if(!offset) {
-          Rcpp::stop("hpp_getoffsets_noid: No IFD offsets found");
-        }
-        while(offset) {
-          p.increment();
-          if(i_obj < obj_count * 2) {
-            out[i_obj++] = offset;
-          } else {
-            out.push_back(offset);
-          }
-          fi.seekg(offset, std::ios::beg);
-          fi.read((char*)buf_entries, sizeof(buf_entries));
-          std::memcpy(&entries, buf_entries, sizeof(entries));
-          entries = bytes_swap(entries);
-          pos = 2 + offset + 12 * entries;
-          if((pos > filesize) || (pos >= 0xffffffff)) { // can't read to more than 4,294,967,295
-            Rcpp::stop("hpp_getoffsets_noid: Buffer overrun");
-          }
-          fi.seekg(pos, std::ios::beg);
-          fi.read((char*)buf_offset, sizeof(buf_offset));
-          std::memcpy(&offset, buf_offset, sizeof(offset));
-          offset = bytes_swap(offset);
-          if(Progress::check_abort()) {
-            Rcpp::stop("hpp_getoffsets_noid: Interrupted by user");
-          }
-        }
-      } else {
-        if(!offset) {
-          Rcpp::stop("hpp_getoffsets_noid: No IFD offsets found");
-        }
-        while(offset) {
-          p.increment();
-          if(i_obj < obj_count * 2) {
-            out[i_obj++] = offset;
-          } else {
-            out.push_back(offset);
-          }
-          fi.seekg(offset, std::ios::beg);
-          fi.read((char*)buf_entries, sizeof(buf_entries));
-          std::memcpy(&entries, buf_entries, sizeof(entries));
-          pos = 2 + offset + 12 * entries;
-          if((pos > filesize) || (pos >= 0xffffffff)) { // can't read to more than 4,294,967,295
-            Rcpp::stop("hpp_getoffsets_noid: Buffer overrun");
-          }
-          fi.seekg(pos, std::ios::beg);
-          fi.read((char*)buf_offset, sizeof(buf_offset));
-          std::memcpy(&offset, buf_offset, sizeof(offset));
-          if(Progress::check_abort()) {
-            Rcpp::stop("hpp_getoffsets_noid: Interrupted by user");
-          }
-        }
-      }
-      p.cleanup();
-      fi.close();
-      return out;
-    }
-    catch(std::exception &ex) {	
-      p.cleanup();
-      fi.close();
-      forward_exception_to_r(ex);
-    }
-    catch(...) { 
-      Rcpp::stop("hpp_getoffsets_noid: c++ exception (unknown reason)"); 
-    }
-  }
-  else {
-    Rcpp::stop("hpp_getoffsets_noid: Unable to open file");
-  }
-  return Rcpp::IntegerVector::create(0);
 }
 
 //' @title IFC_offsets Computation without Id Determination
@@ -290,21 +123,125 @@ Rcpp::IntegerVector hpp_getoffsets_noid_obj_ok(const std::string fname,
 //' @param obj_count R_len_t, numbers of objects present in the file. Default is 0.
 //' If obj_count <= 0 then progress_bar is forced to false.
 //' @param display_progress bool, whether to display a progress bar. Default is false.
+//' @param pb a List of class `IFC_progress` containing a progress bar of class `txtProgressBar`, `winProgressBar` or `Progress`. Default is R_Nilvalue.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
 //' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
-//' @return an integer vector with offsets of IFDs found.
+//' @return an numeric vector with offsets of IFDs found.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
-Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname, 
+Rcpp::NumericVector hpp_getoffsets_noid(const std::string fname, 
                                         const R_len_t obj_count = 0, 
                                         const bool display_progress = false,
+                                        const Rcpp::Nullable<Rcpp::List> pb = R_NilValue,
                                         const bool verbose = false) {
-  if(obj_count <= 0) {
-    return hpp_getoffsets_noid_obj_unk(fname, verbose);
-  } else {
-    return hpp_getoffsets_noid_obj_ok(fname, obj_count, display_progress, verbose);
+  bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
+  Rcpp::NumericVector out(obj_count * 2);
+  
+  std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+  if (fi.is_open()) {
+      fi.seekg(0, std::ios::end);
+      std::size_t filesize = fi.tellg();
+      uint32_t offset = 4;
+      std::size_t pos = 0;
+      unsigned short count = 0;
+      unsigned short count_max = 50000;
+      Rcpp::NumericVector out(0);
+      Rcpp::NumericVector tmp(count_max);
+      char buf_entries [2];
+      char buf_offset [4];
+      uint16_t entries; // entries are uint16
+      std::size_t off = 4;
+      uint32_t bigfile = filesize / 4294967296;
+      bool is_bigfile = bigfile;
+      unsigned int incr = 0;
+      std::string bname = hpp_basename(fname);
+
+      if(verbose) Rcout << "Extracting offsets from " << fname << std::endl;
+      fi.seekg(offset, std::ios::beg);
+      fi.read((char*)&buf_offset, sizeof(buf_offset));
+      std::memcpy(&offset, buf_offset, sizeof(offset));
+      
+      if(swap) {
+        offset = bytes_swap(offset);
+        if(!offset) Rcpp::stop("hpp_getoffsets_noid: No IFD offsets found");
+        while(offset) {
+          if((++count % count_max) == 0) {
+            out = c_vector(out, tmp);
+            tmp.fill(0);
+            count = 1;
+            Rcpp::checkUserInterrupt();
+            if(display_progress) {
+              if(obj_count <= 0) {
+                hpp_setPB(pb, -1, bname, to_string(out.size() >> 1).append(" objects found"));
+              } else {
+                hpp_setPB(pb, (out.size() >> 1), bname, "extracting offets"); 
+              }
+            }
+          }
+          if(is_bigfile) {
+            off = offset + incr * 4294967296;
+            if(off < pos) {
+              incr++;
+              off = offset + incr * 4294967296;
+            }
+          } else {
+            off = offset;
+          }
+          tmp[count-1] = off;
+          fi.seekg(off, std::ios::beg);
+          fi.read((char*)buf_entries, sizeof(buf_entries));
+          std::memcpy(&entries, buf_entries, sizeof(entries));
+          entries = bytes_swap(entries);
+          pos = 2 + off + 12 * entries;
+          if(pos > filesize) Rcpp::stop("hpp_getoffsets_noid: Buffer overrun");
+          fi.seekg(pos, std::ios::beg);
+          fi.read((char*)buf_offset, sizeof(buf_offset));
+          std::memcpy(&offset, buf_offset, sizeof(offset));
+          offset = bytes_swap(offset);
+        }
+      } else {
+        if(!offset) Rcpp::stop("hpp_getoffsets_noid: No IFD offsets found");
+        while(offset) {
+          if((++count % count_max) == 0) {
+            out = c_vector(out, tmp);
+            tmp.fill(0);
+            count = 1;
+            Rcpp::checkUserInterrupt();
+            if(display_progress) {
+              if(obj_count <= 0) {
+                hpp_setPB(pb, -1, bname, to_string(out.size() >> 1).append(" objects found"));
+              } else {
+                hpp_setPB(pb, (out.size() >> 1), bname, "extracting offets"); 
+              }
+            }
+          }
+          if(is_bigfile) {
+            off = offset + incr * 4294967296;
+            if(off < pos) {
+              incr++;
+              off = offset + incr * 4294967296;
+            }
+          } else {
+            off = offset;
+          }
+          tmp[count-1] = off;
+          fi.seekg(off, std::ios::beg);
+          fi.read((char*)buf_entries, sizeof(buf_entries));
+          std::memcpy(&entries, buf_entries, sizeof(entries));
+          pos = 2 + off + 12 * entries;
+          if(pos > filesize) Rcpp::stop("hpp_getoffsets_noid: Buffer overrun");
+          fi.seekg(pos, std::ios::beg);
+          fi.read((char*)buf_offset, sizeof(buf_offset));
+          std::memcpy(&offset, buf_offset, sizeof(offset));
+        }
+      }
+      return c_vector(out, tmp);
   }
+  else {
+    Rcpp::stop("hpp_getoffsets_noid: Unable to open file");
+  }
+  return Rcpp::NumericVector::create(0);
 }
 
 //' @title IFD Tags Extraction
@@ -312,9 +249,9 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
 //' @description
 //' Returns TAGS contained within an IFD (Image Field Directory) entry.
 //' @param fname string, path to file.
-//' @param offset uint32_t, position of the IFD beginning.
+//' @param offset std::size_t, position of the IFD beginning.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is 'false'.
-//' @param trunc_bytes uint32_t maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 12.\cr
+//' @param trunc_bytes uint32_t maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDEFINED for TAGS (1, 2, 6 or 7). Default is 12.\cr
 //' However, if less is found, less is returned in map.
 //' Note that, if 0 is provided, it will be automatically set to 1.
 //' @param force_trunc whether to force truncation for all TAGS types. Default is FALSE.\cr
@@ -324,7 +261,7 @@ Rcpp::IntegerVector hpp_getoffsets_noid(const std::string fname,
 ////' @export
 // [[Rcpp::export(rng = false)]]
 Rcpp::List hpp_getTAGS (const std::string fname, 
-                        const uint32_t offset, 
+                        const std::size_t offset, 
                         const bool verbose = false, 
                         const uint8_t trunc_bytes = 12, 
                         const bool force_trunc = false) {
@@ -332,21 +269,23 @@ Rcpp::List hpp_getTAGS (const std::string fname,
   
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (fi.is_open()) {
-    try {
       fi.seekg(0, std::ios::end);
       std::size_t filesize = fi.tellg();
       fi.seekg(0, std::ios::beg);
       if(offset > (filesize - 2)) {
-        Rcpp::Rcerr << "hpp_getTAGS: offset@" << offset << " points to outside of " << fname << std::endl;
+        Rcpp::Rcerr << "\nhpp_getTAGS: offset@" << offset << " points to outside of " << fname << std::endl;
         Rcpp::stop("hpp_getTAGS: TAG offset is higher than file size");
       }
       if(verbose) Rcout << "Extracting TAGs from "<< fname << ", filesize:" << filesize << " @offset:" << offset << std::endl;
-      
       uint16_t entries;
       uint16_t IFD_tag;
       uint16_t IFD_type;
       uint32_t IFD_count;
       uint32_t IFD_value;
+      std::size_t ifd_val;
+      uint32_t bigfile = filesize / 4294967296;
+      bool is_bigfile = bigfile;
+      uint32_t incr = offset / 4294967296;
       uint32_t IFD_bytes;
       uint32_t i;
       uint32_t tot_scalar;
@@ -371,7 +310,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
       // RObject TILE_LENGTH = R_NilValue;        // 323
       // RObject TILE_WIDTH = R_NilValue;         // 322
       RObject OBJECT_ID = R_NilValue;             // 33003
-      // Rcpp::IntegerVector OBJECT_ID_2 = IR_NilValue; // 33024
+      // Rcpp::NumericVector OBJECT_ID_2 = IR_NilValue; // 33024
       RObject COMPRESSION = R_NilValue;           // 259
       RObject TYPE = R_NilValue;                  // 33002
       RObject STRIP_OFFSETS = R_NilValue;         // 273
@@ -386,8 +325,8 @@ Rcpp::List hpp_getTAGS (const std::string fname,
       if(verbose) Rcout << "Entries: " << entries << std::endl;
       if(swap) {
         for(uint16_t k = 0; k < entries; k++) {
-          if((pos > (filesize - 12)) || (pos >= 0xffffffff)) {
-            Rcpp::Rcerr << "hpp_getTAGS: in IFD: " << k << " @" << pos + 12 << " is outside of " << fname << std::endl;
+          if(pos > (filesize - 12)) {
+            Rcpp::Rcerr << "\nhpp_getTAGS: in IFD: " << k << " @" << pos + 12 << " is outside of " << fname << std::endl;
             Rcpp::stop("hpp_getTAGS: IFD detected position is higher than file size");
           }
           fi.seekg(pos, std::ios::beg);
@@ -404,7 +343,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
           IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
           
           if((IFD_type > 12) || (IFD_type < 1)) {
-            Rcpp::Rcerr << "hpp_getTAGS: in IFD: " << k << " IFD_type=" << IFD_type << " is not allowed" << std::endl;
+            Rcpp::Rcerr << "\nhpp_getTAGS: in IFD: " << k << " @" << pos + 12 << " IFD_type=" << IFD_type << " is not allowed" << std::endl;
             Rcpp::stop("hpp_getTAGS: Value not allowed for IFD type");
           }
           pos += 12;
@@ -416,18 +355,23 @@ Rcpp::List hpp_getTAGS (const std::string fname,
           // Except for tag 33052 (BG_MEAN) and 33053 (BG_STD)
           // that are retrieved completly (needed for img/msk extraction)
           ext_scalar = ((is_char || force_trunc) && (tot_scalar > max_scalar) && (IFD_tag != 33052) && (IFD_tag != 33053)) ? max_scalar:tot_scalar;
+          ifd_val = IFD_value;
           if(IFD_bytes > 4) {
-            if((IFD_value + IFD_bytes) > filesize) {
-              Rcpp::Rcerr << "hpp_getTAGS: in IFD: " << k << " @" << IFD_value + IFD_bytes << " is outside of " << fname << std::endl;
+            if(is_bigfile) {
+              ifd_val = IFD_value + incr * 4294967296;
+              if(ifd_val < offset) ifd_val += 4294967296;
+            }
+            if((ifd_val + IFD_bytes) > filesize) {
+              Rcpp::Rcerr << "\nhpp_getTAGS: in IFD: " << k << " @" << ifd_val + IFD_bytes << " is outside of " << fname << std::endl;
               Rcpp::stop("hpp_getTAGS: IFD value points to outside of file");
             }
-            fi.seekg(IFD_value, std::ios::beg);
+            fi.seekg(ifd_val, std::ios::beg);
             IFD_off = true;
           } else {
             fi.seekg(pos - 4, std::ios::beg);
             IFD_off = false;
           }
-          if(verbose) Rcout << "Tag:" << IFD_tag << " Typ:" << IFD_type << " Count:" << IFD_count << " Value:" << IFD_value << " Bytes:" << IFD_bytes << " Off:" << IFD_off << std::endl;
+          if(verbose) Rcout << "Tag:" << IFD_tag << " Typ:" << IFD_type << " Count:" << IFD_count << " Value:" << ifd_val << " Bytes:" << IFD_bytes << " Off:" << IFD_off << std::endl;
           NAMES[k] = to_string(IFD_tag);
           
           if(is_char) {
@@ -438,7 +382,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
               INFOS[k] = Rcpp::List::create(_["tag"] = IFD_tag,
                                             _["typ"] = IFD_type,
                                             _["siz"] = IFD_count,
-                                            _["val"] = IFD_value,
+                                            _["val"] = ifd_val,
                                             _["byt"] = IFD_bytes,
                                             _["len"] = tot_scalar,
                                             _["off"] = IFD_off,
@@ -474,7 +418,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
               INFOS[k] = Rcpp::List::create(_["tag"] = IFD_tag,
                                             _["typ"] = IFD_type, 
                                             _["siz"] = IFD_count, 
-                                            _["val"] = IFD_value, 
+                                            _["val"] = ifd_val, 
                                             _["byt"] = IFD_bytes, 
                                             _["len"] = tot_scalar, 
                                             _["off"] = IFD_off,
@@ -592,7 +536,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
             INFOS[k] = Rcpp::List::create(_["tag"] = IFD_tag,
                                           _["typ"] = IFD_type, 
                                           _["siz"] = IFD_count, 
-                                          _["val"] = IFD_value, 
+                                          _["val"] = ifd_val, 
                                           _["byt"] = IFD_bytes, 
                                           _["len"] = tot_scalar, 
                                           _["off"] = IFD_off,
@@ -601,8 +545,8 @@ Rcpp::List hpp_getTAGS (const std::string fname,
         }
       } else {
         for(uint16_t k = 0; k < entries; k++) {
-          if((pos > (filesize - 12)) || (pos >= 0xffffffff)) {
-            Rcpp::Rcerr << "hpp_getTAGS: in IFD: " << k << " @" << pos + 12 << " is outside of " << fname << std::endl;
+          if(pos > (filesize - 12)) {
+            Rcpp::Rcerr << "\nhpp_getTAGS: in IFD: " << k << " @" << pos + 12 << " is outside of " << fname << std::endl;
             Rcpp::stop("hpp_getTAGS: IFD detected position is higher than file size");
           }
           fi.seekg(pos, std::ios::beg);
@@ -615,7 +559,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
           IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
           
           if((IFD_type > 12) || (IFD_type < 1)) {
-            Rcpp::Rcerr << "hpp_getTAGS: in IFD: " << k << " IFD_type=" << IFD_type << " is not allowed" << std::endl;
+            Rcpp::Rcerr << "\nhpp_getTAGS: in IFD: " << k << " @" << pos + 12 << " IFD_type=" << IFD_type << " is not allowed" << std::endl;
             Rcpp::stop("hpp_getTAGS: Value not allowed for IFD type");
           }
           pos += 12;
@@ -627,18 +571,23 @@ Rcpp::List hpp_getTAGS (const std::string fname,
           // Except for tag 33052 (BG_MEAN) and 33053 (BG_STD)
           // that are retrieved completly (needed for img/msk extraction)
           ext_scalar = ((is_char || force_trunc) && (tot_scalar > max_scalar) && (IFD_tag != 33052) && (IFD_tag != 33053)) ? max_scalar:tot_scalar;
+          ifd_val = IFD_value;
           if(IFD_bytes > 4) {
-            if((IFD_value + IFD_bytes) > filesize) {
-              Rcpp::Rcerr << "hpp_getTAGS: in IFD: " << k << " @" << IFD_value + IFD_bytes << " is outside of " << fname << std::endl;
+            if(is_bigfile) {
+              ifd_val = IFD_value + incr * 4294967296;
+              if(ifd_val < offset) ifd_val += 4294967296;
+            }
+            if((ifd_val + IFD_bytes) > filesize) {
+              Rcpp::Rcerr << "\nhpp_getTAGS: in IFD: " << k << " @" << ifd_val + IFD_bytes << " is outside of " << fname << std::endl;
               Rcpp::stop("hpp_getTAGS: IFD value points to outside of file");
             }
-            fi.seekg(IFD_value, std::ios::beg);
+            fi.seekg(ifd_val, std::ios::beg);
             IFD_off = true;
           } else {
             fi.seekg(pos - 4, std::ios::beg);
             IFD_off = false;
           }
-          if(verbose) Rcout << "Tag:" << IFD_tag << " Typ:" << IFD_type << " Count:" << IFD_count << " Value:" << IFD_value << " Bytes:" << IFD_bytes << " Off:" << IFD_off << std::endl;
+          if(verbose) Rcout << "Tag:" << IFD_tag << " Typ:" << IFD_type << " Count:" << IFD_count << " Value:" << ifd_val << " Bytes:" << IFD_bytes << " Off:" << IFD_off << std::endl;
           NAMES[k] = to_string(IFD_tag);
           
           if(is_char) {
@@ -649,7 +598,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
               INFOS[k] = Rcpp::List::create(_["tag"] = IFD_tag,
                                             _["typ"] = IFD_type,
                                             _["siz"] = IFD_count,
-                                            _["val"] = IFD_value,
+                                            _["val"] = ifd_val,
                                             _["byt"] = IFD_bytes,
                                             _["len"] = tot_scalar,
                                             _["off"] = IFD_off,
@@ -685,7 +634,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
               INFOS[k] = Rcpp::List::create(_["tag"] = IFD_tag,
                                             _["typ"] = IFD_type, 
                                             _["siz"] = IFD_count, 
-                                            _["val"] = IFD_value, 
+                                            _["val"] = ifd_val, 
                                             _["byt"] = IFD_bytes, 
                                             _["len"] = tot_scalar, 
                                             _["off"] = IFD_off,
@@ -803,7 +752,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
             INFOS[k] = Rcpp::List::create(_["tag"] = IFD_tag,
                                           _["typ"] = IFD_type, 
                                           _["siz"] = IFD_count, 
-                                          _["val"] = IFD_value, 
+                                          _["val"] = ifd_val, 
                                           _["byt"] = IFD_bytes, 
                                           _["len"] = tot_scalar, 
                                           _["off"] = IFD_off,
@@ -813,11 +762,16 @@ Rcpp::List hpp_getTAGS (const std::string fname,
       }
       
       char buf_next [4];
-      unsigned int next;
+      uint32_t next;
       fi.seekg(pos, std::ios::beg);
       fi.read((char*)&buf_next, 4);
       std::memcpy(&next, buf_next, 4);
-      if(swap) next = bytes_swap(next); 
+      if(swap) next = bytes_swap(next);
+      std::size_t n_next = next;
+      if((n_next != 0) && is_bigfile) {
+        n_next = n_next + incr * 4294967296;
+        if(n_next < offset) n_next += 4294967296;
+      }
       INFOS.names() = NAMES;
       Rcpp::List out = Rcpp::List::create(_["tags"] = INFOS,
                                           _["infos"] = Rcpp::List::create(
@@ -836,18 +790,9 @@ Rcpp::List hpp_getTAGS (const std::string fname,
                                             _["BG_MEAN"] = BG_MEAN,
                                             _["BG_STD"] = BG_STD),
                                             _["curr_IFD_offset"] = offset,
-                                            _["next_IFD_offset"] = next);
+                                            _["next_IFD_offset"] = n_next);
       out.attr("class") = "IFC_ifd";
-      fi.close();
       return out;
-    }
-    catch(std::exception &ex) {
-      fi.close();
-      forward_exception_to_r(ex);
-    }
-    catch(...) { 
-      Rcpp::stop("hpp_getTAGS: c++ exception (unknown reason)"); 
-    }
   }
   else {
     Rcpp::stop("hpp_getTAGS: Unable to open file");
@@ -874,102 +819,122 @@ Rcpp::List hpp_getTAGS (const std::string fname,
 
 // [[Rcpp::export(rng = false)]]
 Rcpp::List hpp_fastTAGS (const std::string fname, 
-                         const uint32_t offset, 
-                         const bool verbose = false) {
-  bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
-  
+                         const std::size_t offset, 
+                         const bool swap = false) {
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (fi.is_open()) {
-    try {
-      fi.seekg(0, std::ios::end);
-      std::size_t filesize = fi.tellg();
-      fi.seekg(0, std::ios::beg);
-      if(offset > (filesize - 2)) {
-        Rcpp::Rcerr << "hpp_fastTAGS: offset@" << offset << " points to outside of " << fname << std::endl;
-        Rcpp::stop("hpp_fastTAGS: TAG offset is higher than file size");
+    fi.seekg(0, std::ios::end);
+    std::size_t filesize = fi.tellg();
+    fi.seekg(0, std::ios::beg);
+    if(offset > (filesize - 2)) {
+      Rcpp::Rcerr << "\nhpp_fastTAGS: offset@" << offset << " points to outside of " << fname << std::endl;
+      Rcpp::stop("hpp_fastTAGS: TAG offset is higher than file size");
+    }
+    std::size_t pos;
+    uint16_t entries;
+    char buf_entries [2];
+    uint32_t bigfile = filesize / 4294967296;
+    bool is_bigfile = bigfile;
+    uint32_t incr = offset / 4294967296;
+    
+    fi.seekg(offset, std::ios::beg);
+    fi.read((char*)&buf_entries, sizeof(buf_entries));
+    std::memcpy(&entries, buf_entries, sizeof(entries));
+    if(swap) entries = bytes_swap(entries);
+    pos = offset + sizeof(buf_entries);
+    Rcpp::List INFOS(entries);
+    CharacterVector NAMES(entries);
+    for(uint16_t k = 0; k < entries; k++) {
+      if(pos > (filesize - 12)) {
+        Rcpp::Rcerr << "\nhpp_fastTAGS: in IFD: " << k << " @" << pos + 12 << " is outside of " << fname << std::endl;
+        Rcpp::stop("hpp_fastTAGS: IFD detected position is higher than file size");
       }
-      if(verbose) Rcout << "Extracting TAGs from "<< fname << ", filesize:" << filesize << " @offset:" << offset << std::endl;
-      
-      std::size_t pos;
-      uint16_t entries;
-      char buf_entries [2];
-
-      fi.seekg(offset, std::ios::beg);
-      fi.read((char*)&buf_entries, sizeof(buf_entries));
-      std::memcpy(&entries, buf_entries, sizeof(entries));
-      if(swap) entries = bytes_swap(entries);
-      pos = offset + sizeof(buf_entries);
-
-      Rcpp::List INFOS(entries);
-      CharacterVector NAMES(entries);
-      if(verbose) Rcout << "Entries: " << entries << std::endl;
-      
-      for(uint16_t k = 0; k < entries; k++) {
-        if((pos > (filesize - 12)) || (pos >= 0xffffffff)) {
-          Rcpp::Rcerr << "hpp_fastTAGS: in IFD: " << k << " @" << pos + 12 << " is outside of " << fname << std::endl;
-          Rcpp::stop("hpp_fastTAGS: IFD detected position is higher than file size");
-        }
-        char buf_dir_entry [12];
-        fi.seekg(pos, std::ios::beg);
-        fi.read((char*)&buf_dir_entry, sizeof(buf_dir_entry));
-        
-        uint16_t IFD_tag;
-        uint16_t IFD_type;
-        uint32_t IFD_count;
-        uint32_t IFD_value;
-        Rcpp::RawVector raw(12);
-        for(uint8_t i = 0; i < 12; i++) raw[i] = buf_dir_entry[i];
-        std::memcpy(&IFD_tag, buf_dir_entry, 2);
-        std::memcpy(&IFD_type, buf_dir_entry + 2, 2);
-        std::memcpy(&IFD_count, buf_dir_entry + 4, 4);
-        std::memcpy(&IFD_value, buf_dir_entry + 8, 4);
-        if(swap) {
-          IFD_tag = bytes_swap(IFD_tag);
-          IFD_type = bytes_swap(IFD_type);
-          IFD_count = bytes_swap(IFD_count);
-          IFD_value = bytes_swap(IFD_value);
-        }
-        uint32_t IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
-        
-        if((IFD_type > 12) || (IFD_type < 1)) {
-          Rcpp::Rcerr << "hpp_fastTAGS: in IFD: " << k << " IFD_type=" << IFD_type << " is not allowed" << std::endl;
-          Rcpp::stop("hpp_fastTAGS: Value not allowed for IFD type");
-        }
-        pos += 12;
-        
-        if(verbose) Rcout << "Tag:" << IFD_tag << " Typ:" << IFD_type << " Count:" << IFD_count << " Value:" << IFD_value << " Bytes:" << IFD_bytes << " Off:" << (IFD_bytes > 4) << std::endl;
-        INFOS[k] = Rcpp::List::create(_["tag"] = IFD_tag,
-                                      _["typ"] = IFD_type, 
-                                      _["siz"] = IFD_count, 
-                                      _["val"] = IFD_value, 
-                                      _["byt"] = IFD_bytes, 
-                                      _["len"] = multi[IFD_type] * IFD_count,
-                                      _["off"] = IFD_bytes > 4,
-                                      _["map"] = R_NilValue,
-                                      _["raw"] = raw);
-        NAMES[k] = to_string(IFD_tag);
-      }
-      char buf_next [4];
-      unsigned int next;
+      char buf_dir_entry [12];
       fi.seekg(pos, std::ios::beg);
-      fi.read((char*)&buf_next, 4);
-      std::memcpy(&next, buf_next, 4);
-      if(swap) next = bytes_swap(next); 
-      INFOS.names() = NAMES;
-      Rcpp::List out = Rcpp::List::create(_["tags"] = INFOS,
-                                          _["curr_IFD_offset"] = offset,
-                                          _["next_IFD_offset"] = next);
-      out.attr("class") = "IFC_ifd_fast";
-      fi.close();
-      return out;
+      fi.read((char*)&buf_dir_entry, sizeof(buf_dir_entry));
+      
+      uint16_t IFD_tag;
+      uint16_t IFD_type;
+      uint32_t IFD_count;
+      uint32_t IFD_value;
+      std::memcpy(&IFD_tag, buf_dir_entry, 2);
+      std::memcpy(&IFD_type, buf_dir_entry + 2, 2);
+      std::memcpy(&IFD_count, buf_dir_entry + 4, 4);
+      std::memcpy(&IFD_value, buf_dir_entry + 8, 4);
+      std::size_t ifd_val;
+      Rcpp::RawVector raw(12);
+      if(swap) {
+        raw[ 0] = buf_dir_entry[ 1];
+        raw[ 1] = buf_dir_entry[ 0];
+        raw[ 2] = buf_dir_entry[ 3];
+        raw[ 3] = buf_dir_entry[ 2];
+        raw[ 4] = buf_dir_entry[ 7];
+        raw[ 5] = buf_dir_entry[ 6];
+        raw[ 6] = buf_dir_entry[ 5];
+        raw[ 7] = buf_dir_entry[ 4];
+        raw[ 8] = buf_dir_entry[11];
+        raw[ 9] = buf_dir_entry[10];
+        raw[10] = buf_dir_entry[ 9];
+        raw[11] = buf_dir_entry[ 8];
+        IFD_tag = bytes_swap(IFD_tag);
+        IFD_type = bytes_swap(IFD_type);
+        IFD_count = bytes_swap(IFD_count);
+        IFD_value = bytes_swap(IFD_value);
+      } else {
+        raw[ 0] = buf_dir_entry[ 0];
+        raw[ 1] = buf_dir_entry[ 1];
+        raw[ 2] = buf_dir_entry[ 2];
+        raw[ 3] = buf_dir_entry[ 3];
+        raw[ 4] = buf_dir_entry[ 4];
+        raw[ 5] = buf_dir_entry[ 5];
+        raw[ 6] = buf_dir_entry[ 6];
+        raw[ 7] = buf_dir_entry[ 7];
+        raw[ 8] = buf_dir_entry[ 8];
+        raw[ 9] = buf_dir_entry[ 9];
+        raw[10] = buf_dir_entry[10];
+        raw[11] = buf_dir_entry[11];
+      }
+      uint32_t IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
+      ifd_val = IFD_value;
+      if(IFD_bytes > 4) {
+        if(is_bigfile) {
+          ifd_val = IFD_value + incr * 4294967296;
+          if(ifd_val < offset) ifd_val += 4294967296;
+        }
+        if((ifd_val + IFD_bytes) > filesize) {
+          Rcpp::Rcerr << "\nhpp_fastTAGS: in IFD: " << k << " @" << ifd_val + IFD_bytes << " is outside of " << fname << std::endl;
+          Rcpp::stop("nhpp_fastTAGS: IFD value points to outside of file");
+        }
+      }
+      if((IFD_type > 12) || (IFD_type < 1)) {
+        Rcpp::Rcerr << "\nhpp_fastTAGS: in IFD: " << k << " @" << pos + 12 << " IFD_type=" << IFD_type << " is not allowed" << std::endl;
+        Rcpp::stop("hpp_fastTAGS: Value not allowed for IFD type");
+      }
+      pos += 12;
+      
+      INFOS[k] = Rcpp::List::create(_["tag"] = IFD_tag,
+                                    _["val"] = ifd_val, 
+                                    _["byt"] = IFD_bytes, 
+                                    _["raw"] = raw);
+      NAMES[k] = to_string(IFD_tag);
     }
-    catch(std::exception &ex) {
-      fi.close();
-      forward_exception_to_r(ex);
+    char buf_next [4];
+    uint32_t next;
+    fi.seekg(pos, std::ios::beg);
+    fi.read((char*)&buf_next, 4);
+    std::memcpy(&next, buf_next, 4);
+    if(swap) next = bytes_swap(next);
+    std::size_t n_next = next;
+    if((n_next != 0) && is_bigfile) {
+      n_next = n_next + incr * 4294967296;
+      if(n_next < offset) n_next += 4294967296;
     }
-    catch(...) { 
-      Rcpp::stop("hpp_fastTAGS: c++ exception (unknown reason)"); 
-    }
+    INFOS.names() = NAMES;
+    Rcpp::List out = Rcpp::List::create(_["tags"] = INFOS,
+                                        _["curr_IFD_offset"] = offset,
+                                        _["next_IFD_offset"] = n_next);
+    out.attr("class") = "IFC_ifd_fast";
+    return out;
   }
   else {
     Rcpp::stop("hpp_fastTAGS: Unable to open file");
@@ -979,166 +944,6 @@ Rcpp::List hpp_fastTAGS (const std::string fname,
                             _["next_IFD_offset"] = NA_REAL);
 }
 
-
-Rcpp::List hpp_getoffsets_wid_obj_unk(const std::string fname,
-                                      const bool verbose = false) {
-  bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
-  
-  std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-  if (fi.is_open()) {
-    try{
-      fi.seekg(0, std::ios::end);
-      char buf_offset [4];
-      uint32_t offset = 4;
-      
-      if(verbose) Rcout << "Extracting offsets from " << fname << std::endl;
-      fi.seekg(offset, std::ios::beg);
-      fi.read((char*)&buf_offset, sizeof(buf_offset));
-      std::memcpy(&offset, buf_offset, sizeof(offset));
-      if(swap) offset = bytes_swap(offset);
-      if(!offset) {
-        Rcpp::stop("hpp_getoffsets_wid: No IFD offsets found");
-      }
-      
-      Rcpp::IntegerVector out_obj, out_typ, out_off;
-      // Rcpp::IntegerVector obj = Rcpp::IntegerVector::create(NA_INTEGER);
-      // Rcpp::IntegerVector typ = Rcpp::IntegerVector::create(NA_INTEGER);
-      // uint32_t obj, typ;
-      
-      // uint32_t trunc_bytes = 8;
-      // bool force_trunc = true;
-      while(offset){
-        Rcpp::List IFD = hpp_getTAGS(fname, offset, verbose, 4, true);
-        offset = IFD["next_IFD_offset"];
-        Rcpp::List infos = IFD["infos"];
-        
-        if(iNotisNULL(infos["OBJECT_ID"])) {
-          out_obj.push_back(infos["OBJECT_ID"]);
-          // obj[0] = clone(std::as<int32_t>(infos["OBJECT_ID"])); // min 0?, max ?
-        } else {
-          out_obj.push_back(NA_INTEGER);
-        }
-        if(iNotisNULL(infos["TYPE"])) {
-          out_typ.push_back(infos["TYPE"]);
-          // typ[0] = clone(std::as<int32_t>(infos["TYPE"])); // [1,3]
-        } else {
-          out_typ.push_back(NA_INTEGER);
-        }
-        
-        // out_obj.push_back(obj[0]);
-        // out_typ.push_back(typ[0]);
-        out_off.push_back(IFD["curr_IFD_offset"]);
-      }
-      Rcpp::List out = Rcpp::List::create(_["OBJECT_ID"] = out_obj,
-                                          _["TYPE"] = out_typ,
-                                          _["OFFSET"] = out_off);
-      fi.close();
-      return out;
-    }
-    catch(std::exception &ex) {	
-      fi.close();
-      forward_exception_to_r(ex);
-    }
-    catch(...) { 
-      Rcpp::stop("hpp_getoffsets_wid: c++ exception (unknown reason)"); 
-    }
-  }
-  else {
-    Rcpp::stop("hpp_getoffsets_wid: Unable to open file");
-  }
-  return Rcpp::List::create(Rcpp::List::create(_["OBJECT_ID"] = NA_INTEGER,
-                                               _["TYPE"] = NA_INTEGER,
-                                               _["OFFSET"] = NA_INTEGER));
-}
-
-Rcpp::List hpp_getoffsets_wid_obj_ok(const std::string fname,
-                                     const R_len_t obj_count = 0,
-                                     const bool display_progress = false,
-                                     const bool verbose = false) {
-  bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
-  bool show_pb = display_progress;
-  if(obj_count == 0) show_pb = false;
-  
-  std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-  if (fi.is_open()) {
-    Progress p(obj_count * 2 + 1, show_pb);
-    try{
-      fi.seekg(0, std::ios::end);
-      char buf_offset [4];
-      uint32_t offset = 4;
-      R_len_t i_obj = 0;
-      
-      if(verbose) Rcout << "Extracting offsets from " << fname << std::endl;
-      fi.seekg(offset, std::ios::beg);
-      fi.read((char*)&buf_offset, sizeof(buf_offset));
-      std::memcpy(&offset, buf_offset, sizeof(offset));
-      if(swap) offset = bytes_swap(offset);
-      if(!offset) {
-        Rcpp::stop("hpp_getoffsets_wid: No IFD offsets found");
-      }
-      Rcpp::IntegerVector out_obj = Rcpp::no_init(obj_count * 2);
-      Rcpp::IntegerVector out_typ = Rcpp::no_init(obj_count * 2);
-      Rcpp::IntegerVector out_off = Rcpp::no_init(obj_count * 2);
-      while(offset){
-        p.increment();
-        Rcpp::List IFD = hpp_getTAGS(fname, offset, verbose, 4, true);
-        offset = IFD["next_IFD_offset"];
-        Rcpp::List infos = IFD["infos"];
-        if(i_obj < obj_count * 2) {
-          if(iNotisNULL(infos["OBJECT_ID"])) {
-            out_obj[i_obj] = infos["OBJECT_ID"];
-          } else {
-            out_obj[i_obj] = NA_INTEGER;
-          }
-          if(iNotisNULL(infos["TYPE"])) {
-            out_typ[i_obj] = infos["TYPE"];
-          } else {
-            out_typ[i_obj] = NA_INTEGER;
-          }
-          out_off[i_obj++] = IFD["curr_IFD_offset"];
-        } else {
-          if(iNotisNULL(infos["OBJECT_ID"])) {
-            out_obj.push_back(infos["OBJECT_ID"]);
-          } else {
-            out_obj.push_back(NA_INTEGER);
-          }
-          if(iNotisNULL(infos["TYPE"])) {
-            out_typ.push_back(infos["TYPE"]);
-          } else {
-            out_typ.push_back(NA_INTEGER);
-          }
-          out_off.push_back(IFD["curr_IFD_offset"]);
-        }
-        
-        if(Progress::check_abort()) {
-          Rcpp::stop("hpp_getoffsets_wid: Interrupted by user");
-        }
-      }
-      Rcpp::List out = Rcpp::List::create(_["OBJECT_ID"] = out_obj,
-                                          _["TYPE"] = out_typ,
-                                          _["OFFSET"] = out_off);
-      p.cleanup();
-      fi.close();
-      return out;
-    }
-    catch(std::exception &ex) {	
-      p.cleanup();
-      fi.close();
-      forward_exception_to_r(ex);
-    }
-    catch(...) { 
-      Rcpp::stop("hpp_getoffsets_wid: c++ exception (unknown reason)"); 
-    }
-  }
-  else {
-    Rcpp::stop("hpp_getoffsets_wid: Unable to open file");
-  }
-  return Rcpp::List::create(Rcpp::List::create(_["OBJECT_ID"] = NA_INTEGER,
-                                               _["TYPE"] = NA_INTEGER,
-                                               _["OFFSET"] = NA_INTEGER));
-}
-
-
 //' @title IFC_offsets Computation with Object Identification
 //' @name cpp_getoffsets_wid
 //' @description
@@ -1147,21 +952,81 @@ Rcpp::List hpp_getoffsets_wid_obj_ok(const std::string fname,
 //' @param obj_count R_len_t, numbers of objects present in the file. Default is 0.
 //' If obj_count <= 0 then progress_bar is forced to false.
 //' @param display_progress bool, whether to display a progress bar. Default is false.
+//' @param pb a List of class `IFC_progress` containing a progress bar of class `txtProgressBar`, `winProgressBar` or `Progress`. Default is R_Nilvalue.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
 //' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
-//' @return a list of integer vectors with OBJECT_ID, TYPE and OFFSET of IFDs found.
+//' @return a list of numeric vectors with OBJECT_ID, TYPE and OFFSET of IFDs found.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
 Rcpp::List hpp_getoffsets_wid(const std::string fname, 
                               const R_len_t obj_count = 0, 
                               const bool display_progress = false, 
+                              const Rcpp::Nullable<Rcpp::List> pb = R_NilValue,
                               const bool verbose = false) {
-  if(obj_count <= 0) {
-    return hpp_getoffsets_wid_obj_unk(fname, verbose);
-  } else {
-    return hpp_getoffsets_wid_obj_ok(fname, obj_count, display_progress, verbose);
+  bool swap = (hpp_checkTIFF(fname) != hpp_getEndian());
+  
+  std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+  if (fi.is_open()) {
+      fi.seekg(0, std::ios::end);
+      char buf_offset [4];
+      uint32_t offset = 4;
+      unsigned short count = 0;
+      unsigned short count_max = 50000;
+      std::string bname = hpp_basename(fname);
+
+      if(verbose) Rcout << "Extracting offsets from " << fname << std::endl;
+      fi.seekg(offset, std::ios::beg);
+      fi.read((char*)&buf_offset, sizeof(buf_offset));
+      std::memcpy(&offset, buf_offset, sizeof(offset));
+      if(swap) offset = bytes_swap(offset);
+      if(!offset) Rcpp::stop("hpp_getoffsets_wid: No IFD offsets found");
+      
+      Rcpp::NumericVector out_obj(0);
+      Rcpp::NumericVector out_typ(0);
+      Rcpp::NumericVector out_off(0);
+      Rcpp::NumericVector tmp_obj(count_max);
+      Rcpp::NumericVector tmp_typ(count_max);
+      Rcpp::NumericVector tmp_off(count_max);
+      std::size_t off = offset;
+      while(off){
+        if((++count % count_max) == 0) {
+          out_obj = c_vector(out_obj, tmp_obj);
+          tmp_obj.fill(0);
+          out_typ = c_vector(out_typ, tmp_typ);
+          tmp_typ.fill(0);
+          out_off = c_vector(out_off, tmp_off);
+          tmp_off.fill(0);
+          count = 1;
+          Rcpp::checkUserInterrupt();
+          if(display_progress) {
+            if(obj_count <= 0) {
+              hpp_setPB(pb, -1, bname, to_string(out_obj.size() >> 1).append(" objects found"));
+            } else {
+              hpp_setPB(pb, (out_obj.size() >> 1), bname, "extracting offets"); 
+            }
+          }
+        }
+        Rcpp::List IFD = hpp_getTAGS(fname, off, verbose, 4, true);
+        off = IFD["next_IFD_offset"];
+        Rcpp::List infos = IFD["infos"];
+        
+        tmp_obj[count - 1] = iNotisNULL(infos["OBJECT_ID"]) ? infos["OBJECT_ID"] : NA_REAL;
+        tmp_typ[count - 1] = iNotisNULL(infos["TYPE"])      ? infos["TYPE"]      : NA_REAL;
+        tmp_off[count - 1] = IFD["curr_IFD_offset"];
+      }
+      Rcpp::List out = Rcpp::List::create(_["OBJECT_ID"] = c_vector(out_obj, tmp_obj),
+                                          _["TYPE"] = c_vector(out_typ, tmp_typ),
+                                          _["OFFSET"] = c_vector(out_off, tmp_off));
+      // if(display_progress) Rcout << ", done!" << std::endl;
+      return out;
   }
+  else {
+    Rcpp::stop("hpp_getoffsets_wid: Unable to open file");
+  }
+  return Rcpp::List::create(Rcpp::List::create(_["OBJECT_ID"] = NA_REAL,
+                                               _["TYPE"] = NA_REAL,
+                                               _["OFFSET"] = NA_REAL));
 }
 
 //' @title Checksum for RIF/CIF
@@ -1170,7 +1035,7 @@ Rcpp::List hpp_getoffsets_wid(const std::string fname,
 //' Computes sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.
 //' @param fname string, path to file.
 //' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
-//' @return an integer vector with offsets of IFDs found.
+//' @return an numeric vector with offsets of IFDs found.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
@@ -1179,27 +1044,27 @@ std::size_t hpp_checksum(const std::string fname) {
   
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (fi.is_open()) {
-    try {
       fi.seekg(0, std::ios::end);
       char buf_offset [4];
       uint32_t offset = 4;
-      Rcpp::IntegerVector obj = Rcpp::IntegerVector::create(0,1,2,3,4);
-      Rcpp::IntegerVector found = Rcpp::IntegerVector::create(6); // ensure to test at least one value in found == id
+      Rcpp::NumericVector obj = Rcpp::NumericVector::create(0,1,2,3,4);
+      Rcpp::NumericVector found = Rcpp::NumericVector::create(6); // ensure to test at least one value in found == id
       uint8_t count = 0;
       std::size_t out = 0;
       
       fi.seekg(offset, std::ios::beg);
       fi.read((char*)&buf_offset, sizeof(buf_offset));
       std::memcpy(&offset, buf_offset, sizeof(offset));
+      
       if(swap) offset = bytes_swap(offset);
-      if(!offset) {
-        Rcpp::stop("hpp_checksum: No IFD offsets found");
-      }
+      if(!offset) Rcpp::stop("hpp_checksum: No IFD offsets found");
+      
       bool warn = true;
-      while(offset && (count < 5)){
-        Rcpp::List IFD = hpp_getTAGS(fname, offset, false, 8, true);
+      std::size_t off = offset;
+      while(off && (count < 5)) {
+        Rcpp::List IFD = hpp_getTAGS(fname, off, false, 8, true);
         Rcpp::List infos = IFD["infos"];
-        offset = as<uint32_t>(IFD["next_IFD_offset"]);
+        off = IFD["next_IFD_offset"];
         int32_t typ = 0;
         // infos["TYPE"] should never be NULL
         if(iNotisNULL(infos["TYPE"])) typ = as<int32_t>(infos["TYPE"]); // [1,3]
@@ -1208,7 +1073,7 @@ std::size_t hpp_checksum(const std::string fname) {
           int32_t id = as<int32_t>(infos["OBJECT_ID"]);
           if(is_true(any(obj == id)) && !is_true(any(found == id))) {
             found.push_back(id);
-            out += as<uint32_t>(IFD["curr_IFD_offset"]);
+            out += as<std::size_t>(IFD["curr_IFD_offset"]);
             if(warn) if(id != obj[count]) { // ensure it is stored in ascending order
               Rcpp::warning("hpp_checksum: raw object are not stored in expected order");
               warn = false;
@@ -1222,16 +1087,7 @@ std::size_t hpp_checksum(const std::string fname) {
           }
         }
       }
-      fi.close();
       return out;
-    }
-    catch(std::exception &ex) {	
-      fi.close();
-      forward_exception_to_r(ex);
-    }
-    catch(...) { 
-      Rcpp::stop("hpp_checksum: c++ exception (unknown reason)"); 
-    }
   }
   else {
     Rcpp::stop("hpp_checksum: Unable to open file");

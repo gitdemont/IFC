@@ -45,6 +45,20 @@
 #include "../inst/include/plot.hpp"
 using namespace Rcpp;
 
+//' @title Get Current Compilation Bits Depth
+//' @name cpp_getBits
+//' @description
+//' Retrieve size of std::size_t.
+//' @return an unsigned integer
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+unsigned int cpp_getBits () {
+  std::size_t foo = 0;
+  return sizeof(foo);
+}
+
+
 // FROM align
 //' @title Spatial Offsets Image Correction
 //' @name cpp_align
@@ -127,6 +141,7 @@ Rcpp::LogicalVector cpp_pnt_in_gate (const Rcpp::NumericMatrix pnts,
   return hpp_pnt_in_gate (pnts, gate, algorithm, epsilon);
 }
 // END gate
+
 // FROM utils
 //' @title Multiple Pattern Fixed Matching
 //' @name cpp_mpfmatch
@@ -308,17 +323,19 @@ std::string cpp_checkTIFF (const std::string fname) {
 //' @param obj_count R_len_t, numbers of objects present in the file. Default is 0.
 //' If obj_count <= 0 then progress_bar is forced to false.
 //' @param display_progress bool, whether to display a progress bar. Default is false.
+//' @param pb a List of class `IFC_progress` containing a progress bar of class `txtProgressBar`, `winProgressBar` or `Progress`. Default is R_Nilvalue.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
 //' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
-//' @return an integer vector with offsets of IFDs found.
+//' @return an numeric vector with offsets of IFDs found.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
-Rcpp::IntegerVector cpp_getoffsets_noid(const std::string fname, 
-                                        const R_len_t obj_count = 0, 
+Rcpp::NumericVector cpp_getoffsets_noid(const std::string fname,
+                                        const R_len_t obj_count = 0,
                                         const bool display_progress = false,
+                                        const Rcpp::Nullable<Rcpp::List> pb = R_NilValue,
                                         const bool verbose = false) {
-  return hpp_getoffsets_noid(fname, obj_count, display_progress, verbose);
+  return hpp_getoffsets_noid(fname, obj_count, display_progress, pb, verbose);
 }
 
 //' @title IFD Tags Extraction
@@ -326,9 +343,9 @@ Rcpp::IntegerVector cpp_getoffsets_noid(const std::string fname,
 //' @description
 //' Returns TAGS contained within an IFD (Image Field Directory) entry.
 //' @param fname string, path to file.
-//' @param offset uint32_t, position of the IFD beginning.
+//' @param offset std::size_t, position of the IFD beginning.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is 'false'.
-//' @param trunc_bytes uint32_t maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 12.\cr
+//' @param trunc_bytes uint32_t maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDEFINED for TAGS (1, 2, 6 or 7). Default is 12.\cr
 //' However, if less is found, less is returned in map.
 //' Note that, if 0 is provided, it will be automatically set to 1.
 //' @param force_trunc whether to force truncation for all TAGS types. Default is FALSE.\cr
@@ -338,7 +355,7 @@ Rcpp::IntegerVector cpp_getoffsets_noid(const std::string fname,
 ////' @export
 // [[Rcpp::export(rng = false)]]
 Rcpp::List cpp_getTAGS (const std::string fname, 
-                        const uint32_t offset, 
+                        const std::size_t offset, 
                         const bool verbose = false, 
                         const uint8_t trunc_bytes = 12, 
                         const bool force_trunc = false) {
@@ -350,16 +367,16 @@ Rcpp::List cpp_getTAGS (const std::string fname,
 //' @description
 //' Returns TAGS contained within an IFD (Image Field Directory) entry.
 //' @param fname string, path to file.
-//' @param offset uint32_t, position of the IFD beginning.
-//' @param verbose bool, whether to display information (use for debugging purpose). Default is 'false'.
+//' @param offset std::size_t, position of the IFD beginning.
+//' @param swap bool, whether to swap bytes or not. Default is 'false'.
 //' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
 Rcpp::List cpp_fastTAGS (const std::string fname, 
-                        const uint32_t offset, 
-                        const bool verbose = false) {
-  return hpp_fastTAGS (fname, offset, verbose); 
+                         const std::size_t offset, 
+                         const bool swap = false) {
+  return hpp_fastTAGS (fname, offset, swap); 
 }
 
 //' @title IFC_offsets Computation with Object Identification
@@ -370,17 +387,19 @@ Rcpp::List cpp_fastTAGS (const std::string fname,
 //' @param obj_count R_len_t, numbers of objects present in the file. Default is 0.
 //' If obj_count <= 0 then progress_bar is forced to false.
 //' @param display_progress bool, whether to display a progress bar. Default is false.
+//' @param pb a List of class `IFC_progress` containing a progress bar of class `txtProgressBar`, `winProgressBar` or `Progress`. Default is R_Nilvalue.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
 //' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
-//' @return a list of integer vectors with OBJECT_ID, TYPE and OFFSET of IFDs found.
+//' @return a list of numeric vectors with OBJECT_ID, TYPE and OFFSET of IFDs found.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
-Rcpp::List cpp_getoffsets_wid(const std::string fname, 
-                              const R_len_t obj_count = 0, 
-                              const bool display_progress = false, 
+Rcpp::List cpp_getoffsets_wid(const std::string fname,
+                              const R_len_t obj_count = 0,
+                              const bool display_progress = false,
+                              const Rcpp::Nullable<Rcpp::List> pb = R_NilValue,
                               const bool verbose = false) {
-  return hpp_getoffsets_wid(fname, obj_count, display_progress, verbose); 
+  return hpp_getoffsets_wid(fname, obj_count, display_progress, pb, verbose); 
 }
 
 //' @title Checksum for RIF/CIF
@@ -389,7 +408,6 @@ Rcpp::List cpp_getoffsets_wid(const std::string fname,
 //' Computes sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.
 //' @param fname string, path to file.
 //' @source TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211209104854/https://www.adobe.io/open/standards/TIFF.html}
-//' @return an integer vector with offsets of IFDs found.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
@@ -484,6 +502,32 @@ Rcpp::RawVector cpp_uint32_to_raw (const uint32_t x) {
 // [[Rcpp::export(rng = false)]]
 uint32_t cpp_int32_to_uint32 (const int32_t x) {
   return hpp_int32_to_uint32 (x);
+}
+
+//' @title Offset to Raw Conversion
+//' @name cpp_offset_to_raw
+//' @description
+//' Converts offset to raw
+//' @param x double.
+//' @param swap bool, whether to swap or not.
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+Rcpp::RawVector cpp_offset_to_raw (const double x, const bool swap = false) {
+  return hpp_offset_to_raw(x, swap);
+}
+
+//' @title Offset to Raw Conversion
+//' @name cpp_raw_to_offset
+//' @description
+//' Converts raw to offset
+//' @param x RawVector.
+//' @param swap bool, whether to swap or not.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+double cpp_raw_to_offset (const Rcpp::RawVector x, const bool swap = false) {
+  return hpp_raw_to_offset(x, swap);
 }
 
 //' @title Uint32 to Int32 32bits Conversion
@@ -755,7 +799,7 @@ Rcpp::NumericMatrix cpp_resize (const Rcpp::NumericMatrix mat,
 //' @description
 //' Operates decompression of compressed image stored in TIFF file.
 //' @param fname string, path to file.
-//' @param offset uint32_t, position of the beginning of compressed image.
+//' @param offset std::size_t, position of the beginning of compressed image.
 //' @param nbytes uint32_t, number of bytes of compressed image.
 //' @param imgWidth R_len_t, Width of the decompressed image. Default is 1.
 //' @param imgHeight R_len_t, Height of the decompressed image. Default is 1.
@@ -802,7 +846,7 @@ Rcpp::NumericMatrix cpp_resize (const Rcpp::NumericMatrix mat,
 ////' @export
 // [[Rcpp::export(rng = false)]]
 Rcpp::List cpp_decomp (const std::string fname, 
-                       const uint32_t offset, 
+                       const std::size_t offset, 
                        const uint32_t nbytes, 
                        const uint32_t imgWidth = 1, 
                        const uint32_t imgHeight = 1, 
@@ -818,7 +862,7 @@ Rcpp::List cpp_decomp (const std::string fname,
 //' @description
 //' Operates decompression to raw of compressed image stored in TIFF file.
 //' @param fname string, path to file.
-//' @param offset uint32_t, position of the beginning of compressed image.
+//' @param offset std::size_t, position of the beginning of compressed image.
 //' @param nbytes uint32_t, number of bytes of compressed image.
 //' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
 //' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
@@ -860,7 +904,7 @@ Rcpp::List cpp_decomp (const std::string fname,
 ////' @export
 // [[Rcpp::export(rng = false)]]
 Rcpp::RawVector cpp_rawdecomp (const std::string fname, 
-                               const uint32_t offset, 
+                               const std::size_t offset, 
                                const uint32_t nbytes, 
                                const uint32_t imgWidth = 1, 
                                const uint32_t imgHeight = 1, 

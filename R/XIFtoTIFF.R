@@ -100,6 +100,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
   }
   fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
   r_endian = cpp_checkTIFF(fileName)
+  swap = r_endian != endianness
   f_Ext = getFileExt(fileName)
   title_progress = basename(fileName)
   assert(write_to, len = 1, typ = "character")
@@ -170,7 +171,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
   nobj = as.integer(attr(x = offsets, which = "obj_count"))
   
   if(missing(objects)) {
-    message("\nAll objects will be extracted\n")
+    message("All objects will be extracted\n")
     objects = as.integer(0:(nobj - 1))
   } else {
     objects = as.integer(objects)
@@ -233,7 +234,10 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
     # read and writes magick number
     writeBin(object = readBin(toread, what = "raw", n = 4, endian = r_endian), con = towrite, endian = r_endian)
     # define writing position
-    pos = 4
+    pos = 8
+    tmp = cpp_uint32_to_raw(pos %% 4294967296)
+    if(endianness != .Platform$endian) tmp = rev(tmp)
+    writeBin(object = tmp, con = towrite, endian = endianness)
     
     if(display_progress) {
       pb1 = newPB(title = title_progress, label = "objects subsetting", min = 0, max = L, initial = 0, style = 3)
@@ -243,14 +247,14 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
     for(i_off in 1:off_number) {
       extra = list()
       # extract IFD
-      IFD = cpp_fastTAGS(fname = fileName, offset = offsets[i_off], verbose = VER)
+      IFD = cpp_fastTAGS(fname = fileName, offset = offsets[i_off], swap = swap)
       ifd = IFD$tags[!(names(IFD$tags) %in% unwanted)]
       TYPE = IFD$tags[["33002"]]$val
       if(any(TYPE == 2)) OBJECT_ID = IFD$tags[["33003"]]$val
       # if((length(TYPE) != 0) && (TYPE == 2)) OBJECT_ID = OBJECT_ID
       if(length(OBJECT_ID) == 1) {
         if(fast) {
-          expected_obj = as.integer(gsub("^.*_(.*)$", "\\1", names(offsets[i_off])))
+          expected_obj = as.integer(gsub("msk_", "", gsub("img_", "", names(offsets[i_off]), fixed = TRUE), fixed = TRUE))
           if(TYPE == 2) if(OBJECT_ID != expected_obj) {
             warning("Extracted object_id [",OBJECT_ID,"] differs from expected one [",expected_obj,"]", call. = FALSE, immediate. = TRUE)
           }
@@ -394,17 +398,17 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
                     buildIFD(val = 1, typ = 4, tag = 273, endianness = r_endian)
           )
           # we decompress images to raw
-          extra[["273"]]$add_content = cpp_rawdecomp(fname=fileName,
-                                                     offset=IFD$tags[["273"]]$val,
-                                                     nbytes=IFD$tags[["279"]]$val,
-                                                     imgWidth=IFD$tags[["256"]]$val,
-                                                     imgHeight=IFD$tags[["257"]]$val,
-                                                     compression=IFD$tags[["259"]]$val,
-                                                     bits = bits,
-                                                     swap = endianness!=r_endian,
-                                                     verbose=FALSE)
-          extra = c(extra, buildIFD(val = length(extra[["273"]]$add_content), typ = 4, tag = 279, endianness = r_endian))
-          extra[["273"]]$bytes = length(extra[["273"]]$add_content)
+          extra[["273"]]$val = cpp_rawdecomp(fname=fileName,
+                                             offset=IFD$tags[["273"]]$val,
+                                             nbytes=IFD$tags[["279"]]$val,
+                                             imgWidth=IFD$tags[["256"]]$val,
+                                             imgHeight=IFD$tags[["257"]]$val,
+                                             compression=IFD$tags[["259"]]$val,
+                                             bits = bits,
+                                             swap = endianness!=r_endian,
+                                             verbose=FALSE)
+          extra = c(extra, buildIFD(val = length(extra[["273"]]$val), typ = 4, tag = 279, endianness = r_endian))
+          extra[["273"]]$byt = length(extra[["273"]]$val)
         }
         if(add_tracking) {
           extra = c(extra, 
@@ -429,25 +433,10 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
         if(length(ifd[["33003"]])!=0) ifd[["33003"]]$raw[9:12] <- tmp
         
         # TODO ask amnis what to do with 33024
-        # if(length(ifd[["33024"]])!=0) {
-        #   if(length(ifd[["33003"]])!=0) {
-        #     ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
-        #   }
-        # }
-        # if(length(ifd[["33003"]])!=0) {
-        #   if(length(ifd[["33024"]])!=0) {
-        #     ifd[["33024"]]$min_content[9:12] <- ifd[["33003"]]$min_content[9:12]
-        #   } else {
-        #     ifd = c(ifd, buildIFD(val = OBJECT_ID, typ = 4, tag = 33024, endianness = r_endian))
-        #   }
-        #   ifd[["33003"]]$min_content[9:12] <- tmp
-        # }
-      } 
-      
-      pos = writeIFD(ifd, r_con = toread, w_con = towrite, pos = pos, extra = extra, endianness = r_endian)
+      }
+      pos = writeIFD(ifd, r_con = toread, w_con = towrite, pos = pos, extra = extra, endianness = r_endian, last = (i_off == off_number))
       obj_id = obj_id + 1
     }
-    writeBin(object = as.raw(c(0x00,0x00,0x00,0x00)), con = towrite, endian = r_endian)
   }, error = function(e) {
     stop(paste0("Can't create 'write_to' file.\n", write_to,
                 ifelse(overwritten,"\nFile was not modified.\n","\n"),

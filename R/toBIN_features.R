@@ -31,13 +31,16 @@
 #' @description 
 #' Helper to convert features (`IFC_features` object) to raw vector.
 #' @param features an `IFC_features` object.
+#' @param w_con a connection opened for writing. Default is raw().
+#' @param endianness The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
+#' Endianness describes the bytes order of data stored within the files. This parameter may not be modified.
 #' @param verbose whether to display message about current action. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param title_progress character string, giving the title of the progress bar. Default is "".
 #' @param ... other arguments to be passed.
 #' @return a raw vector of features binaries.
 #' @keywords internal
-toBIN_features = function(features, endianness = .Platform$endian, 
+toBIN_features = function(features, w_con = raw(), endianness = .Platform$endian, 
                           verbose = FALSE, display_progress = TRUE, title_progress = "", ...) {
   dots = list(...)
   assert(verbose, alw = c(TRUE, FALSE))
@@ -56,30 +59,31 @@ toBIN_features = function(features, endianness = .Platform$endian,
     feat_number = rev(feat_number)
     obj_number = rev(obj_number)
   }
+  feat_init = writeBin(con = w_con, endian = endianness, c(as.raw(c(0x0a, 0, 30)), feat_version, feat_number, obj_number))
   if(display_progress) {
     pb = newPB(min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     if(endianness == .Platform$endian) {
-      feat = lapply(1:L, FUN=function(i_feat) {
+      feat = lapply(seq_along(integer(L)), FUN=function(i_feat) {
         setPB(pb, value = i_feat, title = title_progress, label = "converting features values (binary)")
-        c(cpp_uint32_to_raw(i_feat-1), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
+        writeBin(con = w_con, endian = endianness, c(cpp_uint32_to_raw(i_feat-1), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE)))
       })
     } else {
-      feat = lapply(1:L, FUN=function(i_feat) {
+      feat = lapply(seq_along(integer(L)), FUN=function(i_feat) {
         setPB(pb, value = i_feat, title = title_progress, label = "converting features values (binary)")
-        c(rev(cpp_uint32_to_raw(i_feat-1)), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
+        writeBin(con = w_con, endian = endianness, c(rev(cpp_uint32_to_raw(i_feat-1)), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE)))
       })
     }
   } else {
     if(endianness == .Platform$endian) {
-      feat = lapply(1:L, FUN=function(i_feat) {
-        c(cpp_uint32_to_raw(i_feat-1), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
+      feat = lapply(seq_along(integer(L)), FUN=function(i_feat) {
+        writeBin(con = w_con, endian = endianness, c(cpp_uint32_to_raw(i_feat-1), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE)))
       })
     } else {
-      feat = lapply(1:L, FUN=function(i_feat) {
-        c(rev(cpp_uint32_to_raw(i_feat-1)), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE))
+      feat = lapply(seq_along(integer(L)), FUN=function(i_feat) {
+        writeBin(con = w_con, endian = endianness, c(rev(cpp_uint32_to_raw(i_feat-1)), writeBin(object=features[[i_feat]], con=raw(), size = 8, endian = endianness, useBytes = TRUE)))
       })
     }
   }
-  return(c(feat_version, feat_number, obj_number, unlist(feat)))
+  return(c(feat_init, unlist(feat, recursive = FALSE, use.names = FALSE)))
 }

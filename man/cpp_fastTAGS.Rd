@@ -9,9 +9,9 @@ TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211
 \arguments{
 \item{fname}{string, path to file.}
 
-\item{offset}{uint32_t, position of the IFD beginning.}
+\item{offset}{std::size_t, position of the IFD beginning.}
 
-\item{verbose}{bool, whether to display information (use for debugging purpose). Default is 'false'.}
+\item{swap}{bool, whether to swap bytes or not. Default is 'false'.}
 }
 \description{
 Returns TAGS contained within an IFD (Image Field Directory) entry.

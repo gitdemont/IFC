@@ -174,6 +174,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
   }
   images = data.frame()
   ##### extracts images
+  swap = endianness != .Platform$endian
   if(extract_images) {
     if(is_binary) {
       seek(toread, toskip + feat_number*(obj_number*8 + 4) + 15)
@@ -185,12 +186,9 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
         images=lapply(1:SO_number, FUN=function(i_image) {
           setPB(pb_im, value = i_image, title = title_progress, label = "extracting images values (binary)")
           id = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
-          imgIFD = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
-          readBin(toread, "raw", size = 1, n = 4, endian = endianness) # not used, img offsets are uint32
-          mskIFD = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
-          readBin(toread, "raw", size = 1, n = 4, endian = endianness) # not used, msk offsets are uint32
-          spIFD = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
-          readBin(toread, "raw", size = 1, n = 4, endian = endianness) # not used ?
+          imgIFD = cpp_raw_to_offset(readBin(toread, "raw", n = 8), swap)
+          mskIFD = cpp_raw_to_offset(readBin(toread, "raw", n = 8), swap)
+          spIFD = cpp_raw_to_offset(readBin(toread, "raw", n = 8), swap)
           w = readBin(toread, "double", size = 8, n = 1, endian = endianness)
           l = readBin(toread, "double", size = 8, n = 1, endian = endianness)
           fs = readBin(toread, "double", size = 8, n = 1, endian = endianness)
@@ -219,12 +217,9 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       } else{
         images=lapply(1:SO_number, FUN=function(i_image) {
           id = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
-          imgIFD = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
-          readBin(toread, "raw", size = 1, n = 4, endian = endianness) # not used img offsets are uint32
-          mskIFD = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
-          readBin(toread, "raw", size = 1, n = 4, endian = endianness) # not used msk offsets are uint32
-          spIFD = cpp_int32_to_uint32(readBin(toread, "integer", size = 4, n = 1, endian = endianness))
-          readBin(toread, "raw", size = 1, n = 4, endian = endianness) # not used ?
+          imgIFD = cpp_raw_to_offset(readBin(toread, "raw", n = 8), swap)
+          mskIFD = cpp_raw_to_offset(readBin(toread, "raw", n = 8), swap)
+          spIFD = cpp_raw_to_offset(readBin(toread, "raw", n = 8), swap)
           w = readBin(toread, "double", size = 8, n = 1, endian = endianness)
           l = readBin(toread, "double", size = 8, n = 1, endian = endianness)
           fs = readBin(toread, "double", size = 8, n = 1, endian = endianness)
@@ -278,7 +273,7 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
     ##### extracts offsets from images in DAF
     if(extract_offsets) {
       if(nrow(images) > 0) {
-        offsets = as.integer(unlist(lapply(1:nrow(images), FUN=function(i) {
+        offsets = as.numeric(unlist(lapply(1:nrow(images), FUN=function(i) {
           c(images$imgIFD[i], images$mskIFD[i])
         }))) 
       } 

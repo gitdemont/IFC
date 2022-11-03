@@ -11,6 +11,7 @@ writeIFD(
   pos = 0,
   extra = NULL,
   endianness = .Platform$endian,
+  last = FALSE,
   ...
 )
 }

@@ -323,7 +323,7 @@ DisplayGallery <- function(...,
       txt_col = 1
     }
   } else {
-    dat = cbind(ids = as.integer(gsub("^.*_(.*)$", "\\1", sapply(ans, attr, which="offset_id"))), 
+    dat = cbind(ids = as.integer(gsub("msk_", "", gsub("img_", "", sapply(ans, attr, which = "offset_id"), fixed = TRUE), fixed = TRUE)), 
                 do.call(what = "rbind", args = lapply(ans, FUN=function(i) i[layout])))
     txt_col = 1
   }

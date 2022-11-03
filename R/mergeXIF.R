@@ -111,6 +111,7 @@ mergeXIF <- function (fileName, write_to,
   }
   
   r_endian = cpp_checkTIFF(file_first)
+  swap = r_endian != endianness
   f_Ext = getFileExt(file_first)
   assert(write_to, len = 1, typ = "character")
   splitf_obj = splitf(file_first)
@@ -176,9 +177,11 @@ mergeXIF <- function (fileName, write_to,
   tryCatch(expr = {
     # magic number
     writeBin(object = c(cpp_uint32_to_raw(18761)[1:2], cpp_uint32_to_raw(42)[1:2]), con = towrite, endian = r_endian)
-    
     # define writing position
-    pos = 4
+    pos = 8
+    tmp = cpp_uint32_to_raw(pos %% 4294967296)
+    if(endianness != .Platform$endian) tmp = rev(tmp)
+    writeBin(object = tmp, con = towrite, endian = endianness)
     
     # compute final object number
     final_obj = sum(sapply(fileName, FUN = function(f) getFullTag(IFD = getIFD(fileName = f, offsets = "first", trunc_bytes = 4, force_trunc = TRUE, verbose = verbose, verbosity = verbosity, bypass = TRUE), which = 1, tag = "33018")))
@@ -192,7 +195,7 @@ mergeXIF <- function (fileName, write_to,
       on.exit(endPB(pb2), add = TRUE)
     }
     tryCatch(expr = {
-    IFD = cpp_fastTAGS(fname = file_first, offset = IFD_first[[1]]$curr_IFD_offset, verbose = VER)
+    IFD = cpp_fastTAGS(fname = file_first, offset = IFD_first[[1]]$curr_IFD_offset, swap = swap)
     
     # set additional IFD
     # 33029 or 33030 names of files that constitute the merge
@@ -257,7 +260,7 @@ mergeXIF <- function (fileName, write_to,
           cum_obj = i_obj + off_obj
           if(display_progress) setPB(pb = pb2, value = cum_obj, title = title_progress, label = paste0(label_progress, " - merging objects"))
           # extract IFD
-          IFD = cpp_fastTAGS(fname = f, offset = IFD$next_IFD_offset, verbose = VER)
+          IFD = cpp_fastTAGS(fname = f, offset = IFD$next_IFD_offset, swap = swap)
           TYPE = IFD$tags[["33002"]]$val
           if(any(TYPE == 2)) OBJECT_ID = IFD$tags[["33003"]]$val
           ifd = IFD$tags[!(names(IFD$tags) %in% unwanted)]
@@ -282,8 +285,7 @@ mergeXIF <- function (fileName, write_to,
           } else {
             extra = NULL
           }
-          
-          pos = writeIFD(ifd, r_con = toread, w_con = towrite, pos = pos, extra = extra, endianness = r_endian)
+          pos = writeIFD(ifd, r_con = toread, w_con = towrite, pos = pos, extra = extra, endianness = r_endian, last = (cum_obj == final_obj * 2))
         }
       }, error = function(e) {
         stop(e$message, call. = FALSE)
@@ -292,7 +294,6 @@ mergeXIF <- function (fileName, write_to,
       })
       off_obj = off_obj + obj_count
     }
-    writeBin(object = as.raw(c(0x00,0x00,0x00,0x00)), con = towrite, endian = r_endian)
   }, error = function(e) {
     stop(paste0("Can't create 'write_to' file.\n", write_to,
                 ifelse(overwritten,"\nFile was not modified.\n","\n"),

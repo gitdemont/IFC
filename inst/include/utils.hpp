@@ -54,6 +54,30 @@ std::string hpp_getEndian () {
   return out;
 }
 
+// combine Rcpp Vectors
+template <int RTYPE> Rcpp::Vector<RTYPE>
+c_vector_T( const Rcpp::Vector<RTYPE>&x, const Rcpp::Vector<RTYPE>&y) {
+  Rcpp::Vector<RTYPE> out(x.size() + y.size());
+  std::copy(x.begin(), x.end(), out.begin());
+  std::copy(y.begin(), y.end(), out.begin() + x.size());
+  return(out);
+}
+SEXP c_vector( SEXP x, SEXP y) {
+  if((TYPEOF(x) == NILSXP) && (TYPEOF(y) == NILSXP)) return R_NilValue;
+  if(TYPEOF(x) == NILSXP) return y;
+  if(TYPEOF(y) == NILSXP) return x;
+  if(TYPEOF(x) != TYPEOF(y)) Rcpp::stop("c_vector: 'x' and 'y' should have same RTYPE");
+  switch( TYPEOF(x) ) {
+  case NILSXP: return R_NilValue;
+  case LGLSXP: return c_vector_T<LGLSXP>(x, y);
+  case INTSXP: return c_vector_T<INTSXP>(x, y);
+  case REALSXP: return c_vector_T<REALSXP>(x, y);
+  case STRSXP: return c_vector_T<STRSXP>(x, y);
+  case RAWSXP: return c_vector_T<RAWSXP>(x, y);
+  default: Rcpp::stop("c_vector: not supported type in 'x'");
+  }
+}
+
 // Ensures NumericVector is not NULL
 bool nNotisNULL(const Rcpp::Nullable<Rcpp::NumericVector> x_ = R_NilValue) {
   if (x_.isNotNull()) {
@@ -302,7 +326,7 @@ Rcpp::Nullable<Rcpp::IntegerVector> hpp_get_bytes_order (const R_len_t obj = 0,
 }
 
 // converts unsigned short to string
-std::string to_string(const uint16_t x) {
+std::string to_string(const double x) {
   std::string out;
   std::ostringstream convert;
   convert << x;

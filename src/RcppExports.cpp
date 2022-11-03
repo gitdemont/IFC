@@ -10,6 +10,15 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// cpp_getBits
+unsigned int cpp_getBits();
+RcppExport SEXP _IFC_cpp_getBits() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    rcpp_result_gen = Rcpp::wrap(cpp_getBits());
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_align
 Rcpp::NumericMatrix cpp_align(const Rcpp::NumericMatrix mat, const double dx, const double dy);
 RcppExport SEXP _IFC_cpp_align(SEXP matSEXP, SEXP dxSEXP, SEXP dySEXP) {
@@ -191,25 +200,26 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_getoffsets_noid
-Rcpp::IntegerVector cpp_getoffsets_noid(const std::string fname, const R_len_t obj_count, const bool display_progress, const bool verbose);
-RcppExport SEXP _IFC_cpp_getoffsets_noid(SEXP fnameSEXP, SEXP obj_countSEXP, SEXP display_progressSEXP, SEXP verboseSEXP) {
+Rcpp::NumericVector cpp_getoffsets_noid(const std::string fname, const R_len_t obj_count, const bool display_progress, const Rcpp::Nullable<Rcpp::List> pb, const bool verbose);
+RcppExport SEXP _IFC_cpp_getoffsets_noid(SEXP fnameSEXP, SEXP obj_countSEXP, SEXP display_progressSEXP, SEXP pbSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
     Rcpp::traits::input_parameter< const R_len_t >::type obj_count(obj_countSEXP);
     Rcpp::traits::input_parameter< const bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::List> >::type pb(pbSEXP);
     Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_getoffsets_noid(fname, obj_count, display_progress, verbose));
+    rcpp_result_gen = Rcpp::wrap(cpp_getoffsets_noid(fname, obj_count, display_progress, pb, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_getTAGS
-Rcpp::List cpp_getTAGS(const std::string fname, const uint32_t offset, const bool verbose, const uint8_t trunc_bytes, const bool force_trunc);
+Rcpp::List cpp_getTAGS(const std::string fname, const std::size_t offset, const bool verbose, const uint8_t trunc_bytes, const bool force_trunc);
 RcppExport SEXP _IFC_cpp_getTAGS(SEXP fnameSEXP, SEXP offsetSEXP, SEXP verboseSEXP, SEXP trunc_bytesSEXP, SEXP force_truncSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
-    Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const std::size_t >::type offset(offsetSEXP);
     Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
     Rcpp::traits::input_parameter< const uint8_t >::type trunc_bytes(trunc_bytesSEXP);
     Rcpp::traits::input_parameter< const bool >::type force_trunc(force_truncSEXP);
@@ -218,27 +228,28 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_fastTAGS
-Rcpp::List cpp_fastTAGS(const std::string fname, const uint32_t offset, const bool verbose);
-RcppExport SEXP _IFC_cpp_fastTAGS(SEXP fnameSEXP, SEXP offsetSEXP, SEXP verboseSEXP) {
+Rcpp::List cpp_fastTAGS(const std::string fname, const std::size_t offset, const bool swap);
+RcppExport SEXP _IFC_cpp_fastTAGS(SEXP fnameSEXP, SEXP offsetSEXP, SEXP swapSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
-    Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
-    Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_fastTAGS(fname, offset, verbose));
+    Rcpp::traits::input_parameter< const std::size_t >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const bool >::type swap(swapSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_fastTAGS(fname, offset, swap));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_getoffsets_wid
-Rcpp::List cpp_getoffsets_wid(const std::string fname, const R_len_t obj_count, const bool display_progress, const bool verbose);
-RcppExport SEXP _IFC_cpp_getoffsets_wid(SEXP fnameSEXP, SEXP obj_countSEXP, SEXP display_progressSEXP, SEXP verboseSEXP) {
+Rcpp::List cpp_getoffsets_wid(const std::string fname, const R_len_t obj_count, const bool display_progress, const Rcpp::Nullable<Rcpp::List> pb, const bool verbose);
+RcppExport SEXP _IFC_cpp_getoffsets_wid(SEXP fnameSEXP, SEXP obj_countSEXP, SEXP display_progressSEXP, SEXP pbSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
     Rcpp::traits::input_parameter< const R_len_t >::type obj_count(obj_countSEXP);
     Rcpp::traits::input_parameter< const bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::List> >::type pb(pbSEXP);
     Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_getoffsets_wid(fname, obj_count, display_progress, verbose));
+    rcpp_result_gen = Rcpp::wrap(cpp_getoffsets_wid(fname, obj_count, display_progress, pb, verbose));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -307,6 +318,29 @@ BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const int32_t >::type x(xSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_int32_to_uint32(x));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_offset_to_raw
+Rcpp::RawVector cpp_offset_to_raw(const double x, const bool swap);
+RcppExport SEXP _IFC_cpp_offset_to_raw(SEXP xSEXP, SEXP swapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const double >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const bool >::type swap(swapSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_offset_to_raw(x, swap));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_raw_to_offset
+double cpp_raw_to_offset(const Rcpp::RawVector x, const bool swap);
+RcppExport SEXP _IFC_cpp_raw_to_offset(SEXP xSEXP, SEXP swapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::RawVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const bool >::type swap(swapSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_raw_to_offset(x, swap));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -474,12 +508,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_decomp
-Rcpp::List cpp_decomp(const std::string fname, const uint32_t offset, const uint32_t nbytes, const uint32_t imgWidth, const uint32_t imgHeight, const uint32_t nb_channels, const uint8_t removal, const uint32_t compression, const bool verbose);
+Rcpp::List cpp_decomp(const std::string fname, const std::size_t offset, const uint32_t nbytes, const uint32_t imgWidth, const uint32_t imgHeight, const uint32_t nb_channels, const uint8_t removal, const uint32_t compression, const bool verbose);
 RcppExport SEXP _IFC_cpp_decomp(SEXP fnameSEXP, SEXP offsetSEXP, SEXP nbytesSEXP, SEXP imgWidthSEXP, SEXP imgHeightSEXP, SEXP nb_channelsSEXP, SEXP removalSEXP, SEXP compressionSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
-    Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const std::size_t >::type offset(offsetSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type nbytes(nbytesSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type imgWidth(imgWidthSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type imgHeight(imgHeightSEXP);
@@ -492,12 +526,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_rawdecomp
-Rcpp::RawVector cpp_rawdecomp(const std::string fname, const uint32_t offset, const uint32_t nbytes, const uint32_t imgWidth, const uint32_t imgHeight, const uint32_t compression, const uint8_t bits, const bool swap, const bool verbose);
+Rcpp::RawVector cpp_rawdecomp(const std::string fname, const std::size_t offset, const uint32_t nbytes, const uint32_t imgWidth, const uint32_t imgHeight, const uint32_t compression, const uint8_t bits, const bool swap, const bool verbose);
 RcppExport SEXP _IFC_cpp_rawdecomp(SEXP fnameSEXP, SEXP offsetSEXP, SEXP nbytesSEXP, SEXP imgWidthSEXP, SEXP imgHeightSEXP, SEXP compressionSEXP, SEXP bitsSEXP, SEXP swapSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
-    Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const std::size_t >::type offset(offsetSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type nbytes(nbytesSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type imgWidth(imgWidthSEXP);
     Rcpp::traits::input_parameter< const uint32_t >::type imgHeight(imgHeightSEXP);
@@ -620,6 +654,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_IFC_cpp_getBits", (DL_FUNC) &_IFC_cpp_getBits, 0},
     {"_IFC_cpp_align", (DL_FUNC) &_IFC_cpp_align, 3},
     {"_IFC_cpp_assert", (DL_FUNC) &_IFC_cpp_assert, 6},
     {"_IFC_cpp_ell_coord", (DL_FUNC) &_IFC_cpp_ell_coord, 2},
@@ -636,16 +671,18 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_base64_encode", (DL_FUNC) &_IFC_cpp_base64_encode, 1},
     {"_IFC_cpp_writeBMP", (DL_FUNC) &_IFC_cpp_writeBMP, 1},
     {"_IFC_cpp_checkTIFF", (DL_FUNC) &_IFC_cpp_checkTIFF, 1},
-    {"_IFC_cpp_getoffsets_noid", (DL_FUNC) &_IFC_cpp_getoffsets_noid, 4},
+    {"_IFC_cpp_getoffsets_noid", (DL_FUNC) &_IFC_cpp_getoffsets_noid, 5},
     {"_IFC_cpp_getTAGS", (DL_FUNC) &_IFC_cpp_getTAGS, 5},
     {"_IFC_cpp_fastTAGS", (DL_FUNC) &_IFC_cpp_fastTAGS, 3},
-    {"_IFC_cpp_getoffsets_wid", (DL_FUNC) &_IFC_cpp_getoffsets_wid, 4},
+    {"_IFC_cpp_getoffsets_wid", (DL_FUNC) &_IFC_cpp_getoffsets_wid, 5},
     {"_IFC_cpp_checksum", (DL_FUNC) &_IFC_cpp_checksum, 1},
     {"_IFC_cpp_M_HSV2RGB", (DL_FUNC) &_IFC_cpp_M_HSV2RGB, 3},
     {"_IFC_cpp_smoothLinLog", (DL_FUNC) &_IFC_cpp_smoothLinLog, 4},
     {"_IFC_cpp_inv_smoothLinLog", (DL_FUNC) &_IFC_cpp_inv_smoothLinLog, 4},
     {"_IFC_cpp_uint32_to_raw", (DL_FUNC) &_IFC_cpp_uint32_to_raw, 1},
     {"_IFC_cpp_int32_to_uint32", (DL_FUNC) &_IFC_cpp_int32_to_uint32, 1},
+    {"_IFC_cpp_offset_to_raw", (DL_FUNC) &_IFC_cpp_offset_to_raw, 2},
+    {"_IFC_cpp_raw_to_offset", (DL_FUNC) &_IFC_cpp_raw_to_offset, 2},
     {"_IFC_cpp_uint32_to_int32", (DL_FUNC) &_IFC_cpp_uint32_to_int32, 1},
     {"_IFC_cpp_int64_to_uint64", (DL_FUNC) &_IFC_cpp_int64_to_uint64, 1},
     {"_IFC_cpp_uint64_to_int64", (DL_FUNC) &_IFC_cpp_uint64_to_int64, 1},

@@ -9,9 +9,6 @@ TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211
 \arguments{
 \item{fname}{string, path to file.}
 }
-\value{
-an integer vector with offsets of IFDs found.
-}
 \description{
 Computes sum of img IFDs (Image Field Directory) offsets of objects 0, 1, 2, 3 and 4.
 }

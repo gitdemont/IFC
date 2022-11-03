@@ -24,7 +24,7 @@ getIFD(
 
 \item{offsets}{either "all", "first" or an object of class `IFC_offset`. Default is "first".}
 
-\item{trunc_bytes}{a positive integer maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 12.\cr
+\item{trunc_bytes}{a positive integer maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDEFINED for TAGS (1, 2, 6 or 7). Default is 12.\cr
 However, if less is found, less is returned in map. 
 Note that, if 0 is provided, it will be automatically set to 1.}
 

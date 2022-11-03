@@ -330,7 +330,7 @@ ExportToNumpy <- function(...,
   if(image_type == "img") { 
     ids = sapply(ans, attr, which = "object_id")
   } else {
-    ids = as.integer(gsub("^.*_(.*)$", "\\1", sapply(ans, attr, which = "offset_id")))
+    ids = as.integer(gsub("msk_", "", gsub("img_", "", sapply(ans, attr, which = "offset_id"), fixed = TRUE), fixed = TRUE))
   }
   if(!all(objects == ids)) warning("Extracted object_ids differ from expected ones. Concider running with 'fast' = FALSE", call. = FALSE, immediate. = TRUE)
   

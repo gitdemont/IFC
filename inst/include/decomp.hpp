@@ -41,7 +41,7 @@ using namespace Rcpp;
 //' @description
 //' Operates RLE decompression of compressed image stored in TIFF file.
 //' @param fname string, path to file.
-//' @param offset uint32_t, position of the beginning of compressed image.
+//' @param offset std::size_t, position of the beginning of compressed image.
 //' @param nbytes uint32_t, number of bytes of compressed image.
 //' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
 //' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
@@ -87,7 +87,7 @@ using namespace Rcpp;
 ////' @export
 // [[Rcpp::export(rng = false)]]
 Rcpp::List hpp_rle_Decomp (const std::string fname, 
-                           const uint32_t offset,
+                           const std::size_t offset,
                            const uint32_t nbytes,
                            const uint32_t imgWidth = 1,
                            const uint32_t imgHeight = 1,
@@ -100,7 +100,7 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (fi.is_open()) {
         fi.seekg(0, std::ios::end);
-        unsigned int filesize = fi.tellg();
+        std::size_t filesize = fi.tellg();
         if(verbose) {
           Rcout << fname << std::endl;
           Rcout << "Extracting " << nbytes << " Bytes BitMask image [30818] @offset:" << offset << std::endl;
@@ -112,8 +112,7 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
         fi.seekg(offset, std::ios::beg);
         std::vector<char> buf_image(nbytes);
         fi.read(buf_image.data(), nbytes);
-        fi.close();
-        
+
         Rcpp::IntegerMatrix img = Rcpp::no_init(imgWidth,imgHeight);
         R_len_t L = imgWidth * imgHeight, runLength = 0, j = 0;
         
@@ -205,7 +204,7 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
 //' @description
 //' Operates GrayScale decompression of compressed image stored in TIFF file.
 //' @param fname string, path to file.
-//' @param offset uint32_t, position of the beginning of compressed image.
+//' @param offset std::size_t, position of the beginning of compressed image.
 //' @param nbytes uint32_t, number of bytes of compressed image.
 //' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
 //' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
@@ -245,7 +244,7 @@ Rcpp::List hpp_rle_Decomp (const std::string fname,
 ////' @export
 // [[Rcpp::export(rng = false)]]
 Rcpp::List hpp_gray_Decomp (const std::string fname, 
-                            const uint32_t offset, 
+                            const std::size_t offset, 
                             const uint32_t nbytes,
                             const uint32_t imgWidth = 1, 
                             const uint32_t imgHeight = 1, 
@@ -255,7 +254,7 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
     Rcpp::List out(nb_channels);
     uint32_t tile_width = imgWidth / nb_channels;
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if(fi.is_open()) {
+    if (fi.is_open()) {
         fi.seekg(0, std::ios::end);
         std::size_t filesize = fi.tellg();
         if(verbose) {
@@ -266,13 +265,11 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
           Rcpp::Rcerr << "hpp_gray_Decomp: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
           Rcpp::stop("hpp_gray_Decomp: GrayScale image offset is higher than file size");
         }
-        if(imgWidth >= 0xffffffff) Rcpp::stop("hpp_gray_Decomp: image is too big");
         
         fi.seekg(offset, std::ios::beg);
         std::vector<char> buf_image(nbytes);
         fi.read(buf_image.data(), nbytes);
-        fi.close();
-        
+
         Rcpp::IntegerVector lastRow(imgWidth + 1);
         Rcpp::IntegerMatrix img = Rcpp::no_init(imgHeight, imgWidth + 1);
         for(uint32_t y = 0 ; y < imgHeight ; y++) img(y, 0) = 0;
@@ -318,7 +315,7 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
 //' @description
 //' Operates decompression of compressed image stored in TIFF file.
 //' @param fname string, path to file.
-//' @param offset uint32_t, position of the beginning of compressed image.
+//' @param offset std::size_t, position of the beginning of compressed image.
 //' @param nbytes uint32_t, number of bytes of compressed image.
 //' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
 //' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
@@ -365,7 +362,7 @@ Rcpp::List hpp_gray_Decomp (const std::string fname,
 ////' @export
 // [[Rcpp::export(rng = false)]]
 Rcpp::List hpp_decomp (const std::string fname, 
-                       const uint32_t offset, 
+                       const std::size_t offset, 
                        const uint32_t nbytes, 
                        const uint32_t imgWidth = 1, 
                        const uint32_t imgHeight = 1, 
@@ -387,7 +384,7 @@ Rcpp::List hpp_decomp (const std::string fname,
 //' @description
 //' Operates GrayScale decompression to raw of compressed image stored in TIFF file.
 //' @param fname string, path to file.
-//' @param offset uint32_t, position of the beginning of compressed image.
+//' @param offset std::size_t, position of the beginning of compressed image.
 //' @param nbytes uint32_t, number of bytes of compressed image.
 //' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
 //' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
@@ -428,7 +425,7 @@ Rcpp::List hpp_decomp (const std::string fname,
 ////' @export
 // [[Rcpp::export(rng = false)]]
 Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname, 
-                                    const uint32_t offset, 
+                                    const std::size_t offset, 
                                     const uint32_t nbytes,
                                     const uint32_t imgWidth = 1,
                                     const uint32_t imgHeight = 1,
@@ -439,7 +436,7 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
     if(!((bits == 8) || (bits == 16))) Rcpp::stop("hpp_gray_rawDecomp: bits should be 8 or 16");
     Rcpp::RawVector out(imgWidth * imgHeight * bits / 8);
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-    if(fi.is_open()) {
+    if (fi.is_open()) {
         fi.seekg(0, std::ios::end);
         std::size_t filesize = fi.tellg();
         if(verbose) {
@@ -450,12 +447,10 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
           Rcpp::Rcerr << "hpp_gray_rawDecomp: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
           Rcpp::stop("hpp_gray_rawDecomp: GrayScale image offset is higher than file size");
         }
-        if(imgWidth >= 0xffffffff) Rcpp::stop("hpp_gray_rawDecomp: image is too big");
         fi.seekg(offset, std::ios::beg);
         std::vector<char> buf_image(nbytes);
         fi.read(buf_image.data(), nbytes);
-        fi.close();
-        
+
         Rcpp::IntegerVector lastRow(imgWidth + 1);
         Rcpp::IntegerMatrix img = Rcpp::no_init(imgHeight, imgWidth + 1);
         for(uint32_t y = 0 ; y < imgHeight ; y++) img(y, 0) = 0;
@@ -553,7 +548,7 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
 //' @description
 //' Operates RLE decompression to raw of compressed image stored in TIFF file.
 //' @param fname string, path to file.
-//' @param offset uint32_t, position of the beginning of compressed image.
+//' @param offset std::size_t, position of the beginning of compressed image.
 //' @param nbytes uint32_t, number of bytes of compressed image.
 //' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
 //' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
@@ -593,7 +588,7 @@ Rcpp::RawVector hpp_gray_rawDecomp (const std::string fname,
 //' @keywords internal
 ////' @export
 Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname, 
-                                   const uint32_t offset,
+                                   const std::size_t offset,
                                    const uint32_t nbytes,
                                    const uint32_t imgWidth = 1,
                                    const uint32_t imgHeight = 1,
@@ -606,7 +601,7 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
     std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
     if (fi.is_open()) {
         fi.seekg(0, std::ios::end);
-        unsigned int filesize = fi.tellg();
+        std::size_t filesize = fi.tellg();
         if(verbose) {
           Rcout << fname << std::endl;
           Rcout << "Extracting " << nbytes << " Bytes BitMask image [30818] @offset:" << offset << std::endl;
@@ -618,7 +613,6 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
         fi.seekg(offset, std::ios::beg);
         std::vector<char> buf_image(nbytes);
         fi.read(buf_image.data(), nbytes);
-        fi.close();
         
         Rcpp::RawVector out(L * bits / 8);
         if(bits == 8) {
@@ -676,7 +670,7 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
 //' @description
 //' Operates decompression to raw of compressed image stored in TIFF file.
 //' @param fname string, path to file.
-//' @param offset uint32_t, position of the beginning of compressed image.
+//' @param offset std::size_t, position of the beginning of compressed image.
 //' @param nbytes uint32_t, number of bytes of compressed image.
 //' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
 //' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
@@ -718,7 +712,7 @@ Rcpp::RawVector hpp_rle_rawDecomp (const std::string fname,
 ////' @export
 // [[Rcpp::export(rng = false)]]
 Rcpp::RawVector hpp_rawdecomp (const std::string fname, 
-                               const uint32_t offset, 
+                               const std::size_t offset, 
                                const uint32_t nbytes, 
                                const uint32_t imgWidth = 1, 
                                const uint32_t imgHeight = 1, 

@@ -6,6 +6,7 @@
 \usage{
 toBIN_images(
   images,
+  w_con = raw(),
   endianness = .Platform$endian,
   verbose = FALSE,
   display_progress = TRUE,
@@ -15,6 +16,11 @@ toBIN_images(
 }
 \arguments{
 \item{images}{an `IFC_images` object.}
+
+\item{w_con}{a connection opened for writing. Default is raw().}
+
+\item{endianness}{The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
+Endianness describes the bytes order of data stored within the files. This parameter may not be modified.}
 
 \item{verbose}{whether to display message about current action. Default is FALSE.}
 

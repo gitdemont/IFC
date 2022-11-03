@@ -393,7 +393,7 @@ ExportToGallery <- function(...,
       if(add_ids > 0) if(any(param$brightfield$channel)) if(channel_id[layout[add_ids]] %in% as.character(which(param$brightfield$channel))) col = "black"
       ids = sapply(ans, attr, which = "object_id")
     } else {
-      ids = as.integer(gsub("^.*_(.*)$", "\\1", sapply(ans, attr, which = "offset_id")))
+      ids = as.integer(gsub("msk_", "", gsub("img_", "", sapply(ans, attr, which = "offset_id"), fixed = TRUE), fixed = TRUE))
     }
     ans = lapply(1:length(objects), FUN = function(i) {
       img = ans[[i]][layout]

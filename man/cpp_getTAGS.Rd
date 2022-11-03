@@ -9,11 +9,11 @@ TIFF 6.0 specifications archived from web \url{https://web.archive.org/web/20211
 \arguments{
 \item{fname}{string, path to file.}
 
-\item{offset}{uint32_t, position of the IFD beginning.}
+\item{offset}{std::size_t, position of the IFD beginning.}
 
 \item{verbose}{bool, whether to display information (use for debugging purpose). Default is 'false'.}
 
-\item{trunc_bytes}{uint32_t maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDIFINED for TAGS (1, 2, 6 or 7). Default is 12.\cr
+\item{trunc_bytes}{uint32_t maximal number of individual scalar to extract BYTE/ASCII/SBYTE/UNDEFINED for TAGS (1, 2, 6 or 7). Default is 12.\cr
 However, if less is found, less is returned in map.
 Note that, if 0 is provided, it will be automatically set to 1.}
 

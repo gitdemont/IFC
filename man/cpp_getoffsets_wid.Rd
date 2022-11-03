@@ -14,10 +14,12 @@ If obj_count <= 0 then progress_bar is forced to false.}
 
 \item{display_progress}{bool, whether to display a progress bar. Default is false.}
 
+\item{pb}{a List of class `IFC_progress` containing a progress bar of class `txtProgressBar`, `winProgressBar` or `Progress`. Default is R_Nilvalue.}
+
 \item{verbose}{bool, whether to display information (use for debugging purpose). Default is false.}
 }
 \value{
-a list of integer vectors with OBJECT_ID, TYPE and OFFSET of IFDs found.
+a list of numeric vectors with OBJECT_ID, TYPE and OFFSET of IFDs found.
 }
 \description{
 Returns offsets of the IFD (Image Field Directory) within a TIFF file.

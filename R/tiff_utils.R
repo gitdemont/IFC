@@ -58,7 +58,7 @@ buildIFD <- function(val, typ, tag, endianness = .Platform$endian) {
                x
              } else {
                charToRaw(as.character(x)) # 2 ASCII
-           }
+             }
            },
            { cpp_uint32_to_raw(x)[1:2] # 3 SHORT 2 bytes, what happen when endianness is swapped ?
            },
@@ -81,7 +81,7 @@ buildIFD <- function(val, typ, tag, endianness = .Platform$endian) {
            { writeBin(x, raw(), size = 8) # 12 DOUBLE, 8 bytes
            })
   })
-  bytes = length(unlist(val_raw))
+  bytes = length(unlist(val_raw, recursive = FALSE, use.names = FALSE))
   count = bytes / (sizes[typ] * multi[typ])
   ifd = list(cpp_uint32_to_raw(tag)[1:2], #tag
              cpp_uint32_to_raw(typ)[1:2], #typ
@@ -94,12 +94,13 @@ buildIFD <- function(val, typ, tag, endianness = .Platform$endian) {
     ifd = c(ifd, as.raw(c(0x00, 0x00, 0x00, 0x00))) #val/offsets
     add = val_raw
   } else {
-    ifd = c(ifd, sapply(1:4, FUN=function(i) { ifelse(i <= bytes, unlist(val_raw)[i], as.raw(0x00)) }))
+    ifd = c(ifd, sapply(1:4, FUN=function(i) { ifelse(i <= bytes, unlist(val_raw, recursive = FALSE, use.names = FALSE)[i], as.raw(0x00)) }))
     add = raw()
   }
-  ifd = list(list(min_content = as.raw(unlist(ifd)), add_content = unlist(add), bytes = bytes))
-  names(ifd) = tag
-  return(ifd)
+  structure(list(list(raw = as.raw(unlist(ifd, recursive = FALSE, use.names = FALSE)),
+                      val = unlist(add, recursive = FALSE, use.names = FALSE),
+                      byt = bytes)),
+            names = tag)
 }
 
 #' @title Image Field Directory Writer
@@ -113,88 +114,62 @@ buildIFD <- function(val, typ, tag, endianness = .Platform$endian) {
 #' Endianness describes the bytes order of data stored within the files. This parameter may not be modified.
 #' @return the position within 'w_con' after 'IFD' and 'extra' content have been written\cr
 #' @keywords internal
-writeIFD <- function(ifd, r_con, w_con, pos = 0, extra = NULL, endianness = .Platform$endian, ...) {
+writeIFD <- function(ifd, r_con, w_con, pos = 0, extra = NULL, endianness = .Platform$endian, last = FALSE, ...) {
   swap = endianness != .Platform$endian
   
-  # extract image bytes
-  if(all(c("273","279") %in% names(ifd)) && !("add_content" %in% names(ifd[["273"]]))) {
-    extra = c(extra, list("273" = list(min_content = ifd[["273"]]$raw, 
-                                       add_content = list(typ = 1, val = ifd[["273"]]$val, len = ifd[["279"]]$val), bytes = ifd[["279"]]$val)))
-    ifd = ifd[names(ifd) != "273"]
-  }
-  ifd = sapply(ifd, simplify = FALSE, FUN = function(i) list(min_content = i$raw,
-                                                             add_content = i[c("typ","val","len")],
-                                                             bytes = i$byt))
+  # extract image byt
+  if(any("273" == names(ifd)) &&
+     any("279" == names(ifd)) &&
+     (ifd[["279"]]$val >= 4)) ifd[["273"]]$byt = ifd[["279"]]$val
   
   # add extra content to ifd
   ifd = c(ifd, extra)
   
-  # stop if duplicated names is found
-  if(any(duplicated(names(ifd)))) stop("found duplicated ifd names [",paste0(names(ifd)[duplicated(names(ifd))], collpase=","),"] in ",
-                                       showConnections(all = FALSE)[as.character(r_con), "description"])
-  
   # reorder ifd
   ifd = ifd[order(as.integer(names(ifd)))]
-  N = names(ifd)
-  # define new offset position of current ifd
-  l_min = cumsum(sapply(1:length(ifd), FUN=function(i_tag) length(ifd[[i_tag]]$min_content)))
-  names(l_min) <- N
-  l_add = cumsum(sapply(1:length(ifd), FUN=function(i_tag) ifelse(ifd[[i_tag]]$bytes > 4, ifd[[i_tag]]$bytes, 0)))
-  names(l_add) <- N
   
-  # modify 33080 feature offset to point to features in 33083
-  if(all(c("33080","33083") %in% names(ifd))) {
-    tmp = cpp_uint32_to_raw(l_add["33083"] - length(ifd[["33083"]]$add_content) + 8)
+  # convert modified number of entries
+  n_entries = length(ifd)
+  ent = cpp_uint32_to_raw(n_entries)
+  if(swap) ent = rev(ent)
+  
+  # compute offsets of additional content
+  pos = 4 + pos + 2 + n_entries * 12
+  for(i_tag in seq_along(ifd)) {
+    if(ifd[[i_tag]]$byt <= 4) next
+    # modify ifd val/offset of minimal content 
+    tmp = cpp_uint32_to_raw(pos %% 4294967296)
     if(swap) tmp = rev(tmp)
-    ifd[["33080"]]$min_content[9:12] <- tmp
+    ifd[[i_tag]]$raw[9:12] <- tmp
+    pos <- pos + ifd[[i_tag]]$byt
   }
   
-  # write this new offset
-  pos = pos + 4
-  tmp = cpp_uint32_to_raw(pos + l_add[length(l_add)])
-  if(swap) tmp = rev(tmp)
-  writeBin(object = tmp, con = w_con, endian = endianness)
-  
-  # write all additional extra content
-  lapply(1:length(ifd), FUN=function(i_tag) {
-    if(ifd[[i_tag]]$bytes <= 4) return(NULL)
-    if(inherits(x = ifd[[i_tag]]$add_content, what = "list")) {
-      seek(r_con, ifd[[i_tag]]$add_content$val)
-      # if(swap && (ifd[[i_tag]]$len != ifd[[i_tag]]$bytes)) {
-      #   foo = readBin(con = r_con, what = "raw", n = ifd[[i_tag]]$bytes)
-      #   lapply(split(foo, ceiling(seq_along(foo)/ifd[[i_tag]]$add_content$len)), FUN = function(x) {
-      #     writeBin(object = rev(x), what = "raw", con = w_con, endian = endianness)
-      #   })
-      # } else {
-        writeBin(readBin(con = r_con, what = "raw", n = ifd[[i_tag]]$byt), con = w_con, endian = endianness)
-      # }
-    } else {
-      writeBin(ifd[[i_tag]]$add_content, con = w_con, endian = endianness)
-    }
-    # modify ifd val/offset of minimal content 
-    tmp = cpp_uint32_to_raw(pos)
-    if(swap) tmp = rev(tmp)
-    ifd[[i_tag]]$min_content[9:12] <<- tmp
-    pos <<- pos + ifd[[i_tag]]$bytes
-  })
-  # modify number of directory entries
-  n_entries = length(ifd)
-  tmp = cpp_uint32_to_raw(n_entries)
-  if(swap) tmp = rev(tmp)
-  
-  # write modified number of entries
-  writeBin(object = tmp[1:2], con = w_con, endian = endianness)
+  # convert next offset
+  if(last) {
+    off = as.raw(c(0x00,0x00,0x00,0x00))
+  } else {
+    off = cpp_uint32_to_raw(pos %% 4294967296)
+    if(swap) off = rev(off)
+  }
   
   # write ifd
-  lapply(1:length(ifd), FUN=function(i_tag) {
-    writeBin(object = ifd[[i_tag]]$min_content,
-             con = w_con, endian = endianness)
-  })
+  writeBin(c(ent[1:2],
+             unlist(lapply(seq_along(ifd), FUN = function(i_tag) ifd[[i_tag]]$raw), recursive = FALSE, use.names = FALSE),
+             off), con = w_con, endian = endianness)
   
-  # compute pos
-  pos = unname(pos + l_min[length(l_min)] + 2)
-  if(pos > 4294967295) stop("file is too big")
-  pos
+  # write additional content
+  for(i_tag in seq_along(ifd)) {
+    if(ifd[[i_tag]]$byt <= 4) next
+    if(typeof(ifd[[i_tag]]$val) == "raw") {
+      writeBin(object = ifd[[i_tag]]$val, con = w_con, endian = endianness)
+    } else {
+      seek(r_con, ifd[[i_tag]]$val)
+      writeBin(object = readBin(con = r_con, what = "raw", n = ifd[[i_tag]]$byt), con = w_con, endian = endianness)
+    }
+  }
+  
+  # return current pos
+  return(pos)
 }
 
 #' @title RIF/CIF Image Order Test
@@ -208,6 +183,8 @@ writeIFD <- function(ifd, r_con, w_con, pos = 0, extra = NULL, endianness = .Pla
 testXIF <- function(fileName) {
   ans = -1L
   fileName = enc2native(fileName)
+  fsize = file.size(fileName)
+  if(fsize >= 2^(cpp_getBits() * 8)) stop("file is too big [",fsize,"] (more than 2^",cpp_getBits() * 8,"-1, consider using 64bits)")
   IFD_first = getIFD(fileName = fileName, 
                      offsets = "first", 
                      trunc_bytes = 8, 
