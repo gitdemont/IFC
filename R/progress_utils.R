@@ -57,7 +57,7 @@ newPB <- function(title, label,
   if((length(session) != 0) && inherits(session, "ShinySession")) {
     args = list(session = session,
                 min = 0,
-                max = steps- 1)
+                max = max)
     if(missing(style)) {
       args = c(args, list(style = shiny::getShinyOption("progress.style", default = "notification")))
     } else {
@@ -82,7 +82,7 @@ newPB <- function(title, label,
   } else {
     if(.Platform$OS.type == "windows") {
       args = list(min = 0,
-                  max = steps - 1,
+                  max = max,
                   initial = initial)
       if(missing(title)) {
         args = c(args, list(title = "R progress bar"))
@@ -90,7 +90,7 @@ newPB <- function(title, label,
         args = c(args, list(title = title))
       }
       if(missing(label)) {
-        args = c(args, list(label = " ")) # change "" to " " to be allow to pass label 
+        args = c(args, list(label = " ")) # change "" to " " to be able to pass label 
       } else {                            # with setPB even if not created at first
         args = c(args, list(label = label))
       }
@@ -109,7 +109,7 @@ newPB <- function(title, label,
       typ = 2
     } else {
       args = list(min = 0,
-                  max = steps - 1, 
+                  max = max, 
                   initial = initial, 
                   char = char,
                   file = file)
@@ -153,7 +153,13 @@ newPB <- function(title, label,
 #' @param title,label character strings, giving the 'title'(='message' for shiny progress bar) and the 'label'(='detail' for shiny progress bar).
 #' @keywords internal
 setPB <- function(pb, value = NULL, title = NULL, label = NULL) {
-  val = sum(value > pb$seq)
+  if(value < pb$seq[1]) {
+    val = switch(pb$typ, pb$bar$getVal(), getWinProgressBar(pb$bar), pb$bar$getValue())
+    val = pb$seq[sum(val > pb$seq) + 2]
+    if(is.na(val)) val = pb$seq[1]
+  } else {
+    val = pb$seq[min(sum(value >= pb$seq) + 1, pb$steps)]
+  }
   switch(pb$typ,
          { # typ 1
            if(pb$bar$getVal() == val) return(NULL)
@@ -161,13 +167,15 @@ setPB <- function(pb, value = NULL, title = NULL, label = NULL) {
          },
          { # typ 2
            if(getWinProgressBar(pb$bar) == val) return(NULL)
+           if(value < pb$seq[1]) return(setWinProgressBar(pb = pb$bar, value = val, title = title, label = label))
            return(setWinProgressBar(pb = pb$bar, value = val, title = title, 
-                                    label = sprintf("%3.f%% - %s", 100 * val/(pb$steps-1), label)))
+                                    label = sprintf("%3.f%% - %s", 100 * val/tail(pb$seq, 1), label)))
          },
          { # typ 3
            if(pb$bar$getValue() == val) return(NULL)
+           if(value < pb$seq[1]) return(pb$bar$set(value = val, message = title, detail = label))
            return(pb$bar$set(value = val, message = title,
-                             detail = sprintf("%3.f%% - %s", 100 * val/(pb$steps-1),label)))
+                             detail = sprintf("%3.f%% - %s", 100 * val/tail(pb$seq, 1), label)))
          })
 }
 
