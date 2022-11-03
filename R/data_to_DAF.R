@@ -171,7 +171,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
     
     if(fullname) {
       found = FALSE
-      checksum = attr(obj$checksum, "checksum")
+      checksum = obj$checksum
       
       fileName_image = file.path(cifdir, basename(obj$description$ID$file)) # look in cifdir 1st
       if(file.exists(fileName_image)) {
@@ -274,10 +274,10 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
         seek(con = towrite, where = seek(towrite)-1, origin = "start")
         # writing features
         toBIN_features(features = obj$features, w_con = towrite, endianness = endianness,
-                       display_progress = display_progress, verbose = verbose, title = title_progress)
+                       display_progress = display_progress, verbose = verbose, title_progress = title_progress)
         # writing images
         toBIN_images(images = obj$images, w_con = towrite, endianness = endianness,
-                     display_progress = display_progress, verbose = verbose, title = title_progress)
+                     display_progress = display_progress, verbose = verbose, title_progress = title_progress)
       }, error = function(e) {
         stop(e$message, call. = FALSE)
       }, finally = close(towrite))
