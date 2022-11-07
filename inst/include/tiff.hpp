@@ -356,7 +356,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
           // that are retrieved completly (needed for img/msk extraction)
           ext_scalar = ((is_char || force_trunc) && (tot_scalar > max_scalar) && (IFD_tag != 33052) && (IFD_tag != 33053)) ? max_scalar:tot_scalar;
           ifd_val = IFD_value;
-          if(IFD_bytes > 4) {
+          if((IFD_bytes > 4) || (IFD_tag == 273)) {
             if(is_bigfile) {
               ifd_val = IFD_value + incr * 4294967296;
               if(ifd_val < offset) ifd_val += 4294967296;
@@ -365,8 +365,10 @@ Rcpp::List hpp_getTAGS (const std::string fname,
               Rcpp::Rcerr << "\nhpp_getTAGS: in IFD: " << k << " @" << ifd_val + IFD_bytes << " is outside of " << fname << std::endl;
               Rcpp::stop("hpp_getTAGS: IFD value points to outside of file");
             }
-            fi.seekg(ifd_val, std::ios::beg);
-            IFD_off = true;
+            if(IFD_bytes > 4) {
+              fi.seekg(ifd_val, std::ios::beg);
+              IFD_off = true;
+            }
           } else {
             fi.seekg(pos - 4, std::ios::beg);
             IFD_off = false;
@@ -509,7 +511,8 @@ Rcpp::List hpp_getTAGS (const std::string fname,
               break;
             }
             case 273: {
-              STRIP_OFFSETS = IFD_map[0];
+              STRIP_OFFSETS = ifd_val;
+              IFD_map[0] = ifd_val;
               break;
             }
             case 279: {
@@ -572,7 +575,7 @@ Rcpp::List hpp_getTAGS (const std::string fname,
           // that are retrieved completly (needed for img/msk extraction)
           ext_scalar = ((is_char || force_trunc) && (tot_scalar > max_scalar) && (IFD_tag != 33052) && (IFD_tag != 33053)) ? max_scalar:tot_scalar;
           ifd_val = IFD_value;
-          if(IFD_bytes > 4) {
+          if((IFD_bytes > 4) || (IFD_tag == 273)) {
             if(is_bigfile) {
               ifd_val = IFD_value + incr * 4294967296;
               if(ifd_val < offset) ifd_val += 4294967296;
@@ -581,8 +584,10 @@ Rcpp::List hpp_getTAGS (const std::string fname,
               Rcpp::Rcerr << "\nhpp_getTAGS: in IFD: " << k << " @" << ifd_val + IFD_bytes << " is outside of " << fname << std::endl;
               Rcpp::stop("hpp_getTAGS: IFD value points to outside of file");
             }
-            fi.seekg(ifd_val, std::ios::beg);
-            IFD_off = true;
+            if(IFD_bytes > 4) {
+              fi.seekg(ifd_val, std::ios::beg);
+              IFD_off = true;
+            }
           } else {
             fi.seekg(pos - 4, std::ios::beg);
             IFD_off = false;
@@ -725,7 +730,8 @@ Rcpp::List hpp_getTAGS (const std::string fname,
               break;
             }
             case 273: {
-              STRIP_OFFSETS = IFD_map[0];
+              STRIP_OFFSETS = ifd_val;
+              IFD_map[0] = ifd_val;
               break;
             }
             case 279: {
@@ -896,7 +902,7 @@ Rcpp::List hpp_fastTAGS (const std::string fname,
       }
       uint32_t IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
       ifd_val = IFD_value;
-      if(IFD_bytes > 4) {
+      if((IFD_bytes > 4) || (IFD_tag == 273)) {
         if(is_bigfile) {
           ifd_val = IFD_value + incr * 4294967296;
           if(ifd_val < offset) ifd_val += 4294967296;

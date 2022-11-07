@@ -386,7 +386,7 @@ Rcpp::List hpp_extract (const std::string fname,
   R_len_t iml = infos["IMAGE_LENGTH"];
   R_len_t imw = infos["IMAGE_WIDTH"];
   uint16_t typ = infos["TYPE"];
-  uint32_t off = infos["STRIP_OFFSETS"];
+  std::size_t off = infos["STRIP_OFFSETS"];
   uint32_t byt = infos["STRIP_BYTE_COUNTS"];
   uint32_t com = infos["COMPRESSION"];
   Rcpp::NumericVector bg_2;
