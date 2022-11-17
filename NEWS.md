@@ -1,4 +1,151 @@
 # NEWS
+## 0.1.7.xxx
+#### work on TIFF (mainly dedicated to handle large files)
+
+fix bug with offsets being bounded or converted to NA_integer. Offsets were stored as uint32_t in hpp/cpp and placed in Rcpp::IntegerVector and then converted with as.integer in R which makes them undesirably bounded to [-(2^31-1) : -2^31-1], i.e. **max 2GB files**):
+
+- In hpp/cpp we now use std::size_t to access files at desired position and store offset in Rcpp::NumericVector and in R, we remove the as.integer conversions,
+
+- current IFD offset serves as reference for next computed offsets which are supposed to be greater than this reference (except for 0x00000000 last one) and next offset (for IFD or eventual extra content) are computed accordingly,
+
+- order of images files export has changed due to the fact that current IFD serves as reference for new offset computation. Previously, extra content was written before IFD. Now, IFD is written first and then content that does not fit within the 4 bytes slot for value is written just after the offset pointing to next IFD.
+
+improvement in offset extraction:
+
+- dry code for hpp/cpp offset extraction,
+
+- Now offsets are faster to extract, notably when initial number of objects is not known thanks to vector pre-allocation (before push_back was used),
+
+- drop **RcppProgress** dependency. **RcppProgress** was used to monitor the extraction of offset within hpp/cpp. We now call internal **IFC:::setPB** from hpp/cpp function so all progress bars are now homogenized within `IFC`.
+
+speed improvement during file export (**ExportToXIF**, **subsetXIF**, **mergeXIF**, **XIFtoTIFF**). Though it still remains long.
+
+#### work on progress bar
+
+improve logic (better mapping between value and steps).
+
+using value < min in **IFC:::setPB** now allows for circular progress (i.e. pb restart at 0 and cycle once again and so on, until function stop). This way user can see that something is currently happening and not freezing. 
+
+automatically detect shiny for progress bar.
+
+drop dependency on **RcppProgress**
+
+#### work on seed (make IFC as transparent as possible to RNG)
+
+this is achieved thanks to new functions R/seed.R
+
+1/ **fetch_seed** (ensures backward compatibility while allowing new behaviour).
+
+2/ **with_seed** (encapsulates `expr` to allow its evaluation with seed while permitting RNG state to be reset once done)
+
+- fully handle set.seed arguments (before only `seed` was passed and **NOT** `kind`, `normal.kind`, `sample.kind`),
+
+- restore RNG state once done (before **set.seed(NULL)** was used on.exit),
+
+- allow no modification at all by using `seed = NA_integer_`. It does nothing (no change, no restore), just R regular behaviour, so sequence keep going when a functions needs random generation.
+
+For mask/features/regions/pops definition spliting or other internal stuffs alternative names needs to be generated. These alt names are created using random generation by **gen_altnames** that don't need to be statistically relevant. Consequently, they should not impact current R seed. `IFC` package has now been restructured to allow this. Internally, when **gen_altnames** is used, we use of "Mersenne-Twister", "Inversion", "Rounding" by default as it was the one used in old R version (at least since RNGVersion('1.7.0')).
+
+To allow random and reproducible sampling based on a string, a new internal pseudo_seed() has been created to compute a seed integer from string. It is used with:
+
+- pop or region name to pick its style/color randomly and reproducibly,
+
+- graph dimension(s) to show only a random but reproducible subset of points,
+
+- pop$def to decompose boolean population and create necessary intermediates for GatingML.
+
+fix potential bug with **writeGatingStrategy** where random ids are generated to enable boolean population decomposition and export to GatingML (ids may have been duplicated ?).
+
+encapsulate **requireNamespace("shiny", quietly = TRUE)** within with_seed (calling **requireNamespace("shiny", quietly = TRUE)** alters R seed).
+
+make use of `rng = false` attribute for cpp functions export when possible.
+
+#### work on stats
+
+fix stats computation with infinite value.
+
+fix stats in 2D (subset by dimension and not using both dimensions).
+
+simplify internal **StatsReport**.
+
+handle several edge cases:
+
+- add specific behaviour for sd(numeric(0)) or sd(numeric(1)),
+
+- var behaves as sd and improve NaNs count computation,
+
+- return NaN when pop is of length 0 or when all feature values are NA (except for NaN count),
+
+- return NaN instead of NAs.
+
+allow to display progress bar.
+
+return more statistics in **extractStats**.
+
+#### work on adjustGraph (internal)
+
+be less permissive, ensure that features, transformations and types are respected (before only checks for existing pops and regions was performed).
+
+use it in **applyGatingStrategy**.
+
+title should be recomputed when BasePop has changed.
+
+#### work on pops
+
+allow propagation of attributes (notably, "reserved" used by `IFCshiny`).
+
+add checks in **popsWithin** for recursive definition and for non duplicated names.
+
+fix **popsRename** so as to handle graphs title.
+
+allow 'base' modification in **data_modify_pops** + add needed graphs adjustments.
+
+#### bugfix
+
+in **autoplot**, when drawing a region requires the creation of a population.
+
+non-finite values when computing combined features should be NaN.
+
+stats computation with infinite feature values and bad subsetting in 2D graphs (subset by dimension and not using both dimensions).
+
+in **popsRename* fix edge cases of renaming pops (e.g. swapping pop1 <-> pop2), fix GraphRegion (if any) which were not correctly computed, and fix to handle graphs title.
+
+in **buildBatch**, exported files names computation when input files are not .rif.
+
+fix bug that prevented file from being released when an error did raise during reading at hpp/cpp level.
+
+allow for reading large files at hpp/cpp level by using std::size_t instead of uint32_t for offset positions (in scan.hpp and decomp.hpp, in addition to tiff.hpp).
+
+potential bug with **writeGatingStrategy** where random ids are generated to enable boolean population decomposition and export to GatingML (ids may have been duplicated ?).
+
+#### Misc
+
+**data_add_pop_sample** (internal), don't set new_name automatically if missing and force user to provide one.
+
+**redefine_obj**,  list only once duplicated names, use new_feat_def for mapping "to" and obj for "initial".
+
+add (internal) **data_modify_regions** and **data_modify_pops** functions.
+
+remove hpp/cpp_fast_cbind_functions which are not used anymore.
+
+**data_to_DAF** now makes use of **toBIN_features** and **toBIN_images** internal functions.
+
+order of images files export has changed. Previously, extra content was written before IFD. Now, IFD is written first and then content that does not fit within the 4 bytes slot for value is written just after the offset pointing to next IFD (see work on TIFF).
+
+typo, missing param in toBIN_.* functions and UNDIFINED in getIFD.
+
+#### This leads to the following visible changes for the user
+* See the bugs fix above
+
+* Functions using `random_seed` will now be used with with_seed (see work on seed)
+
+* Large files can now be used (though, still restricted to 4GB on 32bit OS)
+
+* When exporting XIF files order of extra content and IFD has changed (see work on TIFF)
+
+* **RcppProgress** is not used anymore and `display_progress = TRUE` for offset extraction now calls the same progress bar system as all the other progress bars used within IFC package
+
+
 ## 0.1.7
 - CRAN submission
 
