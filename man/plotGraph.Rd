@@ -16,6 +16,7 @@ plotGraph(
   trans = "asinh",
   bin,
   viewport = "ideas",
+  backend = "lattice",
   ...
 )
 }
@@ -49,11 +50,17 @@ Note that it only applies when display is seen as overlaying populations.}
 -"data" will use data to define limits.\cr
 -"max" will use data and regions drawn to define limits.}
 
+\item{backend}{backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
+-"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
+-"base" will produce the plot using \pkg{base},\cr
+-"raster" uses "base" for plotting but for 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.
+This has the main advantage of being super fast allowing for plotting a huge amount of points while generating smaller objects (in bytes).
+However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.}
+
 \item{...}{other arguments to be passed.}
 }
 \value{
 it invisibly returns a list whose members are:\cr
--plot, "trellis" object that can be displayed using plot, if 'draw' was TRUE,\cr
 -stats, a table of statistics computed for the graph, if 'stats_print' was TRUE,\cr
 -input, a list with input parameters.
 }

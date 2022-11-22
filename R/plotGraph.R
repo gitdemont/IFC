@@ -48,15 +48,20 @@
 #' -"ideas" will use same limits as the one defined in ideas.\cr
 #' -"data" will use data to define limits.\cr
 #' -"max" will use data and regions drawn to define limits.
+#' @param backend backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
+#' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
+#' -"base" will produce the plot using \pkg{base},\cr
+#' -"raster" uses "base" for plotting but for 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.
+#' This has the main advantage of being super fast allowing for plotting a huge amount of points while generating smaller objects (in bytes).
+#' However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.
 #' @param ... other arguments to be passed.
 #' @return it invisibly returns a list whose members are:\cr
-#' -plot, "trellis" object that can be displayed using plot, if 'draw' was TRUE,\cr
 #' -stats, a table of statistics computed for the graph, if 'stats_print' was TRUE,\cr
 #' -input, a list with input parameters.
 #' @export
 plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                      color_mode = c("white","black")[1], add_key = "panel", precision = c("light","full")[1],
-                     trunc_labels = 38, trans = "asinh", bin, viewport = "ideas", ...) {
+                     trunc_labels = 38, trans = "asinh", bin, viewport = "ideas", backend="lattice", ...) {
   dots = list(...)
   ret <- list()
   tryCatch({
@@ -285,7 +290,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   tryCatch({
     lt <- custom.theme(bg=c("black","white")[color_mode], fg=c("white","black")[color_mode])
     lt$grid.pars <- get.gpar()
-  }, finally = while(!identical(dv, dev.list())) {
+  }, finally = while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
     dev.off(which = rev(dev.list())[1])
   })
   lt$grid.pars$fontfamily <- "serif"
@@ -299,7 +304,6 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   lt[["axis.text"]]$cex = g$axistickmarklabelsfontsize/lt$grid.pars$fontsize
   lt[["add.text"]]$fontfamily <- "serif"
   lt[["add.text"]]$cex = g$regionlabelsfontsize/lt$grid.pars$fontsize
-  foo = list(par.settings = lt)
   if(g$type == "histogram") {
     ret_order = c("Object Number","x1","x2",displayed_n)
   } else {
@@ -310,9 +314,9 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   })
   suball = rep(FALSE, nrow(D))
   suball[D[xy_subset, 1, drop = TRUE]] <- TRUE
-  ret = list("plot" = foo,
-             "stats" = stats,
-             "input" = list("data" = structure(D[ ,ret_order], features=dens_feat), 
+  ret = list("stats" = stats,
+             "input" = list("par.settings" = lt,
+                            "data" = structure(D[ ,ret_order], features=dens_feat), 
                             "trunc_labels" = trunc_labels,
                             "title" = g$title,
                             "xlab" = g$xlab, "ylab" = g$ylab,
@@ -343,9 +347,12 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       print(ret$stats)
     }
     if(draw) {
+      assert(backend, len=1, alw=c("lattice","base","raster"))
       tryCatch({
-        ret$plot = plot_lattice(ret)
-        plot(ret$plot)
+        switch(backend,
+               raster = plot_raster(ret),
+               base = plot_base(ret),
+               plot(plot_lattice(ret)))
       })
     }
     return(invisible(ret))

@@ -276,10 +276,10 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   #   }
   #   return(n)
   # })))
-  xstatsorder_tmp = c(g_names, b_names)
+  xstatsorder_tmp = unique(c(g_names, b_names))
   
   if(type=="histogram") {
-    order_tmp = b_names
+    order_tmp = xstatsorder_tmp
     maxpoints = +Inf
   } else {
     maxpoints = as.numeric(maxpoints)
@@ -292,7 +292,7 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
     #   paste(n, rev(b_names), sep=" & ")
     # })))
     # order_tmp = c(s_names, order_tmp, b_names)
-    order_tmp = c(s_names, g_names, b_names)
+    order_tmp = unique(c(s_names, g_names, b_names))
   }
   # checks order is possible
   # note that xstatsorder is not deeply checked ... TODO ???
@@ -307,6 +307,10 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   alt_names = gen_altnames(all_names)
   displayed_n = splitn(definition = order, all_names = all_names, alt_names = alt_names, operators = operators)
   displayed_n = setdiff(displayed_n, "Selected Bin")
+  if(type == "histogram") { # fix for graphs created with INSPIRE
+    displayed_n = setdiff(displayed_n, setdiff(g_names, b_names))
+    order = paste0(displayed_n, collapse = "|")
+  }
   tmp = displayed_n %in% c(order_tmp)
   if(!all(tmp)) stop(paste0("trying to display a population not found in supplied ShownPop, BasePop, GraphRegion names: ",  paste0(displayed_n[!tmp], collapse=", ")))
   

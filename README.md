@@ -61,10 +61,10 @@ sudo apt-get install libtiff-dev
 #### in R
 
 - install R dependencies required for IFC package
-"Rcpp", "RcppProgress", "xml2", "png", "tiff", "jpeg", "utils", "grid", "gridExtra", "lattice", "latticeExtra", "KernSmooth", "DT", "visNetwork"
+"Rcpp", "xml2", "png", "tiff", "jpeg", "utils", "grid", "gridExtra", "gridGraphics", "lattice", "latticeExtra", "KernSmooth", "DT", "visNetwork"
 
 ```R
-install.packages(c("Rcpp", "RcppProgress", "xml2", "png", "tiff", "jpeg", "utils", "grid", "gridExtra", "lattice", "latticeExtra", "KernSmooth", "DT", "visNetwork"))
+install.packages(c("Rcpp", "xml2", "png", "tiff", "jpeg", "utils", "grid", "gridExtra", "gridGraphics", "lattice", "latticeExtra", "KernSmooth", "DT", "visNetwork"))
 ```
 
 - install "remotes", to install IFC package from github remotes is needed.

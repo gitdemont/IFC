@@ -474,6 +474,19 @@ coord_to_px=function (coord, coordmap, clipedge = FALSE) {
 plot_base=function(obj) {
   old_mar = par("mar")
   on.exit(par("mar" = old_mar), add = TRUE)
+  old_colormode = par("bg","fg","col","col.axis","col.lab","col.main","col.sub")
+  on.exit(par(old_colormode), add = TRUE)
+  color_mode = na.omit(as.integer(obj$input$mode))
+  if(length(color_mode) != 1L) color_mode = 2L
+  if(color_mode == 1L) {
+    par(bg = "black", fg = "white",
+        col = "white", col.axis = "white", col.lab = "white", col.main = "white", col.sub = "white")
+  } else {
+    color_mode = 2L
+    par(bg = "white", fg = "black",
+        col = "black", col.axis = "black", col.lab = "black", col.main = "black", col.sub = "black")
+  }
+  
   # variables for future use
   n_ticks = 10
   # check obj is `IFC_plot`
@@ -487,9 +500,10 @@ plot_base=function(obj) {
   Ylim = obj$input$ylim
   disp_n = names(displayed)
   main = obj$input$title
+  lt = obj$input$par.settings
   subtitle = FALSE
   if(any(obj$input$add_key %in% c("global", "both"))) {
-    par("mar" = c(old_mar[1:2],old_mar[3]+length(displayed) * obj$plot$par.settings$add.text$cex * 0.5 - 1,old_mar[4]))
+    par("mar" = c(old_mar[1:2], old_mar[3]+length(displayed) * lt$add.text$cex * 0.5 - 1,old_mar[4]))
     main = " "
   }
   
@@ -498,9 +512,9 @@ plot_base=function(obj) {
                    main = trunc_string(main, obj$input$trunc_labels), 
                    xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
                    ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
-                   cex.lab = obj$plot$par.settings$par.xlab.text$cex,
-                   cex.main = obj$plot$par.settings$par.main.text$cex,
-                   cex.axis = obj$plot$par.settings$axis.text$cex,
+                   cex.lab = lt$par.xlab.text$cex,
+                   cex.main = lt$par.main.text$cex,
+                   cex.axis = lt$axis.text$cex,
                    axes = FALSE)
   if(args_plot$main == "") args_plot$main = " "
   if(args_plot$xlab == "") args_plot$xlab = " "
@@ -527,8 +541,8 @@ plot_base=function(obj) {
                            smooth = obj$input$histogramsmoothingfactor,
                            fill = basepop[[obj$input$order[disp]]]$fill=="true",
                            alpha = 0.8, lwd=2,
-                           col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
-                           border = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]],
+                           col = displayed[[disp]][c("color","lightModeColor")][[color_mode]],
+                           border = displayed[[disp]][c("color","lightModeColor")][[color_mode]],
                            lty = c(1,2,3,4,6)[match(basepop[[obj$input$order[disp]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))])
         
       }
@@ -539,8 +553,8 @@ plot_base=function(obj) {
     pch=16
     if((nrow(obj$input$data) > 0) && any(obj$input$subset) && (nrow(obj$input$data[obj$input$subset,]) > 0)) hasdata <- TRUE
     if(obj$input$type == "density") {
-      col=c("black","white")[obj$input$mode]
-      colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[obj$input$mode]]))
+      col=c("black","white")[color_mode]
+      colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[color_mode]]))
       args_level = basepop[[1]][["densitylevel"]]
       if((length(args_level) != 0) && (args_level != "") && hasdata) {
         col = densCols(x = structure(obj$input$data$x2[obj$input$subset], features=attr(obj$input$data,"features")),
@@ -561,20 +575,20 @@ plot_base=function(obj) {
         do.call(args = c(list(x = quote(Xlim),
                               y = quote(Ylim),
                               pch = pch,
-                              col = c("black","white")[obj$input$mode]),
+                              col = c("black","white")[color_mode]),
                          args_plot),
                 what = plot)
         low=0
         if(lowest != 0) {
           low = at[1]; at = at[-1]
-          points(x=obj$input$data$x2[obj$input$subset][dd<low], y=obj$input$data$y2[obj$input$subset][dd<low], pch=".", col=c("white","black")[obj$input$mode]) #col[dd<low])
+          points(x=obj$input$data$x2[obj$input$subset][dd<low], y=obj$input$data$y2[obj$input$subset][dd<low], pch=".", col=c("white","black")[color_mode]) #col[dd<low])
         }
         if(fill) {
           .filled.contour(x=z$x1, y=z$x2, z$fhat, levels=c(low, at), col=c(NA,colramp(length(at)-1)))
         } 
         if(dolines) {
           if(fill) {
-            contour_cols = c("white","black")[obj$input$mode]
+            contour_cols = c("white","black")[color_mode]
           } else {
             contour_cols = colramp(length(at))
           }
@@ -601,7 +615,7 @@ plot_base=function(obj) {
         do.call(args = c(list(x = quote(obj$input$data[obj$input$data[,disp], "x2"][obj$input$subset]),
                               y = quote(obj$input$data[obj$input$data[,disp], "y2"][obj$input$subset]),
                               pch = displayed[[disp]]$style, 
-                              col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]]),
+                              col = displayed[[disp]][c("color","lightModeColor")][[color_mode]]),
                          args_plot),
                 what = plot)
         if(length(displayed) > 1) {
@@ -609,7 +623,7 @@ plot_base=function(obj) {
             points(x = obj$input$data[obj$input$data[,disp], "x2"][obj$input$subset],
                    y = obj$input$data[obj$input$data[,disp], "y2"][obj$input$subset],
                    pch = displayed[[disp]]$style, 
-                   col = displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
+                   col = displayed[[disp]][c("color","lightModeColor")][[color_mode]])
           }
         }
       } else {
@@ -624,7 +638,7 @@ plot_base=function(obj) {
             groups = disp_n
           }
           pch = sapply(groups, FUN = function(disp) displayed[[disp]]$style)
-          col = sapply(groups, FUN = function(disp) displayed[[disp]][c("color","lightModeColor")][[obj$input$mode]])
+          col = sapply(groups, FUN = function(disp) displayed[[disp]][c("color","lightModeColor")][[color_mode]])
         } else {
           col = NA 
         }
@@ -643,15 +657,15 @@ plot_base=function(obj) {
   y_ticks = base_axis_constr(lim = Ylim, trans = obj$input$trans_y, nint = n_ticks)
   x_axis = axis(side = 1, at = x_ticks$at, labels = FALSE)
   text(x = x_axis, y = Ylim[1] - diff(Ylim) * 0.07, labels = x_ticks$labels, xpd=TRUE, adj = c(1, 1),
-       cex = obj$plot$par.settings$axis.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex, srt=45)
+       cex = lt$axis.text$cex, cex.axis = lt$axis.text$cex, srt=45)
   y_axis = axis(side = 2, at = y_ticks$at, labels = FALSE)
   text(y = y_axis, x = Xlim[1] - diff(Xlim) * 0.07, labels = y_ticks$labels, xpd=TRUE, adj = c(1, 0.5),
-       cex = obj$plot$par.settings$axis.text$cex, cex.axis = obj$plot$par.settings$axis.text$cex, las=1)
-  box()
+       cex = lt$axis.text$cex, cex.axis = lt$axis.text$cex, las=1)
+  box(col = c("white", "black")[color_mode])
   
   # regions
   for(reg in obj$input$regions) {
-    k = reg[c("color","lightcolor")][[obj$input$mode]]
+    k = reg[c("color","lightcolor")][[color_mode]]
     coords = reg[c("x","y")]
     trans_x = parseTrans(obj$input$trans_x)
     coords$x = applyTrans(coords$x, trans_x)
@@ -660,7 +674,7 @@ plot_base=function(obj) {
     if(reg$type=="line") {
       if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
       if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
-      text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex)
+      text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=lt$add.text$cex)
       polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
     } else {
       trans_y = parseTrans(obj$input$trans_y)
@@ -673,7 +687,7 @@ plot_base=function(obj) {
       if(reg$type=="oval") {
         coords = toEllipse(coords)
       }
-      text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex) 
+      text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=lt$add.text$cex) 
       polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
     }
   }
@@ -681,17 +695,18 @@ plot_base=function(obj) {
   # key / subtitle / title
   sub_lab = obj$input$trans
   if(sub_lab == "") sub_lab = " "
-  args_sub = list(text = sub_lab, side = 3, line = 0.2, adj = 0.5, font = 3, cex = obj$plot$par.settings$par.main.text$cex * 0.8)
+  args_sub = list(text = sub_lab, side = 3, line = 0.2, adj = 0.5, font = 3, cex = lt$par.main.text$cex * 0.8)
+  if(!obj$input$type %in% c("percent", "count")) displayed = rev(displayed)
   if(any(obj$input$add_key %in% c("panel","global","both"))) {
-    args_key = list(x="topleft",inset=0.025,
-                    col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
-                    cex=obj$plot$par.settings$add.text$cex * 0.5,bg="#ADADAD99",pt.cex=1,bty="o",box.lty=0)
+    args_key = list(x="topleft",inset=0.025, text.width=strwidth(names(displayed)[which.max(nchar(names(displayed)))], cex=0.5, "user"),
+                    col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[color_mode]]),
+                    cex=lt$add.text$cex * 0.5,bg="#ADADAD99",pt.cex=0.5,bty="o",box.lty=0)
     if(obj$input$type %in% c("percent", "count")) {
       args_key=c(args_key, list(lty = c(1,2,3,4,6)[match(basepop[[obj$input$order[disp]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))]))
     } else {
       args_key=c(args_key, list(pch=sapply(displayed, FUN=function(p) p$style)))
     }
-    args_key$legend=disp_n
+    args_key$legend=names(displayed)
     if(obj$input$add_key %in% c("panel","both")) {
       do.call(args= args_key, what=legend) 
     }
@@ -701,8 +716,8 @@ plot_base=function(obj) {
       args_key$xpd = TRUE
       # TODO add something better for title positioning
       do.call(args= args_key, what=legend)
-      mtext(side = 3, line = 2 + length(displayed) * obj$plot$par.settings$add.text$cex * 0.5, adj = 0.5, args_plot$main, font = 2)
-      args_sub$line = 1.1 + length(displayed) * obj$plot$par.settings$par.main.text$cex * 0.8
+      mtext(side = 3, line = 2 + length(displayed) * lt$add.text$cex * 0.5, adj = 0.5, args_plot$main, font = 2)
+      args_sub$line = 1.1 + length(displayed) * lt$par.main.text$cex * 0.8
     } 
   }
   # subtitle
@@ -715,19 +730,32 @@ plot_base=function(obj) {
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
 #' @keywords internal
 plot_raster=function(obj) {
+  old_mar = par("mar")
+  on.exit(par("mar" = old_mar), add = TRUE)
+  old_colormode = par("bg","fg","col","col.axis","col.lab","col.main","col.sub")
+  on.exit(par(old_colormode), add = TRUE)
+  color_mode = na.omit(as.integer(obj$input$mode))
+  if(length(color_mode) != 1L) color_mode = 2L
+  if(color_mode == 1L) {
+    par(bg = "black", fg = "white",
+        col = "white", col.axis = "white", col.lab = "white", col.main = "white", col.sub = "white")
+  } else {
+    color_mode = 2L
+    par(bg = "white", fg = "black",
+        col = "black", col.axis = "black", col.lab = "black", col.main = "black", col.sub = "black")
+  }
   if(obj$input$type %in% c("count", "percent")) return(plot_base(obj))
   if(obj$input$type == "density") {
     basepop = obj$input$base
     args_level = basepop[[1]][["densitylevel"]]
     if((length(args_level) != 0) && (args_level != "")) return(plot_base(obj))
   }
+  lt = obj$input$par.settings
+  
   # determines population order
   basepop = obj$input$base
   displayed = obj$input$displayed
   disp_n = names(displayed)
-  
-  old_mar = par("mar")
-  on.exit(par("mar" = old_mar), add = TRUE)
   
   # copy obj and empty data
   subtitle = FALSE
@@ -737,7 +765,7 @@ plot_raster=function(obj) {
   graph$input$regions <- list()
   graph$input$add_key <- FALSE
   if(any(obj$input$add_key %in% c("global", "both"))) {
-    par("mar" = c(old_mar[1:2],old_mar[3]+length(displayed) * obj$plot$par.settings$add.text$cex * 0.5 - 1,old_mar[4]))
+    par("mar" = c(old_mar[1:2],old_mar[3]+length(displayed) * lt$add.text$cex * 0.5 - 1,old_mar[4]))
     graph$input$title = ""
     graph$input$trans = ""
   }
@@ -766,10 +794,10 @@ plot_raster=function(obj) {
     colnames(coords) = c("x","y")
     if(obj$input$type == "scatter") {
       size = 7
-      col = map_color(obj$input$displayed[[p]]$lightModeColor)
+      col = map_color(obj$input$displayed[[p]][c("color","lightModeColor")][[color_mode]])
     } else {
       size = 9
-      colramp = colorRampPalette(colConv(obj$input$base[[1]][c("densitycolorsdarkmode", "densitycolorslightmode")][[obj$input$mode]]))
+      colramp = colorRampPalette(colConv(obj$input$base[[1]][c("densitycolorsdarkmode", "densitycolorslightmode")][[color_mode]]))
       if((sum(sub_) < 20000) || inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), "try-error")) {
         col = densCols(x = structure(coords[sub_,"x"], features=attr(obj$input$data,"features")),
                        y = coords[sub_,"y"],
@@ -804,12 +832,12 @@ plot_raster=function(obj) {
                    (1 - graphics::grconvertY(usr[4], "user", "ndc")) * (dv_size[2])))
     # add image to plot
     rasterImage(cpp_as_nativeRaster(img[lims[3]:lims[4], lims[1]:lims[2],]),
-                xleft = usr[1], xright = usr[2], ybottom = usr[4], ytop = usr[3], interpolate = FALSE)
+                xleft = usr[1], xright = usr[2], ybottom = usr[4], ytop = usr[3], interpolate = TRUE)
     # rasterImage is faster than grid.raster and allows to fit bg when it is resized
   }
   # redraw regions
   for(reg in obj$input$regions) {
-    k = reg[c("color","lightcolor")][[obj$input$mode]]
+    k = reg[c("color","lightcolor")][[color_mode]]
     coords = reg[c("x","y")]
     trans_x = parseTrans(obj$input$trans_x)
     coords$x = applyTrans(coords$x, trans_x)
@@ -819,7 +847,7 @@ plot_raster=function(obj) {
       Ylim = obj$input$ylim
       if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
       if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
-      text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex)
+      text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=lt$add.text$cex)
       polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
     } else {
       trans_y = parseTrans(obj$input$trans_y)
@@ -832,7 +860,7 @@ plot_raster=function(obj) {
       if(reg$type=="oval") {
         coords = toEllipse(coords)
       }
-      text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=obj$plot$par.settings$add.text$cex) 
+      text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=lt$add.text$cex) 
       polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
     }
   }
@@ -842,24 +870,23 @@ plot_raster=function(obj) {
   if(main == "") main = " "
   sub_lab = obj$input$trans
   if(sub_lab == "") sub_lab = " "
-  args_sub = list(text = sub_lab, side = 3, line = 0.2, adj = 0.5, font = 3, cex = obj$plot$par.settings$par.main.text$cex * 0.8)
+  args_sub = list(text = sub_lab, side = 3, line = 0.2, adj = 0.5, font = 3, cex = lt$par.main.text$cex * 0.8)
   if(any(obj$input$add_key %in% c("panel","global","both"))) {
-    args_key = list(x="topleft",inset=0.025,
-                    col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[obj$input$mode]]),
-                    legend=disp_n,cex=obj$plot$par.settings$add.text$cex * 0.5,bg="#ADADAD99",pt.cex=1,bty="o",box.lty=0)
-    if(obj$input$add_key %in% c("panel","both")) do.call(args=c(list(pch=sapply(displayed, FUN=function(p) p$style)), args_key), what=legend)
+    args_key = list(x="topleft", inset=0.025, text.width=strwidth(names(displayed)[which.max(nchar(names(displayed)))], cex=0.5, "user"),
+                    col=sapply(rev(displayed), FUN=function(p) p[c("color","lightModeColor")][[color_mode]]),
+                    legend=names(rev(displayed)),cex=lt$add.text$cex * 0.5,bg="#ADADAD99",pt.cex=0.5,bty="o",box.lty=0)
+    if(obj$input$add_key %in% c("panel","both")) do.call(args=c(list(pch=sapply(rev(displayed), FUN=function(p) p$style)), args_key), what=legend)
     if(obj$input$add_key %in% c("global","both")) {
       args_key$x = "top"
       args_key$inset = -graphics::grconvertY(1+ length(displayed), "chars", "nfc")
       args_key$xpd = TRUE
-      do.call(args=c(list(pch=sapply(displayed, FUN=function(p) p$style)), args_key), what=legend)
-      mtext(side = 3, line = 2 + length(displayed) * obj$plot$par.settings$add.text$cex * 0.5, adj = 0.5, text = main, font = 2)
-      args_sub$line = 1.1 + length(displayed) * obj$plot$par.settings$par.main.text$cex * 0.8
+      do.call(args=c(list(pch=sapply(rev(displayed), FUN=function(p) p$style)), args_key), what=legend)
+      mtext(side = 3, line = 2 + length(displayed) * lt$add.text$cex * 0.5, adj = 0.5, text = main, font = 2)
+      args_sub$line = 1.1 + length(displayed) * lt$par.main.text$cex * 0.8
     } 
   }
   # subtitle
   if(subtitle) do.call(args = args_sub, what = mtext)
-  box()
   return(invisible(img))
 }
 
@@ -891,13 +918,22 @@ plot_lattice=function(obj) {
   displayed_o = obj$input$order
   type = obj$input$type
   normalize = obj$input$normalize
-  color_mode = obj$input$mode
   trans = obj$input$trans
   precision = obj$input$precision
   add_key = obj$input$add_key
-  lt = obj$plot$par.settings
+  color_mode = na.omit(as.integer(obj$input$mode))
+  if(length(color_mode) != 1L) color_mode = 2L
+  if(color_mode != 1L) color_mode = 2L
+  lt = obj$input$par.settings
+  lt[["background"]]$col = c("black", "white")[color_mode]
+  for(i in c("add.line","add.text","axis.line","axis.text","box.3d","box.dot","strip.border",
+             "par.xlab.text","par.ylab.text","par.zlab.text","par.main.text","par.sub.text")) {
+    lt[[i]]$col = c("white", "black")[color_mode]
+  }
+  for(i in c("plot.polygon","superpose.polygon")) {
+    lt[[i]]$border = c("white", "black")[color_mode]
+  }
   histogramsmoothingfactor = obj$input$histogramsmoothingfactor
-  
   trunc_labels = obj$input$trunc_labels
   main = trunc_string(obj$input$title, trunc_labels) 
   if(main == "") main = " "
@@ -978,9 +1014,10 @@ plot_lattice=function(obj) {
   } else {
     # define legend
     KEY = list("cex"=lt$add.text$cex * 0.5,
-               "points"=list(col = sapply(P[rev(displayed_n)], FUN=function(p) p[c("color","lightModeColor")][[color_mode]]),
+               "points"=list(cex = 1,
+                             col = sapply(P[rev(displayed_n)], FUN=function(p) p[c("color","lightModeColor")][[color_mode]]),
                              pch = sapply(P[rev(displayed_n)], FUN=function(p) p$style)),
-               "text"=list(displayed_n))
+               "text"=list(rev(displayed_n)))
     # identify groups
     groups = NULL
     if(nrow(D) > 0) if(type == "scatter") if(precision=="light") {

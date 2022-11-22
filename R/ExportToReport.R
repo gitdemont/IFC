@@ -167,17 +167,23 @@ tryReportFileCreation <- function(fileName, write_to, overwrite = FALSE) {
 #' -"ideas" will use same limits as the one defined in ideas.\cr
 #' -"data" will use data to define limits.\cr
 #' -"max" will use data and regions drawn to define limits.
+#' @param backend backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
+#' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
+#' -"base" will produce the plot using \pkg{base},\cr
+#' -"raster" uses "base" for plotting but for 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.
+#' This has the main advantage of being super fast allowing for plotting a huge amount of points while generating smaller objects (in bytes).
+#' However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other parameters to be passed.
 #' @return a list with onepage, layout, layout_matrix, graphs, grobs, and stats.
 #' @keywords internal
 CreateGraphReport <- function(obj, selection, onepage=TRUE,
                               color_mode=c("white","black")[1], add_key="panel", precision=c("light","full")[1],    # parameters to pass to plotGraph
-                              trunc_labels=38, trans="asinh", bin, viewport="ideas",                                # parameters to pass to plotGraph
+                              trunc_labels=38, trans="asinh", bin, viewport="ideas", backend="lattice",             # parameters to pass to plotGraph
                               display_progress=TRUE, ...) {
   dots = list(...)
   dv = dev.list()
-  on.exit(while(!identical(dv, dev.list())) {
+  on.exit(while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
     dev.off(which = rev(dev.list())[1])
   })
   
@@ -191,6 +197,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class `IFC_data`")
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
   display_progress = as.logical(display_progress); assert(display_progress, len=1, alw=c(TRUE,FALSE))
+  assert(backend, len=1, alw=c("lattice","base","raster"))
   assert(onepage, len=1, alw=c(TRUE,FALSE))
   if(missing(bin) || (length(bin) == 0)) {
     bin = NULL
@@ -258,6 +265,10 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   colnames(default_stats_2D) = c("count","perc",
                                  "x-Min.","x-1st Qu.","x-Median","x-Mean","x-3rd Qu.","x-Max.",
                                  "y-Min.","y-1st Qu.","y-Median","y-Mean","y-3rd Qu.","y-Max.")
+  default_offscreen = function(w, h) {
+    pdf(width=w, height=h, onefile=TRUE, pagecentre=TRUE, useDingbats=FALSE)
+    dev.control("enable")
+  }
   suppressWarnings({
     stList = list()
     grList = lapply(seq_along(G), FUN=function(i) {
@@ -265,11 +276,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
       stats = default_stats_1D
       rownames(stats) = paste0("Error: ", G[[i]]$title)
       if(length(G[[i]]) != 0) {
-        g = try({
-          p = do.call(what = plotGraph, args = c(plotGraph_args, list(graph = G[[i]])))
-          p$plot = plot_lattice(p)
-          p
-        }, silent = TRUE)
+        g = try(do.call(what = plotGraph, args = c(plotGraph_args, list(graph = G[[i]]))), silent = TRUE)
         if(!do_draw || inherits(x = g, what = "try-error")) {
           foo = arrangeGrob(grid.text(label = paste0(ifelse(do_draw,"Error: ","'draw' is set to FALSE "), attr(x = g, which = "condition")$message), gp=gpar(col="red"), draw = FALSE),
                             top = textGrob(paste0("\n",G[[i]]$title), gp = gpar(fontsize = 8, font=2, lineheight=0.5)))
@@ -280,7 +287,14 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
             stats = default_stats_2D
           }
           rownames(stats) = paste0("Error: ", G[[i]]$title)
-          foo = grob(p=g$plot, vp = viewport(x=0.5, y=unit(0.5,"npc")), cl = "lattice")
+          foo = switch(backend,
+                       raster = grid.grabExpr(grid.echo({plot_raster(g); recordPlot()}, device = default_offscreen),
+                                              device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
+                       base = grid.grabExpr(grid.echo(plot_base(g), device = default_offscreen), 
+                                            device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
+                       grob(p = plot_lattice(g), vp = viewport(x=0.5, y=unit(0.5,"npc")), cl = "lattice"))
+          foo$children$`graphics-background`$width = unit(1,"npc")
+          foo$children$`graphics-background`$height = unit(1,"npc")
         }
       } else {
         do_stats = FALSE
@@ -298,7 +312,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
         }
       }
       if(do_stats) {
-        tab = tableGrob(format(stats, scientific=FALSE, digits=5), theme = ttheme_default(base_size=4, base_family = "serif"))
+        tab = tableGrob(format(stats, scientific=FALSE, digits=5), theme = ttheme_default(base_colour = "black", base_size=4, base_family = "serif"))
         tab$vp <- viewport(x=0.5, y=unit(1,"npc") - 0.5*unit(sum(tab$heights, na.rm=TRUE),"npc"))
         foo = arrangeGrob(foo, tab, layout_matrix = foo_lay, respect = TRUE)
       }
@@ -341,6 +355,12 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
 #' -"ideas" will use same limits as the one defined in ideas.\cr
 #' -"data" will use data to define limits.\cr
 #' -"max" will use data and regions drawn to define limits.
+#' @param backend backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
+#' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
+#' -"base" will produce the plot using \pkg{base},\cr
+#' -"raster" uses "base" for plotting but for 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.
+#' This has the main advantage of being super fast allowing for plotting a huge amount of points while generating smaller objects (in bytes).
+#' However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other parameters to be passed.
 #' @details depending on 'write_to', function will create .pdf and/or .csv file(s) report with according to graphs found in 'obj'.\cr
@@ -370,7 +390,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
 #' @export
 ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRUE,
                           color_mode=c("white","black")[1], add_key="panel", precision=c("light","full")[1],    # parameters to pass to plotGraph
-                          trunc_labels=38, trans="asinh", bin, viewport="ideas",                                  # parameters to pass to plotGraph
+                          trunc_labels=38, trans="asinh", bin, viewport="ideas", backend="lattice",             # parameters to pass to plotGraph
                           display_progress=TRUE, ...) {
   dots = list(...)
   dv = dev.list()
@@ -400,7 +420,7 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
   tryCatch({
     foo = CreateGraphReport(obj, selection, onepage=onepage,
                             color_mode=color_mode, add_key=add_key, precision=precision,
-                            trunc_labels=trunc_labels, trans=trans, bin=bin, viewport=viewport,
+                            trunc_labels=trunc_labels, trans=trans, bin=bin, viewport=viewport, backend=backend,
                             display_progress=display_progress, ...)
     gl = length(foo$graphs)
     if(create_csv) {
@@ -445,7 +465,7 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
     stop(e$message, call. = FALSE)
   },
   finally = {
-    while(!identical(dv, dev.list())) {
+    while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
       dev.off(which = rev(dev.list())[1])
     }
   })
@@ -526,6 +546,12 @@ DisplayReport = function(obj, display_progress = TRUE, ...) {
 #' -"ideas" will use same limits as the one defined in ideas.\cr
 #' -"data" will use data to define limits.\cr
 #' -"max" will use data and regions drawn to define limits.
+#' @param backend backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
+#' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
+#' -"base" will produce the plot using \pkg{base},\cr
+#' -"raster" uses "base" for plotting but for 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.
+#' This has the main advantage of being super fast allowing for plotting a huge amount of points while generating smaller objects (in bytes).
+#' However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other parameters to be passed.
 #' @return It invisibly returns full path of exported .pdf and/or .csv file(s).
@@ -533,7 +559,7 @@ DisplayReport = function(obj, display_progress = TRUE, ...) {
 BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE, 
                         gating, main, byrow = FALSE, times = 5, 
                         color_mode=c("white","black")[1], add_key="panel", precision=c("light","full")[1],    # parameters to pass to plotGraph
-                        trunc_labels=38, trans="asinh", bin, viewport="ideas",                                # parameters to pass to plotGraph
+                        trunc_labels=38, trans="asinh", bin, viewport="ideas", backend="lattice",             # parameters to pass to plotGraph
                         display_progress=TRUE, ...) {
   dots = list(...)
   create_pdf = FALSE
@@ -682,7 +708,7 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
     stop(e$message, call. = FALSE)
   },
   finally = {
-    while(!identical(dv, dev.list())) {
+    while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
       dev.off(which = rev(dev.list())[1])
     }
   })

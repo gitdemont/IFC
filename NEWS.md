@@ -82,13 +82,17 @@ allow to display progress bar.
 
 return more statistics in **extractStats**.
 
-#### work on adjustGraph (internal)
+#### work on graphs
 
-be less permissive, ensure that features, transformations and types are respected (before only checks for existing pops and regions was performed).
+add `backend` argument to **plotGraph**, **ExportToReport**, **DisplayReport**, **BatchReport** to allow to choose which backend will be used for drawing. Default `backend = "lattice"`, will behave as usual, while `backend = "base"` and `backend = "raster"` now allow user to use **base** graphics and further `backend = "raster"` to produce plots with huge amount of points very fast. `backend = "raster"` can also be used to generate reports of smaller size (which will open and render shortly).
 
-use it in **applyGatingStrategy**.
+**plotGraph** returned value `plot` element does not exist anymore and `par.setting` is now part of returned `input` element.
 
-title should be recomputed when BasePop has changed.
+patch **buildGraph** to handle histogram plot extracted from rif files. In rif, population from graphRegion are used in `order` which is not compatible with what **IFC** needs, so `order` is modified if provided to remove these population names.
+
+fix population order in legend (plot_base and plot_raster, not exposed before backend introduction)
+
+**adjustGraph** (internal) be less permissive, ensure that features, transformations and types are respected (before only checks for existing pops and regions was performed). In addition, title should be recomputed when BasePop has changed. Finally, use it in **applyGatingStrategy** to ensure that plot can be produced when strategy is applied.
 
 #### work on pops
 
@@ -136,6 +140,12 @@ typo, missing param in toBIN_.* functions and UNDIFINED in getIFD.
 
 #### This leads to the following visible changes for the user
 * See the bugs fix above
+
+* **IFC** package has a new dependency to **gridGraphics**
+
+* **plotGraph**, **ExportToReport**, **BatchReport** functions now have a new `backend` argument
+
+* **plotGraph** returned value `plot` element does not exist anymore and `par.setting` is now part of returned `input` element
 
 * Functions using `random_seed` will now be used with with_seed (see work on seed)
 
