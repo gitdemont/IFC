@@ -1,4 +1,7 @@
 # NEWS
+## 0.1.8
+- CRAN submission
+
 ## 0.1.7.xxx
 #### work on TIFF (mainly dedicated to handle large files)
 
