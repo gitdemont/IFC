@@ -136,5 +136,7 @@ data_modify_regions <- function(obj, regions, display_progress = TRUE, ...) {
                                     display_progress = display_progress),
                                dots[setdiff(names(dots),c("pops","features"))]))
   
+  # modify stats
+  if(nrow(obj$stats)!=0) ans$stats = get_pops_stats(ans$pops, as.integer(obj$description$ID$objcount))
   return(ans)
 }

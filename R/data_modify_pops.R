@@ -113,5 +113,8 @@ data_modify_pops <- function(obj, pops, display_progress = TRUE, ...){
       attr(ans$pops[[i]], k) <- attr(pops[[mutation[i]]], k)
     }
   }
+  
+  # modify stats
+  if(nrow(obj$stats)!=0) ans$stats = get_pops_stats(ans$pops, as.integer(obj$description$ID$objcount))
   return(ans)
 }
