@@ -239,7 +239,7 @@ Rcpp::IntegerVector cpp_fast_sample(const R_len_t n = 0,
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
-Rcpp::Nullable<Rcpp::IntegerVector> cpp_get_bytes_order (const R_len_t obj = 0,
+Rcpp::Nullable<Rcpp::NumericVector> cpp_get_bytes_order (const R_len_t obj = 0,
                                                          const Rcpp::Nullable<Rcpp::IntegerVector> byt_ = R_NilValue,
                                                          const Rcpp::Nullable<Rcpp::IntegerVector> ord_ = R_NilValue,
                                                          const bool rev = false) {

@@ -136,7 +136,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_get_bytes_order
-Rcpp::Nullable<Rcpp::IntegerVector> cpp_get_bytes_order(const R_len_t obj, const Rcpp::Nullable<Rcpp::IntegerVector> byt_, const Rcpp::Nullable<Rcpp::IntegerVector> ord_, const bool rev);
+Rcpp::Nullable<Rcpp::NumericVector> cpp_get_bytes_order(const R_len_t obj, const Rcpp::Nullable<Rcpp::IntegerVector> byt_, const Rcpp::Nullable<Rcpp::IntegerVector> ord_, const bool rev);
 RcppExport SEXP _IFC_cpp_get_bytes_order(SEXP objSEXP, SEXP byt_SEXP, SEXP ord_SEXP, SEXP revSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

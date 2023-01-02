@@ -287,7 +287,7 @@ Rcpp::IntegerVector hpp_fast_sample(const R_len_t n = 0,
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
-Rcpp::Nullable<Rcpp::IntegerVector> hpp_get_bytes_order (const R_len_t obj = 0,
+Rcpp::Nullable<Rcpp::NumericVector> hpp_get_bytes_order (const R_len_t obj = 0,
                                                          const Rcpp::Nullable<Rcpp::IntegerVector> byt_ = R_NilValue,
                                                          const Rcpp::Nullable<Rcpp::IntegerVector> ord_ = R_NilValue,
                                                          const bool rev = false) {
@@ -299,17 +299,17 @@ Rcpp::Nullable<Rcpp::IntegerVector> hpp_get_bytes_order (const R_len_t obj = 0,
     Rcpp::List L(byt.size());
     for(R_len_t i = 0; i < byt.size(); i++) {
       if(!is_true(any(byt[i] == alw))) Rcpp::stop("hpp_get_bytes_order: 'byt' contains not allowed value:");
-      if(byt[i] > ord.size()) Rcpp::stop("hpp_get_bytes_order: required 'byt' length is larger than provided 'ord'");
-      Rcpp::IntegerVector v = Rcpp::no_init(byt[i]); 
+      Rcpp::IntegerVector v = seq_len(byt[i]);
+      v = na_omit(match(ord, v));
+      v = rep_len(v, byt[i]);
       if(rev) {
-        for(R_len_t j = ord.size() - byt[i]; j < ord.size(); j++) v[j - (ord.size() - byt[i])] = ord[j];
+        L[i] = Rcpp::rev(v);
       } else {
-        for(R_len_t j = 0; j < byt[i]; j++) v[j] = ord[j];
+        L[i] = v;
       }
-      L[i] = v;
       n += byt[i];
     }
-    Rcpp::IntegerVector out = Rcpp::no_init(obj * n);
+    Rcpp::NumericVector out = Rcpp::no_init(obj * n);
     R_len_t k = 0;
     for(R_len_t g = 0; g < obj; g++) {
       for(R_len_t i = 0; i < byt.size(); i++) {
