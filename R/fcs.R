@@ -193,7 +193,7 @@ FCS_check_keywords <- function(text, delimiter = raw(1), version = 3.0, fun = "w
   if(fun == "return") return(msg)
   if(length(msg) != 0) {
     args = list(paste0(msg, collapse = "\n"))
-    if(fun == "warnings") args = c(args, list(call. = FALSE, immediate. = TRUE))
+    if(fun == "warning") args = c(args, list(call. = FALSE, immediate. = TRUE))
     do.call(what = fun, args = args)
   }
 }
