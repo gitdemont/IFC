@@ -14,7 +14,7 @@ FCS_merge_dataset(fcs, ...)
 \value{
 a list of list containing:\cr
 - header, list of header information corresponding to 'options'\cr
-- delimiter, unique character used to separate keyword - values\cr
+- delimiter, unique character used to separate keyword-value pairs\cr
 - text, list of keywords values,\cr
 - data, data.frame of values.
 }

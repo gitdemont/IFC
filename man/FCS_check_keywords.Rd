@@ -4,20 +4,29 @@
 \alias{FCS_check_keywords}
 \title{FCS Keyword Checker}
 \usage{
-FCS_check_keywords(text, delimiter = raw(1), version = 3, fun = "warning", ...)
+FCS_check_keywords(
+  text,
+  delimiter,
+  version = 3,
+  encoding = "UTF-8",
+  fun = "warning",
+  ...
+)
 }
 \arguments{
 \item{text}{a named list of keywords values.}
 
-\item{delimiter}{byte used as delimiter. Default is raw(1).}
+\item{delimiter}{delimiter used to separate keyword-value pairs. /!\ NOTE that we can _NOT_ parse files with 0x00.}
 
-\item{version}{version to check keywords compliance against. Default is 3.0,}
+\item{version}{version to check keywords compliance against. Default is 3.0.}
+
+\item{encoding}{name of the encoding for raw to character conversion. Default is "UTF-8".}
 
 \item{fun}{function to execute when mandatory parameters are not met. Default is "warning". Allowed are "stop","warning","message","return".}
 
 \item{...}{other arguments to be passed.}
 }
 \description{
-Helper to check that FCS keyword/value pairs are compliant with specification
+Helper to check that FCS keyword-value pairs are compliant with specifications
 }
 \keyword{internal}
