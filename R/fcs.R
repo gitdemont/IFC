@@ -230,15 +230,13 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
   if(any(bar)) msg = c(msg, paste0("`bad PnB/PnN/PnR/PnE keywords`:\n\t- ", paste0(foo[bar], collapse="\n\t- ")))
   
   # check spillover
-  for(kk in c("$SPILL", "$SPILLOVER")) {
-    if(kk %in% names(text)) {
-      tryCatch({
-        sp = convert_spillover(text[[kk]])
-        if(!all(colnames(sp) %in% unlist(recursive = FALSE, use.names = FALSE, PnN))) stop("'spillover' is defined with non PnN names [", paste0(colnames(sp),collapse = ","),"]")
-      }, error = function(e) {
-        msg <<- c(msg, paste0(kk, " ", e$message))
-      })
-    }
+  if("$SPILLOVER" %in% names(text)) {
+    tryCatch({
+      sp = convert_spillover(text[[kk]])
+      if(!all(colnames(sp) %in% unlist(recursive = FALSE, use.names = FALSE, PnN))) stop("'spillover' is defined with non PnN names [", paste0(colnames(sp),collapse = ","),"]")
+    }, error = function(e) {
+      msg <<- c(msg, paste0(kk, " ", e$message))
+    })
   }
   if(length(msg) != 0) msg = c(sprintf("non FCS%.1f compliant keywords", version), msg)
   msg = gsub("\r","",msg,fixed=TRUE)
@@ -1360,6 +1358,7 @@ FCS_to_data <- function(fcs, ...) {
   
   # fill min object
   instrument = sapply(fcs, FUN = function(x) {
+    names(x$text) = toupper(names(x$text))
     tmp = x$text$`$CYT`
     if((length(tmp) == 0) || (tmp == "")) return("unk")
     return(tmp)
@@ -1370,7 +1369,8 @@ FCS_to_data <- function(fcs, ...) {
     return(tmp)
   })
   spillover = lapply(fcs, FUN = function(x) {
-    tmp = x$text[c("$SPILLOVER","SPILL","spillover")]
+    names(x$text) = toupper(names(x$text))
+    tmp = x$text[c("$SPILLOVER","SPILL","SPILLOVER")]
     tmp = tmp[sapply(tmp, length) != 0]
     if(length(tmp) == 0) return(NULL)
     return(tmp)
