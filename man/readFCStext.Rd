@@ -18,7 +18,7 @@ readFCStext(
 \arguments{
 \item{fileName}{path to file.}
 
-\item{delimiter}{delimiter used to separate keyword-value pairs. /!\ NOTE that we can _NOT_ parse files with 0x00.}
+\item{delimiter}{delimiter used to separate keyword-value pairs. /!\ NOTE that files with 0x00 'delimiter' can _NOT_ be parsed.}
 
 \item{start}{offset of text start. Default is 0.}
 

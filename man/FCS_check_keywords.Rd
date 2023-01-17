@@ -16,7 +16,7 @@ FCS_check_keywords(
 \arguments{
 \item{text}{a named list of keywords values.}
 
-\item{delimiter}{delimiter used to separate keyword-value pairs. /!\ NOTE that we can _NOT_ parse files with 0x00.}
+\item{delimiter}{delimiter used to separate keyword-value pairs. /!\ NOTE that files with 0x00 'delimiter' can _NOT_ be parsed.}
 
 \item{version}{version to check keywords compliance against. Default is 3.0.}
 

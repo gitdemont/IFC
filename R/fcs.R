@@ -58,7 +58,7 @@ convert_spillover <- function(spillover) {
 #' @description
 #' Helper to check that FCS keyword-value pairs are compliant with specifications
 #' @param text a named list of keywords values.
-#' @param delimiter delimiter used to separate keyword-value pairs. /!\ NOTE that we can _NOT_ parse files with 0x00.
+#' @param delimiter delimiter used to separate keyword-value pairs. /!\ NOTE that files with 0x00 'delimiter' can _NOT_ be parsed.
 #' @param version version to check keywords compliance against. Default is 3.0.
 #' @param encoding name of the encoding for raw to character conversion. Default is "UTF-8".
 #' @param fun function to execute when mandatory parameters are not met. Default is "warning". Allowed are "stop","warning","message","return".
@@ -232,10 +232,10 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
   # check spillover
   if("$SPILLOVER" %in% names(text)) {
     tryCatch({
-      sp = convert_spillover(text[[kk]])
+      sp = convert_spillover(text[["$SPILLOVER"]])
       if(!all(colnames(sp) %in% unlist(recursive = FALSE, use.names = FALSE, PnN))) stop("'spillover' is defined with non PnN names [", paste0(colnames(sp),collapse = ","),"]")
     }, error = function(e) {
-      msg <<- c(msg, paste0(kk, " ", e$message))
+      msg <<- c(msg, paste0("$SPILLOVER ", e$message))
     })
   }
   if(length(msg) != 0) msg = c(sprintf("non FCS%.1f compliant keywords", version), msg)
@@ -367,7 +367,7 @@ readFCSdelimiter <- function(fileName, at = 58, version = 3.0, encoding = "UTF-8
 #' @description
 #' Helper to parse text segment from Flow Cytometry Standard (FCS) compliant files.
 #' @param fileName path to file.
-#' @param delimiter delimiter used to separate keyword-value pairs. /!\ NOTE that we can _NOT_ parse files with 0x00.
+#' @param delimiter delimiter used to separate keyword-value pairs. /!\ NOTE that files with 0x00 'delimiter' can _NOT_ be parsed.
 #' @param start offset of text start. Default is 0.
 #' @param end offset of text end. Default is 0.
 #' @param encoding name of the encoding for raw to character conversion. Default is "UTF-8".
