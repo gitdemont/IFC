@@ -1,4 +1,85 @@
 # NEWS
+## 0.1.8.xxx
+
+work on FCS: 
+
+**reading**
+
+- enhance coding
+
+add internal functions readFCSdataset and split it into smaller dedicated ones readFCSheader, readFCSdelimiter, readFCStext, readFCSdata
+
+- fix bad regex for identification of $PnN
+
+this could have lead to undesired error "mismatch between found vs expected number of parameters"
+
+- fix edge case relative to case-insensitivity of keywords in specifications
+
+file parsing was performed assuming required keywords were upper case.
+now this assumption is removed and parsing is performed whatever the case.
+
+- fix `dataset` extraction when dataset was not `NULL` or `1`
+
+formerly, other values could lead to undesired dataset removal in returned value.
+readFCSdataset is now used within readFCS to avoid that.
+
+- fix data extraction with non usual bytes order or sizes.
+
+- throw warning on mismatch about data segment offsets read from HEADER vs TEXT segments
+
+- detect, report and correct offsets shifts (off by one) for TEXT and DATA segments
+
+- detect and report standard keywords padding and invite to use `text_trim`
+
+- add checks for $SPILLOVER compliance
+
+- provide more informative messages/warnings/errors
+
+changes for inputs:
+
+- be more permissive with `options` and construct `options` with default values + user input
+
+before if user wanted to modify `options`, he had to provide `options` with the exact `options` names.
+now part of `options` can be provided and missing part are reconstructed, in addition extra names does not trigger errors anymore.
+
+- a new `text_check` argument allows user to get more information about compliance of text segment towards FCS specifications for required keywords .this now helps to more clearly identify missing or invalid keywords (e.g. PnE used for scaling)
+
+- a new `text_trim` argument allows user to get control on text parsing and tweak whitespace trim in keywords name
+
+- a new `text_empty` argument is here to try to handle non compliant files with empty keyword value + add detection of these potential empty values
+
+- add `space` in `options$header` for completeness
+
+changes for outputs
+
+- add "raw" attribute to returned delimiter
+
+- add "offset" attribute to returned header
+
+**writing**
+
+- fix bad regex for identification of $PnN,B,E,R,S
+
+this could have lead to undesired removal of keywords during FCS export
+
+- only allow the use of 0x01-0xFE as `delimiter` for FCS export
+
+- ensure that exported keywords (names) do contain only printable ASCII
+
+this means that to follow FCS3.0 specifications keywords should be 0x20-0x7E only.
+
+- enforce "UTF-8" export (FCS3.1 says that $UNICODE is deprecated and all keywords values have to be "UTF-8")
+
+- ensure that delimiter is not the first character of any keyword on export
+
+- fix comma "," replacement to space " " on $PnN
+
+before they were replaced by underscore "_".
+
+- fix bug in data_modify_regions and data_modify_pops (stats should be recomputed)
+
+- fix CRC that was not written on export despite being mandatory in FCS3.0 (add default 00000000 CRC segment)
+
 ## 0.1.8
 - CRAN submission
 
