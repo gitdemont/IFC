@@ -14,8 +14,8 @@ readFCSheader(fileName, header, encoding = "UTF-8", ...)
 - space: where to retrieve space.                          Default is list(at = 6,  n = 4),\cr
 - text_beg: where to retrieve file text segment beginning. Default is list(at = 10, n = 8),\cr
 - text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
-- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
-- data_end: where to retrieve file text segment end.       Default is list(at = 34, n = 8).}
+- data_beg: where to retrieve file data segment beginning. Default is list(at = 26, n = 8),\cr
+- data_end: where to retrieve file data segment end.       Default is list(at = 34, n = 8).}
 
 \item{encoding}{name of the encoding for raw to character conversion. Default is "UTF-8".}
 

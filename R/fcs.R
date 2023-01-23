@@ -257,8 +257,8 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
 #' - space: where to retrieve space.                          Default is list(at = 6,  n = 4),\cr
 #' - text_beg: where to retrieve file text segment beginning. Default is list(at = 10, n = 8),\cr
 #' - text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
-#' - data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
-#' - data_end: where to retrieve file text segment end.       Default is list(at = 34, n = 8).
+#' - data_beg: where to retrieve file data segment beginning. Default is list(at = 26, n = 8),\cr
+#' - data_end: where to retrieve file data segment end.       Default is list(at = 34, n = 8).
 #' @param encoding name of the encoding for raw to character conversion. Default is "UTF-8".
 #' @param ... other arguments to be passed.
 #' @keywords internal
@@ -440,6 +440,14 @@ readFCStext <- function(fileName, delimiter, start = 0, end = 0, encoding = "UTF
   text = strsplit(x = text, split = delimiter, fixed = TRUE)[[1]]
   # then escaped double delimiter is replaced with only one delimiter
   text = gsub(pattern = delim_esc, replacement = delimiter, x = text, fixed = TRUE)
+  # remove 1st empty value (this happen when 1st keyword starts with delimiter)
+  is_1st_empty = FALSE
+  while((length(text) >= 1) && (text[1] == "")) {
+    if(!is_1st_empty) warning("TEXT (or sup. TEXT) segment: 1st keyword starts with delimiter",
+                              call. = FALSE, immediate. = TRUE)
+    is_1st_empty = TRUE
+    text = text[-1]
+  }
   # finally keyword-value pairs are converted to named list
   id_val = seq(from = 2, to = length(text), by = 2)
   id_key = id_val-1
@@ -810,8 +818,8 @@ readFCSdata <- function(fileName, text, start = 0, end = 0, scale = TRUE, displa
 #' -- space: where to retrieve space.                          Default is list(at = 6,  n = 4),\cr
 #' -- text_beg: where to retrieve file text segment beginning. Default is list(at = 10, n = 8),\cr
 #' -- text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
-#' -- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
-#' -- data_end: where to retrieve file text segment end.       Default is list(at = 34, n = 8),\cr
+#' -- data_beg: where to retrieve file data segment beginning. Default is list(at = 26, n = 8),\cr
+#' -- data_end: where to retrieve file data segment end.       Default is list(at = 34, n = 8),\cr
 #' - apply_scale, whether to apply data scaling. It only applies when fcs file is stored as DATATYPE "I". Default is TRUE.\cr
 #' - dataset, (coerced to) an ordered vector of unique indices of desired dataset(s) to extract. Default is 1 to extract only the first dataset, whereas NULL allows to extract all available datasets.\cr
 #' - force_header, whether to force the use of header to determine the position of data segment. Default is FALSE, for using positions found in "$BEGINDATA" and "$ENDDATA" keywords.\cr
@@ -1045,8 +1053,8 @@ readFCSdataset <- function(fileName, options, display_progress = TRUE, ...) {
 #' -- space: where to retrieve space.                          Default is list(at = 6,  n = 4),\cr
 #' -- text_beg: where to retrieve file text segment beginning. Default is list(at = 10, n = 8),\cr
 #' -- text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
-#' -- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
-#' -- data_end: where to retrieve file text segment end.       Default is list(at = 34, n = 8),\cr
+#' -- data_beg: where to retrieve file data segment beginning. Default is list(at = 26, n = 8),\cr
+#' -- data_end: where to retrieve file data segment end.       Default is list(at = 34, n = 8),\cr
 #' - apply_scale, whether to apply data scaling. It only applies when fcs file is stored as DATATYPE "I". Default is TRUE.\cr
 #' - dataset, (coerced to) an ordered vector of unique indices of desired dataset(s) to extract. Default is 1 to extract only the first dataset, whereas NULL allows to extract all available datasets.\cr
 #' - force_header, whether to force the use of header to determine the position of data segment. Default is FALSE, for using positions found in "$BEGINDATA" and "$ENDDATA" keywords.\cr

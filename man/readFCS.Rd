@@ -27,8 +27,8 @@ readFCS(
 -- space: where to retrieve space.                          Default is list(at = 6,  n = 4),\cr
 -- text_beg: where to retrieve file text segment beginning. Default is list(at = 10, n = 8),\cr
 -- text_end: where to retrieve file text segment end.       Default is list(at = 18, n = 8),\cr
--- data_beg: where to retrieve file text segment beginning. Default is list(at = 26, n = 8),\cr
--- data_end: where to retrieve file text segment end.       Default is list(at = 34, n = 8),\cr
+-- data_beg: where to retrieve file data segment beginning. Default is list(at = 26, n = 8),\cr
+-- data_end: where to retrieve file data segment end.       Default is list(at = 34, n = 8),\cr
 - apply_scale, whether to apply data scaling. It only applies when fcs file is stored as DATATYPE "I". Default is TRUE.\cr
 - dataset, (coerced to) an ordered vector of unique indices of desired dataset(s) to extract. Default is 1 to extract only the first dataset, whereas NULL allows to extract all available datasets.\cr
 - force_header, whether to force the use of header to determine the position of data segment. Default is FALSE, for using positions found in "$BEGINDATA" and "$ENDDATA" keywords.\cr
