@@ -186,6 +186,7 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
     msg = c()
     PnB = paste0("$P",i,"B")
     PnE = paste0("$P",i,"E")
+    PnG = paste0("$P",i,"G")
     PnN = paste0("$P",i,"N")
     PnR = paste0("$P",i,"R")
     if(length(text[[PnB]]) == 0) {
@@ -224,10 +225,17 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
         }
       }
     }
+    gain = na.omit(suppressWarnings(as.numeric(text[[PnG]])))
+    if(length(gain) != 0) {
+      if(length(text[[PnE]]) != 0) {
+        trans = na.omit(suppressWarnings(as.numeric(strsplit(text[[PnE]], split = ",", fixed = TRUE)[[1]])))
+        if((length(trans) == 2) && (gain != 1) && ((trans[1] != 0) || (trans[2] != 0))) msg = c(msg, paste0(PnG,"[",text[[PnG]],"] should not be used with logarithmic amplification ($PnE != \"0,0\")",PnE,"[",text[[PnE]],"]"))
+      }
+    }
     return(paste0(msg, collapse="|"))
   })
   bar = unlist(recursive = FALSE, use.names = FALSE, lapply(foo, FUN = function(x) x != ""))
-  if(any(bar)) msg = c(msg, paste0("`bad PnB/PnN/PnR/PnE keywords`:\n\t- ", paste0(foo[bar], collapse="\n\t- ")))
+  if(any(bar)) msg = c(msg, paste0("`bad PnB/PnE/PnG/PnN/PnR keywords`:\n\t- ", paste0(foo[bar], collapse="\n\t- ")))
   
   # check spillover
   if("$SPILLOVER" %in% names(text)) {
@@ -791,18 +799,31 @@ readFCSdata <- function(fileName, text, start = 0, end = 0, scale = TRUE, displa
   # scale data only for type I, ISAC spe mentions:
   # When linear scale is used, $PnE/0,0/ shall be entered if the floating point data type is used i.e. "F" or "D"
   # meaning that no scaling shall be used for type "F" and "D". Besides type "A" is deprecated
-  if(scale && (type == "I")) {
-    for(i in seq_len(n_par)) {
+  if(scale) {
+    if(type == "I") {
+      for(i in seq_len(n_par)) { # log amplification scaling
+        PnE = paste0("$P",i,"E")
+        PnR = paste0("$P",i,"R")
+        trans = text[[PnE]]
+        ran = na.omit(suppressWarnings(as.numeric(text[[PnR]])))
+        if((length(trans) == 0) || (length(ran) == 0)) next # no scaling info, SKIP
+        trans = na.omit(suppressWarnings(as.numeric(strsplit(trans, split = ",", fixed = TRUE)[[1]])))
+        # FIXME should we detect and force range to max range ? in case of mismatch with PnR and actual data range ?
+        if(length(trans) != 2 || trans[1] == 0) next        # invalid PnE info, SKIP
+        if(trans[2] == 0) trans[2] <- 1                     # invalid PnE info, but we apply correction
+        data[,i] <- trans[2] * 10^(trans[1] * data[,i] / ran)
+      }
+    }
+    for(i in seq_len(n_par)) {   # gain scaling
       PnE = paste0("$P",i,"E")
-      PnR = paste0("$P",i,"R")
-      trans = text[[PnE]]
-      ran = na.omit(suppressWarnings(as.numeric(text[[PnR]])))
-      if((length(trans) == 0) || (length(ran) == 0)) next # no scaling info, SKIP
+      PnG = paste0("$P",i,"G")
+      gain = na.omit(suppressWarnings(as.numeric(text[[PnG]])))
+      if(length(gain) == 0) next # no scaling info, SKIP
+      trans = "0,0"
+      if(length(text[[PnE]]) != 0) trans = text[[PnE]]
       trans = na.omit(suppressWarnings(as.numeric(strsplit(trans, split = ",", fixed = TRUE)[[1]])))
-      # FIXME should we detect and force range to max range ? in case of mismatch with PnR and actual data range ?
-      if(length(trans) != 2 || trans[1] == 0) next        # invalid PnE info, SKIP
-      if(trans[2] == 0) trans[2] <- 1                     # invalid PnE info, but we apply correction
-      data[,i] <- trans[2] * 10^(trans[1] * data[,i] / ran)
+      # FIXME should we apply PnG when PnE is not valid i.e. PnE = f1 (missing f2)
+      if((length(trans) == 2) && (trans[1] == 0) && (trans[2] == 0)) data[,i] <- data[,i] / gain
     }
   }
   return(data)
@@ -1601,10 +1622,14 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   L = length(N)
   text2_length = 0
   text_segment2 = lapply(seq_len(L), FUN = function(i) {
-    # each time we write /$PnN/<feature_name>/$PnB/32/$PnE/0, 0/$PnR/<feature_max_value> and /$PnS/<feature_alt-name> if PnS is not empty
+    # each time we write /$PnN/<feature_name>/$PnB/32/$PnE/0, 0/$PnG/1/$PnR/<feature_max_value> and /$PnS/<feature_alt-name> if PnS is not empty
     # bar = 1 + diff(range(features[, i], na.rm = TRUE))
     bar = ceiling(max(features[, i], na.rm = TRUE)) # FIXME since we write type "F" this has no importance, shall we use 262144, as it is commonly used ?
-    foo = c(paste0("$P",i,"N"), N[i], paste0("$P",i,"B"), "32", paste0("$P",i,"E"), "0, 0", paste0("$P",i,"R"), bar)
+    foo = c(paste0("$P",i,"N"), N[i],
+            paste0("$P",i,"B"), "32",
+            paste0("$P",i,"E"), "0, 0",
+            paste0("$P",i,"G"), "1",
+            paste0("$P",i,"R"), bar)
     if(S[i] != "") foo = c(foo, paste0("$P",i,"S"), S[i])
     if(any(sapply(foo, FUN = function(x) substr(x,1,1) == delimiter))) stop("keyword-value pairs should not start with 'delimiter'[",delimiter,"]:\n\t- ",
                                                                             paste0(paste0(foo[rep_len(c(TRUE, FALSE), length(foo))], "[", foo[rep_len(c(FALSE, TRUE), length(foo))], "]"), collapse="\n\t- "))
@@ -1631,6 +1656,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                        "$PAR" = L,                                                               #*
                        #* BEGINDATA and ENDDATA are also mandatory and will be added afterwards
                        #* PnB, PnE, PnN, and PnR are also mandatory and are part of text_segment2
+                       #* PnG is not mandatory but will be filled in part 2
                        "$CYT" = cyt,
                        "@IFC_fileName" = obj$fileName,
                        "@IFC_fileName_image" = obj$fileName_image,
@@ -1641,13 +1667,13 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   # gather keywords in priority order 
   text_segment1 = c(text_segment1, dots, obj$Keywords)
   # removes keywords whose values are NULL
-  text_segment1 = text_segment1[sapply(text_segment1, nchar) != 0]
+  text_segment1 = text_segment1[sapply(text_segment1, length) != 0]
   # removes duplicated keywords (priority order is important here)
   text_segment1 = text_segment1[!duplicated(toupper(names(text_segment1)))]
-  # removes not allowed keywords (e.g. in text_segment2 ($PnN, $PnS, $PnB, $PnE, $PnR) or "")
+  # removes not allowed keywords (e.g. in text_segment2 ($PnN, $PnS, $PnB, $PnE, $PnG, $PnR) or "")
   text_segment1 = text_segment1[setdiff(names(text_segment1),c(""))]
-  text_segment1 = text_segment1[!grepl("^\\$P\\d+[N|S|B|E|R]$", names(text_segment1), ignore.case = TRUE)]
-
+  text_segment1 = text_segment1[!grepl("^\\$P\\d+[N|S|B|E|G|R]$", names(text_segment1), ignore.case = TRUE)]
+  
   # determines length of data
   data_length = 4 * L * nrow(features)
   

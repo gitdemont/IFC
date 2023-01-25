@@ -25,6 +25,8 @@ readFCSdataset is now used within readFCS to avoid that.
 
 - fix data extraction with non usual bytes order or sizes.
 
+- enh/fix apply PnG scaling and add checks for PnG compliance
+
 - throw warning on mismatch about data segment offsets read from HEADER vs TEXT segments
 
 - detect, report and correct offsets shifts (off by one) for TEXT and DATA segments
@@ -57,6 +59,10 @@ changes for outputs
 - add "offset" attribute to returned `header`
 
 **writing**
+
+- enh/fix write PnG to 1
+
+- fix remove empty keywords on file export
 
 - fix bad regex for identification of $Pn[N,B,E,R,S]
 
