@@ -18,7 +18,7 @@ this could have lead to undesired error "mismatch between found vs expected numb
 file parsing was performed assuming required keywords were upper case.
 now this assumption is removed and parsing is performed whatever the case.
 
-- fix `dataset` extraction when dataset was not `NULL` or `1`
+- fix dataset extraction when `dataset` was not `NULL` or `1`
 
 formerly, other values could lead to undesired dataset removal in returned value.
 readFCSdataset is now used within readFCS to avoid that.
@@ -52,13 +52,13 @@ now part of `options` can be provided and missing part are reconstructed, in add
 
 changes for outputs
 
-- add "raw" attribute to returned delimiter
+- add "raw" attribute to returned `delimiter`
 
-- add "offset" attribute to returned header
+- add "offset" attribute to returned `header`
 
 **writing**
 
-- fix bad regex for identification of $PnN,B,E,R,S
+- fix bad regex for identification of $Pn[N,B,E,R,S]
 
 this could have lead to undesired removal of keywords during FCS export
 
@@ -70,7 +70,7 @@ this means that to follow FCS3.0 specifications keywords should be 0x20-0x7E onl
 
 - enforce "UTF-8" export (FCS3.1 says that $UNICODE is deprecated and all keywords values have to be "UTF-8")
 
-- ensure that delimiter is not the first character of any keyword on export
+- ensure that `delimiter` is not the first character of any keyword on export
 
 - fix comma "," replacement to space " " on $PnN
 
@@ -79,6 +79,10 @@ before they were replaced by underscore "_".
 - fix bug in data_modify_regions and data_modify_pops (stats should be recomputed)
 
 - fix CRC that was not written on export despite being mandatory in FCS3.0 (add default 00000000 CRC segment)
+
+- fix writing data_beg/data_end offsets in HEADER segment
+
+when any of them is >= 1e8, then **BOTH** should be 0 and `$BEGINDATA` and `$ENDDATA` in TEXT segment should report offsets. Before only the one(s) >= 1e8 was/were set to 0 in HEADER (though, TEXT segment was correct)
 
 ## 0.1.8
 - CRAN submission

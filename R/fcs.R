@@ -1670,7 +1670,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   
   # compute missing offsets 
   # ENDSTEXT
-  # determining text_end is tricky since it depends on it own length
+  # determining text_end is tricky since it depends on its own length
   # so we use a function to optimize it
   f = function(x, text_length) {
     data_beg = x + 1
@@ -1683,23 +1683,18 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   if(text_end >= 1e8) stop("primary TEXT segment is too big")
   header$text_end = sprintf("%8i", text_end)
   
-  # BEGINDATA
-  data_beg = text_end + 1 # +1 because data start just after text segment end
-  if(data_beg >= 1e8) {
+  # BEGINDATA / ENDDATA
+  data_beg = text_end + 1               # +1 because data start just after text segment end
+  data_end = data_beg + data_length - 1 # -1 because last data byte is at minus one from total length
+  if((data_beg >= 1e8) || (data_end >= 1e8)) {
     header$data_beg = sprintf("%8i", 0)
-  } else {
-    header$data_beg = sprintf("%8i", data_beg)
-  }
-  text_segment1 = c(text_segment1, list("$BEGINDATA" = num_to_string(data_beg)))
-  
-  # ENDDATA
-  data_end = data_beg + data_length - 1 #-1 because last data byte is at minus one from total length
-  if(data_end >= 1e8) {
     header$data_end = sprintf("%8i", 0)
   } else {
     header$data_end = sprintf("%8i", data_end)
+    header$data_beg = sprintf("%8i", data_beg)
   }
-  text_segment1 = c(text_segment1, list("$ENDDATA" = num_to_string(data_end)))
+  text_segment1 = c(text_segment1, list("$BEGINDATA" = num_to_string(data_beg)))
+  text_segment1 = c(text_segment1, list("$ENDDATA"   = num_to_string(data_end)))
   
   towrite = file(description = file_w, open = "wb")
   tryCatch({
