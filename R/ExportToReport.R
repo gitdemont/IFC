@@ -27,6 +27,61 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
+#' @title Change Graphs Layout
+#' @description
+#' Reconstructs `IFC_graphs` object layout.
+#' @param graphs an `IFC_graphs` object extracted with features extracted.
+#' @param size Integer, graphs' sizes. Default is 320.
+#' @param splitterdistance Integer. Default is 120.
+#' @param stats Logical. Whether to show stats or not. Default is TRUE.
+#' @param byrow Logical. Whether to layout graphs by row or not. Default is FALSE.
+#' @param times Integer. Max number of graphs by row/column (depending on `byrow`). Default is 4.
+#' @param layout Integer matrix. Desired layout. Default is NULL.
+#' When NULL, the default, graphs will be relayout using `times` and `byrow` parameters.
+#' Otherwise, layout will be used to determine the position of the graphs (NA value can be used for empty place).
+#' Note that when not NULL layout should contain all indices of graphs only once.
+#' @return an  `IFC_graphs` object
+#' @keywords internal
+relayout <- function(graphs, size = 320, splitterdistance = 120, stats = TRUE, byrow = FALSE, times = 4, layout = NULL) {
+  assert(graphs, cla="IFC_graphs")
+  size = suppressWarnings(na.omit(as.integer(size[size>0]))); assert(size,len=1,typ="integer")
+  splitterdistance = suppressWarnings(na.omit(as.integer(splitterdistance[splitterdistance>0]))); assert(splitterdistance,len=1,typ="integer")
+  assert(stats, len=1, alw=c(TRUE,FALSE))
+  xsize = size
+  ysize = size
+  if(stats) ysize = ysize + splitterdistance
+  if(length(layout) != 0) {
+    for(i_graph in seq_along(graphs)) {
+      tmp = which(layout == i_graph, arr.ind = TRUE, useNames = FALSE)
+      if(!(1 %in% nrow(tmp))) stop("'layout' should contain all indices of graphs at most once")
+      graphs[[i_graph]]$xsize <- xsize
+      graphs[[i_graph]]$ysize <- ysize
+      graphs[[i_graph]]$splitterdistance <- splitterdistance
+      graphs[[i_graph]]$stats <- ifelse(stats, "true", "false")
+      graphs[[i_graph]]$xlocation <- tmp[1] * xsize
+      graphs[[i_graph]]$ylocation <- tmp[2] * ysize
+    }
+  } else {
+    assert(byrow, len=1, alw=c(TRUE,FALSE))
+    times = suppressWarnings(na.omit(as.integer(times[times>0]))); assert(times,len=1,typ="integer")
+    for(i_graph in seq_along(graphs)) {
+      xloc = ((i_graph - 1) %% times)
+      yloc = ((i_graph - 1) %/% times)
+      graphs[[i_graph]]$xsize <- xsize
+      graphs[[i_graph]]$ysize <- ysize
+      graphs[[i_graph]]$splitterdistance <- splitterdistance
+      graphs[[i_graph]]$stats <- ifelse(stats, "true", "false")
+      if(byrow) {
+        graphs[[i_graph]]$xlocation <- yloc * xsize
+        graphs[[i_graph]]$ylocation <- xloc * ysize
+      } else {
+        graphs[[i_graph]]$xlocation <- xloc * xsize
+        graphs[[i_graph]]$ylocation <- yloc * ysize
+      }
+    } 
+  }
+  return(graphs)
+}
 
 #' @title Report Layout Extraction
 #' @description
