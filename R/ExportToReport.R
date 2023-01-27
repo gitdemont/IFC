@@ -344,7 +344,9 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
           }
           rownames(stats) = paste0("Error: ", G[[i]]$title)
           foo = switch(backend,
-                       raster = grid.grabExpr(grid.echo({plot_raster(g); recordPlot()}, device = default_offscreen),
+                       "raster-edge" = grid.grabExpr(grid.echo({plot_raster(g, TRUE); recordPlot()}, device = default_offscreen),
+                                              device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
+                       raster = grid.grabExpr(grid.echo({plot_raster(g, FALSE); recordPlot()}, device = default_offscreen),
                                               device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
                        base = grid.grabExpr(grid.echo(plot_base(g), device = default_offscreen), 
                                             device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
