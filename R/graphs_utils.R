@@ -728,8 +728,9 @@ plot_base=function(obj) {
 #' @name plot_raster
 #' @description Helper to convert `IFC_plot` to 'raster' plot.
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @param cliepdge whether to clip points outside of plotting region to the edge. Default is FALSE.
 #' @keywords internal
-plot_raster=function(obj) {
+plot_raster=function(obj, clipedge = FALSE) {
   old_mar = par("mar")
   on.exit(par("mar" = old_mar), add = TRUE)
   old_colormode = par("bg","fg","col","col.axis","col.lab","col.main","col.sub")
@@ -783,6 +784,8 @@ plot_raster=function(obj) {
       foo = which(x)[1]
     })]
   }
+  coords = obj$input$data[, c("x2","y2")]
+  colnames(coords) = c("x","y")
   data = sapply(rev(disp_n), simplify = FALSE, USE.NAMES = TRUE, FUN = function(p) {
     if((obj$input$precision == "light") && (length(disp_n) > 1)) {
       sub_ = obj$input$data[, p] & obj$input$subset & (set == p)
@@ -790,29 +793,18 @@ plot_raster=function(obj) {
       sub_ = obj$input$data[, p] & obj$input$subset
     } 
     if(sum(sub_) == 0) return(NULL)
-    coords = obj$input$data[, c("x2","y2")]
-    colnames(coords) = c("x","y")
     if(obj$input$type == "scatter") {
       size = 7
       col = map_color(obj$input$displayed[[p]][c("color","lightModeColor")][[color_mode]])
     } else {
       size = 9
-      colramp = colorRampPalette(colConv(obj$input$base[[1]][c("densitycolorsdarkmode", "densitycolorslightmode")][[color_mode]]))
-      if((sum(sub_) < 20000) || inherits(try(suppressWarnings(formals(obj$input$trans)), silent = TRUE), "try-error")) {
-        col = densCols(x = structure(coords[sub_,"x"], features=attr(obj$input$data,"features")),
-                       y = coords[sub_,"y"],
-                       colramp = colramp,
-                       nbin = obj$input$bin,
-                       transformation = obj$input$trans)
-      } else {
-        col = colramp(255)
-      }
+      col = colorRampPalette(colConv(obj$input$base[[1]][c("densitycolorsdarkmode", "densitycolorslightmode")][[color_mode]]))(255)
     }
     list(size = size,
          pch = obj$input$displayed[[p]]$style,
          col = rbind(col2rgb(col, alpha = FALSE), 255),
          lwd = 1,
-         coords = coord_to_px(coord=coords[sub_,,drop=FALSE], coordmap=coordmap),
+         coords = coord_to_px(coord=coords[sub_,,drop=FALSE], coordmap=coordmap, clipedge=clipedge),
          blur_size = 9,
          blur_sd = 3)
   })

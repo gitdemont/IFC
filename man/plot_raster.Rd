@@ -4,10 +4,12 @@
 \alias{plot_raster}
 \title{`IFC_plot` Conversion to 'raster' Plot}
 \usage{
-plot_raster(obj)
+plot_raster(obj, clipedge = FALSE)
 }
 \arguments{
 \item{obj}{an object of class `IFC_plot` as created by \code{\link{plotGraph}}.}
+
+\item{cliepdge}{whether to clip points outside of plotting region to the edge. Default is FALSE.}
 }
 \description{
 Helper to convert `IFC_plot` to 'raster' plot.

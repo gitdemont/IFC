@@ -1,6 +1,14 @@
 # NEWS
 ## 0.1.8.xxx
 
+work on plot:
+
+- fix typo in **hpp_coord_to_px** that caused x values to be bounded to max y limit instead of max x limit
+
+- drop density estimation for density plots in **plot_raster** and only use raster drawing logic for colorization
+
+- add new "raster-edge" `backend` to **plotGraph** to allow points outside of graph limits to be shown on the edge(s)
+
 work on FCS: 
 
 **reading**

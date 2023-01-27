@@ -499,7 +499,7 @@ Rcpp::IntegerMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
       if(y[i] < param[2]) {
         v = param[2];
       } else {
-        if(x[i] > param[3]) {
+        if(y[i] > param[3]) {
           v = param[3];
         } else {
           v = y[i];
