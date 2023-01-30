@@ -58,7 +58,7 @@
 #' @param interpolate whether to use linear interpolation, only applies when 'draw' is TRUE. Default is FALSE.
 #' @param width the desired width of the raster Default is 512. It only applies when draw is FALSE.
 #' @param height the desired height of the raster Default is 512. It only applies when draw is FALSE.
-#' @param clipedge whether to clip points outside of plotting region to the edge. Default is FALSE.
+#' @param pntsonedge whether points outside of plotting region should be bounded on the edge. Default is FALSE to clip points.
 #' @param blur_size (for density) an integer controlling the size of the blurring gaussian kernel. Default is 9.
 #' @param blur_sd (for density) a double controlling the sd of the blurring gaussian kernel. Default is 3.
 #' @param bg_ an `rasterplot` object as returned by rasterplot() that will be used to add points to. Default is NULL.
@@ -87,9 +87,9 @@
 #' # density
 #' rasterplot(x = x, y = y, pch = 20, size = 7, draw = TRUE, col = colorRampPalette(c("blue", "green", "red"))(100))
 #' # density with limits
-#' rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), clipedge = FALSE, col = colorRampPalette(c("blue", "green", "red"))(100))
+#' rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), pntsonedge = FALSE, col = colorRampPalette(c("blue", "green", "red"))(100))
 #' # density with limits + computation on drawn points only
-#' rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), clipedge = TRUE, col = colorRampPalette(c("blue", "green", "red"))(100))
+#' rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), pntsonedge = TRUE, col = colorRampPalette(c("blue", "green", "red"))(100))
 #' # using rgba
 #' col = c("plum", "green", "indianred", "blue", "black")
 #' rgba = col2rgb(col, alpha = TRUE)
@@ -103,7 +103,7 @@ rasterplot = function(x, y = NULL,
                       draw = TRUE,
                       new = is.null(bg_), interpolate = FALSE,                # only when draw == TRUE
                       width = 512, height = 512,                              # only when draw == FALSE
-                      clipedge = FALSE, 
+                      pntsonedge = FALSE, 
                       blur_size = 9, blur_sd = 3,                             # only for density
                       bg_ = NULL, bg_map = TRUE, ...) {
   dots = list(...)
@@ -173,7 +173,7 @@ rasterplot = function(x, y = NULL,
     data = list(list(size = size,
                      pch = pch,
                      lwd = lwd, 
-                     coords = coord_to_px(coord=data.frame(x = x, y = y), coordmap = coordmap, clipedge = clipedge),
+                     coords = coord_to_px(coord=data.frame(x = x, y = y), coordmap = coordmap, pntsonedge = pntsonedge),
                      blur_size = blur_size,
                      blur_sd = blur_sd))
     if(missing(rgba)) {
@@ -193,7 +193,7 @@ rasterplot = function(x, y = NULL,
              pch = d$pch[g[[i]][1]],
              lwd = lwd,
              col = col_,
-             coords = coord_to_px(coord=data.frame(x = d$x[g[[i]]], y = d$y[g[[i]]]), coordmap = coordmap, clipedge = clipedge),
+             coords = coord_to_px(coord=data.frame(x = d$x[g[[i]]], y = d$y[g[[i]]]), coordmap = coordmap, pntsonedge = pntsonedge),
              blur_size = blur_size,
              blur_sd = blur_sd)
       })
@@ -209,7 +209,7 @@ rasterplot = function(x, y = NULL,
              pch = d$pch[g[[i]][1]],
              lwd = lwd,
              col = rgba[, g[[i]], drop = FALSE],
-             coords = coord_to_px(coord=data.frame(x = d$x[g[[i]]], y = d$y[g[[i]]]), coordmap = coordmap, clipedge = clipedge),
+             coords = coord_to_px(coord=data.frame(x = d$x[g[[i]]], y = d$y[g[[i]]]), coordmap = coordmap, pntsonedge = pntsonedge),
              blur_size = blur_size,
              blur_sd = blur_sd)
       })

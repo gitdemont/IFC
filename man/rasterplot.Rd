@@ -18,7 +18,7 @@ rasterplot(
   interpolate = FALSE,
   width = 512,
   height = 512,
-  clipedge = FALSE,
+  pntsonedge = FALSE,
   blur_size = 9,
   blur_sd = 3,
   bg_ = NULL,
@@ -62,7 +62,7 @@ If FALSE, the current plot will be used to draw points.}
 
 \item{height}{the desired height of the raster Default is 512. It only applies when draw is FALSE.}
 
-\item{clipedge}{whether to clip points outside of plotting region to the edge. Default is FALSE.}
+\item{pntsonedge}{whether points outside of plotting region should be bounded on the edge. Default is FALSE to clip points.}
 
 \item{blur_size}{(for density) an integer controlling the size of the blurring gaussian kernel. Default is 9.}
 
@@ -104,9 +104,9 @@ rasterplot(x = x, y = y, pch = ".", col = c("plum", "green", "indianred", "blue"
 # density
 rasterplot(x = x, y = y, pch = 20, size = 7, draw = TRUE, col = colorRampPalette(c("blue", "green", "red"))(100))
 # density with limits
-rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), clipedge = FALSE, col = colorRampPalette(c("blue", "green", "red"))(100))
+rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), pntsonedge = FALSE, col = colorRampPalette(c("blue", "green", "red"))(100))
 # density with limits + computation on drawn points only
-rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), clipedge = TRUE, col = colorRampPalette(c("blue", "green", "red"))(100))
+rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), pntsonedge = TRUE, col = colorRampPalette(c("blue", "green", "red"))(100))
 # using rgba
 col = c("plum", "green", "indianred", "blue", "black")
 rgba = col2rgb(col, alpha = TRUE)

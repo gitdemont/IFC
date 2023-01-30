@@ -48,13 +48,12 @@
 #' -"ideas" will use same limits as the one defined in ideas.\cr
 #' -"data" will use data to define limits.\cr
 #' -"max" will use data and regions drawn to define limits.
-#' @param backend backend used for drawing. Allowed are "lattice", "base", "raster", "raster-edge". Default is "lattice".\cr
+#' @param backend backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
 #' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
 #' -"base" will produce the plot using \pkg{base},\cr
 #' -"raster" uses "base" for plotting but 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.\cr
 #' This has the main advantage of being super fast allowing for plotting a huge amount of points while generating smaller objects (in bytes).
-#' However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.\cr
-#' -"raster-edge" is the same as "raster" except that points outside of limits will be clipped to the edge.
+#' However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.
 #' @param ... other arguments to be passed.
 #' @return it invisibly returns a list whose members are:\cr
 #' -stats, a table of statistics computed for the graph, if 'stats_print' was TRUE,\cr
@@ -348,10 +347,20 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       print(ret$stats)
     }
     if(draw) {
-      assert(backend, len=1, alw=c("lattice","base","raster","raster-edge"))
+      # TODO ?
+      #' @param backend backend used for drawing. Allowed are "lattice", "base", "raster", "raster-edge", "raster-hybrid". Default is "lattice".\cr
+      #' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
+      #' -"base" will produce the plot using \pkg{base},\cr
+      #' -"raster" uses "base" for plotting but 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.\cr
+      #' This has the main advantage of being super fast allowing for plotting a huge amount of points while generating smaller objects (in bytes).
+      #' However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.
+      #' -"raster-edge" is the same as "raster" except that points outside of limits will be drawn onto the edge.\cr
+      #' -"raster-hybrid" uses "raster" for drawing on top of a first "raster-edge" pass to produce an hybrid display.
+      assert(backend, len=1, alw=c("lattice","base","raster"))
       tryCatch({
         switch(backend,
-               "raster-edge" = plot_raster(ret, TRUE),
+               # "raster-hybrid" = plot_raster(ret, NA),
+               # "raster-edge" = plot_raster(ret, TRUE),
                raster = plot_raster(ret, FALSE),
                base = plot_base(ret),
                plot(plot_lattice(ret)))

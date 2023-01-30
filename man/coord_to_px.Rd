@@ -4,14 +4,14 @@
 \alias{coord_to_px}
 \title{User's Coordinates to Pixels Conversion}
 \usage{
-coord_to_px(coord, coordmap, clipedge = FALSE)
+coord_to_px(coord, coordmap, pntsonedge = FALSE)
 }
 \arguments{
 \item{coord}{coordinates in user system. A matrix where rows are points and with at least 2 columns named "x" and "y" for x and y coordinates, respectively.}
 
 \item{coordmap}{current device adjusted coordinates. Default is missing.}
 
-\item{clipedge}{whether to clip points outside of plotting region to the edge. Default is FALSE.}
+\item{pntsonedge}{whether points outside of plotting region should be bounded on the edge. Default is FALSE to clip points.}
 }
 \value{
 a 2-columns matrix with "x" and "y" coordinates.

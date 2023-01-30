@@ -227,8 +227,7 @@ tryReportFileCreation <- function(fileName, write_to, overwrite = FALSE) {
 #' -"base" will produce the plot using \pkg{base},\cr
 #' -"raster" uses "base" for plotting but 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.\cr
 #' This has the main advantage of being super fast allowing for plotting a huge amount of points while generating smaller objects (in bytes).
-#' However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.\cr
-#' -"raster-edge" is the same as "raster" except that points outside of limits will be clipped to the edge.
+#' However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other parameters to be passed.
 #' @return a list with onepage, layout, layout_matrix, graphs, grobs, and stats.
@@ -253,7 +252,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class `IFC_data`")
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
   display_progress = as.logical(display_progress); assert(display_progress, len=1, alw=c(TRUE,FALSE))
-  assert(backend, len=1, alw=c("lattice","base","raster","raster-edge"))
+  assert(backend, len=1, alw=c("lattice","base","raster"))
   assert(onepage, len=1, alw=c(TRUE,FALSE))
   if(missing(bin) || (length(bin) == 0)) {
     bin = NULL
@@ -344,8 +343,10 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
           }
           rownames(stats) = paste0("Error: ", G[[i]]$title)
           foo = switch(backend,
-                       "raster-edge" = grid.grabExpr(grid.echo({plot_raster(g, TRUE); recordPlot()}, device = default_offscreen),
-                                              device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
+                       # "raster-hybrid" = grid.grabExpr(grid.echo({plot_raster(g, NA); recordPlot()}, device = default_offscreen),
+                       #                               device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
+                       # "raster-edge" = grid.grabExpr(grid.echo({plot_raster(g, TRUE); recordPlot()}, device = default_offscreen),
+                       #                        device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
                        raster = grid.grabExpr(grid.echo({plot_raster(g, FALSE); recordPlot()}, device = default_offscreen),
                                               device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
                        base = grid.grabExpr(grid.echo(plot_base(g), device = default_offscreen), 
@@ -416,7 +417,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
 #' @param backend backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
 #' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
 #' -"base" will produce the plot using \pkg{base},\cr
-#' -"raster" uses "base" for plotting but for 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.
+#' -"raster" uses "base" for plotting but 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.\cr
 #' This has the main advantage of being super fast allowing for plotting a huge amount of points while generating smaller objects (in bytes).
 #' However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
@@ -607,7 +608,7 @@ DisplayReport = function(obj, display_progress = TRUE, ...) {
 #' @param backend backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
 #' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
 #' -"base" will produce the plot using \pkg{base},\cr
-#' -"raster" uses "base" for plotting but for 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.
+#' -"raster" uses "base" for plotting but 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.\cr
 #' This has the main advantage of being super fast allowing for plotting a huge amount of points while generating smaller objects (in bytes).
 #' However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.
 #' @param display_progress whether to display a progress bar. Default is TRUE.

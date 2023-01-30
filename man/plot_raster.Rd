@@ -4,12 +4,13 @@
 \alias{plot_raster}
 \title{`IFC_plot` Conversion to 'raster' Plot}
 \usage{
-plot_raster(obj, clipedge = FALSE)
+plot_raster(obj, pntsonedge = FALSE)
 }
 \arguments{
 \item{obj}{an object of class `IFC_plot` as created by \code{\link{plotGraph}}.}
 
-\item{cliepdge}{whether to clip points outside of plotting region to the edge. Default is FALSE.}
+\item{pntsonedge}{whether points outside of plotting region should be bounded on the edge. Default is FALSE to clip points.
+NA can be used to produce hybrid display, with plot being drawn with `pntsonedge` = FALSE on top of plot with `pntsonedge` = TRUE.}
 }
 \description{
 Helper to convert `IFC_plot` to 'raster' plot.

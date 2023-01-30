@@ -436,10 +436,10 @@ get_coordmap_adjusted=function(coordmap,
 #' @description Helper map user's coordinates to pixels
 #' @param coord coordinates in user system. A matrix where rows are points and with at least 2 columns named "x" and "y" for x and y coordinates, respectively.
 #' @param coordmap current device adjusted coordinates. Default is missing.
-#' @param clipedge whether to clip points outside of plotting region to the edge. Default is FALSE.
+#' @param pntsonedge whether points outside of plotting region should be bounded on the edge. Default is FALSE to clip points.
 #' @return a 2-columns matrix with "x" and "y" coordinates.
 #' @keywords internal
-coord_to_px=function (coord, coordmap, clipedge = FALSE) {
+coord_to_px=function (coord, coordmap, pntsonedge = FALSE) {
   if(missing(coordmap)) coordmap = get_coordmap_adjusted()
   ran_x = range(coordmap$domain$left, coordmap$domain$right)
   dx = coordmap$domain$right - coordmap$domain$left
@@ -459,7 +459,7 @@ coord_to_px=function (coord, coordmap, clipedge = FALSE) {
                             img_h_2 = ran_img_height[2],
                             ratio_x = coordmap$ratio$x,
                             ratio_y = coordmap$ratio$y,
-                            edge = clipedge))
+                            edge = pntsonedge))
   # return(cbind(x = ((coord$x - coordmap$domain$left)/dx * width + ran_img_width[1])     /coordmap$ratio$x,
   #              y = (ran_img_height[2] - (coord$y - coordmap$domain$bottom)/dy * height) /coordmap$ratio$y, 
   #              draw = (coord$x <= ran_x[2]) & (coord$x >= ran_x[1]) & 
@@ -728,9 +728,10 @@ plot_base=function(obj) {
 #' @name plot_raster
 #' @description Helper to convert `IFC_plot` to 'raster' plot.
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
-#' @param cliepdge whether to clip points outside of plotting region to the edge. Default is FALSE.
+#' @param pntsonedge whether points outside of plotting region should be bounded on the edge. Default is FALSE to clip points.
+#' NA can be used to produce hybrid display, with plot being drawn with `pntsonedge` = FALSE on top of plot with `pntsonedge` = TRUE.
 #' @keywords internal
-plot_raster=function(obj, clipedge = FALSE) {
+plot_raster=function(obj, pntsonedge = FALSE) {
   old_mar = par("mar")
   on.exit(par("mar" = old_mar), add = TRUE)
   old_colormode = par("bg","fg","col","col.axis","col.lab","col.main","col.sub")
@@ -786,46 +787,60 @@ plot_raster=function(obj, clipedge = FALSE) {
   }
   coords = obj$input$data[, c("x2","y2")]
   colnames(coords) = c("x","y")
-  data = sapply(rev(disp_n), simplify = FALSE, USE.NAMES = TRUE, FUN = function(p) {
-    if((obj$input$precision == "light") && (length(disp_n) > 1)) {
-      sub_ = obj$input$data[, p] & obj$input$subset & (set == p)
-    } else {
-      sub_ = obj$input$data[, p] & obj$input$subset
-    } 
-    if(sum(sub_) == 0) return(NULL)
-    if(obj$input$type == "scatter") {
-      size = 7
-      col = map_color(obj$input$displayed[[p]][c("color","lightModeColor")][[color_mode]])
-    } else {
-      size = 9
-      col = colorRampPalette(colConv(obj$input$base[[1]][c("densitycolorsdarkmode", "densitycolorslightmode")][[color_mode]]))(255)
+  is_hybrid = all(is.na(pntsonedge))
+  draw_fn <- function(pntsonedge = pntsonedge, bg = NULL) {
+    data = sapply(rev(disp_n), simplify = FALSE, USE.NAMES = TRUE, FUN = function(p) {
+      if((obj$input$precision == "light") && (length(disp_n) > 1)) {
+        sub_ = obj$input$data[, p] & obj$input$subset & (set == p)
+      } else {
+        sub_ = obj$input$data[, p] & obj$input$subset
+      } 
+      if(sum(sub_) == 0) return(NULL)
+      if(obj$input$type == "scatter") {
+        size = 7
+        col = map_color(obj$input$displayed[[p]][c("color","lightModeColor")][[color_mode]])
+      } else {
+        size = 9
+        col = colorRampPalette(colConv(obj$input$base[[1]][c("densitycolorsdarkmode", "densitycolorslightmode")][[color_mode]]))(255)
+      }
+      list(size = size,
+           pch = obj$input$displayed[[p]]$style,
+           col = rbind(col2rgb(col, alpha = FALSE), 255),
+           lwd = 1,
+           coords = coord_to_px(coord=coords[sub_,,drop=FALSE], coordmap=coordmap, pntsonedge=pntsonedge),
+           blur_size = 9,
+           blur_sd = 3)
+    })
+    data = data[sapply(data, length) != 0]
+    if(length(data) != 0) {
+      # call c part to produce image raster
+      dv_size = grDevices::dev.size("px")
+      img = cpp_raster(width = dv_size[1], height = dv_size[2], obj = data, bg_ = bg)
+      usr = par("usr")
+      # subset img to drawing region
+      lims = round(c(graphics::grconvertX(usr[1], "user", "ndc") * (dv_size[1]),
+                     graphics::grconvertX(usr[2], "user", "ndc") * (dv_size[1]),
+                     (1 - graphics::grconvertY(usr[3], "user", "ndc")) * (dv_size[2]),
+                     (1 - graphics::grconvertY(usr[4], "user", "ndc")) * (dv_size[2])))
+      if(is_hybrid && (FALSE %in% pntsonedge)) {
+        brd = seq(0,4)
+        for(i in brd) { k = lims[1] + i; if(k >= 1 && k <= dv_size[1]) img[ ,k , ] <- bg[ ,k , ] }
+        for(i in brd) { k = lims[2] - i; if(k >= 1 && k <= dv_size[1]) img[ ,k , ] <- bg[ ,k , ] }
+        for(i in brd) { k = lims[3] - i; if(k >= 1 && k <= dv_size[2]) img[k , , ] <- bg[k , , ] }
+        for(i in brd) { k = lims[4] + i; if(k >= 1 && k <= dv_size[2]) img[k , , ] <- bg[k , , ] }
+      }
+      # add image to plot, rasterImage is faster than grid.raster and allows to fit bg when it is resized
+      rasterImage(cpp_as_nativeRaster(img[lims[3]:lims[4], lims[1]:lims[2],]),
+                  xleft = usr[1], xright = usr[2], ybottom = usr[4], ytop = usr[3], interpolate = TRUE)
+      # return img
+      return(img)
     }
-    list(size = size,
-         pch = obj$input$displayed[[p]]$style,
-         col = rbind(col2rgb(col, alpha = FALSE), 255),
-         lwd = 1,
-         coords = coord_to_px(coord=coords[sub_,,drop=FALSE], coordmap=coordmap, clipedge=clipedge),
-         blur_size = 9,
-         blur_sd = 3)
-  })
-  data = data[sapply(data, length) != 0]
-  if(length(data) != 0) {
-    zoom = 1
-    # image is zoom fold more the size of the device and then raster size is zoom fold less, this should allow anti-aliasing
-    # however this could lead to much more longer computation times
-    # call c part to produce image raster
-    img = cpp_raster(width = zoom * grDevices::dev.size("px")[1], height = zoom * grDevices::dev.size("px")[2], data)
-    usr = par("usr")
-    dv_size = grDevices::dev.size("px")
-    # subset img to drawing region
-    lims = round(c(graphics::grconvertX(usr[1], "user", "ndc") * (dv_size[1]),
-                   graphics::grconvertX(usr[2], "user", "ndc") * (dv_size[1]),
-                   (1 - graphics::grconvertY(usr[3], "user", "ndc")) * (dv_size[2]),
-                   (1 - graphics::grconvertY(usr[4], "user", "ndc")) * (dv_size[2])))
-    # add image to plot
-    rasterImage(cpp_as_nativeRaster(img[lims[3]:lims[4], lims[1]:lims[2],]),
-                xleft = usr[1], xright = usr[2], ybottom = usr[4], ytop = usr[3], interpolate = TRUE)
-    # rasterImage is faster than grid.raster and allows to fit bg when it is resized
+  }
+  if(is_hybrid) {
+    img = draw_fn(TRUE, bg = NULL)
+    img = draw_fn(FALSE, bg = img)
+  } else {
+    img = draw_fn(pntsonedge)
   }
   # redraw regions
   for(reg in obj$input$regions) {
