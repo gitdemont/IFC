@@ -663,11 +663,11 @@ Rcpp::IntegerVector cpp_group_df(const Rcpp::DataFrame df) {
 //' @param x NumericVector of x-coordinates of the points.
 //' @param y NumericVector of y-coordinates of the points.
 //' @param param NumericVector of parameters to scale raw points coordinates to pixels coordinates.
-//' @return a 2 columns IntegerMatrix of x and y pixels coordinates.
+//' @return a 2 columns NumericMatrix of x and y pixels coordinates.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
-Rcpp::IntegerMatrix cpp_coord_to_px (const Rcpp::NumericVector x,
+Rcpp::NumericMatrix cpp_coord_to_px (const Rcpp::NumericVector x,
                                      const Rcpp::NumericVector y,
                                      const Rcpp::NumericVector param) {
   return hpp_coord_to_px(x, y, param);

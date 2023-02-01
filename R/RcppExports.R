@@ -404,7 +404,7 @@ NULL
 #' @param x NumericVector of x-coordinates of the points.
 #' @param y NumericVector of y-coordinates of the points.
 #' @param param NumericVector of parameters to scale raw points coordinates to pixels coordinates.
-#' @return a 2 columns IntegerMatrix of x and y pixels coordinates.
+#' @return a 2 columns NumericMatrix of x and y pixels coordinates.
 #' @keywords internal
 NULL
 

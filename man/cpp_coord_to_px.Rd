@@ -11,7 +11,7 @@
 \item{param}{NumericVector of parameters to scale raw points coordinates to pixels coordinates.}
 }
 \value{
-a 2 columns IntegerMatrix of x and y pixels coordinates.
+a 2 columns NumericMatrix of x and y pixels coordinates.
 }
 \description{
 low-level function to compute pixels coordinates

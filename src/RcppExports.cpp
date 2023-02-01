@@ -430,7 +430,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_coord_to_px
-Rcpp::IntegerMatrix cpp_coord_to_px(const Rcpp::NumericVector x, const Rcpp::NumericVector y, const Rcpp::NumericVector param);
+Rcpp::NumericMatrix cpp_coord_to_px(const Rcpp::NumericVector x, const Rcpp::NumericVector y, const Rcpp::NumericVector param);
 RcppExport SEXP _IFC_cpp_coord_to_px(SEXP xSEXP, SEXP ySEXP, SEXP paramSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

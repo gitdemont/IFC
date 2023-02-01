@@ -31,6 +31,7 @@
 #ifndef IFC_PLOT_HPP
 #define IFC_PLOT_HPP
 
+#include <cmath>
 #include <Rcpp.h>
 #include "utils.hpp"
 using namespace Rcpp;
@@ -211,7 +212,7 @@ Rcpp::LogicalMatrix hpp_triangle_filled(const R_len_t size = 3, const R_len_t lw
   Rcpp::LogicalMatrix out = hpp_triangle(size);
   for(R_len_t i_col = 0; i_col < size; i_col++) {
     Rcpp::LogicalVector V = out(Rcpp::_,i_col);
-    R_len_t beg = size, end = 0;
+    R_len_t beg = size - 1, end = 0;
     for(R_len_t i_row = 0; i_row < size; i_row++) {
       if(V[i_row]) {
         beg = i_row;
@@ -298,20 +299,19 @@ Rcpp::LogicalMatrix hpp_diamond_filled(const R_len_t size = 3, const R_len_t lwd
   if(size <= 1) return hpp_square_filled(1);
   Rcpp::LogicalMatrix out(size, size);
   double half = size >> 1;
-  R_len_t i = 0;
   if(size % 2) {
-    for(R_len_t i_col = -half; i_col <= half; i_col++) {
-      for(R_len_t i_row = -half; i_row <= half; i_row++) {
-        out[i++] = (abs(i_col) + abs(i_row)) <= half;
+    for(R_len_t i_col = -half, i = 0; i_col <= half; i_col++) {
+      for(R_len_t i_row = -half; i_row <= half; i_row++, i++) {
+        out[i] = (abs(i_col) + abs(i_row)) <= half;
       }
     }
     
   } else {
-    for(R_len_t i_col = -half; i_col <= half; i_col++) {
+    for(R_len_t i_col = -half, i = 0; i_col <= half; i_col++) {
       if(i_col == 0) i_col++;
-      for(R_len_t i_row = -half; i_row <= half; i_row++) {
+      for(R_len_t i_row = -half; i_row <= half; i_row++, i++) {
         if(i_row == 0) i_row++;
-        out[i++] = (abs(i_col) + abs(i_row)) <= half;
+        out[i] = (abs(i_col) + abs(i_row)) <= half;
       }
     }
   }
@@ -326,22 +326,21 @@ Rcpp::LogicalMatrix hpp_diamond(const R_len_t size = 3, const R_len_t lwd = 0) {
   Rcpp::LogicalMatrix out(size, size);
   double half = size >> 1;
   double half_1 = half - 1;
-  R_len_t i = 0;
   if(size % 2) {
-    for(R_len_t i_col = -half; i_col <= half; i_col++) {
-      for(R_len_t i_row = -half; i_row <= half; i_row++) {
+    for(R_len_t i_col = -half, i = 0; i_col <= half; i_col++) {
+      for(R_len_t i_row = -half; i_row <= half; i_row++, i++) {
         double bar = (abs(i_col) + abs(i_row));
-        out[i++] = (bar <= half) && (bar > half_1);
+        out[i] = (bar <= half) && (bar > half_1);
       }
     }
     
   } else {
-    for(R_len_t i_col = -half; i_col <= half; i_col++) {
+    for(R_len_t i_col = -half, i = 0; i_col <= half; i_col++) {
       if(i_col == 0) i_col++;
-      for(R_len_t i_row = -half; i_row <= half; i_row++) {
+      for(R_len_t i_row = -half; i_row <= half; i_row++, i++) {
         if(i_row == 0) i_row++;
         double bar = (abs(i_col) + abs(i_row));
-        out[i++] = (bar <= half) && (bar > half_1);
+        out[i] = (bar <= half) && (bar > half_1);
       }
     }
   }
@@ -378,8 +377,10 @@ Rcpp::LogicalMatrix hpp_cross(const R_len_t size = 3, const R_len_t lwd = 0) {
 ////' @export
 // [[Rcpp::export(rng = false)]]
 Rcpp::LogicalMatrix hpp_shape_rev(const Rcpp::LogicalMatrix M) {
-  Rcpp::LogicalMatrix out = Rcpp::no_init(M.nrow(), M.ncol());
-  for(R_len_t i = 0; i < M.size(); i++) out[i] = M[M.size() - 1 - i];
+  Rcpp::LogicalMatrix out(M.nrow(), M.ncol());
+  for(R_len_t i = 0; i < M.size(); i++) {
+    out[i] = M[M.size() - 1 - i];
+  }
   return out;
 }
 
@@ -390,7 +391,9 @@ Rcpp::LogicalMatrix hpp_shape_combine(const Rcpp::LogicalMatrix M1,
                                       const Rcpp::LogicalMatrix M2) {
   Rcpp::LogicalMatrix out;
   Rcpp::LogicalMatrix foo;
-  R_len_t pad = std::abs(M1.ncol() - M2.ncol()) >> 1;
+  R_len_t pad = std::abs(M1.ncol() - M2.ncol());
+  R_len_t pad_k = pad >> 1;
+  R_len_t pad_k_1 = pad_k + (pad % 2);
   if(M1.ncol() > M2.ncol()) {
     out = Rcpp::clone(M1);
     foo = Rcpp::clone(M2);
@@ -398,8 +401,8 @@ Rcpp::LogicalMatrix hpp_shape_combine(const Rcpp::LogicalMatrix M1,
     out = Rcpp::clone(M2);
     foo = Rcpp::clone(M1);
   }
-  for(R_len_t i = 0, i_col = pad; i_col < out.ncol() - pad; i_col++) {
-    for(R_len_t i_row = pad; i_row < out.nrow() - pad; i_row++, i++) {
+  for(R_len_t i = 0, i_col = pad_k; i_col < out.ncol() - pad_k_1; i_col++) {
+    for(R_len_t i_row = pad_k; i_row < out.nrow() - pad_k_1; i_row++, i++) {
       out(i_row, i_col) = out(i_row, i_col) || foo[i];
     }
   }
@@ -407,6 +410,7 @@ Rcpp::LogicalMatrix hpp_shape_combine(const Rcpp::LogicalMatrix M1,
 }
 
 // create gausian kernel for blurring
+// [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix hpp_gaussian(const R_len_t size = 3,
                                  const double sigma = 3.0) {
   if((size <= 0) || (size >= 35)) Rcpp::stop("hpp_gaussian: 'size' argument is not possible for blurring");
@@ -416,7 +420,7 @@ Rcpp::NumericMatrix hpp_gaussian(const R_len_t size = 3,
   for(R_len_t i_col = 0; i_col < size; i_col++) {
     double foo = i_col - half;
     for(R_len_t i_row = 0; i_row < size; i_row++) {
-      out(i_row, i_col) = std::exp(-std::sqrt(foo * foo + pow(i_row - half, 2.0))/(2*std::pow(sigma, 2.0))) / d;
+      out(i_row, i_col) = std::exp(-std::sqrt(foo * foo + std::pow(i_row - half, 2.0))/(2*std::pow(sigma, 2.0))) / d;
     }
   }
   return out;
@@ -438,7 +442,6 @@ Rcpp::IntegerVector get_dim(Rcpp::IntegerVector img) {
     Rcpp::stop("'img' should be a 3D array");
   }
 }
-
 
 //' @title Image to Native Raster Conversion
 //' @name cpp_as_nativeRaster
@@ -473,53 +476,57 @@ Rcpp::IntegerMatrix hpp_as_nativeRaster(const Rcpp::IntegerVector x) {
 //' @param x NumericVector of x-coordinates of the points.
 //' @param y NumericVector of y-coordinates of the points.
 //' @param param NumericVector of parameters to scale raw points coordinates to pixels coordinates.
-//' @return a 2 columns IntegerMatrix of x and y pixels coordinates.
+//' @return a 2 columns NumericMatrix of x and y pixels coordinates.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
-Rcpp::IntegerMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
+Rcpp::NumericMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
                                     const Rcpp::NumericVector y,
                                     const Rcpp::NumericVector param) {
   if(x.size() != y.size()) Rcpp::stop("cpp_coord_to_px: 'x' and 'y' should be of same size");
   if(param.size() != 13) Rcpp::stop("cpp_coord_to_px: 'param' is not valid");
-  Rcpp::IntegerMatrix out = Rcpp::no_init(x.size(), 2);
-  if(param[12]) {
+  Rcpp::NumericMatrix out = Rcpp::no_init_matrix(x.size(), 2);
+  Rcpp::NumericVector p = Rcpp::clone(param);
+  if(p[12]) {
     for(R_len_t i = 0; i < x.size(); i++) {
       double v;
-      if(x[i] < param[0]) {
-        v = param[0];
+      if(x[i] < p[0]) {
+        v = p[0];
       } else {
-        if(x[i] > param[1]) {
-          v = param[1];
+        if(x[i] > p[1]) {
+          v = p[1];
         } else {
           v = x[i];
         }
       }
-      out(i, 0) = ((v - param[6]) * param[4] + param[8]) / param[10];
-      if(y[i] < param[2]) {
-        v = param[2];
+      out(i, 0) = ((v - p[6]) * p[4] + p[8]) / p[10];
+      if(y[i] < p[2]) {
+        v = p[2];
       } else {
-        if(y[i] > param[3]) {
-          v = param[3];
+        if(y[i] > p[3]) {
+          v = p[3];
         } else {
           v = y[i];
         }
       }
-      out(i, 1) = (param[9] - (v - param[7]) * param[5]) / param[11];
+      out(i, 1) = (p[9] - (v - p[7]) * p[5]) / p[11];
     }
     return out;
   } else {
     R_len_t n = 0;
     for(R_len_t i = 0; i < x.size(); i++) {
-      if((x[i] >= param[0]) && (x[i] <= param[1]) && (y[i] >= param[2]) && (y[i] <= param[3])) {
-        out(n, 0) = ((x[i] - param[6]) * param[4] + param[8]) / param[10];
-        out(n, 1) = (param[9] - (y[i] - param[7]) * param[5]) / param[11];
+      if((x[i] >= p[0]) && (x[i] <= p[1]) && (y[i] >= p[2]) && (y[i] <= p[3])) {
+        out(n, 0) = ((x[i] - p[6]) * p[4] + p[8]) / p[10];
+        out(n, 1) = (p[9] - (y[i] - p[7]) * p[5]) / p[11];
         n++;
       }
     }
-    if(n >= 1) return out(Rcpp::Range(0, n - 1), Rcpp::_);
-    Rcpp::IntegerMatrix empty(0, 2);
-    return empty;
+    Rcpp::NumericMatrix sub = Rcpp::no_init_matrix(n, 2);
+    for(R_len_t i = 0; i < n; i++) {
+      sub(i, 0) = out(i, 0);
+      sub(i, 1) = out(i, 1);
+    }
+    return sub;
   }
 }
 
@@ -559,12 +566,12 @@ void hpp_draw(Rcpp::IntegerVector img,
   R_len_t col_c = color.ncol();
   if(col_r != 4) Rcpp::stop("hpp_draw: bad 'color' specification");
   for(R_len_t i = 0; i < color.size(); i++) if((color[i] < 0) || (color[i] > 255)) Rcpp::stop("hpp_draw: bad 'color' specification, out-of-range [0-255]");
-  Rcpp::IntegerVector V = get_dim(img);
-  R_len_t width  = V[1];
-  R_len_t height = V[0];
-  Rcpp::LogicalMatrix Z = Rcpp::no_init(height, width); // matrix to record points already drawn so as to skip drawing another point at same xy location
-  Z.fill(true);
+  Rcpp::IntegerVector V = Rcpp::clone(get_dim(img));
+  R_len_t W = V[1];
+  R_len_t H = V[0];
   unsigned short count = 1;
+  Rcpp::LogicalMatrix Z = Rcpp::no_init_matrix(H, W); // matrix to record points already drawn so as to skip drawing another point at same xy location
+  Z.fill(true);
   if(color.size() == 4) { // only one-color points
     for(R_len_t i_pt = 0; i_pt < coords.nrow(); i_pt++) {
       if((count++ % 10000) == 0) {
@@ -573,14 +580,14 @@ void hpp_draw(Rcpp::IntegerVector img,
       }
       R_len_t i_row = coords(i_pt, 1);
       R_len_t i_col = coords(i_pt, 0);
-      if((i_col < 0) || (i_row < 0) || (i_col >= width) || (i_row >= height)) continue;
+      if((i_col < 0) || (i_row < 0) || (i_col >= W) || (i_row >= H)) continue;
       if(Z(i_row, i_col)) {
         Z(i_row, i_col) = false; // no need to draw same point at same xy location
         for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
           for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
-            if(mask[i_msk] && (f_col >= 0) && (f_row >= 0) && (f_col < width) && (f_row < height)) {
+            if(mask[i_msk] && (f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
               for(R_len_t i_k = 0; i_k < 4; i_k++) {
-                img[i_k * height * width + f_col * height + f_row] = color[i_k];
+                img[i_k * H * W + f_col * H + f_row] = color[i_k];
               }
             }
           }
@@ -596,14 +603,14 @@ void hpp_draw(Rcpp::IntegerVector img,
         }
         R_len_t i_row = coords(i_pt, 1);
         R_len_t i_col = coords(i_pt, 0);
-        if((i_col < 0) || (i_row < 0) || (i_col >= width) || (i_row >= height)) continue;
+        if((i_col < 0) || (i_row < 0) || (i_col >= W) || (i_row >= H)) continue;
         if(Z(i_row, i_col)) {
           Z(i_row, i_col) = false; // no need to draw same point at same xy location
           for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
             for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
-              if(mask[i_msk] && (f_col >= 0) && (f_row >= 0) && (f_col < width) && (f_row < height)) {
+              if(mask[i_msk] && (f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
                 for(R_len_t i_k = 0; i_k < 4; i_k++) {
-                  img[i_k * height * width + f_col * height + f_row] = color[i_k + 4 * i_pt];
+                  img[i_k * H * W + f_col * H + f_row] = color[i_k + 4 * i_pt];
                 }
               }
             }
@@ -611,15 +618,16 @@ void hpp_draw(Rcpp::IntegerVector img,
         }
       }
     } else { // colors are provided as a gradient, we compute density
-      Rcpp::IntegerMatrix grd(height, width);
-      Rcpp::NumericMatrix den(height, width);
+      double den_mx = 0.0;
       Rcpp::NumericMatrix blur = hpp_gaussian(blur_size, blur_sd);
+      Rcpp::IntegerMatrix grd = Rcpp::no_init_matrix(H, W);
+      Rcpp::NumericMatrix den = Rcpp::no_init_matrix(H, W);
+      den.fill(den_mx);
       R_len_t blr_c = blur.ncol() >> 1;
       R_len_t blr_r = blur.nrow() >> 1;
       R_len_t blr_c_1 = blr_c + (blur.ncol() % 2);
       R_len_t blr_r_1 = blr_r + (blur.nrow() % 2);
-      double den_mx = 0;
-      double ash = std::asinh(1);
+      double Q = (col_c - 0.001) / 0.8813736;
       for(R_len_t i_pt = 0; i_pt < coords.nrow(); i_pt++) {
         if((count++ % 10000) == 0) {
           count = 1;
@@ -627,16 +635,16 @@ void hpp_draw(Rcpp::IntegerVector img,
         }
         R_len_t i_row = coords(i_pt, 1);
         R_len_t i_col = coords(i_pt, 0);
-        for(R_len_t f_col = i_col - blr_c, i_blr = 0; f_col <= i_col + blr_c_1; f_col++) {
-          for(R_len_t f_row = i_row - blr_r; f_row <= i_row + blr_r_1; f_row++, i_blr++) {
-            if((f_col >= 0) && (f_row >= 0) && (f_col < width) && (f_row < height)) {
+        for(R_len_t f_col = i_col - blr_c, i_blr = 0; f_col < i_col + blr_c_1; f_col++) {
+          for(R_len_t f_row = i_row - blr_r; f_row < i_row + blr_r_1; f_row++, i_blr++) {
+            if((f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
               den(f_row, f_col) = den(f_row, f_col) + blur[i_blr];
               if(den(f_row, f_col) > den_mx) den_mx = den(f_row, f_col);
             }
           }
         }
       }
-      for(R_len_t i = 0; i < grd.size(); i++) grd[i] = (col_c - 0.001) * std::asinh(den[i] / den_mx) / ash;
+      for(R_len_t i = 0; i < grd.size(); i++) grd[i] = Q * std::asinh(den[i] / den_mx);
       if(mask.size() == 1) {
         for(R_len_t i_pt = 0; i_pt < coords.nrow(); i_pt++) {
           if((count++ % 10000) == 0) {
@@ -645,11 +653,11 @@ void hpp_draw(Rcpp::IntegerVector img,
           }
           R_len_t i_row = coords(i_pt, 1);
           R_len_t i_col = coords(i_pt, 0);
-          if((i_col < 0) || (i_row < 0) || (i_col >= width) || (i_row >= height)) continue; 
+          if((i_col < 0) || (i_row < 0) || (i_col >= W) || (i_row >= H)) continue; 
           if(Z(i_row, i_col)) {
             Z(i_row, i_col) = false;
             for(R_len_t i_k = 0; i_k < 4; i_k++) {
-              img[i_k * height * width + i_col * height + i_row] = color(i_k,grd(i_row, i_col));
+              img[i_k * H * W + i_col * H + i_row] = color(i_k, grd(i_row, i_col));
             }
           }
         }
@@ -661,22 +669,22 @@ void hpp_draw(Rcpp::IntegerVector img,
           }
           R_len_t i_row = coords(i_pt, 1);
           R_len_t i_col = coords(i_pt, 0);
-          if((i_col < 0) || (i_row < 0) || (i_col >= width) || (i_row >= height)) continue;
+          if((i_col < 0) || (i_row < 0) || (i_col >= W) || (i_row >= H)) continue;
           if(Z(i_row, i_col)) {
             Z(i_row, i_col) = false;
             R_len_t v = 0;
             for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
               for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
-                if(mask[i_msk] && (f_col >= 0) && (f_row >= 0) && (f_col < width) && (f_row < height)) {
+                if(mask[i_msk] && (f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
                   if(grd(f_row, f_col) > v) v = grd(f_row, f_col);
                 }
               }
             }
             for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
               for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
-                if(mask[i_msk] && (f_col >= 0) && (f_row >= 0) && (f_col < width) && (f_row < height)) {
+                if(mask[i_msk] && (f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
                   for(R_len_t i_k = 0; i_k < 4; i_k++) {
-                    img[i_k * height * width + f_col * height + f_row] = color(i_k, v);
+                    img[i_k * H * W + f_col * H + f_row] = color(i_k, v);
                   }
                 }
               }
@@ -722,7 +730,7 @@ Rcpp::IntegerVector hpp_raster(const uint16_t width,
   Rcpp::IntegerVector img(width * height * 4);
   if(iNotisNULL(bg_)) {
     Rcpp::IntegerVector bg(bg_.get());
-    Rcpp::IntegerVector V = get_dim(bg);
+    Rcpp::IntegerVector V = Rcpp::clone(get_dim(bg));
     if(!((V[0] == height) && (V[1] == width))) Rcpp::stop("hpp_raster: when provided 'bg' should be of same dimension as current raster");
     img = Rcpp::clone(bg);
   }
@@ -734,8 +742,6 @@ Rcpp::IntegerVector hpp_raster(const uint16_t width,
     if(size >= 50) Rcpp::stop("hpp_raster: 'size' argument is not possible with this shape");
     R_len_t lwd = L["lwd"];
     if(lwd >= 50) Rcpp::stop("hpp_raster: 'lwd' argument is not possible with this shape");
-    Rcpp::IntegerMatrix color = L["col"];
-    Rcpp::IntegerMatrix coords = L["coords"];
     Rcpp::LogicalMatrix mask;
     switch(pch) {
     case 0 :
@@ -821,7 +827,7 @@ Rcpp::IntegerVector hpp_raster(const uint16_t width,
       mask = hpp_square_filled(1);
     break;
     }
-    hpp_draw(img, coords, mask, color, L["blur_size"], L["blur_sd"]);
+    hpp_draw(img, L["coords"], mask, L["col"], L["blur_size"], L["blur_sd"]);
   }
   return img;
 }

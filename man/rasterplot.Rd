@@ -84,33 +84,33 @@ an [0, 255] integer array of (height, width, 4) of class `rasterplot`
 Creates fast 2D plots with Rcpp
 }
 \details{
-some examples:
-set.seed(2)
-n_points = 1e7; n_clusters = 5
-x = c(t(sapply(1:5, FUN = function(i) rnorm(n_points / n_clusters, mean = sample(-2:2, size = 1), sd = 1/sample(1:10, 1)))))
-y = c(t(sapply(1:5, FUN = function(i) rnorm(n_points / n_clusters, mean = sample(-2:2, size = 1), sd = 1/sample(1:10, 1)))))
-# plot points
-rasterplot(x = x, y = y, col = "black")
-# generate img
-rasterplot(x = x, y = y, col = "black", draw = FALSE)
-# plot multiple shapes
-rasterplot(x = x, y = y, pch = c(3,5,9,10,2))
-# plot multiple shapes + colors
-bg_ = rasterplot(x = x, y = y, pch = c(3,5,9,10,2), col = c("plum", "green", "indianred", "blue", "black"))
-# addition of new points to an already drawn background, it a kind of points(...)
-rasterplot(x = x[1:1e5], y = y[1:1e5], col = "black", bg_ = bg_, bg_map = TRUE)
-# plot 1 shape  + multiple colors
-rasterplot(x = x, y = y, pch = ".", col = c("plum", "green", "indianred", "blue", "black"), force = TRUE)
-# density
-rasterplot(x = x, y = y, pch = 20, size = 7, draw = TRUE, col = colorRampPalette(c("blue", "green", "red"))(100))
-# density with limits
-rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), pntsonedge = FALSE, col = colorRampPalette(c("blue", "green", "red"))(100))
-# density with limits + computation on drawn points only
-rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), pntsonedge = TRUE, col = colorRampPalette(c("blue", "green", "red"))(100))
-# using rgba
-col = c("plum", "green", "indianred", "blue", "black")
-rgba = col2rgb(col, alpha = TRUE)
-rgba = t(apply(rgba, 1, FUN = function(x) rep(x, length.out = n_points)))
+some examples:\cr
+set.seed(2)\cr
+n_points = 1e7; n_clusters = 5\cr
+x = c(t(sapply(1:5, FUN = function(i) rnorm(n_points / n_clusters, mean = sample(-2:2, size = 1), sd = 1/sample(1:10, 1)))))\cr
+y = c(t(sapply(1:5, FUN = function(i) rnorm(n_points / n_clusters, mean = sample(-2:2, size = 1), sd = 1/sample(1:10, 1)))))\cr
+# plot points\cr
+rasterplot(x = x, y = y, col = "black")\cr
+# generate img\cr
+rasterplot(x = x, y = y, col = "black", draw = FALSE)\cr
+# plot multiple shapes\cr
+rasterplot(x = x, y = y, pch = c(3,5,9,10,2))\cr
+# plot multiple shapes + colors\cr
+bg_ = rasterplot(x = x, y = y, pch = c(3,5,9,10,2), col = c("plum", "green", "indianred", "blue", "black"))\cr
+# addition of new points to an already drawn background, it a kind of points(...)\cr
+rasterplot(x = x[1:1e5], y = y[1:1e5], col = "black", bg_ = bg_, bg_map = TRUE)\cr
+# plot 1 shape  + multiple colors\cr
+rasterplot(x = x, y = y, pch = ".", col = c("plum", "green", "indianred", "blue", "black"), force = TRUE)\cr
+# density\cr
+rasterplot(x = x, y = y, pch = 20, size = 7, draw = TRUE, col = colorRampPalette(c("blue", "green", "red"))(100))\cr
+# density with limits\cr
+rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), pntsonedge = FALSE, col = colorRampPalette(c("blue", "green", "red"))(100))\cr
+# density with limits + computation on drawn points only\cr
+rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), pntsonedge = TRUE, col = colorRampPalette(c("blue", "green", "red"))(100))\cr
+# using rgba\cr
+col = c("plum", "green", "indianred", "blue", "black")\cr
+rgba = col2rgb(col, alpha = TRUE)\cr
+rgba = t(apply(rgba, 1, FUN = function(x) rep(x, length.out = n_points)))\cr
 rasterplot(x = x, y = y, pch = ".", rgba = rgba, draw = TRUE)
 }
 \keyword{internal}

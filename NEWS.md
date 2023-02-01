@@ -3,11 +3,24 @@
 
 work on plot:
 
+- detect if device has been modified during plotting (raster)
+
+- pass returned value of **hpp_coord_to_px** from IntegerMatrix to NumericMatrix (in order to allow comparison with graphics::grconvertX and graphics::grconvertY) (raster)
+
+- fix some off-by-one in points pixel coords (raster)
+
+- fix out-of-range indexing in **hpp_raster**, **hpp_shape_rev**, **hpp_shape_combine** (raster)
+
+- compute density colors on points inside xlim and ylim only (base and lattice)
+
+- enhance axis tick labels position (base and raster)
+
+- restrict plotting region to xlim and ylim with par("xaxs") and par("yaxs") (base and raster)
+
 - fix typo in **hpp_coord_to_px** that caused x values to be bounded to max y limit instead of max x limit
 
 - drop density estimation for density plots in **plot_raster** and only use raster drawing logic for colorization
 
-- add new "raster-edge" `backend` to **plotGraph** to allow points outside of graph limits to be shown on the edge(s)
 
 work on FCS: 
 

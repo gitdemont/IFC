@@ -10,8 +10,9 @@ derived from \pkg{grDevices} R Core Team, Florian Hahne at FHCRC, originally
 densCols(
   x,
   y = NULL,
+  xlim = range(x, na.rm = TRUE, finite = TRUE),
+  ylim = range(y, na.rm = TRUE, finite = TRUE),
   nbin = 128,
-  bandwidth,
   colramp = colorRampPalette(c("blue", "green", "red")),
   transformation = "asinh"
 )
