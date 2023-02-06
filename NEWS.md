@@ -1,7 +1,10 @@
-## 0.1.9
-- CRAN submission
-
 # NEWS
+## 0.1.9.xxx
+- citEntry and personList are considered as old-style and should not be used anymore
+
+## 0.1.9
+- CRAN submission (Rejected)
+
 ## 0.1.8.xxx
 
 work on plot:

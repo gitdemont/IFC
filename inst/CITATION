@@ -1,16 +1,16 @@
 citHeader("To cite 'IFC' in publications, please use:")
 
 
-citEntry(entry = "manual",
+bibentry(bibtype = "Manual",
          title = "{IFC}: {A}n {R} {P}ackage for {I}maging {F}low {C}ytometry",
-         author = personList(person(given="Yohann", family="Demont"),
-                             person(given="Gautier", family="Stoll"),
-                             person(given="Guido", family="Kroemer"),
-                             person(given="Jean-Pierre", family="Marolleau"),
-                             person(given="Loïc", family = "Garçon")),
+         author = c(person(given="Yohann", family="Demont"),
+                    person(given="Gautier", family="Stoll"),
+                    person(given="Guido", family="Kroemer"),
+                    person(given="Jean-Pierre", family="Marolleau"),
+                    person(given="Loïc", family = "Garçon")),
 organization = "INSERM, UPD, CHU Amiens",
 address = "Amiens, France",
-note = "version 0.1.9",
+note = "version 0.1.9.9000",
 year = "2023",
 url = "https://github.com/gitdemont/IFC",
 textVersion = paste("Demont Y., Stoll G., Kroemer G., Marolleau JP., Garçon L. (2023).",
