@@ -1,3 +1,6 @@
+## 0.1.9
+- CRAN submission
+
 # NEWS
 ## 0.1.8.xxx
 
