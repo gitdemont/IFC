@@ -1,4 +1,7 @@
 # NEWS
+## 0.2.0
+- CRAN submission
+
 ## 0.1.9.xxx
 - citEntry and personList are considered as old-style and should not be used anymore
 
