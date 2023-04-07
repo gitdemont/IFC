@@ -237,6 +237,7 @@ base_axis_constr=function(lim, trans = "P", nint = 10) {
     neg_log_ticks = 0
     pos_log_ticks = 0
     # compute range without expansion in original scale
+    if(diff(lim) == 0) lim = c(-1,1)
     ran = diff(lim) / 1.14 * c(0.07, -0.07) + lim
     ran = applyTrans(ran, trans_, inverse = TRUE)
     n_ticks = max(ran[1], -hyper)
@@ -248,8 +249,9 @@ base_axis_constr=function(lim, trans = "P", nint = 10) {
     if(ran_[1] < 0) neg_log_ticks = floor(ran_[1])
     if(ran_[2] > 0) pos_log_ticks = ceiling(ran_[2])
     tot = pos_log_ticks - neg_log_ticks + 
-      ifelse((neg_log_ticks < 0) && (n_ticks >= -hyper), 0.5, 0) + 
-      ifelse((pos_log_ticks > 0) && (p_ticks <= hyper), 0.5, 0)
+      ifelse((neg_log_ticks <= 0) && (n_ticks >= -hyper), 0.5, 0) + 
+      ifelse((pos_log_ticks >= 0) && (p_ticks <= hyper), 0.5, 0)
+    if(tot <= 0) tot = 1
     # create ticks and labels
     ticks_at = c()
     ticks_lab = c()
