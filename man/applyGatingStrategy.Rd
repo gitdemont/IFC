@@ -18,7 +18,7 @@ applyGatingStrategy(
 
 \item{gating}{an `IFC_gating` object extracted by \code{\link{readGatingStrategy}}.}
 
-\item{keep}{names of population(s) present in 'obj' that should not be overwritten using 'gating'.}
+\item{keep}{names of population(s) that should not be overwritten using 'gating'.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 

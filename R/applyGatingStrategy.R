@@ -37,7 +37,7 @@
 #' Applies Gating Strategy to an `IFC_data` object
 #' @param obj an `IFC_data` object extracted with features extracted.
 #' @param gating an `IFC_gating` object extracted by \code{\link{readGatingStrategy}}.
-#' @param keep names of population(s) present in 'obj' that should not be overwritten using 'gating'.
+#' @param keep names of population(s) that should not be overwritten using 'gating'.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param ... other arguments to be passed.
@@ -91,16 +91,18 @@ applyGatingStrategy = function(obj, gating, keep, display_progress = TRUE, verbo
       ans$pops = obj$pops["All"]
     }
     names(ans$pops) = sapply(ans$pops, FUN = function(p) p$name)
+    ans$pops = popsGetAffiliation(ans$pops)
     
+    tmpk = rep(TRUE, length(keep))
     if(length(keep) != 0) {
-      tmp = keep %in% names(obj$pops)
-      if(!all(tmp)) {
+      tmpk = keep %in% names(obj$pops)
+      if(!all(tmpk)) {
         warning("population(s) listed in 'keep' can't be found in 'obj':\n\t-",
-                paste0(keep[!tmp], collapse="\n\t-"), call. = FALSE, immediate. = TRUE)
-        keep = keep[tmp]
+                paste0(keep[!tmpk], collapse="\n\t-"), call. = FALSE, immediate. = TRUE)
       }
     }
-    ans$pops = ans$pops[!(names(ans$pops) %in% setdiff(keep, c("All", "")))]
+    to_remove_pops = suppressWarnings(data_rm_pops(ans, pops = setdiff(keep[!tmpk], c("All", "")), list_only = TRUE, adjust_graph = TRUE))$pops
+    ans$pops = ans$pops[!(names(ans$pops) %in% setdiff(c(keep[tmpk], to_remove_pops), c("All", "")))]
     
     tmp1 = NULL
     tmp2 = NULL
@@ -144,7 +146,7 @@ applyGatingStrategy = function(obj, gating, keep, display_progress = TRUE, verbo
     
     ##### uses pops from obj that are listed in keep
     if(length(keep) != 0) {
-      ans$pops <- c(ans$pops, obj$pops[keep])
+      ans$pops <- c(ans$pops, obj$pops[keep[tmpk]])
     }
     class(ans$pops) <- "IFC_pops"
     
