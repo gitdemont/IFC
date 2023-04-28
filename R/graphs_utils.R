@@ -477,6 +477,8 @@ coord_to_px=function (coord, coordmap, pntsonedge = FALSE) {
 plot_base=function(obj) {
   old_mar = par("mar")
   on.exit(par("mar" = old_mar))
+  old_ask = par("ask" = FALSE)
+  on.exit(par(old_ask), add = TRUE)
   old_axs = par("xaxs","yaxs")
   on.exit(par(old_axs), add = TRUE)
   par(xaxs = "i", yaxs = "i")
@@ -744,6 +746,8 @@ plot_base=function(obj) {
 plot_raster=function(obj, pntsonedge = FALSE) {
   old_mar = par("mar")
   on.exit(par("mar" = old_mar))
+  old_ask = par("ask" = FALSE)
+  on.exit(par(old_ask), add = TRUE)
   old_axs = par("xaxs","yaxs")
   on.exit(par(old_axs), add = TRUE)
   par(xaxs = "i", yaxs = "i")
@@ -922,6 +926,8 @@ plot_raster=function(obj, pntsonedge = FALSE) {
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
 #' @keywords internal
 plot_lattice=function(obj) {
+  old_ask = par("ask" = FALSE)
+  on.exit(par(old_ask), add = TRUE)
   # check obj is `IFC_plot`
   assert(obj, cla = "IFC_plot")
   

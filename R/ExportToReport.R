@@ -237,10 +237,14 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
                               trunc_labels=38, trans="asinh", bin, viewport="ideas", backend="lattice",             # parameters to pass to plotGraph
                               display_progress=TRUE, ...) {
   dots = list(...)
+  
+  # backup dev.list
   dv = dev.list()
-  on.exit(while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
-    dev.off(which = rev(dev.list())[1])
-  })
+  on.exit(suspendInterrupts({
+    while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
+      dev.off(which = rev(dev.list())[1])
+    }
+  }), add = TRUE)
   
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
@@ -273,7 +277,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
     do_stats = FALSE
   }
   dots$stats_print = FALSE
-  plotGraph_args = c(dots, list(obj=obj, color_mode=color_mode, add_key=add_key,
+  plotGraph_args = c(dots, list(obj=quote(obj), color_mode=color_mode, add_key=add_key,
                      precision=precision, trunc_labels=trunc_labels, viewport=viewport))
   if(length(bin) != 0) plotGraph_args = c(plotGraph_args, list(bin=bin))
   if(!missing(trans)) plotGraph_args = c(plotGraph_args, list(trans=trans))
@@ -347,11 +351,18 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
                        #                               device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
                        # "raster-edge" = grid.grabExpr(grid.echo({plot_raster(g, TRUE); recordPlot()}, device = default_offscreen),
                        #                        device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
-                       raster = grid.grabExpr(grid.echo({plot_raster(g, FALSE); recordPlot()}, device = default_offscreen),
-                                              device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
-                       base = grid.grabExpr(grid.echo(plot_base(g), device = default_offscreen), 
-                                            device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
-                       grob(p = plot_lattice(g), vp = viewport(x=0.5, y=unit(0.5,"npc")), cl = "lattice"))
+                       raster = {
+                         grid.grabExpr(grid.echo({plot_raster(g, FALSE); recordPlot()}, device = default_offscreen),
+                                           device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5)
+                       },
+                       base = {
+                         grid.grabExpr(grid.echo(plot_base(g), device = default_offscreen), 
+                                           device = default_offscreen,
+                                           width = 3*2.54-1.5, height = 3*2.54-0.5)
+                       },
+                       {
+                         grob(p = plot_lattice(g), vp = viewport(x=0.5, y=unit(0.5,"npc")), cl = "lattice")
+                       })
           foo$children$`graphics-background`$width = unit(1,"npc")
           foo$children$`graphics-background`$height = unit(1,"npc")
         }
@@ -452,7 +463,14 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
                           trunc_labels=38, trans="asinh", bin, viewport="ideas", backend="lattice",             # parameters to pass to plotGraph
                           display_progress=TRUE, ...) {
   dots = list(...)
+  
+  # backup dev.list
   dv = dev.list()
+  on.exit(suspendInterrupts({
+    while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
+      dev.off(which = rev(dev.list())[1])
+    }
+  }), add = TRUE)
   
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
@@ -522,11 +540,6 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
   }, error = function(e) {
     message(paste0(ifelse(length(write_to)==2, "files have", "file has"), " been incompletely ", ifelse(overwritten, "overwritten", "exported"), "\n"))
     stop(e$message, call. = FALSE)
-  },
-  finally = {
-    while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
-      dev.off(which = rev(dev.list())[1])
-    }
   })
 }
 
@@ -547,7 +560,7 @@ DisplayReport = function(obj, display_progress = TRUE, ...) {
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
   display_progress = as.logical(display_progress); assert(display_progress, len=1, alw=c(TRUE,FALSE))
   
-  dots$obj <- obj
+  dots$obj <- quote(obj)
   dots$display_progress <- display_progress
   title_progress = basename(as.character(obj$fileName))
   
@@ -623,6 +636,14 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
   dots = list(...)
   create_pdf = FALSE
   create_csv = FALSE
+  
+  # backup dev.list
+  dv = dev.list()
+  on.exit(suspendInterrupts({
+    while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
+      dev.off(which = rev(dev.list())[1])
+    }
+  }), add = TRUE)
   
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
@@ -700,8 +721,6 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
   }
   if(length(selection) == 0) selection=matrix(1,ncol=1,nrow=1)
   
-  # backup last state of graphic device
-  dv = dev.list()
   if(display_progress) {
     pb = newPB(min = 0, max = length(fileName), initial = 0, style = 3)
     on.exit(endPB(pb), add = TRUE)
@@ -756,7 +775,7 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
       # no reason to have newpage = TRUE unless pdf is not open
       args = list(newpage=names(dev.cur()) != "pdf",
                   layout_matrix=lay, as.table=FALSE)
-      tryCatch(do.call(what=grid.arrange, args=c(list(grobs=grobs), args)), 
+      tryCatch(do.call(what=grid.arrange, args=c(list(grobs=quote(grobs)), args)), 
                error = function(e) { stop(e$message, call.=FALSE) },
                finally = dev.off())
     }
@@ -765,10 +784,5 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
   }, error = function(e) {
     message(paste0(ifelse(length(write_to)==2, "files have", "file has"), " been incompletely ", ifelse(overwritten, "overwritten", "exported"), "\n"))
     stop(e$message, call. = FALSE)
-  },
-  finally = {
-    while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
-      dev.off(which = rev(dev.list())[1])
-    }
   })
 }
