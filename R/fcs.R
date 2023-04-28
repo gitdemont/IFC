@@ -1501,10 +1501,10 @@ ExtractFromFCS <- function(fileName, ...) {
   }
   fcs = lapply(seq_len(L), FUN = function(i_file) {
     if(display_progress) setPB(pb, value = i_file, title = "Extracting FCS", label = "reading files")
-    do.call(what = FCS_merge_dataset, args = c(dots, list(fcs = do.call(what = readFCS,  args=c(dots, list(fileName = fileName[[i_file]]))))))[[1]]
+    do.call(what = FCS_merge_dataset, args = c(dots, list(fcs = quote(do.call(what = readFCS,  args=c(dots, list(fileName = fileName[[i_file]])))))))[[1]]
   })
   attr(fcs, "fileName") <- fileName[1]
-  do.call(what = FCS_to_data, args = c(dots, list(fcs = fcs)))
+  do.call(what = FCS_to_data, args = c(dots, list(fcs = quote(fcs))))
 }
 
 #' @title FCS File Writer

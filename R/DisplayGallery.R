@@ -195,7 +195,7 @@ DisplayGallery <- function(...,
                                     force_width = force_width), dots_param))
     } else {
       param = do.call(what = "objectParam",
-                      args = c(list(info = input$info,
+                      args = c(list(info = quote(input$info),
                                     export = "base64",
                                     mode = mode,
                                     size = size, 

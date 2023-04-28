@@ -214,7 +214,7 @@ ExportToGallery <- function(...,
                                     force_width = force_width), dots_param))
     } else {
       param = do.call(what = "objectParam",
-                      args = c(list(info = input$info,
+                      args = c(list(info = quote(input$info),
                                     export = "matrix",
                                     mode = "rgb",
                                     size = size, 

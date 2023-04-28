@@ -122,7 +122,7 @@ data_modify_regions <- function(obj, regions, display_progress = TRUE, ...) {
       n = n + 1
     }
     ans = do.call(what = popsRename,
-                  args = c(list(obj = ans,
+                  args = c(list(obj = quote(ans),
                                 old_names = old_pop_names,
                                 new_names = new_pop_names),
                            dots[setdiff(names(dots), c("obj","old_names","new_pop_names"))]))
@@ -130,9 +130,9 @@ data_modify_regions <- function(obj, regions, display_progress = TRUE, ...) {
   
   # since regions have been changed we need to recompute objects
   ans$pops <- do.call(what = popsCompute,
-                      args = c(list(pops = ans$pops,
-                                    regions = ans$regions,
-                                    features = ans$features,
+                      args = c(list(pops = quote(ans$pops),
+                                    regions = quote(ans$regions),
+                                    features = quote(ans$features),
                                     display_progress = display_progress),
                                dots[setdiff(names(dots),c("pops","features"))]))
   

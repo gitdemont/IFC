@@ -108,7 +108,7 @@ ExtractImages_toBase64 <- function(...,
                                     mode = mode), dots_param))
     } else {
       param = do.call(what = "objectParam",
-                      args = c(list(info = input$info,
+                      args = c(list(info = quote(input$info),
                                     export = "base64",
                                     mode = mode), dots_param))
     }

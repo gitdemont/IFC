@@ -305,7 +305,7 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
       if(!is.null(smoothingfactor)) foo$histogramsmoothingfactor = smoothingfactor
     }
     if(foo$type=="density") foo$BasePop = list(list("name"=ss)) # change BasePop name
-    return(do.call(what = plotGraph, args = c(args, list("obj" = obj, "graph" = foo))))
+    return(do.call(what = plotGraph, args = c(args, list("obj" = quote(obj), "graph" = quote(foo)))))
   } else {
     foo = foo[!grepl("title", names(foo))]
     if(length(foo$f1)==0) foo$f1 = "Object Number"
@@ -388,6 +388,6 @@ autoplot = function(obj, shown_pops = NULL, subset = NULL,
         foo$ymax = yran[2]
       }
     }
-    return(do.call(what = plotGraph, args = c(args, list("obj" = obj, "graph" = foo))))
+    return(do.call(what = plotGraph, args = c(args, list("obj" = quote(obj), "graph" = quote(foo)))))
   }
 }

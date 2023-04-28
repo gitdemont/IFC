@@ -130,7 +130,7 @@ objectExtract <- function(ifd,
         param = do.call(what = "objectParam", args = c(list(fileName = attr(ifd, "fileName_image"), verbose = verbose), dots))
       } else {
         dots = dots[!(names(dots) %in% c("info"))]
-        param = do.call(what = "objectParam", args = c(list(verbose = verbose, info = info, fileName = fileName), dots))
+        param = do.call(what = "objectParam", args = c(list(verbose = verbose, info = quote(info), fileName = fileName), dots))
       }
     } else {
       if(attr(ifd, "checksum") != param$checksum) stop("'ifd' and 'param' do not match, please ensure that they originate from same file")

@@ -124,7 +124,7 @@ ExtractImages_toFile <- function(...,
                                     mode = mode), dots_param))
     } else {
       param = do.call(what = "objectParam",
-                      args = c(list(info = input$info,
+                      args = c(list(info = quote(input$info),
                                     export = "file",
                                     write_to = write_to,
                                     mode = mode), dots_param))

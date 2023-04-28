@@ -68,7 +68,7 @@ data_modify_pops <- function(obj, pops, display_progress = TRUE, ...){
   
   # rename pops
   ans = do.call(what = popsRename,
-                args = c(list(obj = obj,
+                args = c(list(obj = quote(obj),
                               old_names = mutation,
                               new_names = names(mutation)),
                          dots[setdiff(names(dots), c("obj","old_names", "new_names"))]))
@@ -97,9 +97,9 @@ data_modify_pops <- function(obj, pops, display_progress = TRUE, ...){
   names(ans$pops) = sapply(ans$pops, FUN = function(p) p$name)
   class(ans$pops) <- K
   ans$pops <- do.call(what = popsCompute,
-                      args = c(list(pops = ans$pops,
-                                    regions = ans$regions,
-                                    features = ans$features,
+                      args = c(list(pops = quote(ans$pops),
+                                    regions = quote(ans$regions),
+                                    features = quote(ans$features),
                                     display_progress = display_progress),
                                dots[setdiff(names(dots),c("pops","features"))]))
   

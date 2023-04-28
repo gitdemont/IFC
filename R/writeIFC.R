@@ -72,7 +72,7 @@ writeIFC <- function(fileName, ...) {
     to_remove <- c(to_remove, na.omit(which(names(dots) == "obj")))
     if(length(to_remove) != 0) dots=dots[-to_remove]
     assert(file_extension, alw = c("daf","fcs"))
-    if(file_extension == "daf") return(do.call(what=data_to_DAF, args=c(dots, list(obj=input$obj))))
-    return(do.call(what=ExportToFCS, args=c(dots, list(obj=input$obj))))
+    if(file_extension == "daf") return(do.call(what=data_to_DAF, args=c(dots, list(obj=quote(input$obj)))))
+    return(do.call(what=ExportToFCS, args=c(dots, list(obj=quote(input$obj)))))
   }
 }
