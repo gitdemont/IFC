@@ -32,6 +32,8 @@
 #define IFC_UTILS_HPP
 
 #include <Rcpp.h>
+#include <iostream>
+#include <fstream>
 using namespace Rcpp;
 
 static std::string base64_LUT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -559,6 +561,48 @@ Rcpp::RawVector hpp_writeBMP (const Rcpp::NumericVector image) {
     }
   }
   return R_NilValue;
+}
+
+//' @title File Raw Chunk Extraction
+//' @name hpp_readchunk
+//' @description
+//' Reads binary chunk from file.
+//' @param fname string, path to file.
+//' @param offset std::size_t, where to start reading from the beginning.
+//' @param nbytes uint32_t, number of bytes.
+//' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
+//' @return a RawVector
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+Rcpp::RawVector hpp_readchunk (const std::string fname, 
+                               const std::size_t offset,
+                               const uint32_t nbytes,
+                               const bool verbose = false) {
+  if(verbose) {
+    Rcout << fname << std::endl;
+    Rcout << "Extracting " << nbytes << " Bytes @offset:" << offset << std::endl;
+  }
+  FILE *fi = std::fopen(fname.c_str(), "rb");
+  if(fi == nullptr) Rcpp::stop("hpp_readchunk: Unable to open file");
+  std::fseek(fi, 0, SEEK_END);
+  std::size_t filesize = std::ftell(fi);
+  if((filesize - offset) < nbytes) {
+    std::fclose(fi);
+    Rcpp::Rcerr << "hpp_readchunk: larger nbytes [" << nbytes << "] to read than remaining filesize - offset ["<< (filesize - offset) << "]\n" << fname  << std::endl;
+    Rcpp::stop("hpp_readchunk: can't read so much bytes");
+  }
+  if((filesize - offset) > filesize) {
+    std::fclose(fi);
+    Rcpp::Rcerr << "hpp_readchunk: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
+    Rcpp::stop("hpp_readchunk: offset is higher than file size");
+  }
+  Rcpp::RawVector out = Rcpp::no_init_vector(nbytes);
+  std::fseek(fi, offset, SEEK_SET);
+  auto s = std::fread(&out[0], sizeof(char), nbytes, fi);
+  std::fclose(fi);
+  if(s != nbytes) Rcpp::stop("hpp_readchunk: bad read");
+  return out;
 }
 
 #endif

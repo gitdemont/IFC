@@ -43,12 +43,11 @@
 #' @param offsets object of class `IFC_offset`. If missing, the default, offsets will be extracted from 'fileName'.\cr
 #' This param is not mandatory but it may allow to save time for repeated XIF export on same file.
 #' @param fast whether to fast extract 'objects' or not. Default is TRUE.
-#' Meaning that 'objects' will be extracting expecting that 'objects' are stored in ascending order.\cr
+#' Meaning that 'objects' will be extracted expecting that 'objects' are stored in ascending order.\cr
 #' Note that a warning will be sent if an 'object' is found at an unexpected order.
 #' In such a case you may need to rerun function with 'fast' = FALSE.
 #' If set to FALSE, all raw object_ids will be scanned from 'fileName' to ensure extraction of desired 'objects'.\cr
 #' IMPORTANT: whatever this argument is, features are extracted assuming an ascending order of storage in file.
-#' @param bits gray levels depth. Default is 8 (i.e. 2^8 = [0,255] gray levels). Allowed are 8 and 16.
 #' @param endianness The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
 #' Endianness describes the bytes order of data stored within the files. This parameter may not be modified.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
@@ -65,8 +64,8 @@
 #' @return It invisibly returns full path of exported file.
 #' @keywords internal
 XIFtoTIFF <- function (fileName, write_to, objects, offsets,
-                       fast = TRUE, 
-                       bits = 8, endianness = .Platform$endian,
+                       fast = TRUE,
+                       endianness = .Platform$endian,
                        verbose = FALSE, verbosity = 1, 
                        overwrite = FALSE, display_progress = TRUE,
                        add_tracking = TRUE, ...) {
@@ -86,7 +85,6 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
   if(length(fileName) != 1) stop("'fileName' should be of length 1")
   if(!file.exists(fileName)) stop(paste("can't find", fileName, sep = " "))
   if(missing(write_to)) stop("'write_to' can't be missing")
-  bits = na.omit(as.integer(bits)); assert(bits, len = 1, alw = c(8,16))
   # extract_features = as.logical(extract_features); assert(extract_features, len = 1, alw = c(TRUE, FALSE))
   extract_features = FALSE
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
@@ -189,7 +187,6 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
   }
   objects = objects[order(objects)] # since it appears that objects are stored with increasing number
   
-  
   # Initialize values
   obj_id = - 1
   L = length(objects)
@@ -204,6 +201,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
   #   258 corresponds to compression, will be overwritten with 8 or 16 depending on bit depth of uncompressed data
   #   259 corresponds to compression, will be overwritten with 1 for uncompressed data
   #   273 corresponds to strip offset, will be overwritten with uncompressed data
+  #   277 corresponds to SamplesPerPixel, will be overwritten with 1
   #   279 corresponds to strip bytes count, will be overwritten with uncompressed data size
   # 33004 corresponds to file date
   # 33005 corresponds to user
@@ -217,7 +215,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
                33027, 33064, 33078,                 # db
                33080, 33081, 33082, 33083,          # features
                33090, 33091, 33092, 33093, 33094)
-  if(XIF_test >= 0) unwanted = c(258,259,273,279, unwanted)
+  if(XIF_test >= 0) unwanted = c(258,259,273,277,279, unwanted)
   
   # open connections for reading and writing
   toread = file(description = fileName, open = "rb")
@@ -249,6 +247,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
       # extract IFD
       IFD = cpp_fastTAGS(fname = fileName, offset = offsets[i_off], swap = swap)
       ifd = IFD$tags[!(names(IFD$tags) %in% unwanted)]
+      ifd = ifd[!sapply(ifd, simplify = TRUE, USE.NAMES = FALSE, FUN = function(i) i$byt == 0)] # removes NULL tags
       TYPE = IFD$tags[["33002"]]$val
       if(any(TYPE == 2)) OBJECT_ID = IFD$tags[["33003"]]$val
       # if((length(TYPE) != 0) && (TYPE == 2)) OBJECT_ID = OBJECT_ID
@@ -264,13 +263,14 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
       
       # extract features values in 1st IFD
       if(i_off == 1) {
-        # we need to reintroduce 258 bit depth, 259: compression, 273 strip offset, 279: strip byte count tags
+        # we need to reintroduce 258 bit depth, 259: compression, 273: strip offset, 277: SamplesPerPixel, 279: strip byte count tags
         features = list()
         if(XIF_test >= 0) {
           extra = c(extra,
                     buildIFD(val = 8, typ = 3, tag = 258, endianness = r_endian),
                     buildIFD(val = 1, typ = 3, tag = 259, endianness = r_endian),
                     buildIFD(val = 8, typ = 4, tag = 273, endianness = r_endian),
+                    buildIFD(val = 1, typ = 3, tag = 277, endianness = r_endian),
                     buildIFD(val = 1, typ = 4, tag = 279, endianness = r_endian)
           )
           
@@ -391,11 +391,12 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
         }
       } else {
         if(XIF_test >= 0) {
-          # we need to reintroduce 258 bit depth, 259: no compression, 273 strip offset, 279: strip byte count tags
+          # we need to reintroduce 258 bit depth, 259: no compression, 273: strip offset, 277: SamplesPerPixel, 279: strip byte count tags
           extra = c(extra,
-                    buildIFD(val = bits, typ = 3, tag = 258, endianness = r_endian),
+                    buildIFD(val = 16, typ = 3, tag = 258, endianness = r_endian),
                     buildIFD(val = 1, typ = 3, tag = 259, endianness = r_endian),
-                    buildIFD(val = 1, typ = 4, tag = 273, endianness = r_endian)
+                    buildIFD(val = 1, typ = 4, tag = 273, endianness = r_endian),
+                    buildIFD(val = 1, typ = 3, tag = 277, endianness = r_endian)
           )
           # we decompress images to raw
           extra[["273"]]$val = cpp_rawdecomp(fname=fileName,
@@ -404,11 +405,14 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
                                              imgWidth=IFD$tags[["256"]]$val,
                                              imgHeight=IFD$tags[["257"]]$val,
                                              compression=IFD$tags[["259"]]$val,
-                                             bits = bits,
                                              swap = endianness!=r_endian,
                                              verbose=FALSE)
           extra = c(extra, buildIFD(val = length(extra[["273"]]$val), typ = 4, tag = 279, endianness = r_endian))
           extra[["273"]]$byt = length(extra[["273"]]$val)
+          # correct FillOrder
+          tmp = cpp_uint32_to_raw(1)
+          if(endianness!=r_endian) tmp = rev(tmp)
+          if(length(ifd[["266"]])!=0) ifd[["266"]]$raw[9:12] <- tmp
         }
         if(add_tracking) {
           extra = c(extra, 

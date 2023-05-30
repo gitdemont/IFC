@@ -10,7 +10,6 @@ XIFtoTIFF(
   objects,
   offsets,
   fast = TRUE,
-  bits = 8,
   endianness = .Platform$endian,
   verbose = FALSE,
   verbosity = 1,
@@ -38,13 +37,11 @@ Exported file extension has to be .tif or .tiff.}
 This param is not mandatory but it may allow to save time for repeated XIF export on same file.}
 
 \item{fast}{whether to fast extract 'objects' or not. Default is TRUE.
-Meaning that 'objects' will be extracting expecting that 'objects' are stored in ascending order.\cr
+Meaning that 'objects' will be extracted expecting that 'objects' are stored in ascending order.\cr
 Note that a warning will be sent if an 'object' is found at an unexpected order.
 In such a case you may need to rerun function with 'fast' = FALSE.
 If set to FALSE, all raw object_ids will be scanned from 'fileName' to ensure extraction of desired 'objects'.\cr
 IMPORTANT: whatever this argument is, features are extracted assuming an ascending order of storage in file.}
-
-\item{bits}{gray levels depth. Default is 8 (i.e. 2^8 = [0,255] gray levels). Allowed are 8 and 16.}
 
 \item{endianness}{The endian-ness ("big" or "little") of the target system for the file. Default is .Platform$endian.\cr
 Endianness describes the bytes order of data stored within the files. This parameter may not be modified.}

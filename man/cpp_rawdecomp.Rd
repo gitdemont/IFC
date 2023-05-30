@@ -20,9 +20,7 @@ cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2
 
 \item{compression}{uint32_t, compression algorithm used. Default is 30818.}
 
-\item{bits}{uint8_t, bits depth. Default is 8.}
-
-\item{swap}{bool, whether to swap bytes or not. It only applies when bits is 16. Default is false.}
+\item{swap}{bool, whether to swap bytes or not. Default is false.}
 
 \item{verbose}{bool, whether to display information (use for debugging purpose). Default is false.}
 }

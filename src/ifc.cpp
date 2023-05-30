@@ -867,8 +867,7 @@ Rcpp::List cpp_decomp (const std::string fname,
 //' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
 //' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
 //' @param compression uint32_t, compression algorithm used. Default is 30818.
-//' @param bits uint8_t, bits depth. Default is 8.
-//' @param swap bool, whether to swap bytes or not. It only applies when bits is 16. Default is false.
+//' @param swap bool, whether to swap bytes or not. Default is false.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
 //' @details
 //' BSD implementations of Bio-Formats readers and writers
@@ -909,10 +908,9 @@ Rcpp::RawVector cpp_rawdecomp (const std::string fname,
                                const uint32_t imgWidth = 1, 
                                const uint32_t imgHeight = 1, 
                                const uint32_t compression = 30818,
-                               const uint8_t bits = 8,
                                const bool swap = false,
                                const bool verbose = false) {
-  return hpp_rawdecomp (fname, offset, nbytes, imgWidth, imgHeight, compression, bits, swap, verbose);
+  return hpp_rawdecomp (fname, offset, nbytes, imgWidth, imgHeight, compression, swap, verbose);
 }
 // END decomp
 

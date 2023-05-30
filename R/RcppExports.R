@@ -551,8 +551,7 @@ NULL
 #' @param imgWidth uint32_t, Width of the decompressed image. Default is 1.
 #' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
 #' @param compression uint32_t, compression algorithm used. Default is 30818.
-#' @param bits uint8_t, bits depth. Default is 8.
-#' @param swap bool, whether to swap bytes or not. It only applies when bits is 16. Default is false.
+#' @param swap bool, whether to swap bytes or not. Default is false.
 #' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
 #' @details
 #' BSD implementations of Bio-Formats readers and writers
@@ -877,8 +876,8 @@ cpp_decomp <- function(fname, offset, nbytes, imgWidth = 1L, imgHeight = 1L, nb_
     .Call(`_IFC_cpp_decomp`, fname, offset, nbytes, imgWidth, imgHeight, nb_channels, removal, compression, verbose)
 }
 
-cpp_rawdecomp <- function(fname, offset, nbytes, imgWidth = 1L, imgHeight = 1L, compression = 30818L, bits = 8L, swap = FALSE, verbose = FALSE) {
-    .Call(`_IFC_cpp_rawdecomp`, fname, offset, nbytes, imgWidth, imgHeight, compression, bits, swap, verbose)
+cpp_rawdecomp <- function(fname, offset, nbytes, imgWidth = 1L, imgHeight = 1L, compression = 30818L, swap = FALSE, verbose = FALSE) {
+    .Call(`_IFC_cpp_rawdecomp`, fname, offset, nbytes, imgWidth, imgHeight, compression, swap, verbose)
 }
 
 cpp_normalize <- function(mat, input_range = as.numeric( c(0.0,4095.0)), full_range = FALSE, force_range = FALSE, gamma = 1.0) {
