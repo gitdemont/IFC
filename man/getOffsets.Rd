@@ -12,8 +12,8 @@ getOffsets(fileName, fast = TRUE, display_progress = TRUE, verbose = FALSE)
 \arguments{
 \item{fileName}{path to file.}
 
-\item{fast}{whether to fast extract objects or not. Default is TRUE.\cr
-Meaning that offsets will be extracting expecting that objects are stored in ascending order.\cr
+\item{fast}{whether to fast extract 'objects' or not. Default is TRUE.\cr
+Meaning that offsets will be extracted expecting that 'objects' are stored in ascending order.\cr
 A message will be thrown since fast extraction method does not ensure correct mapping between objects and offsets.\cr
 If set to FALSE, all object_ids will be scanned from 'fileName' to ensure extraction of desired offsets.}
 

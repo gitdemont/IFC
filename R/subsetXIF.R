@@ -43,7 +43,7 @@
 #' @param offsets object of class `IFC_offset`. If missing, the default, offsets will be extracted from 'fileName'.\cr
 #' This param is not mandatory but it may allow to save time for repeated XIF export on same file.
 #' @param fast whether to fast extract 'objects' or not. Default is TRUE.
-#' Meaning that 'objects' will be extracting expecting that 'objects' are stored in ascending order.\cr
+#' Meaning that 'objects' will be extracted expecting that 'objects' are stored in ascending order.\cr
 #' Note that a warning will be sent if an 'object' is found at an unexpected order.
 #' In such a case you may need to rerun function with 'fast' = FALSE.
 #' If set to FALSE, all raw object_ids will be scanned from 'fileName' to ensure extraction of desired 'objects'.\cr

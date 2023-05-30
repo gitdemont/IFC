@@ -32,8 +32,8 @@
 #' Extracts offsets of the IFDs (Image Field Directories) within a XIF file.
 #' Users are highly encouraged to read TIFF specifications to have a better understanding about what offsets and IFDs are.
 #' @param fileName path to file.
-#' @param fast whether to fast extract objects or not. Default is TRUE.\cr
-#' Meaning that offsets will be extracting expecting that objects are stored in ascending order.\cr
+#' @param fast whether to fast extract 'objects' or not. Default is TRUE.\cr
+#' Meaning that offsets will be extracted expecting that 'objects' are stored in ascending order.\cr
 #' A message will be thrown since fast extraction method does not ensure correct mapping between objects and offsets.\cr
 #' If set to FALSE, all object_ids will be scanned from 'fileName' to ensure extraction of desired offsets.
 #' @param display_progress whether to display a progress bar. Default is TRUE.

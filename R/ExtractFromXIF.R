@@ -45,8 +45,8 @@
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param verbosity quantity of information displayed when verbose is TRUE; 1: normal, 2: rich. Default is 1.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param fast whether to fast 'extract_offsets' or not. Default is TRUE.\cr
-#' Meaning that offsets will be extracting expecting that raw object are stored in ascending order.
+#' @param fast whether to fast extract 'objects' or not. Default is TRUE.\cr
+#' Meaning that offsets will be extracted expecting that 'objects' are stored in ascending order.
 #' if extract_images is FALSE, a message will be thrown since extraction method does not ensure correct mapping between objects and offsets.\cr
 #' if extract_images is TRUE, a warning will be sent if an object is found at an unexpected order.
 #' @param recursive whether to recursively apply \code{\link{ExtractFromXIF}} on files defining input fileName when it is a merged. Default is FALSE.

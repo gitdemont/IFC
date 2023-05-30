@@ -37,8 +37,8 @@
 #' @param objects integer vector, IDEAS objects ids numbers to extract.\cr
 #' If missing, the default, images values from all objects will be extracted.
 #' @param display_progress whether to display a progress bar. Default is FALSE.
-#' @param fast when no 'offsets' are provided whether to fast extract 'offsets' or not. Default is TRUE.\cr
-#' Meaning that 'objects' will be extracting expecting that 'objects' are stored in ascending order.\cr
+#' @param fast when no 'offsets' are provided whether to fast extract 'objects' or not. Default is TRUE.\cr
+#' Meaning that 'objects' will be extracted expecting that 'objects' are stored in ascending order.\cr
 #' Only apply when 'offsets' are not provided.\cr
 #' Note that a warning will be sent if an object is found at an unexpected order.
 #' @param ... other arguments to be passed.
