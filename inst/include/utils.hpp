@@ -129,7 +129,7 @@ bool hpp_mpfmatch(const Rcpp::Nullable<Rcpp::CharacterVector> x = R_NilValue,
     if(xx.size() > 0) {
       std::string str = std::string(xx[0]);
       if(pattern.isNotNull()) {
-        Rcpp::CharacterVector pat(pattern);
+        Rcpp::CharacterVector pat(pattern.get());
         for(R_len_t i = 0; i < pat.size(); i++) {
           if((i % 100) == 0) Rcpp::checkUserInterrupt();
           std::string p = std::string(pat[i]);
@@ -165,7 +165,7 @@ R_len_t hpp_seqmatch(const Rcpp::StringVector x,
       j = 0;
       k = 0;
       while((i < x.size()) && (j < y.size())) {
-        Rcpp::checkUserInterrupt();
+        // Rcpp::checkUserInterrupt();
         if(x[i] == y[j]) {
           k++;
           i++;
