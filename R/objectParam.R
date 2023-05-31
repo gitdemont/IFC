@@ -269,9 +269,9 @@ objectParam <- function(...,
              fileName_image = info$fileName_image)
   
   ##### compute extre param for export == "file" or ""base64"
+  ans$splitf_obj <- splitf(ans$fileName_image)
   if(export != "matrix") { 
     if(mode == "raw") stop("can't export as \"raw\" when '", export, "' is choosen")
-    ans$splitf_obj <- splitf(info$fileName_image)
     if(export == "file") { # file
       # not allowed to write file without user input
       if(missing(write_to)) stop("'write_to' can't be missing when 'export' is \"file\"")
