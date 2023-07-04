@@ -36,29 +36,91 @@ POSSIBILITY OF SUCH DAMAGE.
 objectExtract(ifd, param, verbose = FALSE, bypass = FALSE, ...)
 }
 \arguments{
-\item{ifd}{list of sub elements of IFD data information extracted by \code{\link{getIFD}}. This parameter can't be missing.}
+\item{ifd}{list of sub elements of IFD data information extracted by \code{\link{getIFD}}. This argument can't be missing.}
 
 \item{param}{object of class `IFC_param`, containing extraction parameters defined by \code{\link{objectParam}}.\cr
 This argument is not mandatory but it may allow to save time for repeated image export on same file.
-If this parameter is missing, \code{\link{objectExtract}} will use extra ... to pass arguments to \code{\link{objectParam}} to control object extraction.\cr
-However, if 'param' is provided, '...' will be ignored.}
+If this argument is missing, \code{\link{objectExtract}} will use named arguments in '\code{\dots}' as input to \code{\link{objectParam}} to control object extraction.\cr
+However, if '\code{param}' is provided, '\code{...}' will be \strong{ignored}.}
 
 \item{verbose}{whether to display information (use for debugging purpose). Default is FALSE.}
 
-\item{bypass}{whether to bypass checks on 'ifd' and 'param'. Default is FALSE.}
+\item{bypass}{whether to bypass checks on '\code{ifd}' and '\code{param}'. Default is FALSE.}
 
-\item{...}{other arguments to be passed to \code{\link{objectParam}}.\cr
-If 'param' is not provided then '...' will be used to compute 'param'.\cr
-/!\ If not any of 'fileName', 'info' can be found in '...' then attr(ifd, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
+\item{...}{
+  Arguments passed on to \code{\link[=objectParam]{objectParam}}
+  \describe{
+    \item{\code{info}}{object of class `IFC_info`, rich information extracted by \code{\link{getInfo}}. 
+This argument is not mandatory but it may allow to save time for repeated image export on same file.
+If missing, the default, 'info' will be extracted thanks to '...'.}
+    \item{\code{mode}}{color mode export. Either "rgb", "gray" or "raw". Default is "raw".
+Note that "raw" is only possible when 'export' is "matrix".}
+    \item{\code{export}}{format mode export. Either "file", "matrix", "base64". Default is "matrix".}
+    \item{\code{write_to}}{used when export is "file" or "base64" to compute respectively exported file name or base64 id attribute.\cr
+Exported "file" extension and "base64" MIME type will be deduced from this pattern. Allowed export are ".bmp", ".jpg", ".jpeg", ".png", ".tif", ".tiff".
+Note that '.bmp' are faster but not compressed producing bigger data.\cr
+Placeholders, if found, will be substituted:\cr
+-\%d: with full path directory\cr
+-\%p: with first parent directory\cr
+-\%e: with extension (without leading .)\cr
+-\%s: with shortname (i.e. basename without extension)\cr
+-\%o: with object_id\cr
+-\%c: with channel_id\cr
+A good trick is to use:\cr
+-"\%d/\%s/\%s_\%o_\%c.tiff", when 'export' is "file"\cr
+-"\%o_\%c.bmp", when 'export' is "base64".\cr
+Note that if missing and 'export' is not "file", 'write_to' will be set to "\%o_\%c.bmp".}
+    \item{\code{base64_id}}{whether to add id attribute to base64 exported object. Default is FALSE.\cr
+Only applied when export is "base64".}
+    \item{\code{base64_att}}{attributes to add to base64 exported object. Default is "".\cr
+Only applied when export is "base64". For example, use "class=draggable".\cr
+Note that id (if base64_id is TRUE) and width and height are already used.}
+    \item{\code{overwrite}}{only apply when 'export' is "file" whether to overwrite file or not. Default is FALSE.}
+    \item{\code{composite}}{character vector of image composite. Default is "", for no image composite.\cr
+Should be like "1.05/2.4/4.55" for a composition of 5 perc. of channel 1, 40 perc. of channel 2 and 50 perc. of channel 55.\cr
+Note that channels should have been acquired and final image composition should be 100 perc., otherwise an error is thrown.\cr
+Note that each composite will be appended after 'selection'.}
+    \item{\code{selection}}{physical channels to extract.\cr
+Note that this parameter will be ordered.\cr
+Default is "all" to extract all acquired channels.\cr
+Use "none" to only extract composite.}
+    \item{\code{random_seed}}{a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when 'add_noise' is set to TRUE. Default is NULL.
+Note that NA_integer_ or list(seed = NA_integer_) can be used to not call \link[base]{set.seed} at all.}
+    \item{\code{size}}{a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(0,0) for no change.}
+    \item{\code{force_width}}{whether to use information in 'info' to fill size. Default is TRUE.
+When set to TRUE, width of 'size' argument will be overwritten.}
+    \item{\code{removal}}{removal method: Either "none", "raw", "clipped", "masked", "MC".\cr
+-"none", to keep image as is\cr
+-"raw", to keep image as is, it provides a convinient way to retrieve "raw" value for the mask.\cr
+-"clipped", to remove clipped object from image.\cr
+-"masked", to only keep masked object from image.\cr
+-"MC", to only keep MC masked object from image.
+This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.}
+    \item{\code{add_noise}}{if TRUE adds normal noise to background using rnorm(), from \pkg{Rcpp}. Default is TRUE.\cr
+Note that it is better to set it to FALSE when 'removal' is "masked" or "MC". Doing so will allow to place masked object in a zero filled background,
+otherwise background will still be filled with noise.
+This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.}
+    \item{\code{full_range}}{only apply when mode is not "raw", if full_range is TRUE, then [0,4095] range will be kept. Default is FALSE.\cr
+It is like "raw" mode but allowing normalization to [0,1].
+This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.\cr}
+    \item{\code{force_range}}{only apply when mode is not "raw", if force_range is TRUE, then range will be adjusted to object range in [-4095, +inf] resulting in normalization. Default is FALSE.\cr
+Note that this parameter takes the precedence over 'full_range'.\cr
+This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.}
+    \item{\code{spatial_correction}}{only apply on RIF file, whether to apply spatial correction. Default is FALSE.}
+  }}
 }
 \value{
 A list (for every extracted objects) of list (for every exported channels) depending on "export" parameter:\cr
--"matrix", a matrix when 'mode' is set to "raw" or "gray" OR an array when 'mode' == "rgb",\cr
+-"matrix", a matrix when '\code{param$mode}' is set to "raw" or "gray" OR an array when '\code{param$mode}' == "rgb",\cr
 -"base64", a data-uri string,\cr
 -"file", an invisible file path corresponding to the location of exported file(s).
 }
 \description{
 Extracts / Decompress objects stored in RIF or CIF Files.
+}
+\details{
+If '\code{param}' is not provided then '\code{\dots}' will be used to compute '\code{param}'.\cr
+\strong{/!\\} When '\code{param}' is not provided, if not any of '\code{fileName}', '\code{info}' can be found in '\code{\dots}', then \code{attr(ifd, "fileName_image")} will be used as '\code{fileName}' input parameter to pass to \code{\link{objectParam}}.
 }
 \examples{
 if(requireNamespace("IFCdata", quietly = TRUE)) {

@@ -30,27 +30,26 @@
 #' @title Numpy Export
 #' @description
 #' Exports IFC objects to numpy array [objects,height,width,channels]
-#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
-#' If 'param' is provided the above parameters will be overwritten.\cr
-#' If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr
-#' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
+#' @param \dots arguments to be passed to \code{\link{objectExtract}} with the exception of \code{ifd} and \code{bypass}(=\strong{TRUE}).\cr
+#' \strong{/!\\} If not any of '\code{fileName}', '\code{info}' and '\code{param}' can be found in \code{\dots} then \code{attr(offsets, "fileName_image")} will be used as '\code{fileName}' input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integer vector, IDEAS objects ids numbers to use.
 #' This argument is not mandatory, if missing, the default, all objects will be used.
-#' @param offsets object of class `IFC_offset`. 
-#' This argument is not mandatory but it may allow to save time for repeated image export on same file.
+#' @param offsets object of class `IFC_offset`.
+#' This argument is not mandatory but it may allow to save time for repeated image export on same file.\cr
+#' If '\code{offsets}' are not provided extra arguments can also be passed with \code{\dots} to \code{\link{getOffsets}}.
 #' @param image_type image_type of desired offsets. Either "img" or "msk". Default is "img".
 #' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(64,64).
-#' @param force_width whether to use information in 'info' to fill size. Default is FALSE.
-#' When set to TRUE, width of 'size' argument will be overwritten.
+#' @param force_width whether to use information in '\code{info}' to fill '\code{size}'. Default is FALSE.
+#' When set to TRUE, width of '\code{size}' argument will be overwritten.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param python path to python. Default is Sys.getenv("RETICULATE_PYTHON").\cr
-#' Note that this numpy should be available in this python to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".
-#' @param dtype desired array?s data-type. Default is "double". Allowed are "uint8", "int16", "uint16" or "double". If 'mode' is "raw", this parameter will be forced to "int16".
-#' @param mode (\code{\link{objectParam}} argument) color mode export. Either "raw", "gray" . Default is "raw".
+#' Note that \code{numpy} should be available in this \code{python} to allow export to npy file, otherwise '\code{export}' will be forced to "matrix".
+#' @param dtype desired arrays data-type. Default is "double". Allowed are "uint8", "int16", "uint16" or "double". If 'mode' is "raw", this parameter will be forced to "int16".
+#' @param mode (\code{\link{objectParam}} argument) color mode export. Either "raw", "gray". Default is "raw".
 #' @param export export format. Either "file", "matrix". Default is "matrix".\cr
-#' Note that you will need 'reticulate' package installed to be able to export to numpy array file, otherwise 'export' will be forced to "matrix".
-#' @param write_to used when 'export' is "file" to compute respectively filename.
-#' Exported type will be deduced from this pattern. Allowed export are '.npy'.\cr
+#' Note that you will need \code{reticulate} package installed to be able to export to npy file, otherwise '\code{export}' will be forced to "matrix".
+#' @param write_to used when '\code{export}' is \code{"file"} to compute exported file name and type.
+#' Exported type will be deduced from this pattern. Allowed exported file extension is ".npy".\cr
 #' Placeholders, if found, will be substituted:\cr
 #' -\%d: with full path directory\cr
 #' -\%p: with first parent directory\cr
@@ -59,15 +58,16 @@
 #' -\%o: with objects (at most 10, will be collapse with "_", if more than one).\cr
 #' -\%c: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
 #' A good trick is to use:\cr
-#' -"\%d/\%s_Obj[\%o]_Ch[\%c].npy", when 'export' is "file"\cr
+#' -"\%d/\%s_Obj[\%o]_Ch[\%c].npy", when '\code{export}' is "file"\cr
 #' @param overwrite whether to overwrite file or not. Default is FALSE.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToNumpy}} input arguments.\cr
-#' Please note that size parameter has to be supplied and could not be set to (0,) when 'object' length is not equal to one\cr
-#' \code{\link{ExportToNumpy}} requires reticulate package, python and numpy installed to create npy file.\cr
-#' If one of these is missing, 'export' will be set to "matrix".
+#' Please note that '\code{size}' parameter has to be supplied and could not be set to (0,) when '\code{object}' length is not equal to one\cr
+#' \code{\link{ExportToNumpy}} requires \code{reticulate} package, \code{python} and \code{numpy} installed to create npy file.\cr
+#' If one of these is missing, '\code{export}' will be set to "matrix".
+#' If '\code{param}' is provided in \code{\dots}, \code{param$export}(=\strong{"matrix"}), \code{param$mode}(=\code{mode}) and \code{param$size}(=\code{size}) and will be overwritten. 
 #' @return Depending on 'export':\cr
 #' -"matrix", an array whose dimensions are [object, height, width, channel].\cr
-#' -"file", it invisibly returns path of .npy exported file. 
+#' -"file", it invisibly returns path of npy exported file. 
 #' @export
 ExportToNumpy <- function(...,
                           objects,
@@ -148,11 +148,13 @@ ExportToNumpy <- function(...,
   verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
   verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
   
-  param_extra = names(dots) %in% c("ifd","param","mode","export","size","force_width","bypass","verbose")
+  param_extra_a = setdiff(names(formals(objectParam)), "...")
+  param_extra_n = c("ifd","param","bypass","verbose",                # arguments to objectExtract
+                    "mode","export","size","force_width","overwrite")# arguments to objectParam
+  param_extra = names(dots) %in% param_extra_n
   dots = dots[!param_extra] # remove not allowed param
-  param_param = names(dots) %in% c("write_to","base64_id","base64_att","overwrite",
-                                   "composite","selection","random_seed",
-                                   "removal","add_noise","full_range","force_range")
+  param_extra_a = setdiff(param_extra_a, param_extra_n)
+  param_param = names(dots) %in% param_extra_a
   dots_param = dots[param_param] # keep param_param for objectParam
   dots = dots[!param_param]
   
@@ -252,9 +254,9 @@ ExportToNumpy <- function(...,
       comp_text = ""
     }
     write_to = formatn(splitp_obj, 
-                        splitf_obj, 
-                        object = obj_text,
-                        channel = paste0(chan_text,comp_text))
+                       splitf_obj, 
+                       object = obj_text,
+                       channel = paste0(chan_text,comp_text))
     if(export == "file") {
       dir_name = dirname(write_to)
       if(!dir.exists(dir_name)) if(!dir.create(dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dir_name))

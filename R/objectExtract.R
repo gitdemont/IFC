@@ -30,16 +30,16 @@
 #' @title Object Extraction
 #' @description
 #' Extracts / Decompress objects stored in RIF or CIF Files.
-#' @param ifd list of sub elements of IFD data information extracted by \code{\link{getIFD}}. This parameter can't be missing.
+#' @param ifd list of sub elements of IFD data information extracted by \code{\link{getIFD}}. This argument can't be missing.
 #' @param param object of class `IFC_param`, containing extraction parameters defined by \code{\link{objectParam}}.\cr
 #' This argument is not mandatory but it may allow to save time for repeated image export on same file.
-#' If this parameter is missing, \code{\link{objectExtract}} will use extra ... to pass arguments to \code{\link{objectParam}} to control object extraction.\cr
-#' However, if 'param' is provided, '...' will be ignored.
+#' If this argument is missing, \code{\link{objectExtract}} will use named arguments in '\code{\dots}' as input to \code{\link{objectParam}} to control object extraction.\cr
+#' However, if '\code{param}' is provided, '\code{...}' will be \strong{ignored}.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
-#' @param bypass whether to bypass checks on 'ifd' and 'param'. Default is FALSE.
-#' @param ... other arguments to be passed to \code{\link{objectParam}}.\cr
-#' If 'param' is not provided then '...' will be used to compute 'param'.\cr
-#' /!\ If not any of 'fileName', 'info' can be found in '...' then attr(ifd, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
+#' @param bypass whether to bypass checks on '\code{ifd}' and '\code{param}'. Default is FALSE.
+#' @inheritDotParams objectParam
+#' @details If '\code{param}' is not provided then '\code{\dots}' will be used to compute '\code{param}'.\cr
+#' \strong{/!\\} When '\code{param}' is not provided, if not any of '\code{fileName}', '\code{info}' can be found in '\code{\dots}', then \code{attr(ifd, "fileName_image")} will be used as '\code{fileName}' input parameter to pass to \code{\link{objectParam}}.
 #' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
 #' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr\cr
 #' BSD implementations of Bio-Formats readers and writers\cr
@@ -100,7 +100,7 @@
 #'                   'to install extra files required to run this example.'))
 #' }
 #' @return A list (for every extracted objects) of list (for every exported channels) depending on "export" parameter:\cr
-#' -"matrix", a matrix when 'mode' is set to "raw" or "gray" OR an array when 'mode' == "rgb",\cr
+#' -"matrix", a matrix when '\code{param$mode}' is set to "raw" or "gray" OR an array when '\code{param$mode}' == "rgb",\cr
 #' -"base64", a data-uri string,\cr
 #' -"file", an invisible file path corresponding to the location of exported file(s). 
 #' @export
