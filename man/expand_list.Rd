@@ -7,9 +7,9 @@
 expand_list(x, max = 5)
 }
 \arguments{
-\item{x}{value return by xml2::as_list. Default is 5.}
+\item{x}{value return by xml2::as_list.}
 
-\item{max}{maximum number of recurrence into subnodes.}
+\item{max}{maximum number of recurrence into subnodes. Default is 5.}
 }
 \description{
 Helper to stringify XML node.

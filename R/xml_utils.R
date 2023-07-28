@@ -30,8 +30,8 @@
 #' @title XML Node List Expansion
 #' @description
 #' Helper to stringify XML node.
-#' @param x value return by xml2::as_list. Default is 5.
-#' @param max maximum number of recurrence into subnodes.
+#' @param x value return by xml2::as_list.
+#' @param max maximum number of recurrence into subnodes. Default is 5.
 #' @keywords internal
 expand_list = function(x, max = 5) {
   max = max - 1
@@ -41,7 +41,7 @@ expand_list = function(x, max = 5) {
     bar = (names(foo) == "names")
     if(length(bar) == 0) return(unlist(n))
     if(max < 0) return(foo)
-    c(foo[!bar], expand_list(n[bar], max = max))
+    c(foo[!bar], expand_list(n[names(n) %in% unlist(foo[bar], use.names = FALSE, recursive = TRUE)], max = max))
   })
   names(ans) <- N
   return(ans)
