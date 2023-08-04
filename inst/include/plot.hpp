@@ -409,11 +409,11 @@ Rcpp::LogicalMatrix hpp_shape_combine(const Rcpp::LogicalMatrix M1,
   return out;
 }
 
-// create gausian kernel for blurring
+// create gaussian kernel for blurring
 // [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix hpp_gaussian(const R_len_t size = 3,
                                  const double sigma = 3.0) {
-  if((size <= 0) || (size >= 35)) Rcpp::stop("hpp_gaussian: 'size' argument is not possible for blurring");
+  if((size <= 0) || (size > 95)) Rcpp::stop("hpp_gaussian: 'size' argument is not possible for blurring");
   Rcpp::NumericMatrix out(size, size);
   double half = size % 2 ? size / 2 : size / 2 - 0.5;
   double d = sigma * std::sqrt(2 * M_PI);

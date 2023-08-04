@@ -805,6 +805,13 @@ plot_raster=function(obj, pntsonedge = FALSE) {
   # determines current device plotting region
   coordmap = get_coordmap_adjusted()
   draw_fn <- function(pntsonedge = pntsonedge, bg = NULL) {
+    usr = unlist(recursive = FALSE, use.names = FALSE, coordmap$domain)
+    lims = round(c(coord_to_px(coord = data.frame(x = usr[1:2], y = usr[3:4]),
+                               coordmap = coordmap,
+                               pntsonedge = F)) + c(1,1,0,0))
+    bsize = round(max(abs(lims[2] - lims[1]), abs(lims[3] - lims[4])) / 17)
+    if(!(bsize %% 2)) bsize = bsize + 1
+    bsize = min(bsize, 95)
     data = sapply(rev(disp_n), simplify = FALSE, USE.NAMES = TRUE, FUN = function(p) {
       if((obj$input$precision == "light") && (length(disp_n) > 1)) {
         sub_ = obj$input$data[, p] & obj$input$subset & (set == p)
@@ -824,18 +831,13 @@ plot_raster=function(obj, pntsonedge = FALSE) {
            col = rbind(col2rgb(col, alpha = FALSE), 255),
            lwd = 1,
            coords = coord_to_px(coord=coords[sub_,,drop=FALSE], coordmap=coordmap, pntsonedge=pntsonedge),
-           blur_size = 9,
-           blur_sd = 3)
+           blur_size = bsize,
+           blur_sd = bsize / 6)
     })
     data = data[sapply(data, length) != 0]
     if(length(data) != 0) {
       # call c part to produce image raster
       img = cpp_raster(width = coordmap$width, height = coordmap$height, obj = data, bg_ = bg)
-      # subset img to drawing region
-      usr = unlist(recursive = FALSE, use.names = FALSE, coordmap$domain)
-      lims = round(c(coord_to_px(coord = data.frame(x = usr[1:2], y = usr[3:4]),
-                           coordmap = coordmap,
-                           pntsonedge = F)) + c(1,1,0,0))
       # overlay everything but not edges
       if(is_hybrid && (FALSE %in% pntsonedge)) {
         brd = seq(0,4)
