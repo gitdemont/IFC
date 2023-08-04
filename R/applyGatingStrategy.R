@@ -155,7 +155,7 @@ applyGatingStrategy = function(obj, gating, keep, display_progress = TRUE, verbo
                            display_progress = display_progress, ...)
     
     ##### retrieves name(s) of graphical population created by region applied in graph
-    ans$graphs = sapply(ans$graphs, FUN = function(g) adjustGraph(ans, g, adjust_graph = TRUE))
+    ans$graphs = sapply(ans$graphs, simplify = FALSE, FUN = function(g) adjustGraph(ans, g, adjust_graph = TRUE))
     class(ans$graphs) <- "IFC_graphs"
     
     ##### computes stats
