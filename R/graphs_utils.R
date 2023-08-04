@@ -564,7 +564,7 @@ plot_base=function(obj) {
       col=c("black","white")[color_mode]
       colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[color_mode]]))
       args_level = basepop[[1]][["densitylevel"]]
-      if((length(args_level) != 0) && (args_level != "") && hasdata) {
+      if((length(args_level) != 0) && !any(args_level == "") && hasdata) {
         col = densCols(x = structure(obj$input$data$x2[obj$input$subset], features=attr(obj$input$data,"features")),
                        y = obj$input$data$y2[obj$input$subset],
                        xlim = Xlim,
@@ -619,7 +619,7 @@ plot_base=function(obj) {
                          args_plot),
                 what = plot)
       }
-      if((length(args_level) == 0) || (args_level == ""))
+      if((length(args_level) == 0) || any(args_level == ""))
         if(inherits(x = try(parseTrans(obj$input$trans), silent = TRUE), what="try-error")) subtitle = TRUE
     } else {
       if(obj$input$precision == "full") {
@@ -767,7 +767,7 @@ plot_raster=function(obj, pntsonedge = FALSE) {
   if(obj$input$type == "density") {
     basepop = obj$input$base
     args_level = basepop[[1]][["densitylevel"]]
-    if((length(args_level) != 0) && (args_level != "")) return(plot_base(obj))
+    if((length(args_level) != 0) && !any(args_level == "")) return(plot_base(obj))
   }
   lt = obj$input$par.settings
   
@@ -1067,7 +1067,7 @@ plot_lattice=function(obj) {
     xtop = NULL
     if(type == "density") {
       args_level = basepop[[1]][["densitylevel"]]
-      if((length(args_level) == 0) || (args_level == ""))
+      if((length(args_level) == 0) || any(args_level == ""))
         if(inherits(x = try(parseTrans(trans), silent = TRUE), what="try-error")) xtop = trans
     }
     foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE,
@@ -1081,7 +1081,7 @@ plot_lattice=function(obj) {
                    if(type == "density") {
                      colramp=colorRampPalette(colConv(basepop[[1]][c("densitycolorsdarkmode","densitycolorslightmode")][[color_mode]]))
                      args_level = basepop[[1]][["densitylevel"]]
-                     if((length(args_level) != 0) && (args_level != "")) {
+                     if((length(args_level) != 0) && !any(args_level == "")) {
                        col = densCols(x=structure(x, features=attr(obj$input$data,"features")),
                                       y=y,
                                       xlim = Xlim,
