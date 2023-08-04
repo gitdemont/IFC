@@ -1375,6 +1375,12 @@ adjustGraph=function(obj, graph, adjust_graph=TRUE, ...) {
   if(inherits(x = g, what = "try-error")) return(list())
   
   # try to draw the graph
+  dv <- dev.list()
+  on.exit(suspendInterrupts({
+    while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
+      dev.off(which = rev(dev.list())[1])
+    }
+  }), add = TRUE)
   drawable = try(plot_lattice(plotGraph(obj = obj, graph = g, draw = FALSE, stats_print = FALSE)), silent = TRUE)
   if(inherits(x = drawable, what = "try-error")) return(list())
   return(g)
