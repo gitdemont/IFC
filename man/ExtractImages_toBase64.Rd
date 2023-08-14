@@ -9,7 +9,10 @@ ExtractImages_toBase64(
   objects,
   offsets,
   display_progress = TRUE,
-  mode = c("rgb", "gray")[1]
+  mode = c("rgb", "gray")[1],
+  write_to,
+  base64_id,
+  base64_att
 )
 }
 \arguments{
@@ -25,7 +28,23 @@ If \code{'offsets'} are not provided, extra arguments can also be passed with \c
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
-\item{mode}{(\code{\link{objectParam}} argument) color mode export. Either \code{"rgb"}, \code{"gray"}. Default is \code{"rgb"}.}
+\item{write_to}{used to compute respectively exported file name.\cr
+Exported base64 data-uri will be deduced from this pattern. Allowed export are \code{".bmp"}, \code{".jpg"}, \code{".jpeg"}, \code{".png"}, \code{".tif"}, \code{".tiff"}.
+Note that \code{".bmp"} is faster but files are not compressed producing bigger data.\cr
+Placeholders, if found, will be substituted:\cr
+-\code{\%d}: with full path directory\cr
+-\code{\%p}: with first parent directory\cr
+-\code{\%e}: with extension (without leading .)\cr
+-\code{\%s}: with shortname (i.e. basename without extension)\cr
+-\code{\%o}: with object_id\cr
+-\code{\%c}: with channel_id\cr
+A good trick is to use: \code{"\%o_\%c.bmp"}.}
+
+\item{base64_id}{whether to add id attribute to base64 exported object.}
+
+\item{base64_att}{attributes to add to base64 exported object.\cr
+For example, use \code{"class='draggable'"}.\cr
+Note that \code{id} (if \code{'base64_id'} is \code{TRUE}) and \code{width} and \code{height} are already used.}
 }
 \value{
 A list of base64 encoded images corresponding to objects extracted.
@@ -34,8 +53,13 @@ A list of base64 encoded images corresponding to objects extracted.
 Function to shortcut extraction, normalization and eventually colorization of images to base64 ! excludes mask.
 }
 \details{
-If \code{'param'} is provided 'in \code{'...'}, \code{'param$export'<-"base64"} and \code{'param$mode'<-'mode'} \strong{only} will be overwritten.
+If \code{'param'} is provided 'in \code{'...'}:\cr
+-\code{'param$export'<-"base64"} and \code{'param$mode'<-'mode'} \strong{only} will be overwritten.\cr
+-if \code{'write_to'} is not missing, \code{'param$write_to'<-'write_to'} will be overwritten. Otherwise, \code{'param$write_to'} will be used.\cr
+-if \code{'base64_id'} is not missing, \code{'param$base64_id'<-'base64_id'} will be overwritten. Otherwise, \code{'param$base64_id'} will be used.\cr
+-if \code{'base64_att'} is not missing, \code{'param$base64_att'<-'base64_att'} will be overwritten. Otherwise, \code{'param$base64_att'} will be used.\cr\cr
+When missing and not found \code{'param'}, default values will be used for \code{'write_to'}(=\strong{"\%o_\%c.bmp"}), \code{'base64_id'}(=\strong{FALSE}) and \code{'base64_att'}(=\strong{""})
 }
 \note{
-Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toBase64}} input arguments.\cr
+Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toBase64}} input arguments.
 }

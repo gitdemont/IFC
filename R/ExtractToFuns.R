@@ -100,7 +100,10 @@ polyExtractTo <- function(...,
   verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
   
-  # force 'mode' and 'write_to' parameters depending on 'export'
+  # force 'base64_id', 'base64_att', 'mode', 'write_to' and 'overwrite' parameters depending on 'export'
+  overwrite = FALSE
+  base64_id = FALSE
+  base64_att = ""
   if(export == "matrix") {
     if(length(param) != 0) mode = param$mode
     assert(mode, len = 1, alw = c("rgb", "gray", "raw"))
@@ -108,18 +111,37 @@ polyExtractTo <- function(...,
   } else {
     assert(mode, len = 1, alw = c("rgb", "gray"))
     write_to = NULL
-    if(export == "base64") write_to = "%o_%c.bmp"
-    if(length(param) != 0) write_to = param$write_to
+    if(export == "base64") {
+      write_to = "%o_%c.bmp"
+    } else {
+      overwrite = dots[["overwrite"]]
+    }
+    if(length(param) != 0) {
+      if(((param$export == "file") && (export == "file")) ||
+         (export != "file")) {
+        write_to = param$write_to
+      }
+      base64_id = param$base64_id
+      base64_att = param$base64_att
+    }
     if(length(dots[["write_to"]]) != 0) write_to = dots[["write_to"]]
+    if(length(dots[["base64_id"]]) != 0) base64_id = dots[["base64_id"]]
+    if(length(dots[["base64_att"]]) != 0) base64_att = dots[["base64_att"]]
     if(length(write_to) == 0) stop("'write_to' can't be missing")
     write_to = na.omit(as.character(write_to))
     assert(write_to, len = 1, typ = "character")
+    overwrite = as.logical(overwrite)
+    assert(overwrite, len = 1, alw = c(TRUE, FALSE))
+    base64_id = as.logical(base64_id)
+    assert(base64_id, len = 1, alw = c(TRUE, FALSE))
+    base64_att = na.omit(as.character(base64_att))
+    assert(base64_att, len = 1, typ = "character")
   }
   
   # define arguments input to param
   param_extra_a = setdiff(names(formals(objectParam)), "...")
-  param_extra_n = c("ifd","param","bypass","verbose", # arguments to objectExtract
-                    "export","mode","write_to")       # arguments to objectParam
+  param_extra_n = c("ifd","param","bypass","verbose",      # arguments to objectExtract
+                    "export","mode","write_to","overwrite")# arguments to objectParam
   param_extra = names(dots) %in% param_extra_n
   dots = dots[!param_extra] # remove not allowed param
   param_extra_a = setdiff(param_extra_a, param_extra_n)
@@ -137,12 +159,14 @@ polyExtractTo <- function(...,
                       args = c(list(fileName = fileName,
                                     export = export,
                                     write_to = write_to,
+                                    overwrite = overwrite,
                                     mode = mode), dots_param))
     } else {
       param = do.call(what = "objectParam",
                       args = c(list(info = quote(input$info),
                                     export = export,
                                     write_to = write_to,
+                                    overwrite = overwrite,
                                     mode = mode), dots_param))
     }
   } else {
@@ -150,6 +174,9 @@ polyExtractTo <- function(...,
     param$export = export
     param$mode = mode
     if(export != "matrix") {
+      param$overwrite = overwrite
+      param$base64_id = base64_id
+      param$base64_att = base64_att
       param$write_to <- write_to
       param$splitp_obj = splitp(param$write_to)
       param$dir_name <- dirname(formatn(splitp_obj = splitp(param$write_to), splitf_obj = param$splitf_obj))
@@ -303,56 +330,11 @@ ExtractMasks_toMatrix <- function(...,
   do.call(what = polyExtractTo, args = c(dots, args))
 }
 
-#' @title Shortcut for Batch Images Extraction to Base64
-#' @description
-#' Function to shortcut extraction, normalization and eventually colorization of images to base64 ! excludes mask.
-#' @inheritParams ExtractImages_toMatrix
-#' @param mode (\code{\link{objectParam}} argument) color mode export. Either \code{"rgb"}, \code{"gray"}. Default is \code{"rgb"}. 
-#' @note Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toBase64}} input arguments.\cr
-#' @details If \code{'param'} is provided 'in \code{'...'}, \code{'param$export'<-"base64"} and \code{'param$mode'<-'mode'} \strong{only} will be overwritten.
-#' @return A list of base64 encoded images corresponding to objects extracted.
-#' @export
-ExtractImages_toBase64 <- function(...,
-                                   objects,
-                                   offsets,
-                                   display_progress = TRUE,
-                                   mode = c("rgb","gray")[1]) {
-  dots = list(...)
-  dots = dots[!(names(dots) %in% c("image_type", "export"))]
-  args = list(image_type = "img", export = "base64")
-  if(!missing(objects)) args = c(args, list(objects = objects))
-  if(!missing(offsets)) args = c(args, list(offsets = offsets))
-  args = c(args, list(display_progress = display_progress, mode = mode))
-  do.call(what = polyExtractTo, args = c(dots, args))
-}
-
-
-#' @title Shortcut for Batch Masks Extraction to Base64
-#' @description
-#' Function to shortcut extraction, normalization and eventually colorization of masks to base64 ! excludes image.
-#' @inheritParams ExtractImages_toBase64
-#' @note Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractMasks_toBase64}} input arguments.
-#' @inherit ExtractImages_toBase64 details return
-#' @export
-ExtractMasks_toBase64 <- function(...,
-                                  objects,
-                                  offsets,
-                                  display_progress = TRUE,
-                                  mode = c("rgb","gray")[1]) {
-  dots = list(...)
-  dots = dots[!(names(dots) %in% c("image_type", "export"))]
-  args = list(image_type = "msk", export = "base64")
-  if(!missing(objects)) args = c(args, list(objects = objects))
-  if(!missing(offsets)) args = c(args, list(offsets = offsets))
-  args = c(args, list(display_progress = display_progress, mode = mode))
-  do.call(what = polyExtractTo, args = c(dots, args))
-}
-
 #' @title Shortcut for Batch Images Extraction to Files
 #' @description
 #' Function to shortcut extraction, normalization and eventually colorization of images to file ! excludes mask.
+#' @inheritParams ExtractMasks_toMatrix
 #' @param mode (\code{\link{objectParam}} argument) color mode export. Either \code{"rgb"}, \code{"gray"}. Default is \code{"rgb"}.
-#' @inheritParams ExtractImages_toBase64
 #' @param write_to used to compute respectively exported file name.\cr
 #' Exported \code{"file"} extension will be deduced from this pattern. Allowed export are \code{".bmp"}, \code{".jpg"}, \code{".jpeg"}, \code{".png"}, \code{".tif"}, \code{".tiff"}.
 #' Note that \code{".bmp"} is faster but files are not compressed producing bigger data.\cr
@@ -363,10 +345,13 @@ ExtractMasks_toBase64 <- function(...,
 #' -\code{\%s}: with shortname (i.e. basename without extension)\cr
 #' -\code{\%o}: with object_id\cr
 #' -\code{\%c}: with channel_id\cr
-#' A good trick is to use:\cr
-#' -\code{"\%d/\%s/\%s_\%o_\%c.tiff"}, when \code{'export'} is \code{"file"}.
+#' A good trick is to use: \code{"\%d/\%s/\%s_\%o_\%c.tiff"}.
+#' @param overwrite whether to overwrite file or not. Default is \code{FALSE}.
 #' @note Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toFile}} input arguments.
-#' @details If \code{'param'} is provided in \code{'...'}, \code{'param$export'<-"file"}, \code{'param$write_to'<-'write_to'} and \code{'param$mode'<-'mode'} \strong{only} will be overwritten.
+#' @details If \code{'param'} is provided in \code{'...'}:\cr
+#' -\code{'param$export'<-"file"}, \code{'param$mode'<-'mode'} and \code{'param$overwrite'<-'overwrite'} will be overwritten.\cr
+#' -if \code{'write_to'} is not missing, \code{'param$write_to'<-'write_to'} will be overwritten. Otherwise, \code{'param$write_to'} will be used \strong{only} if \code{'param$export'} was \code{"file"}.\cr\cr
+#' \code{'write_to'} has to be provided if \code{'param'} can't be found in \code{'...'} or if \code{'param$export'} was not \code{"file"}. 
 #' @return It invisibly returns a list of exported file path of corresponding to objects extracted.
 #' @export
 ExtractImages_toFile <- function(...,
@@ -374,13 +359,14 @@ ExtractImages_toFile <- function(...,
                                  offsets,
                                  display_progress = TRUE,
                                  mode = c("rgb","gray")[1], 
-                                 write_to) {
+                                 write_to,
+                                 overwrite = FALSE) {
   dots = list(...)
   dots = dots[!(names(dots) %in% c("image_type", "export"))]
   args = list(image_type = "img", export = "file")
   if(!missing(objects)) args = c(args, list(objects = objects))
   if(!missing(offsets)) args = c(args, list(offsets = offsets))
-  args = c(args, list(display_progress = display_progress, mode = mode))
+  args = c(args, list(display_progress = display_progress, mode = mode, overwrite = overwrite))
   if(!missing(write_to)) args = c(args, list(write_to = write_to))
   do.call(what = polyExtractTo, args = c(dots, args))
 }
@@ -397,13 +383,91 @@ ExtractMasks_toFile <- function(...,
                                 offsets,
                                 display_progress = TRUE,
                                 mode = c("rgb","gray")[1], 
-                                write_to) {
+                                write_to,
+                                overwrite = FALSE) {
   dots = list(...)
   dots = dots[!(names(dots) %in% c("image_type", "export"))]
   args = list(image_type = "msk", export = "file")
   if(!missing(objects)) args = c(args, list(objects = objects))
   if(!missing(offsets)) args = c(args, list(offsets = offsets))
-  args = c(args, list(display_progress = display_progress, mode = mode))
+  args = c(args, list(display_progress = display_progress, mode = mode, overwrite = overwrite))
   if(!missing(write_to)) args = c(args, list(write_to = write_to))
   do.call(what = polyExtractTo, args = c(dots, args))
 }
+
+#' @title Shortcut for Batch Images Extraction to Base64
+#' @description
+#' Function to shortcut extraction, normalization and eventually colorization of images to base64 ! excludes mask.
+#' @inheritParams ExtractImages_toMatrix
+#' @param write_to used to compute respectively exported file name.\cr
+#' Exported base64 data-uri will be deduced from this pattern. Allowed export are \code{".bmp"}, \code{".jpg"}, \code{".jpeg"}, \code{".png"}, \code{".tif"}, \code{".tiff"}.
+#' Note that \code{".bmp"} is faster but files are not compressed producing bigger data.\cr
+#' Placeholders, if found, will be substituted:\cr
+#' -\code{\%d}: with full path directory\cr
+#' -\code{\%p}: with first parent directory\cr
+#' -\code{\%e}: with extension (without leading .)\cr
+#' -\code{\%s}: with shortname (i.e. basename without extension)\cr
+#' -\code{\%o}: with object_id\cr
+#' -\code{\%c}: with channel_id\cr
+#' A good trick is to use: \code{"\%o_\%c.bmp"}.
+#' @param base64_id whether to add id attribute to base64 exported object.
+#' @param base64_att attributes to add to base64 exported object.\cr
+#' For example, use \code{"class='draggable'"}.\cr
+#' Note that \code{id} (if \code{'base64_id'} is \code{TRUE}) and \code{width} and \code{height} are already used.
+#' @note Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toBase64}} input arguments.
+#' @details If \code{'param'} is provided 'in \code{'...'}:\cr
+#' -\code{'param$export'<-"base64"} and \code{'param$mode'<-'mode'} \strong{only} will be overwritten.\cr
+#' -if \code{'write_to'} is not missing, \code{'param$write_to'<-'write_to'} will be overwritten. Otherwise, \code{'param$write_to'} will be used.\cr
+#' -if \code{'base64_id'} is not missing, \code{'param$base64_id'<-'base64_id'} will be overwritten. Otherwise, \code{'param$base64_id'} will be used.\cr
+#' -if \code{'base64_att'} is not missing, \code{'param$base64_att'<-'base64_att'} will be overwritten. Otherwise, \code{'param$base64_att'} will be used.\cr\cr
+#' When missing and not found \code{'param'}, default values will be used for \code{'write_to'}(=\strong{"\%o_\%c.bmp"}), \code{'base64_id'}(=\strong{FALSE}) and \code{'base64_att'}(=\strong{""})
+#' @return A list of base64 encoded images corresponding to objects extracted.
+#' @export
+ExtractImages_toBase64 <- function(...,
+                                   objects,
+                                   offsets,
+                                   display_progress = TRUE,
+                                   mode = c("rgb","gray")[1],
+                                   write_to,
+                                   base64_id,
+                                   base64_att) {
+  dots = list(...)
+  dots = dots[!(names(dots) %in% c("image_type", "export"))]
+  args = list(image_type = "img", export = "base64")
+  if(!missing(objects)) args = c(args, list(objects = objects))
+  if(!missing(offsets)) args = c(args, list(offsets = offsets))
+  args = c(args, list(display_progress = display_progress, mode = mode))
+  if(!missing(write_to)) args = c(args, list(write_to = write_to))
+  if(!missing(base64_id)) args = c(args, list(base64_id = base64_id))
+  if(!missing(base64_att)) args = c(args, list(base64_att = base64_att))
+  do.call(what = polyExtractTo, args = c(dots, args))
+}
+
+
+#' @title Shortcut for Batch Masks Extraction to Base64
+#' @description
+#' Function to shortcut extraction, normalization and eventually colorization of masks to base64 ! excludes image.
+#' @inheritParams ExtractImages_toBase64
+#' @note Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractMasks_toBase64}} input arguments.
+#' @inherit ExtractImages_toBase64 details return
+#' @export
+ExtractMasks_toBase64 <- function(...,
+                                  objects,
+                                  offsets,
+                                  display_progress = TRUE,
+                                  mode = c("rgb","gray")[1],
+                                  write_to,
+                                  base64_id,
+                                  base64_att) {
+  dots = list(...)
+  dots = dots[!(names(dots) %in% c("image_type", "export"))]
+  args = list(image_type = "msk", export = "base64")
+  if(!missing(objects)) args = c(args, list(objects = objects))
+  if(!missing(offsets)) args = c(args, list(offsets = offsets))
+  args = c(args, list(display_progress = display_progress, mode = mode))
+  if(!missing(write_to)) args = c(args, list(write_to = write_to))
+  if(!missing(base64_id)) args = c(args, list(base64_id = base64_id))
+  if(!missing(base64_att)) args = c(args, list(base64_att = base64_att))
+  do.call(what = polyExtractTo, args = c(dots, args))
+}
+

@@ -10,7 +10,8 @@ ExtractImages_toFile(
   offsets,
   display_progress = TRUE,
   mode = c("rgb", "gray")[1],
-  write_to
+  write_to,
+  overwrite = FALSE
 )
 }
 \arguments{
@@ -38,8 +39,9 @@ Placeholders, if found, will be substituted:\cr
 -\code{\%s}: with shortname (i.e. basename without extension)\cr
 -\code{\%o}: with object_id\cr
 -\code{\%c}: with channel_id\cr
-A good trick is to use:\cr
--\code{"\%d/\%s/\%s_\%o_\%c.tiff"}, when \code{'export'} is \code{"file"}.}
+A good trick is to use: \code{"\%d/\%s/\%s_\%o_\%c.tiff"}.}
+
+\item{overwrite}{whether to overwrite file or not. Default is \code{FALSE}.}
 }
 \value{
 It invisibly returns a list of exported file path of corresponding to objects extracted.
@@ -48,7 +50,10 @@ It invisibly returns a list of exported file path of corresponding to objects ex
 Function to shortcut extraction, normalization and eventually colorization of images to file ! excludes mask.
 }
 \details{
-If \code{'param'} is provided in \code{'...'}, \code{'param$export'<-"file"}, \code{'param$write_to'<-'write_to'} and \code{'param$mode'<-'mode'} \strong{only} will be overwritten.
+If \code{'param'} is provided in \code{'...'}:\cr
+-\code{'param$export'<-"file"}, \code{'param$mode'<-'mode'} and \code{'param$overwrite'<-'overwrite'} will be overwritten.\cr
+-if \code{'write_to'} is not missing, \code{'param$write_to'<-'write_to'} will be overwritten. Otherwise, \code{'param$write_to'} will be used \strong{only} if \code{'param$export'} was \code{"file"}.\cr\cr
+\code{'write_to'} has to be provided if \code{'param'} can't be found in \code{'...'} or if \code{'param$export'} was not \code{"file"}.
 }
 \note{
 Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toFile}} input arguments.
