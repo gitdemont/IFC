@@ -18,29 +18,28 @@ objectDisplay(
 \item{image}{An object extracted by \code{\link{objectExtract}} of class `IFC_img` or `IFC_msk`.\cr
 Note that a matrix with finite values can also be used.}
 
-\item{input_range}{a finite numeric vector of 2 values, sets the range of the input intensity values.\cr
-Values exceeding this range are clipped. Default is 'c(0, 4095)'.}
+\item{input_range}{a finite numeric vector of 2 values, sets the range of the input intensity values. Values outside this range are clipped. Default is \code{[0,4095]}.}
 
-\item{full_range}{if 'full_range' is TRUE, then 'input_range' will be set to 'c(0, 4095)' and 'gamma' forced to 1. Default is FALSE.}
+\item{full_range}{if \code{'full_range'} is \code{TRUE}, then \code{'input_range'} will be set to \code{[0,4095]} and \code{'gamma'} forced to \code{1}. Default is \code{FALSE}.}
 
-\item{force_range}{if 'force_range' is TRUE, then 'input_range' will be adjusted to object range in [-4095, +inf] and 'gamma' forced to 1. Default is FALSE.\cr
-Note that this parameter takes the precedence over 'input_range' and 'full_range'.}
+\item{force_range}{if \code{'force_range'} is \code{TRUE}, then \code{'input_range'} will be adjusted to \code{'image'} range in \code{[-4095,+inf]} and \code{'gamma'} forced to \code{1}. Default is \code{FALSE}.\cr
+Note that this parameter takes the precedence over \code{input_range}' and \code{full_range}'.}
 
-\item{gamma}{gamma correction. Default is 1, for no correction.}
+\item{gamma}{\code{'gamma'} correction. Default is \code{1}, for no correction.}
 
-\item{color}{a color. Default is "Green".}
+\item{color}{a color. Default is \code{"Green"}.}
 
-\item{dpi}{display resolution. Default is 300.}
+\item{dpi}{display resolution. Default is \code{300}.}
 }
 \value{
-it invisibly returns NULL
+it invisibly returns \code{NULL}
 }
 \description{
 This function is intended to display object extracted by \code{\link{objectExtract}}.
 }
 \details{
-If input 'image' is of class `IFC_img` or `IFC_msk`, then if 'input_range', 'full_range', 'force_range', 'gamma' and / or 'color' parameters is/are missing,
-it/they will be extracted from 'image' attributes.\cr
-If input 'image' is not of one of class `IFC_img` or `IFC_msk`, then force_range will be forced to TRUE.\cr
+If \code{'image'} is of class `IFC_img` or `IFC_msk`, then if \code{'input_range'}, \code{'full_range'}, \code{'force_range'}, \code{'gamma'} and/or \code{'color'} parameters is/are missing,
+it/they will be extracted from \code{'image'} attributes.\cr
+If \code{'image'} is not of one of class `IFC_img` or `IFC_msk`, then \code{'force_range'} will be forced to \code{TRUE}.\cr
 An error will be thrown if input image contains non finite values.
 }

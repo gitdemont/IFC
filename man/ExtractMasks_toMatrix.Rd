@@ -7,15 +7,15 @@
 ExtractMasks_toMatrix(..., objects, offsets, display_progress = TRUE)
 }
 \arguments{
-\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of \code{ifd} and \code{bypass}(=\strong{TRUE}).\cr
-\strong{/!\\} If not any of '\code{fileName}', '\code{info}' and '\code{param}' can be found in \code{\dots} then \code{attr(offsets, "fileName_image")} will be used as '\code{fileName}' input parameter to pass to \code{\link{objectParam}}.}
+\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of \code{'ifd'} and \code{'bypass'}(=\strong{TRUE}).\cr
+\strong{/!\\} If not any of \code{'fileName'}, \code{'info'} and \code{'param'} can be found in \code{'...'} then \code{attr(offsets, "fileName_image")} will be used as \code{'fileName'} input parameter to pass to \code{\link{objectParam}}.}
 
 \item{objects}{integer vector, IDEAS objects ids numbers to use.
 This argument is not mandatory, if missing, the default, all objects will be used.}
 
 \item{offsets}{object of class `IFC_offset`.
 This argument is not mandatory but it may allow to save time for repeated image export on same file.\cr
-If '\code{offsets}' are not provided extra arguments can also be passed with \code{\dots} to \code{\link{getOffsets}}.}
+If \code{'offsets'} are not provided, extra arguments can also be passed with \code{'...'} to \code{\link{getOffsets}}.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 }
@@ -26,6 +26,8 @@ A list of matrices/arrays of images corresponding to objects extracted.
 Function to shortcut extraction, normalization and eventually colorization of masks to matrix ! excludes image.
 }
 \details{
-arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractMasks_toMatrix}} input arguments.\cr
-If '\code{param}' is provided 'in \code{\dots}, \code{param$export}(=\strong{"matrix"}) \strong{only} will be overwritten.
+If \code{'param'} is provided in \code{'...'}, \code{'param$export'<-"matrix"} \strong{only} will be overwritten.
+}
+\note{
+Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractMasks_toMatrix}} input arguments.
 }

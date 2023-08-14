@@ -6,15 +6,14 @@
 \arguments{
 \item{mat}{a finite NumericMatrix.}
 
-\item{input_range}{a finite NumericVector, sets the range of the input intensity values. Default is c(0,4095).
-values outside this range are clipped.}
+\item{input_range}{a finite NumericVector, sets the range of the input intensity values. Values outside this range are clipped. Default is \code{[0.0,4095.0]}.}
 
-\item{full_range}{if full_range is TRUE, then input_range will be set to 'c(0,4095)' and gamma forced to 1. Default is false.}
+\item{full_range}{if \code{'full_range'} is \code{true}, then \code{'input_range'} will be set to \code{[0.0,4095.0]} and \code{'gamma'} forced to \code{1.0}. Default is \code{false}.}
 
-\item{force_range}{if force_range is TRUE, then input_range will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
-Note that this parameter takes the precedence over 'input_range' and 'full_range'.}
+\item{force_range}{if \code{'force_range'} is \code{true}, then \code{'input_range'} will be adjusted to \code{'mat'} range in \code{[-4095.0, +inf]} and \code{'gamma'} forced to \code{1.0}. Default is \code{false}.\cr
+Note that this parameter takes the precedence over \code{'input_range'} and \code{'full_range'}.}
 
-\item{gamma}{correction. Default is 1, for no correction.}
+\item{gamma}{correction. Default is \code{1.0}, for no correction.}
 }
 \description{
 Normalizes a finite matrix to [0,1]

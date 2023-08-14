@@ -10,15 +10,15 @@
 
 \item{mask}{a NumericMatrix.}
 
-\item{xoff}{x offset in A to start writing B.}
+\item{xoff}{x offset in \code{'A'} to start writing \code{'B'}.}
 
-\item{yoff}{x offset in A to start writing B.}
+\item{yoff}{x offset in \code{'A'} to start writing \code{'B'}.}
 
-\item{invert}{a logical. Default is false.
-When false, the default, values of B are written into A when mask is not 0.
-When true, values of 1-B are written into A when mask is not 0.}
+\item{invert}{a logical. Default is \code{false}.
+When \code{false}, the default, values of \code{'B'} are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
+When \code{true}, values of '\code{1-B}' are written into \code{'A'} when \code{'mask'} is not \code{0.0}.}
 }
 \description{
-Writes matrix B in matrix A according to mask.
+Writes matrix \code{'B'} in matrix \code{'A'} according to \code{'mask'}.
 }
 \keyword{internal}

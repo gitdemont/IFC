@@ -43,17 +43,25 @@
 #include "align.hpp"
 using namespace Rcpp;
 
+// use stats::quantile to compute input_range for matrix normalization
+Rcpp::NumericVector hpp_quantile(const Rcpp::NumericMatrix mat,
+                                 const double prob1 = 0.0,
+                                 const double prob2 = 1.0) {
+  Rcpp::Environment senv = Rcpp::Environment::namespace_env("stats");
+  Rcpp::Function sfun = senv["quantile"];
+  return sfun(mat, Rcpp::Named("probs", Rcpp::NumericVector::create(prob1, prob2)));
+}
+
 //' @title Matrix Normalization
 //' @name cpp_normalize
 //' @description
 //' Normalizes a finite matrix to [0,1]
 //' @param mat a finite NumericMatrix.
-//' @param input_range a finite NumericVector, sets the range of the input intensity values. Default is c(0,4095).
-//' values outside this range are clipped.
-//' @param full_range if full_range is TRUE, then input_range will be set to 'c(0,4095)' and gamma forced to 1. Default is false.
-//' @param force_range if force_range is TRUE, then input_range will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
-//' Note that this parameter takes the precedence over 'input_range' and 'full_range'.
-//' @param gamma correction. Default is 1, for no correction.
+//' @param input_range a finite NumericVector, sets the range of the input intensity values. Values outside this range are clipped. Default is \code{[0.0,4095.0]}.
+//' @param full_range if \code{'full_range'} is \code{true}, then \code{'input_range'} will be set to \code{[0.0,4095.0]} and \code{'gamma'} forced to \code{1.0}. Default is \code{false}.
+//' @param force_range if \code{'force_range'} is \code{true}, then \code{'input_range'} will be adjusted to \code{'mat'} range in \code{[-4095.0, +inf]} and \code{'gamma'} forced to \code{1.0}. Default is \code{false}.\cr
+//' Note that this parameter takes the precedence over \code{'input_range'} and \code{'full_range'}.
+//' @param gamma correction. Default is \code{1.0}, for no correction.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
@@ -112,14 +120,13 @@ Rcpp::NumericMatrix hpp_normalize (const Rcpp::NumericMatrix mat,
 //' @name cpp_cleanse
 //' @description
 //' Replaces values in matrix mat according to mask msk.
-//' Depending of add_noise parameter values will be replaced with noise or not.
+//' Depending of \code{'add_noise'} parameter, values of \code{'mat'} will be replaced with noise or not.
 //' @param mat a NumericMatrix.
 //' @param msk a IntegerMatrix.
-//' @param add_noise logical, if true adds normal noise.
-//' Rcpp::Rf_rnorm(bg, sd) function is used. Default is true.
-//' @param bg double, mean value of the background added if add_noise is true. Default is 0.0
-//' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0
-//' @return a NumericMatrix with replaced according to msk.
+//' @param add_noise bool, whether to add normal noise or not, \code{Rcpp::Rf_rnorm(bg, sd)} function is used. Default is \code{true}.
+//' @param bg double, mean value of the background added if \code{'add_noise'} is \code{true}. Default is \code{0.0}.
+//' @param sd double, standard deviation of the background added if \code{'add_noise'} is \code{true}. Default is \code{0.0}.
+//' @return a NumericMatrix cleansed according to \code{'msk'}.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
@@ -141,8 +148,8 @@ Rcpp::NumericMatrix hpp_cleanse (const Rcpp::NumericMatrix mat,
 //' @title Equal Sized Matrix to Matrix Writer According to Mask
 //' @name cpp_mask
 //' @description
-//' Writes matrix B in matrix A according to mask.
-//' If mask is not 0 B is written, A otherwise.
+//' Writes matrix \code{'B'} in matrix \code{'A'} according to \code{'mask'}.
+//' If \code{'mask'} is not \code{0.0} \code{'B'} is written, \code{'A'} otherwise.
 //' @param A a NumericMatrix.
 //' @param B a NumericMatrix.
 //' @param mask a NumericMatrix.
@@ -162,15 +169,15 @@ Rcpp::NumericMatrix hpp_mask (const Rcpp::NumericMatrix A,
 //' @title Matrix to Matrix Writer According to Mask with Offsets
 //' @name cpp_mark
 //' @description
-//' Writes matrix B in matrix A according to mask.
+//' Writes matrix \code{'B'} in matrix \code{'A'} according to \mask{'mask'}.
 //' @param A a NumericMatrix.
 //' @param B a NumericMatrix.
 //' @param mask a NumericMatrix.
-//' @param xoff x offset in A to start writing B.
-//' @param yoff x offset in A to start writing B.
-//' @param invert a logical. Default is false.
-//' When false, the default, values of B are written into A when mask is not 0.
-//' When true, values of 1-B are written into A when mask is not 0.
+//' @param xoff x offset in \code{'A'} to start writing \code{'B'}.
+//' @param yoff x offset in \code{'A'} to start writing \code{'B'}.
+//' @param invert a logical. Default is \code{false}.
+//' When \code{false}, the default, values of \code{'B'} are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
+//' When \code{true}, values of '\code{1-B}' are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
@@ -203,23 +210,21 @@ Rcpp::NumericMatrix hpp_mark (const Rcpp::NumericMatrix A,
 //' @param color NumericVector, whose members are h,s,v color.
 //' This vector has to be named with 1st name being the name of this color.
 //' @param msk IntegerMatrix.
-//' @param size a length 2 IntegerVector, of final dimensions (height,width) of the image. Default is 0,0 for no change.
-//' @param mode string, color mode export. Either "rgb", "gray" or "raw". Default is "raw".
-//' @param type uint16_t image object type.
-//' Rcpp::Rf_rnorm(bg, sd) function is used. Default is true.
-//' @param input_range a finite NumericVector, only apply when mode is not "raw", sets the range of the input intensity values. Default is c(0,4095).
-//' values exceeding this range are clipped.
-//' @param add_noise bool, if true adds normal noise.
-//' @param bg double, mean value of the background added if add_noise is true. Default is 0.
-//' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
-//' @param full_range bool, only apply when mode is not "raw", if full_range is TRUE, then 'input_range' will be set to 'c(0,4095)' and gamma forced to 1. Default is false.
-//' @param force_range bool, only apply when mode is not "raw", if force_range is TRUE, then 'input_range' will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
-//' Note that this parameter takes the precedence over 'input_range' and 'full_range'.
-//' @param gamma correction. Default is 1.0, for no correction.
-//' @param spatialX X offset correction. Default is 0.0 for no change.
-//' @param spatialY Y offset correction. Default is 0.0 for no change.
-//' @details When add_noise is false, background will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
-//' when a mask is detected, add_noise, full_range and force_range are set to false, background mean and sd to 0, and input_range to [0,3].\cr
+//' @param size a length 2 IntegerVector, of final dimensions (height,width) of the image. Default is \code{0,0} for no change.
+//' @param mode string, color mode export. Either \code{"rgb"}, \code{"gray"} or \code{"raw"}. Default is \code{"raw"}.
+//' @param type uint16_t image object type. Default is \code{2}.
+//' @param input_range a finite NumericVector, only apply when \code{'mode'} is not \code{"raw"}, sets the range of the input intensity values. Values outside this range are clipped. Default is \code{[0.0,4095.0]}.
+//' @param add_noise bool, whether to add normal noise or not. Default is \code{true}.
+//' @param bg double, mean value of the background added if \code{'add_noise'} is \code{true}. Default is \code{0.0}.
+//' @param sd double, standard deviation of the background added if \code{'add_noise'} is \code{true}. Default is \code{0.0}.
+//' @param full_range bool, only apply when \code{'mode'} is not \code{"raw"}, if \code{'full_range'} is \code{true}, then \code{'input_range'} will be set to \code{[0.0,4095.0]} and \code{'gamma'} forced to \code{1.0}. Default is \code{false}.
+//' @param force_range bool, only apply when \code{'mode'} is not \code{"raw"}, if \code{'force_range'} is \code{true}, then \code{'input_range'} will be adjusted to object range in \code{[-4095.0, +inf]} and \code{'gamma'} forced to \code{1.0}. Default is \code{false}.\cr
+//' Note that this parameter takes the precedence over \code{'input_range'} and \code{'full_range'}.
+//' @param gamma correction. Default is \code{1.0}, for no correction.
+//' @param spatialX X offset correction. Default is \code{0.0} for no change.
+//' @param spatialY Y offset correction. Default is \code{0.0} for no change.
+//' @details When a mask is detected, \code{'add_noise'}, \code{'full_range'} and \code{'force_range'} are set to \code{false}, \code{'bg'} and \code{'sd'} to \code{0.0}, \code{'input_range'} to \code{[0.0,3.0]} and \code{'gamma'} to \code{1.0}.\cr\cr
+//' Experimental (as of v0.2.0.501): when \code{'mode'} is not \code{"raw"}, if \code{'input_range'} is within \code{]0,1[}, it will be used as \code{'probs'} argument to \link[stats]{quantile} to determine clipping range from image object, in addition, \code{'gamma'} will be forced to \code{1.0}.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
@@ -298,13 +303,21 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
       foo = hpp_cleanse(hpp_align_img(mat, spatialX, spatialY), hpp_align_msk(msk, spatialX, spatialY), add_noise, bg_2, sd_2);
     } 
     foo = hpp_resize(foo, size[0], size[1], add_noise, bg_2, sd_2);
+    Rcpp::NumericVector img_range = input_range;
+    double img_gamma = gamma;
     if(mode != "raw") {
-      foo = hpp_normalize(foo, input_range, full_range, force_range, gamma);
+      img_range = hpp_check_range(hpp_check_range(input_range)); // twice to ensure that input_range is at least of length 2
+      if((img_range[0] > 0.0) && (img_range[0] < 1.0) && (img_range[1] > 0.0) && (img_range[1] < 1.0)) {
+        img_range = hpp_quantile(foo, img_range[0], img_range[1]);
+        img_range.attr("class") = "quantile";
+        img_gamma = 1.0;
+      }
+      foo = hpp_normalize(foo, img_range, full_range, force_range, img_gamma);
     }
     if(mode == "rgb") {
       Rcpp::NumericVector bar = hpp_M_HSV2RGB(foo, color[0], color[1]);
       bar.attr("dim") = Rcpp::Dimension(foo.nrow(), foo.ncol(), 3);
-      bar.attr("input_range") = input_range;
+      bar.attr("input_range") = img_range;
       bar.attr("full_range") = full_range;
       bar.attr("force_range") = force_range;
       bar.attr("gamma") = gamma;
@@ -317,7 +330,7 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
       bar.attr("class") = "IFC_img";
       return bar;
     }
-    foo.attr("input_range") = input_range;
+    foo.attr("input_range") = img_range;
     foo.attr("full_range") = full_range;
     foo.attr("force_range") = force_range;
     foo.attr("gamma") = gamma;
@@ -339,27 +352,28 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
 //' @param fname string, path to file
 //' @param ifd List, ifd information of class IFC_ifd
 //' @param colors List of colors to use.
-//' @param channels DataFrame, channels information
-//' @param physicalChannel CharacterVector of indices for each channels
-//' @param xmin NumericVector of minimal values for each channels
-//' @param xmax NumericVector of maximal values for each channels
-//' @param spatialX NumericVector of X spatial offset correction for each channels
-//' @param spatialY NumericVector of Y spatial offset correction for each channels 
-//' @param removal IntegerVector of removal method to be used for each channels
-//' @param add_noise LogicalVector of whether to add_noise for each channels
-//' @param full_range LogicalVector of whether to use full_range for each channels
-//' @param force_range LogicalVector of whether to use force_range for each channels
-//' @param gamma NumericVector of the gamma for each channels
-//' @param chan_to_extract IntegerVector, channels to extract
-//' @param extract_msk uint8_t, type of masked to extract.\cr
-//' - 0: no mask\cr
-//' - 1: at least one raw mask\cr
-//' - 2: at least one clipped\cr
-//' - 3: at least one masked\cr
-//' - 4: at least one MC
-//' @param mode string, color mode export. Either "rgb", "gray" or "raw". Default is "raw".
-//' @param size a length 2 IntegerVector of final dimensions (height,width) of the image. Default is 0,0 for no change.
-//' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
+//' @param channels DataFrame, channels information.
+//' @param physicalChannel CharacterVector of indices for each channel.
+//' @param xmin NumericVector of minimal values for each channel.
+//' @param xmax NumericVector of maximal values for each channel.
+//' @param spatialX NumericVector of X spatial offset correction for each channel.
+//' @param spatialY NumericVector of Y spatial offset correction for each channel.
+//' @param removal IntegerVector of removal method to be used for each channel.
+//' @param add_noise LogicalVector of whether to \code{'add_noise'} for each channel.
+//' @param full_range LogicalVector of whether to use \code{'full_range'} for each channel.
+//' @param force_range LogicalVector of whether to use \code{'force_range'} for each channel.
+//' @param gamma NumericVector of the \code{'gamma'} for each channel.
+//' @param chan_to_extract IntegerVector, channels to extract.
+//' @param extract_msk uint8_t, type of mask to extract:\cr
+//' -\code{0}: no mask,\cr
+//' -\code{1}: at least one \code{"raw"},\cr
+//' -\code{2}: at least one \code{"clipped"},\cr
+//' -\code{3}: at least one \code{"masked"},\cr
+//' -\code{4}: at least one \code{"MC"} mask.
+//' @param mode string, color mode export. Either \code{"rgb"}, \code{"gray"} or \code{"raw"}. Default is \code{"raw"}.
+//' @param size a length 2 IntegerVector of final dimensions (height,width) of the image. Default is \code{0,0} for no change.
+//' @param verbose bool, whether to display information (use for debugging purpose). Default is \code{false}.
+//' @details When \code{'add_noise'} is \code{false}, background will be automatically set to minimal pixel value for \code{"masked"} and \code{"MC"} \code{'removal'} method.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]

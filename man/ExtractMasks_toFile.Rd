@@ -14,32 +14,32 @@ ExtractMasks_toFile(
 )
 }
 \arguments{
-\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of \code{ifd} and \code{bypass}(=\strong{TRUE}).\cr
-\strong{/!\\} If not any of '\code{fileName}', '\code{info}' and '\code{param}' can be found in \code{\dots} then \code{attr(offsets, "fileName_image")} will be used as '\code{fileName}' input parameter to pass to \code{\link{objectParam}}.}
+\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of \code{'ifd'} and \code{'bypass'}(=\strong{TRUE}).\cr
+\strong{/!\\} If not any of \code{'fileName'}, \code{'info'} and \code{'param'} can be found in \code{'...'} then \code{attr(offsets, "fileName_image")} will be used as \code{'fileName'} input parameter to pass to \code{\link{objectParam}}.}
 
 \item{objects}{integer vector, IDEAS objects ids numbers to use.
 This argument is not mandatory, if missing, the default, all objects will be used.}
 
 \item{offsets}{object of class `IFC_offset`.
 This argument is not mandatory but it may allow to save time for repeated image export on same file.\cr
-If '\code{offsets}' are not provided extra arguments can also be passed with \code{\dots} to \code{\link{getOffsets}}.}
+If \code{'offsets'} are not provided, extra arguments can also be passed with \code{'...'} to \code{\link{getOffsets}}.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
-\item{mode}{(\code{\link{objectParam}} argument) color mode export. Either "rgb", "gray". Default is "rgb".}
+\item{mode}{(\code{\link{objectParam}} argument) color mode export. Either \code{"rgb"}, \code{"gray"}. Default is \code{"rgb"}.}
 
 \item{write_to}{used to compute respectively exported file name.\cr
-Exported "file" extension will be deduced from this pattern. Allowed export are ".bmp", ".jpg", ".jpeg", ".png", ".tif", ".tiff".
-Note that '.bmp' is faster but files are not compressed producing bigger data.\cr
+Exported \code{"file"} extension will be deduced from this pattern. Allowed export are \code{".bmp"}, \code{".jpg"}, \code{".jpeg"}, \code{".png"}, \code{".tif"}, \code{".tiff"}.
+Note that \code{".bmp"} is faster but files are not compressed producing bigger data.\cr
 Placeholders, if found, will be substituted:\cr
--\%d: with full path directory\cr
--\%p: with first parent directory\cr
--\%e: with extension (without leading .)\cr
--\%s: with shortname (i.e. basename without extension)\cr
--\%o: with object_id\cr
--\%c: with channel_id\cr
+-\code{\%d}: with full path directory\cr
+-\code{\%p}: with first parent directory\cr
+-\code{\%e}: with extension (without leading .)\cr
+-\code{\%s}: with shortname (i.e. basename without extension)\cr
+-\code{\%o}: with object_id\cr
+-\code{\%c}: with channel_id\cr
 A good trick is to use:\cr
--"\%d/\%s/\%s_\%o_\%c.tiff", when 'export' is "file".}
+-\code{"\%d/\%s/\%s_\%o_\%c.tiff"}, when \code{'export'} is \code{"file"}.}
 }
 \value{
 It invisibly returns a list of exported file path of corresponding to objects extracted.
@@ -48,6 +48,8 @@ It invisibly returns a list of exported file path of corresponding to objects ex
 Function to shortcut extraction, normalization and eventually colorization of masks to file ! excludes image.
 }
 \details{
-arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractMasks_toFile}} input arguments.\cr
-If '\code{param}' is provided in \code{\dots}, \code{param$export}(=\strong{"file"}), \code{param$write_to}(=\code{write_to}) and \code{param$mode}(=\code{mode}) \strong{only} will be overwritten.
+If \code{'param'} is provided in \code{'...'}, \code{'param$export'<-"file"}, \code{'param$write_to'<-'write_to'} and \code{'param$mode'<-'mode'} \strong{only} will be overwritten.
+}
+\note{
+Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractMasks_toFile}} input arguments.
 }

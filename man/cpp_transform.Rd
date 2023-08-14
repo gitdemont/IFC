@@ -11,38 +11,36 @@ This vector has to be named with 1st name being the name of this color.}
 
 \item{msk}{IntegerMatrix.}
 
-\item{size}{a length 2 IntegerVector, of final dimensions (height,width) of the image. Default is 0,0 for no change.}
+\item{size}{a length 2 IntegerVector, of final dimensions (height,width) of the image. Default is \code{0,0} for no change.}
 
-\item{mode}{string, color mode export. Either "rgb", "gray" or "raw". Default is "raw".}
+\item{mode}{string, color mode export. Either \code{"rgb"}, \code{"gray"} or \code{"raw"}. Default is \code{"raw"}.}
 
-\item{type}{uint16_t image object type.
-Rcpp::Rf_rnorm(bg, sd) function is used. Default is true.}
+\item{type}{uint16_t image object type. Default is \code{2}.}
 
-\item{input_range}{a finite NumericVector, only apply when mode is not "raw", sets the range of the input intensity values. Default is c(0,4095).
-values exceeding this range are clipped.}
+\item{input_range}{a finite NumericVector, only apply when \code{'mode'} is not \code{"raw"}, sets the range of the input intensity values. Values outside this range are clipped. Default is \code{[0.0,4095.0]}.}
 
-\item{add_noise}{bool, if true adds normal noise.}
+\item{add_noise}{bool, whether to add normal noise or not. Default is \code{true}.}
 
-\item{bg}{double, mean value of the background added if add_noise is true. Default is 0.}
+\item{bg}{double, mean value of the background added if \code{'add_noise'} is \code{true}. Default is \code{0.0}.}
 
-\item{sd}{double, standard deviation of the background added if add_noise is true. Default is 0.}
+\item{sd}{double, standard deviation of the background added if \code{'add_noise'} is \code{true}. Default is \code{0.0}.}
 
-\item{full_range}{bool, only apply when mode is not "raw", if full_range is TRUE, then 'input_range' will be set to 'c(0,4095)' and gamma forced to 1. Default is false.}
+\item{full_range}{bool, only apply when \code{'mode'} is not \code{"raw"}, if \code{'full_range'} is \code{true}, then \code{'input_range'} will be set to \code{[0.0,4095.0]} and \code{'gamma'} forced to \code{1.0}. Default is \code{false}.}
 
-\item{force_range}{bool, only apply when mode is not "raw", if force_range is TRUE, then 'input_range' will be adjusted to mat range in [-4095, +inf] and gamma forced to 1. Default is false.\cr
-Note that this parameter takes the precedence over 'input_range' and 'full_range'.}
+\item{force_range}{bool, only apply when \code{'mode'} is not \code{"raw"}, if \code{'force_range'} is \code{true}, then \code{'input_range'} will be adjusted to object range in \code{[-4095.0, +inf]} and \code{'gamma'} forced to \code{1.0}. Default is \code{false}.\cr
+Note that this parameter takes the precedence over \code{'input_range'} and \code{'full_range'}.}
 
-\item{gamma}{correction. Default is 1, for no correction.}
+\item{gamma}{correction. Default is \code{1.0}, for no correction.}
 
-\item{spatialX}{X offset correction. Default is 0.0 for no change.}
+\item{spatialX}{X offset correction. Default is \code{0.0} for no change.}
 
-\item{spatialY}{Y offset correction. Default is 0.0 for no change.}
+\item{spatialY}{Y offset correction. Default is \code{0.0} for no change.}
 }
 \description{
 Function to normalize, colorize and add background to images.
 }
 \details{
-When add_noise is false, background will be automatically set to minimal pixel value for "masked" and "MC" removal method.\cr
-when a mask is detected, add_noise, full_range and force_range are set to false, background mean and sd to 0, and input_range to [0,3].\cr
+When a mask is detected, \code{'add_noise'}, \code{'full_range'} and \code{'force_range'} are set to \code{false}, \code{'bg'} and \code{'sd'} to \code{0.0}, \code{'input_range'} to \code{[0.0,3.0]} and \code{'gamma'} to \code{1.0}.\cr\cr
+Experimental (as of v0.2.0.501): when \code{'mode'} is not \code{"raw"}, if \code{'input_range'} is within \code{]0,1[}, it will be used as \code{'probs'} argument to \link[stats]{quantile} to determine clipping range from image object, in addition, \code{'gamma'} will be forced to \code{1.0}.
 }
 \keyword{internal}

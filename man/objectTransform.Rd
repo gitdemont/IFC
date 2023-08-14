@@ -28,29 +28,29 @@ objectTransform(
 
 \item{color}{a color.}
 
-\item{input_range}{a finite numeric vector of 2 values, sets the 'input_range' of the input intensity values; values exceeding this 'input_range' are clipped.}
+\item{input_range}{a finite numeric vector of 2 values, sets the range of the input intensity values. Values outside this range are clipped. Default is \code{[0,4095]}.}
 
-\item{mode}{color mode export. Either "rgb", "gray" or "raw".}
+\item{mode}{color mode export. Either \code{"rgb"}, \code{"gray"} or \code{"raw"}.}
 
 \item{type}{image object type.}
 
-\item{add_noise}{logical, if TRUE adds normal noise to background using rnorm(), from \pkg{Rcpp}. Default is TRUE.}
+\item{add_noise}{whether to add normal noise to background or not. Default is \code{TRUE}.}
 
-\item{random_seed}{a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when 'add_noise' is set to TRUE. Default is NULL.
-Note that NA_integer_ or list(seed = NA_integer_) can be used to not call \link[base]{set.seed} at all.}
+\item{random_seed}{a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when \code{'add_noise'} is set to \code{TRUE}. Default is \code{NULL}.
+Note that \code{NA_integer_} or \code{list(seed = NA_integer_)} can be used to not call \link[base]{set.seed} at all.}
 
-\item{size}{a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(0,0) for no change.}
+\item{size}{a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is \code{c(0,0)} for no change.}
 
-\item{bg_mean}{mean value of the background added. Default is 0.}
+\item{bg_mean}{mean value of the background added if \code{'add_noise'} is \code{TRUE}. Default is \code{0}.}
 
-\item{bg_sd}{standard deviation of the background added. Default is 0.}
+\item{bg_sd}{standard deviation of the background added if \code{'add_noise'} is \code{TRUE}. Default is \code{0}.}
 
-\item{full_range}{logical, only apply when mode is not "raw", if 'full_range' is TRUE, then input_range will be set to c(0, 4095) and 'gamma' forced to 1. Default is FALSE.}
+\item{full_range}{only apply when \code{'mode'} is not \code{"raw"}, if \code{'full_range'} is \code{TRUE}, then \code{'input_range'} will be set to \code{[0,4095]} and \code{'gamma'} forced to \code{1}. Default is \code{FALSE}.}
 
-\item{force_range}{logical, only apply when mode is not "raw", if 'force_range' is TRUE, then input_range will be adjusted to object range in [-4095, +Inf] and 'gamma' forced to 1. Default is FALSE.\cr
-Note that this parameter takes the precedence over 'input_range' and 'full_range'.}
+\item{force_range}{bool, only apply when \code{'mode'} is not \code{"raw"}, if \code{'force_range'} is \code{TRUE}, then \code{'input_range'} will be adjusted to object range in \code{[-4095,+inf]} and \code{'gamma'} forced to \code{1}. Default is \code{FALSE}.\cr
+Note that this parameter takes the precedence over \code{'input_range'} and \code{'full_range'}.}
 
-\item{gamma}{gamma correction. Default is 1, for no correction.}
+\item{gamma}{correction. Default is \code{1}, for no correction.}
 }
 \value{
 the matrix transformed according to input parameters
@@ -59,7 +59,7 @@ the matrix transformed according to input parameters
 Function to normalize, colorize and add background to images.
 }
 \details{
-When 'add_noise' is FALSE and 'msk', `removal` attribute has value "masked" or "MC",
-backgound will be automatically set to minimal pixel value.
+When \code{'add_noise'} is \code{FALSE} and \code{attr(msk, "removal")} is \code{"masked"} or \code{"MC"},
+background will be automatically set to minimal pixel value.
 }
 \keyword{internal}

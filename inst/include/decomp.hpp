@@ -133,7 +133,9 @@ Rcpp::List hpp_none_Decomp (const Rcpp::RawVector raw_chnk,
 //' -4, only keep background: background pixels will be set to 1 and all others to -1.\cr
 //' -5, only keep foreground: foreground pixels will be set to 1 and all others to -1
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-//' @details
+//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
+//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr
+//' /verb{
 //' BSD implementations of Bio-Formats readers and writers
 //' %%
 //' Copyright (C) 2005 - 2017 Open Microscopy Environment:
@@ -161,8 +163,7 @@ Rcpp::List hpp_none_Decomp (const Rcpp::RawVector raw_chnk,
 //' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 //' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //' POSSIBILITY OF SUCH DAMAGE.
-//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
-//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+//' }
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
@@ -266,7 +267,9 @@ Rcpp::List hpp_rle_Decomp (const RawVector raw_chnk,
 //' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
 //' @param nb_channels uint32_t, number of channels of the decompressed image. Default is 1.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-//' @details
+//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
+//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr
+//' /verb{
 //' BSD implementations of Bio-Formats readers and writers
 //' %%
 //' Copyright (C) 2005 - 2017 Open Microscopy Environment:
@@ -294,8 +297,7 @@ Rcpp::List hpp_rle_Decomp (const RawVector raw_chnk,
 //' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 //' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //' POSSIBILITY OF SUCH DAMAGE.
-//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
-//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+//' }
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
@@ -363,7 +365,9 @@ Rcpp::List hpp_gray_Decomp (const Rcpp::RawVector raw_chnk,
 //' -5, only keep foreground: foreground pixels will be set to 1 and all others to 0.
 //' @param compression uint32_t, compression algorithm used. Default is 30818.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-//' @details
+//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
+//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr
+//' /verb{
 //' BSD implementations of Bio-Formats readers and writers
 //' %%
 //' Copyright (C) 2005 - 2017 Open Microscopy Environment:
@@ -391,8 +395,7 @@ Rcpp::List hpp_gray_Decomp (const Rcpp::RawVector raw_chnk,
 //' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 //' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //' POSSIBILITY OF SUCH DAMAGE.
-//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
-//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+//' }
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
@@ -425,7 +428,9 @@ Rcpp::List hpp_decomp (const std::string fname,
 //' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
 //' @param swap bool, whether to swap bytes or not. Default is false.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-//' @details
+//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
+//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr
+//' /verb{
 //' BSD implementations of Bio-Formats readers and writers
 //' %%
 //' Copyright (C) 2005 - 2017 Open Microscopy Environment:
@@ -453,8 +458,7 @@ Rcpp::List hpp_decomp (const std::string fname,
 //' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 //' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //' POSSIBILITY OF SUCH DAMAGE.
-//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
-//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+//' }
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
@@ -540,7 +544,9 @@ Rcpp::RawVector hpp_gray_rawDecomp (const Rcpp::RawVector raw_chnk,
 //' @param imgHeight uint32_t, Height of the decompressed image. Default is 1.
 //' @param swap bool, whether to swap bytes or not. Default is false.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-//' @details
+//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
+//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr
+//' /verb{
 //' BSD implementations of Bio-Formats readers and writers
 //' %%
 //' Copyright (C) 2005 - 2017 Open Microscopy Environment:
@@ -568,8 +574,7 @@ Rcpp::RawVector hpp_gray_rawDecomp (const Rcpp::RawVector raw_chnk,
 //' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 //' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //' POSSIBILITY OF SUCH DAMAGE.
-//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
-//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+//' }
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
@@ -626,7 +631,9 @@ Rcpp::RawVector hpp_rle_rawDecomp (const Rcpp::RawVector raw_chnk,
 //' @param compression uint32_t, compression algorithm used. Default is 30818.
 //' @param swap bool, whether to swap bytes or not. Default is false.
 //' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
-//' @details
+//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
+//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr
+//' /verb{
 //' BSD implementations of Bio-Formats readers and writers
 //' %%
 //' Copyright (C) 2005 - 2017 Open Microscopy Environment:
@@ -654,8 +661,7 @@ Rcpp::RawVector hpp_rle_rawDecomp (const Rcpp::RawVector raw_chnk,
 //' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 //' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 //' POSSIBILITY OF SUCH DAMAGE.
-//' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
-//' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
+//' }
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]

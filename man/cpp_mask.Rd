@@ -11,7 +11,7 @@
 \item{mask}{a NumericMatrix.}
 }
 \description{
-Writes matrix B in matrix A according to mask.
-If mask is not 0 B is written, A otherwise.
+Writes matrix \code{'B'} in matrix \code{'A'} according to \code{'mask'}.
+If \code{'mask'} is not \code{0.0} \code{'B'} is written, \code{'A'} otherwise.
 }
 \keyword{internal}

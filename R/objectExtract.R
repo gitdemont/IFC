@@ -33,29 +33,33 @@
 #' @param ifd list of sub elements of IFD data information extracted by \code{\link{getIFD}}. This argument can't be missing.
 #' @param param object of class `IFC_param`, containing extraction parameters defined by \code{\link{objectParam}}.\cr
 #' This argument is not mandatory but it may allow to save time for repeated image export on same file.
-#' If this argument is missing, \code{\link{objectExtract}} will use named arguments in '\code{\dots}' as input to \code{\link{objectParam}} to control object extraction.\cr
-#' However, if '\code{param}' is provided, '\code{...}' will be \strong{ignored}.
-#' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
-#' @param bypass whether to bypass checks on '\code{ifd}' and '\code{param}'. Default is FALSE.
+#' If this argument is missing, \code{\link{objectExtract}} will use named arguments in \code{'...'} as input to \code{\link{objectParam}} to control object extraction.\cr
+#' However, if \code{'param'} is provided, \code{'...'} will be \strong{ignored}.
+#' @param verbose whether to display information (use for debugging purpose). Default is \code{FALSE}.
+#' @param bypass whether to bypass checks on \code{'ifd'} and \code{'param'}. Default is \code{FALSE}.
 #' @inheritDotParams objectParam
-#' @details If '\code{param}' is not provided then '\code{\dots}' will be used to compute '\code{param}'.\cr
-#' \strong{/!\\} When '\code{param}' is not provided, if not any of '\code{fileName}', '\code{info}' can be found in '\code{\dots}', then \code{attr(ifd, "fileName_image")} will be used as '\code{fileName}' input parameter to pass to \code{\link{objectParam}}.
+#' @note \code{'...'} will be used to compute \code{'param'} \strong{only} if \code{'param'} is \strong{not} provided.\cr
+#' \strong{/!\\} When \code{'param'} is not provided, if not any of \code{'fileName'}, \code{'info'} can be found in \code{'...'}, then \code{attr(ifd, "fileName_image")} will be used as \code{'fileName'} input parameter to pass to \code{\link{objectParam}}.
+#' @inherit objectParam details
 #' @source For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
-#' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr\cr
-#' BSD implementations of Bio-Formats readers and writers\cr
+#' cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr
+#' \verb{
+#' BSD implementations of Bio-Formats readers and writers
 #' %%
-#' Copyright (C) 2005 - 2017 Open Microscopy Environment:\cr
-#'   - Board of Regents of the University of Wisconsin-Madison\cr
-#'   - Glencoe Software, Inc.\cr
-#'   - University of Dundee\cr
+#' Copyright (C) 2005 - 2017 Open Microscopy Environment:
+#'   - Board of Regents of the University of Wisconsin-Madison
+#'   - Glencoe Software, Inc.
+#'   - University of Dundee
 #' %%
 #' Redistribution and use in source and binary forms, with or without
-#' modification, are permitted provided that the following conditions are met:\cr
+#' modification, are permitted provided that the following conditions are met:
+#' 
 #' 1. Redistributions of source code must retain the above copyright notice,
-#'    this list of conditions and the following disclaimer.\cr
+#'    this list of conditions and the following disclaimer.
 #' 2. Redistributions in binary form must reproduce the above copyright notice,
-#'     this list of conditions and the following disclaimer in the documentation
-#'     and/or other materials provided with the distribution.\cr
+#'    this list of conditions and the following disclaimer in the documentation
+#'    and/or other materials provided with the distribution.
+#'
 #' THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 #' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 #' IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -67,6 +71,7 @@
 #' CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 #' ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #' POSSIBILITY OF SUCH DAMAGE.
+#' }
 #' @examples
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a cif file
@@ -99,10 +104,10 @@
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
-#' @return A list (for every extracted objects) of list (for every exported channels) depending on "export" parameter:\cr
-#' -"matrix", a matrix when '\code{param$mode}' is set to "raw" or "gray" OR an array when '\code{param$mode}' == "rgb",\cr
-#' -"base64", a data-uri string,\cr
-#' -"file", an invisible file path corresponding to the location of exported file(s). 
+#' @return A list (for every extracted objects) of list (for every exported channels) depending on '\code{param$export}' parameter:\cr
+#' -\code{"matrix"}, a matrix when '\code{param$mode}' is set to \code{"raw"} or \code{"gray"} OR an array when '\code{param$mode}' is \code{"rgb"},\cr
+#' -\code{"base64"}, a data-uri string,\cr
+#' -\code{"file"}, an invisible file path corresponding to the location of exported file(s). 
 #' @export
 objectExtract <- function(ifd, 
                           param, 

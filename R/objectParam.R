@@ -30,69 +30,71 @@
 #' @title Object Extraction Parameters Definition
 #' @description
 #' Defines `IFC_object` object extraction parameters.
-#' @param ... arguments to be passed to \code{\link{getInfo}}, only if 'info' is not provided.
+#' @param ... arguments to be passed to \code{\link{getInfo}}, \strong{only} if \code{'info'} is \strong{not} provided.
 #' @param info object of class `IFC_info`, rich information extracted by \code{\link{getInfo}}. 
 #' This argument is not mandatory but it may allow to save time for repeated image export on same file.
-#' If missing, the default, 'info' will be extracted thanks to '...'.
-#' @param mode color mode export. Either "rgb", "gray" or "raw". Default is "raw".
-#' Note that "raw" is only possible when 'export' is "matrix".
-#' @param export format mode export. Either "file", "matrix", "base64". Default is "matrix".
-#' @param write_to used when export is "file" or "base64" to compute respectively exported file name or base64 id attribute.\cr
-#' Exported "file" extension and "base64" MIME type will be deduced from this pattern. Allowed export are ".bmp", ".jpg", ".jpeg", ".png", ".tif", ".tiff".
-#' Note that '.bmp' are faster but not compressed producing bigger data.\cr
+#' If missing, the default, \code{'info'} will be extracted thanks to \code{'...'}.
+#' @param mode color mode export. Either \code{"rgb"}, \code{"gray"} or \code{"raw"}. Default is \code{"raw"}.
+#' Note that \code{"raw"} is only possible when \code{'export'} is \code{"matrix"}.
+#' @param export format mode export. Either \code{"file"}, \code{"matrix"}, \code{"base64"}. Default is \code{"matrix"}.
+#' @param write_to used when export is \code{"file"} or \code{"base64"} to compute respectively exported file name or base64 id attribute.\cr
+#' Exported file extension and base64 MIME type will be deduced from this pattern. Allowed export are \code{".bmp"}, \code{".jpg"}, \code{".jpeg"}, \code{".png"}, \code{".tif"}, \code{".tiff"}.
+#' Note that \code{".bmp"} are faster but not compressed producing bigger data.\cr
 #' Placeholders, if found, will be substituted:\cr
-#' -\%d: with full path directory\cr
-#' -\%p: with first parent directory\cr
-#' -\%e: with extension (without leading .)\cr
-#' -\%s: with shortname (i.e. basename without extension)\cr
-#' -\%o: with object_id\cr
-#' -\%c: with channel_id\cr
+#' -\code{\%d}: with full path directory,\cr
+#' -\code{\%p}: with first parent directory,\cr
+#' -\code{\%e}: with extension (without leading .),\cr
+#' -\code{\%s}: with shortname (i.e. basename without extension),\cr
+#' -\code{\%o}: with object_id,\cr
+#' -\code{\%c}: with channel_id.\cr
 #' A good trick is to use:\cr
-#' -"\%d/\%s/\%s_\%o_\%c.tiff", when 'export' is "file"\cr
-#' -"\%o_\%c.bmp", when 'export' is "base64".\cr
-#' Note that if missing and 'export' is not "file", 'write_to' will be set to "\%o_\%c.bmp".
-#' @param base64_id whether to add id attribute to base64 exported object. Default is FALSE.\cr
-#' Only applied when export is "base64".
-#' @param base64_att attributes to add to base64 exported object. Default is "".\cr
-#' Only applied when export is "base64". For example, use "class=draggable".\cr
-#' Note that id (if base64_id is TRUE) and width and height are already used.
-#' @param overwrite only apply when 'export' is "file" whether to overwrite file or not. Default is FALSE.
-#' @param composite character vector of image composite. Default is "", for no image composite.\cr
-#' Should be like "1.05/2.4/4.55" for a composition of 5 perc. of channel 1, 40 perc. of channel 2 and 50 perc. of channel 55.\cr
+#' -\code{"\%d/\%s/\%s_\%o_\%c.tiff"}, when \code{'export'} is \code{"file"},\cr
+#' -\code{"\%o_\%c.bmp"}, when \code{'export'} is \code{"base64"}.\cr
+#' Note that if missing and \code{'export'} is not \code{"file"}, \code{'write_to'} will be set to \code{"\%o_\%c.bmp"}.
+#' @param base64_id whether to add id attribute to base64 exported object. Default is \code{FALSE}.\cr
+#' Only applied when export is \code{"base64"}.
+#' @param base64_att attributes to add to base64 exported object. Default is \code{""}.\cr
+#' Only applied when export is \code{"base64"}. For example, use \code{"class='draggable'"}.\cr
+#' Note that \code{id} (if \code{'base64_id'} is \code{TRUE}) and \code{width} and \code{height} are already used.
+#' @param overwrite only apply when \code{'export'} is \code{"file"} whether to overwrite file or not. Default is \code{FALSE}.
+#' @param composite character vector of image composite. Default is \code{""}, for no image composite.\cr
+#' Should be like \code{"1.05/2.4/4.55"} for a composition of 5 perc. of channel 1, 40 perc. of channel 2 and 50 perc. of channel 55.\cr
 #' Note that channels should have been acquired and final image composition should be 100 perc., otherwise an error is thrown.\cr
-#' Note that each composite will be appended after 'selection'.
+#' Note that each composite will be appended after \code{'selection'}.
 #' @param selection physical channels to extract.\cr
 #' Note that this parameter will be ordered.\cr
-#' Default is "all" to extract all acquired channels.\cr
-#' Use "none" to only extract composite.
-#' @param random_seed a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when 'add_noise' is set to TRUE. Default is NULL.
-#' Note that NA_integer_ or list(seed = NA_integer_) can be used to not call \link[base]{set.seed} at all.
-#' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(0,0) for no change.
-#' @param force_width whether to use information in 'info' to fill size. Default is TRUE.
-#' When set to TRUE, width of 'size' argument will be overwritten.
-#' @param removal removal method: Either "none", "raw", "clipped", "masked", "MC".\cr
-#' -"none", to keep image as is\cr
-#' -"raw", to keep image as is, it provides a convinient way to retrieve "raw" value for the mask.\cr
-#' -"clipped", to remove clipped object from image.\cr
-#' -"masked", to only keep masked object from image.\cr
-#' -"MC", to only keep MC masked object from image.
-#' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.
-#' @param add_noise if TRUE adds normal noise to background using rnorm(), from \pkg{Rcpp}. Default is TRUE.\cr
-#' Note that it is better to set it to FALSE when 'removal' is "masked" or "MC". Doing so will allow to place masked object in a zero filled background,
+#' Default is \code{"all"} to extract all acquired channels.\cr
+#' Use \code{"none"} to only extract composite.
+#' @param random_seed a list of elements to pass to \link[base]{set.seed} or a single value, interpreted as an integer, or NULL to be used when \code{'add_noise'} is set to \code{TRUE}. Default is \code{NULL}.
+#' Note that \code{NA_integer_} or \code{list(seed = NA_integer_)} can be used to not call \link[base]{set.seed} at all.
+#' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is \code{c(0,0)} for no change.
+#' @param force_width whether to use information in \code{'info'} to fill size. Default is \code{TRUE}.
+#' When set to \code{TRUE}, width of \code{'size'} argument will be overwritten.
+#' @param removal removal method: Either \code{"none"}, \code{"raw"}, \code{"clipped"}, \code{"masked"}, \code{"MC"}.\cr
+#' -\code{"none"}, to keep image as is, no mask extraction will be performed resulting in faster extraction,\cr
+#' -\code{"raw"}, to keep image as is, it provides a convenient way to retrieve \code{"raw"} value for the mask,\cr
+#' -\code{"clipped"}, to remove clipped object from image,\cr
+#' -\code{"masked"}, to only keep masked object from image,\cr
+#' -\code{"MC"}, to keep MC masked object from image.
+#' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to \code{'selection'} and \code{'composite'} parameters.
+#' @param add_noise if \code{TRUE} adds normal noise to background using \pkg{Rcpp}. Default is \code{TRUE}.\cr
+#' Note that it is better to set it to \code{FALSE} when \code{'removal'} is \code{"masked"} or \code{"MC"}. Doing so will allow to place masked object in a zero filled background,
 #' otherwise background will still be filled with noise.
-#' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.
-#' @param full_range only apply when mode is not "raw", if full_range is TRUE, then [0,4095] range will be kept. Default is FALSE.\cr
-#' It is like "raw" mode but allowing normalization to [0,1].
-#' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.\cr
-#' @param force_range only apply when mode is not "raw", if force_range is TRUE, then range will be adjusted to object range in [-4095, +inf] resulting in normalization. Default is FALSE.\cr
-#' Note that this parameter takes the precedence over 'full_range'.\cr
-#' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to 'selection' and 'composite' parameters.
-#' @param spatial_correction only apply on RIF file, whether to apply spatial correction. Default is FALSE.
-#' @details when a mask is detected, 'add_noise', 'full_range' and 'force_range' are set to FALSE.
+#' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to \code{'selection'} and \code{'composite'} parameters.
+#' @param full_range only apply when \code{'mode'} is not \code{"raw"}, if \code{'full_range'} is \code{TRUE}, then object range will be considered as 0 to 4095, it is like \code{"raw"} \code{'mode'} but resulting in [0,4095] normalization to [0,1]. Default is \code{FALSE}.\cr
+#' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to \code{'selection'} and \code{'composite'} parameters.
+#' @param force_range only apply when \code{'mode'} is not \code{"raw"}, if \code{'force_range'} is \code{TRUE}, then range will be adjusted to object range in \code{[-4095,+inf]} resulting in normalization to [0,1]. Default is \code{FALSE}.\cr
+#' This parameter will be repeated with rep_len() from \pkg{base} for every physical channel that needs to be extracted according to \code{'selection'} and \code{'composite'} parameters.\cr
+#' Note that this parameter takes the precedence over \code{'full_range'}.
+#' @param spatial_correction only apply on RIF file, whether to apply spatial correction. Default is \code{FALSE}.
+#' @details When a mask is detected, \code{'add_noise'}, \code{'full_range'} and \code{'force_range'} are set to \code{FALSE} and range used will be forced to \code{[0,3]}.\cr\cr
+#' Range of image is controlled by \code{'Images'} information from supplied \code{'info'} or as extracted by \code{\link{getInfo}} and will be returned as \code{'channels'} by \code{\link{objectParam}}.
+#' In case \code{'mode'} is not \code{"raw"}, '\code{channels$xmin}', '\code{channels$xmax}', '\code{channels$gamma}' will be used for object extraction by \code{\link{objectExtract}} unless any of \code{'force_range'} or \code{'full_range'} is \code{TRUE}.\cr\cr
+#' Experimental (as of v0.2.0.501): once returned by \code{\link{objectParam}}, those '\code{channels$xmin}' and '\code{channels$xmax}' can be manually adjusted to \code{]0,1[} so as to be used as \code{'probs'} argument to \link[stats]{quantile} to allow quantile normalization during object extraction (\code{\link{objectExtract}}) afterwards.
 #' @return an object of class `IFC_param`. 
 #' @export
 objectParam <- function(...,
-                        info, 
+                        info,
                         mode = c("rgb", "gray", "raw")[3],
                         export = c("file", "matrix", "base64")[2],
                         write_to,

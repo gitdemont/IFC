@@ -30,44 +30,44 @@
 #' @title Numpy Export
 #' @description
 #' Exports IFC objects to numpy array [objects,height,width,channels]
-#' @param \dots arguments to be passed to \code{\link{objectExtract}} with the exception of \code{ifd} and \code{bypass}(=\strong{TRUE}).\cr
-#' \strong{/!\\} If not any of '\code{fileName}', '\code{info}' and '\code{param}' can be found in \code{\dots} then \code{attr(offsets, "fileName_image")} will be used as '\code{fileName}' input parameter to pass to \code{\link{objectParam}}.
+#' @param \dots arguments to be passed to \code{\link{objectExtract}} with the exception of \code{'ifd'} and \code{'bypass'}(=\strong{TRUE}).\cr
+#' \strong{/!\\} If not any of \code{'fileName'}, \code{'info'} and \code{'param'} can be found in \code{'...'} then \code{attr(offsets, "fileName_image")} will be used as \code{'fileName'} input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integer vector, IDEAS objects ids numbers to use.
 #' This argument is not mandatory, if missing, the default, all objects will be used.
 #' @param offsets object of class `IFC_offset`.
 #' This argument is not mandatory but it may allow to save time for repeated image export on same file.\cr
-#' If '\code{offsets}' are not provided extra arguments can also be passed with \code{\dots} to \code{\link{getOffsets}}.
-#' @param image_type image_type of desired offsets. Either "img" or "msk". Default is "img".
-#' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is c(64,64).
-#' @param force_width whether to use information in '\code{info}' to fill '\code{size}'. Default is FALSE.
-#' When set to TRUE, width of '\code{size}' argument will be overwritten.
-#' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param python path to python. Default is Sys.getenv("RETICULATE_PYTHON").\cr
-#' Note that \code{numpy} should be available in this \code{python} to allow export to npy file, otherwise '\code{export}' will be forced to "matrix".
-#' @param dtype desired arrays data-type. Default is "double". Allowed are "uint8", "int16", "uint16" or "double". If 'mode' is "raw", this parameter will be forced to "int16".
-#' @param mode (\code{\link{objectParam}} argument) color mode export. Either "raw", "gray". Default is "raw".
-#' @param export export format. Either "file", "matrix". Default is "matrix".\cr
-#' Note that you will need \code{reticulate} package installed to be able to export to npy file, otherwise '\code{export}' will be forced to "matrix".
-#' @param write_to used when '\code{export}' is \code{"file"} to compute exported file name and type.
-#' Exported type will be deduced from this pattern. Allowed exported file extension is ".npy".\cr
+#' If \code{'offsets'} are not provided, extra arguments can also be passed with \code{'...'} to \code{\link{getOffsets}}.
+#' @param image_type type of desired object offsets. Either \code{"img"} or \code{"msk"}. Default is \code{"img"}.
+#' @param size a length 2 integer vector of final dimensions of the image, height 1st and width 2nd. Default is \code{c(64,64)}.
+#' @param force_width whether to use information in \code{'info'} to fill \code{'size'}. Default is \code{FALSE}.
+#' When set to \code{TRUE}, width of \code{'size'} argument will be overwritten.
+#' @param display_progress whether to display a progress bar. Default is \code{TRUE}.
+#' @param python path to python. Default is \code{Sys.getenv("RETICULATE_PYTHON")}.\cr
+#' Note that \code{numpy} should be available in this \code{python} to allow export to \code{".npy"} file, otherwise \code{'export'} will be forced to \code{"matrix"}.
+#' @param dtype desired arrays data-type. Default is \code{"double"}. Allowed are \code{"uint8"}, \code{"int16"}, \code{"uint16"} or \code{"double"}. If \code{'mode'} is \code{"raw"}, this parameter will be forced to \code{"int16"}.
+#' @param mode (\code{\link{objectParam}} argument) color mode export. Either \code{"raw"}, \code{"gray"}. Default is \code{"raw"}.
+#' @param export export format. Either \code{"file"}, \code{"matrix"}. Default is \code{"matrix"}.\cr
+#' Note that you will need \code{reticulate} package installed to be able to export to \code{".npy"} file, otherwise \code{'export'} will be forced to \code{"matrix"}.
+#' @param write_to used when \code{'export'} is \code{"file"} to compute exported file name and type.
+#' Exported type will be deduced from this pattern. Allowed exported file extension is \code{".npy"}.\cr
 #' Placeholders, if found, will be substituted:\cr
-#' -\%d: with full path directory\cr
-#' -\%p: with first parent directory\cr
-#' -\%e: with extension of (without leading .)\cr
-#' -\%s: with shortname (i.e. basename without extension)\cr
-#' -\%o: with objects (at most 10, will be collapse with "_", if more than one).\cr
-#' -\%c: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
+#' -\code{\%d}: with full path directory\cr
+#' -\code{\%p}: with first parent directory\cr
+#' -\code{\%e}: with extension of (without leading .)\cr
+#' -\code{\%s}: with shortname (i.e. basename without extension)\cr
+#' -\code{\%o}: with objects (at most 10, will be collapse with "_", if more than one).\cr
+#' -\code{\%c}: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
 #' A good trick is to use:\cr
-#' -"\%d/\%s_Obj[\%o]_Ch[\%c].npy", when '\code{export}' is "file"\cr
-#' @param overwrite whether to overwrite file or not. Default is FALSE.
-#' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToNumpy}} input arguments.\cr
-#' Please note that '\code{size}' parameter has to be supplied and could not be set to (0,) when '\code{object}' length is not equal to one\cr
-#' \code{\link{ExportToNumpy}} requires \code{reticulate} package, \code{python} and \code{numpy} installed to create npy file.\cr
-#' If one of these is missing, '\code{export}' will be set to "matrix".
-#' If '\code{param}' is provided in \code{\dots}, \code{param$export}(=\strong{"matrix"}), \code{param$mode}(=\code{mode}) and \code{param$size}(=\code{size}) and will be overwritten. 
-#' @return Depending on 'export':\cr
-#' -"matrix", an array whose dimensions are [object, height, width, channel].\cr
-#' -"file", it invisibly returns path of npy exported file. 
+#' -\code{"\%d/\%s_Obj[\%o]_Ch[\%c].npy"}, when \code{'export'} is \code{"file"}.
+#' @param overwrite whether to overwrite file or not. Default is \code{FALSE}.
+#' @note Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToNumpy}} input arguments.
+#' @details Please note that \code{'size'} parameter has to be supplied and could not be set to (0,) when \code{'object'} length is not equal to one\cr
+#' \code{\link{ExportToNumpy}} requires \code{reticulate} package, \code{python} and \code{numpy} installed to create \code{".npy"} file.\cr
+#' If one of these is missing, \code{'export'} will be set to \code{"matrix"}.
+#' If \code{'param'} is provided in \code{'...'}, \code{param$export <- "matrix"}, \code{param$mode <- 'mode'} and \code{param$size <- 'size'} and will be overwritten.
+#' @return Depending on \code{'export'}:\cr
+#' -\code{"matrix"}, an array whose dimensions are [object, height, width, channel].\cr
+#' -\code{"file"}, it invisibly returns path of \code{".npy"} exported file. 
 #' @export
 ExportToNumpy <- function(...,
                           objects,

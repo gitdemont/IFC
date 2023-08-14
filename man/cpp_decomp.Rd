@@ -5,36 +5,8 @@
 \title{IFC_object Decompression}
 \source{
 For image decompression, Lee Kamentsky's code porting from \url{https://github.com/ome/bioformats/blob/4146b9a1797501f0fec7d6cfe69124959bff96ee/components/formats-bsd/src/loci/formats/in/FlowSightReader.java}\cr
-cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}
-}
-\arguments{
-\item{fname}{string, path to file.}
-
-\item{offset}{std::size_t, position of the beginning of compressed image.}
-
-\item{nbytes}{uint32_t, number of bytes of compressed image.}
-
-\item{imgWidth}{R_len_t, Width of the decompressed image. Default is 1.}
-
-\item{imgHeight}{R_len_t, Height of the decompressed image. Default is 1.}
-
-\item{nb_channels}{R_len_t, number of channels of the decompressed image. Default is 1.}
-
-\item{removal}{uint8_t, object removal method. Only apply for 30818 compression. Default is 0.\cr
--1, for clipped removal: height OR width clipped pixels will be set to -1.\cr
--2, height clipped removal: height clipped pixels will be set to -1.\cr
--3, width clipped removal: width clipped pixels will be set to -1.\cr
--4, only keep background: background pixels will be set to 1 and all others to 0.\cr
--5, only keep foreground: foreground pixels will be set to 1 and all others to 0.}
-
-\item{compression}{uint32_t, compression algorithm used. Default is 30818.}
-
-\item{verbose}{bool, whether to display information (use for debugging purpose). Default is false.}
-}
-\description{
-Operates decompression of compressed image stored in TIFF file.
-}
-\details{
+cited in \url{https://linkinghub.elsevier.com/retrieve/pii/S1046-2023(16)30291-2}\cr
+\verb{
 BSD implementations of Bio-Formats readers and writers
 %%
 Copyright (C) 2005 - 2017 Open Microscopy Environment:
@@ -62,5 +34,33 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
+}
+}
+\arguments{
+\item{fname}{string, path to file.}
+
+\item{offset}{std::size_t, position of the beginning of compressed image.}
+
+\item{nbytes}{uint32_t, number of bytes of compressed image.}
+
+\item{imgWidth}{R_len_t, Width of the decompressed image. Default is 1.}
+
+\item{imgHeight}{R_len_t, Height of the decompressed image. Default is 1.}
+
+\item{nb_channels}{R_len_t, number of channels of the decompressed image. Default is 1.}
+
+\item{removal}{uint8_t, object removal method. Only apply for 30818 compression. Default is 0.\cr
+-1, for clipped removal: height OR width clipped pixels will be set to -1.\cr
+-2, height clipped removal: height clipped pixels will be set to -1.\cr
+-3, width clipped removal: width clipped pixels will be set to -1.\cr
+-4, only keep background: background pixels will be set to 1 and all others to 0.\cr
+-5, only keep foreground: foreground pixels will be set to 1 and all others to 0.}
+
+\item{compression}{uint32_t, compression algorithm used. Default is 30818.}
+
+\item{verbose}{bool, whether to display information (use for debugging purpose). Default is false.}
+}
+\description{
+Operates decompression of compressed image stored in TIFF file.
 }
 \keyword{internal}

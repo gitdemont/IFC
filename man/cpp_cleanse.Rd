@@ -8,18 +8,17 @@
 
 \item{msk}{a IntegerMatrix.}
 
-\item{add_noise}{logical, if true adds normal noise.
-Rcpp::Rf_rnorm(bg, sd) function is used. Default is true.}
+\item{add_noise}{bool, whether to add normal noise or not, \code{Rcpp::Rf_rnorm(bg, sd)} function is used. Default is \code{true}.}
 
-\item{bg}{double, mean value of the background added if add_noise is true. Default is 0.0}
+\item{bg}{double, mean value of the background added if \code{'add_noise'} is \code{true}. Default is \code{0.0}.}
 
-\item{sd}{double, standard deviation of the background added if add_noise is true. Default is 0.0}
+\item{sd}{double, standard deviation of the background added if \code{'add_noise'} is \code{true}. Default is \code{0.0}.}
 }
 \value{
-a NumericMatrix with replaced according to msk.
+a NumericMatrix cleansed according to \code{'msk'}.
 }
 \description{
 Replaces values in matrix mat according to mask msk.
-Depending of add_noise parameter values will be replaced with noise or not.
+Depending of \code{'add_noise'} parameter, values of \code{'mat'} will be replaced with noise or not.
 }
 \keyword{internal}

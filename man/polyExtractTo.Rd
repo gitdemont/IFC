@@ -15,35 +15,37 @@ polyExtractTo(
 )
 }
 \arguments{
-\item{\dots}{arguments to be passed to \code{\link{objectExtract}} with the exception of \code{ifd} and \code{bypass}(=\strong{TRUE}).\cr
-\strong{/!\\} If not any of '\code{fileName}', '\code{info}' and '\code{param}' can be found in \code{\dots} then \code{attr(offsets, "fileName_image")} will be used as '\code{fileName}' input parameter to pass to \code{\link{objectParam}}.}
+\item{\dots}{arguments to be passed to \code{\link{objectExtract}} with the exception of \code{'ifd'} and \code{'bypass'}(=\strong{TRUE}).\cr
+\strong{/!\\} If not any of \code{'fileName'}, \code{'info'} and \code{'param'} can be found in \code{'...'} then \code{attr(offsets, "fileName_image")} will be used as \code{'fileName'} input parameter to pass to \code{\link{objectParam}}.}
 
 \item{objects}{integer vector, IDEAS objects ids numbers to use.
 This argument is not mandatory, if missing, the default, all objects will be used.}
 
 \item{offsets}{object of class `IFC_offset`.
 This argument is not mandatory but it may allow to save time for repeated image export on same file.\cr
-If '\code{offsets}' are not provided extra arguments can also be passed with \code{\dots} to \code{\link{getOffsets}}.}
+If \code{'offsets'} are not provided, extra arguments can also be passed with \code{'...'} to \code{\link{getOffsets}}.}
 
-\item{display_progress}{whether to display a progress bar. Default is TRUE.}
+\item{display_progress}{whether to display a progress bar. Default is \code{TRUE}.}
 
-\item{image_type}{(\code{\link{subsetOffsets}} argument) image_type of desired offsets. Default is "img". Allowed are "img" or "msk".}
+\item{image_type}{(\code{\link{subsetOffsets}} argument) type of desired object offsets. Default is \code{"img"}. Allowed are \code{"img"} or \code{"msk"}.}
 
-\item{export}{(\code{\link{objectParam}} argument) format mode export. Either "file", "matrix", "base64". Default is "matrix".}
+\item{export}{(\code{\link{objectParam}} argument) format mode export. Either \code{"file"}, \code{"matrix"}, \code{"base64"}. Default is \code{"matrix"}.}
 
-\item{mode}{(\code{\link{objectParam}} argument) color mode export. Either "raw", "rgb", "gray". Default is "raw".}
+\item{mode}{(\code{\link{objectParam}} argument) color mode export. Either \code{"raw"}, \code{"rgb"}, \code{"gray"}. Default is \code{"raw"}.}
 }
 \value{
-A list (for every extracted objects) of list (for every exported channels) depending on "export" parameter:\cr
--"matrix", a matrix when '\code{param$mode}' is set to "raw" or "gray" OR an array when '\code{param$mode}' == "rgb",\cr
--"base64", a data-uri string,\cr
--"file", an invisible file path corresponding to the location of exported file(s).
+A list (for every extracted objects) of list (for every exported channels) depending on '\code{param$export}' parameter:\cr
+-\code{"matrix"}, a matrix when '\code{param$mode}' is set to \code{"raw"} or \code{"gray"} OR an array when '\code{param$mode}' is \code{"rgb"},\cr
+-\code{"base64"}, a data-uri string,\cr
+-\code{"file"}, an invisible file path corresponding to the location of exported file(s).
 }
 \description{
 Function to shortcut extraction, normalization and eventually colorization of images or masks to various format.
 }
 \details{
-arguments of \code{\link{objectExtract}} will be deduced from input arguments.\cr
-If '\code{param}' is provided 'in \code{\dots}, \code{param$export}(=\strong{"base64"}) \strong{only} will be overwritten.
+If \code{'param'} is provided in \code{'...'}, \code{'param$export'<-'export'} and \code{'param$mode'<-'mode'} \strong{only} will be overwritten.
+}
+\note{
+Arguments of \code{\link{objectExtract}} will be deduced from input arguments.
 }
 \keyword{internal}

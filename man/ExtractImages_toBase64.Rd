@@ -13,19 +13,19 @@ ExtractImages_toBase64(
 )
 }
 \arguments{
-\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of \code{ifd} and \code{bypass}(=\strong{TRUE}).\cr
-\strong{/!\\} If not any of '\code{fileName}', '\code{info}' and '\code{param}' can be found in \code{\dots} then \code{attr(offsets, "fileName_image")} will be used as '\code{fileName}' input parameter to pass to \code{\link{objectParam}}.}
+\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of \code{'ifd'} and \code{'bypass'}(=\strong{TRUE}).\cr
+\strong{/!\\} If not any of \code{'fileName'}, \code{'info'} and \code{'param'} can be found in \code{'...'} then \code{attr(offsets, "fileName_image")} will be used as \code{'fileName'} input parameter to pass to \code{\link{objectParam}}.}
 
 \item{objects}{integer vector, IDEAS objects ids numbers to use.
 This argument is not mandatory, if missing, the default, all objects will be used.}
 
 \item{offsets}{object of class `IFC_offset`.
 This argument is not mandatory but it may allow to save time for repeated image export on same file.\cr
-If '\code{offsets}' are not provided extra arguments can also be passed with \code{\dots} to \code{\link{getOffsets}}.}
+If \code{'offsets'} are not provided, extra arguments can also be passed with \code{'...'} to \code{\link{getOffsets}}.}
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
-\item{mode}{(\code{\link{objectParam}} argument) color mode export. Either "rgb", "gray". Default is "rgb".}
+\item{mode}{(\code{\link{objectParam}} argument) color mode export. Either \code{"rgb"}, \code{"gray"}. Default is \code{"rgb"}.}
 }
 \value{
 A list of base64 encoded images corresponding to objects extracted.
@@ -34,6 +34,8 @@ A list of base64 encoded images corresponding to objects extracted.
 Function to shortcut extraction, normalization and eventually colorization of images to base64 ! excludes mask.
 }
 \details{
-arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toBase64}} input arguments.\cr
-If '\code{param}' is provided 'in \code{\dots}, \code{param$export}(=\strong{"base64"}) and \code{param$mode}(=\code{mode}) \strong{only} will be overwritten.
+If \code{'param'} is provided 'in \code{'...'}, \code{'param$export'<-"base64"} and \code{'param$mode'<-'mode'} \strong{only} will be overwritten.
+}
+\note{
+Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toBase64}} input arguments.\cr
 }

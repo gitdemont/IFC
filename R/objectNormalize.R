@@ -31,12 +31,11 @@
 #' @description
 #' Normalizes a matrix to [0,1].
 #' @param mat a finite numeric matrix.
-#' @param input_range a finite numeric vector of 2 values, sets the range of the input intensity values.\cr
-#' Values exceeding this range are clipped. Default is c(0, 4095).
-#' @param full_range if 'full_range' is TRUE, then 'input_range' will be set to c(0, 4095) and 'gamma' forced to 1. Default is FALSE.
-#' @param force_range if 'force_range' is TRUE, then 'input_range' will be adjusted to object range in [-4095, +inf] and 'gamma' forced to 1. Default is FALSE.\cr
-#' Note that this parameter takes the precedence over 'input_range' and 'full_range'.
-#' @param gamma gamma correction. Default is 1, for no correction.
+#' @param input_range a finite numeric vector of 2 values, sets the range of the input intensity values. Values outside this range are clipped. Default is \code{[0,4095]}.
+#' @param full_range if '\code{full_range}' is \code{TRUE}, then '\code{input_range}' will be set to \code{[0,4095]} and '\code{gamma}' forced to \code{1}. Default is \code{FALSE}.
+#' @param force_range if '\code{force_range}' is \code{TRUE}, then '\code{input_range}' will be adjusted to '\code{mat}' range in \code{[-4095,+inf]} and '\code{gamma}' forced to \code{1}. Default is \code{FALSE}.\cr
+#' Note that this parameter takes the precedence over \code{input_range}' and \code{full_range}'.
+#' @param gamma '\code{gamma}' correction. Default is \code{1}, for no correction.
 #' @details Note that negative values are used internally for removal of unmasked objects.
 #' @return a [0,1] normalized matrix
 #' @keywords internal

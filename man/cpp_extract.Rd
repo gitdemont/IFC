@@ -10,44 +10,47 @@
 
 \item{colors}{List of colors to use.}
 
-\item{channels}{DataFrame, channels information}
+\item{channels}{DataFrame, channels information.}
 
-\item{physicalChannel}{CharacterVector of indices for each channels}
+\item{physicalChannel}{CharacterVector of indices for each channel.}
 
-\item{xmin}{NumericVector of minimal values for each channels}
+\item{xmin}{NumericVector of minimal values for each channel.}
 
-\item{xmax}{NumericVector of maximal values for each channels}
+\item{xmax}{NumericVector of maximal values for each channel.}
 
-\item{spatialX}{NumericVector of X spatial offset correction for each channels}
+\item{spatialX}{NumericVector of X spatial offset correction for each channel.}
 
-\item{spatialY}{NumericVector of Y spatial offset correction for each channels}
+\item{spatialY}{NumericVector of Y spatial offset correction for each channel.}
 
-\item{removal}{IntegerVector of removal method to be used for each channels}
+\item{removal}{IntegerVector of removal method to be used for each channel.}
 
-\item{add_noise}{LogicalVector of whether to add_noise for each channels}
+\item{add_noise}{LogicalVector of whether to \code{'add_noise'} for each channel.}
 
-\item{full_range}{LogicalVector of whether to use full_range for each channels}
+\item{full_range}{LogicalVector of whether to use \code{'full_range'} for each channel.}
 
-\item{force_range}{LogicalVector of whether to use force_range for each channels}
+\item{force_range}{LogicalVector of whether to use \code{'force_range'} for each channel.}
 
-\item{gamma}{NumericVector of the gamma for each channels}
+\item{gamma}{NumericVector of the \code{'gamma'} for each channel.}
 
-\item{chan_to_extract}{IntegerVector, channels to extract}
+\item{chan_to_extract}{IntegerVector, channels to extract.}
 
-\item{extract_msk}{uint8_t, type of masked to extract.\cr
-- 0: no mask\cr
-- 1: at least one raw mask\cr
-- 2: at least one clipped\cr
-- 3: at least one masked\cr
-- 4: at least one MC}
+\item{extract_msk}{uint8_t, type of mask to extract:\cr
+-\code{0}: no mask,\cr
+-\code{1}: at least one \code{"raw"},\cr
+-\code{2}: at least one \code{"clipped"},\cr
+-\code{3}: at least one \code{"masked"},\cr
+-\code{4}: at least one \code{"MC"} mask.}
 
-\item{mode}{string, color mode export. Either "rgb", "gray" or "raw". Default is "raw".}
+\item{mode}{string, color mode export. Either \code{"rgb"}, \code{"gray"} or \code{"raw"}. Default is \code{"raw"}.}
 
-\item{size}{a length 2 IntegerVector of final dimensions (height,width) of the image. Default is 0,0 for no change.\cr}
+\item{size}{a length 2 IntegerVector of final dimensions (height,width) of the image. Default is \code{0,0} for no change.}
 
-\item{verbose}{bool, whether to display information (use for debugging purpose). Default is false.}
+\item{verbose}{bool, whether to display information (use for debugging purpose). Default is \code{false}.}
 }
 \description{
 Extracts object from ifd
+}
+\details{
+When \code{'add_noise'} is \code{false}, background will be automatically set to minimal pixel value for \code{"masked"} and \code{"MC"} \code{'removal'} method.
 }
 \keyword{internal}
