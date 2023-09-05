@@ -399,6 +399,7 @@ ExtractMasks_toFile <- function(...,
 #' @description
 #' Function to shortcut extraction, normalization and eventually colorization of images to base64 ! excludes mask.
 #' @inheritParams ExtractImages_toMatrix
+#' @param mode (\code{\link{objectParam}} argument) color mode export. Either \code{"rgb"}, \code{"gray"}. Default is \code{"rgb"}.
 #' @param write_to used to compute respectively exported file name.\cr
 #' Exported base64 data-uri will be deduced from this pattern. Allowed export are \code{".bmp"}, \code{".jpg"}, \code{".jpeg"}, \code{".png"}, \code{".tif"}, \code{".tiff"}.
 #' Note that \code{".bmp"} is faster but files are not compressed producing bigger data.\cr

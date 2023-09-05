@@ -208,20 +208,19 @@ toXML2_stats = function(stats, verbose = FALSE) {
 #' @title Statistics Report Template Extraction
 #' @description
 #' Retrieves statistics report template from .ast / .daf files.
-#' @param fileName path to file..
-#' @param ... other arguments to be passed.
-#' @details Allowed "statistics" names are: "Count","Mean","%Total","%Gated","%","Objects/mL","RD - Mean",
-#' "Median","CV","stddev","NaN","MAD","min","RD - Median","Variance","max","geomean","Mode".\cr
-#' For "%Total","%Gated","%","RD - Mean","RD - Median", "type" has to be ratio and both 'population1'
-#' and 'population2' should be provided. Otherwise, 'type' is "value" and only 'population1' is mandatory.\cr
-#' /!\ Note that "Mode" and "Objects/mL" can't be determined and will result in NA.
+#' @param fileName path to file.
+#' @details Allowed \code{'statistics'} names are: \code{"Count"},\code{"Mean"},\code{"\%Total"},\code{"\%Gated"},\code{"\%"},\code{"Objects/mL"},\code{"RD - Mean"},
+#' \code{"Median"},\code{"CV"},\code{"stddev"},\code{"NaN"},\code{"MAD"},\code{"min"},\code{"RD - Median"},\code{"Variance"},\code{"max"},\code{"geomean"},\code{"Mode"}.\cr
+#' For \code{"\%Total"},\code{"\%Gated"},\code{"\%"},\code{"RD - Mean"},\code{"RD - Median"}, \code{'type'} has to be \code{"ratio"} and both \code{'population1'}
+#' and \code{'population2'} should be provided. Otherwise, \code{'type'} is \code{"value"} and only \code{'population1'} is mandatory.\cr
+#' \strong{/!\\} Note that \code{"Mode"} and \code{"Objects/mL"} can't be determined and will result in \code{NA}.
 #' @return a 6-columns character matrix describing report instructions:\cr
-#' - 'name', for the desired name of exported 'statistics',\cr
-#' - 'type', for the type of stats to return (either "value" or "ratio"),\cr
-#' - 'population1', determines the population on which 'statistics' will be performed,\cr
-#' - 'population2', determines the reference population (when 'type' is "ratio", see Details),\cr
-#' - 'feature', determines the feature's name on which 'statistics' will be computed,\cr
-#' - 'statistics', controls the mathematical function that will be applied (See Details).
+#' - \code{'name'}, for the desired name of exported \code{'statistics'},\cr
+#' - \code{'type'}, for the type of stats to return (either \code{"value"} or \code{"ratio"}),\cr
+#' - \code{'population1'}, determines the population on which \code{'statistics'} will be performed,\cr
+#' - \code{'population2'}, determines the reference population (when \code{'type'} is \code{"ratio"}, see \strong{Details}),\cr
+#' - \code{'feature'}, determines the feature's name on which \code{'statistics'} will be computed,\cr
+#' - \code{'statistics'}, controls the mathematical function that will be applied (see \strong{Details}).
 #' @keywords internal
 getSTATSREPORT <- function(fileName) {
   if(length(fileName) != 1) stop("'fileName' should be of length 1")

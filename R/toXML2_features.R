@@ -31,8 +31,9 @@
 #' @description 
 #' Helper to convert features (`IFC_features` object) to XML nodes.
 #' @param features an `IFC_features` object.
-#' @param verbose whether to display message about current action. Default is FALSE.
-#' @param title_progress character string, giving the title of the progress bar. Default is "".
+#' @param verbose whether to display message about current action. Default is \code{FALSE}.
+#' @param display_progress whether to display a progress bar. Default is \code{TRUE}.
+#' @param title_progress character string, giving the title of the progress bar. Default is \code{""}.
 #' @return a xml_node.
 #' @keywords internal
 toXML2_features = function(features, verbose = FALSE, display_progress = TRUE, title_progress = "") {

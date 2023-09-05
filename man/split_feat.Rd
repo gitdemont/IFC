@@ -21,22 +21,20 @@ split_feat(
 
 \item{all_names}{the names of all allowed names.}
 
-\item{alt_names}{vector of same length as 'all_names' to use for substitution. It can be used to speed up the process.}
+\item{alt_names}{vector of same length as \code{'all_names'} to use for substitution. It can be used to speed up the process.}
 
 \item{m_names}{names of masks.}
 
 \item{i_names}{names of images.}
 
-\item{comb_operators}{operators used for combined features. Default is c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT").}
+\item{comb_operators}{operators used for combined features. Default is \code{c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT")}.}
 
-\item{extr_operators}{operators used for non combined features. Default is c("true", "false", "True", "False").
-Those will be added to 'm_names', 'i_names' and all possible features names (as given by the getFromNamespace("featureIFC", "IFC")())}
+\item{extr_operators}{operators used for non combined features. Default is \code{c("true", "false", "True", "False")}.
+Those will be added to \code{'m_names'}, \code{'i_names'} and all possible features names (as given by the \code{getFromNamespace("featureIFC", "IFC")()}).}
 
-\item{split}{string used for splitting. Default is "|".}
+\item{split}{string used for splitting. Default is \code{"|"}.}
 
-\item{force}{whether to force splitting even if split is detected}
-
-\item{operators}{operators used. Default is c("And", "Or", "Not", "(", ")").}
+\item{force}{whether to force splitting even if \code{'split'} is detected.}
 }
 \value{
 an `IFC_features_def` object, or a list containing features definition

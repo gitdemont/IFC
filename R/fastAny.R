@@ -31,9 +31,9 @@
 #' @name fastAny
 #' @description
 #' Helper to compute any
-#' @param obj either a list or an object coercible to logical matrix
-#' @details if 'x' is a list it will return any across list members.
-#' if 'x' is coercible to a logical matrix, it will return any across matrix rows
+#' @param x either a list or an object coercible to logical matrix
+#' @details if \code{'x'} is a list it will return any across list members.
+#' if \code{'x'} is coercible to a logical matrix, it will return any across matrix rows
 #' @return a logical vector
 #' @keywords internal
 fastAny <- function(x) {

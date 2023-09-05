@@ -14,9 +14,11 @@ toXML2_features(
 \arguments{
 \item{features}{an `IFC_features` object.}
 
-\item{verbose}{whether to display message about current action. Default is FALSE.}
+\item{verbose}{whether to display message about current action. Default is \code{FALSE}.}
 
-\item{title_progress}{character string, giving the title of the progress bar. Default is "".}
+\item{display_progress}{whether to display a progress bar. Default is \code{TRUE}.}
+
+\item{title_progress}{character string, giving the title of the progress bar. Default is \code{""}.}
 }
 \value{
 a xml_node.

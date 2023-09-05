@@ -466,15 +466,14 @@ feature_namer <- function(feat_def) {
 #' Helper to split a features definitions within IFC_features_def.
 #' @param features_def an `IFC_features_def` object or a list containing features definition. Default is missing.
 #' @param all_names the names of all allowed names.
-#' @param alt_names vector of same length as 'all_names' to use for substitution. It can be used to speed up the process.
-#' @param operators operators used. Default is c("And", "Or", "Not", "(", ")").
+#' @param alt_names vector of same length as \code{'all_names'} to use for substitution. It can be used to speed up the process.
 #' @param m_names names of masks.
 #' @param i_names names of images.
-#' @param comb_operators operators used for combined features. Default is c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT").
-#' @param extr_operators operators used for non combined features. Default is c("true", "false", "True", "False").
-#' Those will be added to 'm_names', 'i_names' and all possible features names (as given by the getFromNamespace("featureIFC", "IFC")())
-#' @param split string used for splitting. Default is "|".
-#' @param force whether to force splitting even if split is detected
+#' @param comb_operators operators used for combined features. Default is \code{c("+", "-", "*", "/", "(", ")", "ABS", "COS", "SIN", "SQR", "SQRT")}.
+#' @param extr_operators operators used for non combined features. Default is \code{c("true", "false", "True", "False")}.
+#' Those will be added to \code{'m_names'}, \code{'i_names'} and all possible features names (as given by the \code{getFromNamespace("featureIFC", "IFC")()}).
+#' @param split string used for splitting. Default is \code{"|"}.
+#' @param force whether to force splitting even if \code{'split'} is detected.
 #' @return an `IFC_features_def` object, or a list containing features definition
 #' @keywords internal
 split_feat <- function(features_def,

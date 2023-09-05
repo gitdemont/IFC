@@ -7,9 +7,9 @@
 toXML2_features_def(features_def, verbose = verbose)
 }
 \arguments{
-\item{verbose}{whether to display message about current action. Default is FALSE.}
+\item{features_def}{an \code{`IFC_features_def`} object.}
 
-\item{features}{an `IFC_features_def` object.}
+\item{verbose}{whether to display message about current action. Default is \code{FALSE}.}
 }
 \value{
 a XML::xmlNode.

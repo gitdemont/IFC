@@ -28,6 +28,8 @@ If \code{'offsets'} are not provided, extra arguments can also be passed with \c
 
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
+\item{mode}{(\code{\link{objectParam}} argument) color mode export. Either \code{"rgb"}, \code{"gray"}. Default is \code{"rgb"}.}
+
 \item{write_to}{used to compute respectively exported file name.\cr
 Exported base64 data-uri will be deduced from this pattern. Allowed export are \code{".bmp"}, \code{".jpg"}, \code{".jpeg"}, \code{".png"}, \code{".tif"}, \code{".tiff"}.
 Note that \code{".bmp"} is faster but files are not compressed producing bigger data.\cr
