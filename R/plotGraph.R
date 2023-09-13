@@ -295,19 +295,33 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     }
     
     # define text/points size
-    lt <- custom.theme(bg=c("black","white")[color_mode], fg=c("white","black")[color_mode])
+    # lt <- custom.theme(bg=c("black","white")[color_mode], fg=c("white","black")[color_mode])
+    theme_bg_col = c("white","black")[color_mode]
+    theme_fg_col = c("black","white")[color_mode]
+    lt <- lattice::standard.theme()
+    lt[["background"]]$col           = theme_bg_col
+    lt[["plot.polygon"]]$border      = theme_fg_col
+    lt[["box.dot"]]$col              = theme_fg_col
+    lt[["strip.border"]]$col         = theme_fg_col
+    lt[["superpose.polygon"]]$border = theme_fg_col
+    lt[["box.3d"]]$col               = theme_fg_col
     lt$grid.pars <- get.gpar()
     lt$grid.pars$fontfamily <- "serif"
     lt$fontsize$text <- lt$grid.pars$fontsize
     lt$fontsize$points <- 4
-    for(i in c("xlab","xlab","zlab","main")) {
+    for(i in c("xlab","xlab","zlab","main","sub")) {
       lt[[paste0("par.",i,".text")]]$fontfamily <- "serif"
       lt[[paste0("par.",i,".text")]]$cex = g$axislabelsfontsize/lt$grid.pars$fontsize
+      lt[[paste0("par.",i,".text")]]$col = theme_fg_col
     }
     lt[["axis.text"]]$fontfamily <- "serif"
     lt[["axis.text"]]$cex = g$axistickmarklabelsfontsize/lt$grid.pars$fontsize
+    lt[["axis.text"]]$col <- theme_fg_col
+    lt[["axis.line"]]$col <- theme_fg_col
     lt[["add.text"]]$fontfamily <- "serif"
     lt[["add.text"]]$cex = g$regionlabelsfontsize/lt$grid.pars$fontsize
+    lt[["add.text"]]$col <- theme_fg_col
+    lt[["add.line"]]$col <- theme_fg_col
     if(g$type == "histogram") {
       ret_order = c("Object Number","x1","x2",displayed_n)
     } else {

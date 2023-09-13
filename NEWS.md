@@ -1,4 +1,76 @@
 # NEWS
+## 0.2.1
+- CRAN submission
+
+## 0.2.0.xxx
+#### Work on documentation
+
+- change Luminex(R) -> Cytek(R)
+
+- improve formatting in several places
+
+- fix recent CRAN NOTE about "Documented arguments not in \usage in documentation" in some internal functions
+
+#### Work on **ExtractImages_to/ExtractMasks_to** functions (breaking)
+
+- fix bug with `write_to` dirname parsing when export is "matrix"
+
+- DRY code (create generic internal **polyExtractTo**) and group everything in ExtractToFuns.R file
+
+- export 2 new functions **ExtractMasks_toFile**, **ExtractMasks_toBase64**
+
+- improve documentation (clarification, formatting)
+
+- add forgotten (in v0.2.0.xxx) `mode` parameter description in **ExtractImages_toBase64/ExtractMasks_toBase64**
+
+- add new `base64_id` and `base64_att` arguments to **ExtractImages_toBase64/ExtractMasks_toBase64**
+
+- add explicit `overwrite` argument to **ExtractImages_toFile/ExtractMasks_toFile** and limit the use of `param$write_to` to situtations where `param$export` was already set to "file" by user
+
+#### Work on image extraction at cpp level
+
+- DRY code, separate file read/decomp
+
+- add experimental quantile normalization at image extraction time by setting `input_range` within `]0,1[`
+
+- improve documentation (clarification, formatting)
+
+- remove `bits` argument from **XIFtoTIFF** and hpp/cpp functions for decomp to raw vector and only use 16 bits gray levels
+
+- add "none" decompression (=1) logic in decomp.hpp
+
+- add 1 row in align.hpp
+
+#### Work on Gating Strategy
+
+- fix bug in applyGatingStrategy where graphs were wrongly imported (fixed by setting `simplify = FALSE` in **sapply**)
+
+- fix behaviour of `keep` argument
+
+#### Work on graphs
+
+- apply fix to **contourplot** to handle new behaviour of R **&&** and **||** "with LHS or RHS larger than one"
+
+- fix bug with axis computation when it is transformed by **smoothLingLog** or **smoothAsinh**. Then, if viewport is "data" and all data is contained within [-hyper,+hyper] range, the **axisExtent** becomes infinite which triggered an error
+
+- fix device opening/closing, **adjustGraph** should leave graph device(s) as is after testing if graph is drawable
+
+- use **quote()** to decrease footprint of large object(s) on trace when recovering from errors
+
+- adjust density to rendering size in **plot_raster** so as to produce graph with (more) similar colors as **plot_base** base graphics
+
+#### Miscellaneous
+
+- remove hard dependency on `jpeg`, `png`, and `tiff` packages
+
+- **expand_list**: fix bug in internal **expand_list** which leads to only partial conversion of xml node to list, affecting notably correct extraction of ViewingModes in **getInfo()**
+
+- trans.hpp: some cycles less (replace () by [], avoid unnecessary copies) 
+
+- utils.hpp: **hpp_mfpmatch** init `pat` in recommended way
+
+- utils.hpp: **hpp_seqmatch** less frequently **checkUserInterrupt**
+
 ## 0.2.0
 - CRAN submission
 

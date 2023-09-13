@@ -52,7 +52,7 @@ You may need to reboot to operate changes
 
 #### On Linux (tested on Ubuntu 16.04 LTS)
 
-- IFC package is dependent on tiff package. It requires tiff libraries which may not be on the system.
+- tiff package requires tiff libraries which may not be on the system.
 
 ```terminal
 sudo apt-get install libtiff-dev
@@ -61,10 +61,10 @@ sudo apt-get install libtiff-dev
 #### in R
 
 - install R dependencies required for IFC package
-"Rcpp", "xml2", "png", "tiff", "jpeg", "utils", "grid", "gridExtra", "gridGraphics", "lattice", "latticeExtra", "KernSmooth", "DT", "visNetwork"
+"Rcpp", "xml2", "utils", "grid", "gridExtra", "gridGraphics", "lattice", "latticeExtra", "KernSmooth", "DT", "visNetwork"
 
 ```R
-install.packages(c("Rcpp", "xml2", "png", "tiff", "jpeg", "utils", "grid", "gridExtra", "gridGraphics", "lattice", "latticeExtra", "KernSmooth", "DT", "visNetwork"))
+install.packages(c("Rcpp", "xml2", "utils", "grid", "gridExtra", "gridGraphics", "lattice", "latticeExtra", "KernSmooth", "DT", "visNetwork"))
 ```
 
 - install "remotes", to install IFC package from github remotes is needed.

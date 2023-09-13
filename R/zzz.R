@@ -31,12 +31,15 @@
 
 .onLoad <- function(libname, pkgname) {
   data_avl <- requireNamespace("IFCdata", quietly = TRUE)
+  image_deps_avl <- c(jpeg = requireNamespace("jpeg", quietly = TRUE),
+                      png = requireNamespace("png", quietly = TRUE),
+                      tiff = requireNamespace("tiff", quietly = TRUE))
   .pkgenv[["data_avl"]] <- data_avl
+  .pkgenv[["image_deps_avl"]] <- image_deps_avl
   invisible()
 }
 
-.onAttach <- function(lib, pkg)
-{
+.onAttach <- function(lib, pkg) {
   # startup message
   msg <- c(paste("Package 'IFC' version", packageVersion("IFC")),
            "\nType `citation(\"IFC\")` for citing this R package in publications.")
@@ -45,6 +48,16 @@
              "\nTo use examples in this package, you should install 'IFCdata' package.",
              "\nTo install 'IFCdata' package, run `install.packages('IFCdata', repos = 'https://gitdemont.github.io/IFCdata/', type = 'source')`.")
   }
-  packageStartupMessage(paste(strwrap(msg), collapse = "\n"))      
+  image_deps = .pkgenv[["image_deps_avl"]]
+  if(!all(image_deps)) {
+    msg = c(msg,
+            sapply(seq_along(image_deps), FUN = function(x) {
+              if(image_deps[x]) return(NA_character_)
+              n = names(image_deps)[x]
+              paste0("\nTo export objects as .",n,", you should install '",n,"' package.")
+            })
+            )
+  }
+  packageStartupMessage(paste(strwrap(msg[!is.na(msg)]), collapse = "\n"))      
   invisible()
 }

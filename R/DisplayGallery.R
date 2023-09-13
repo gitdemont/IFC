@@ -68,7 +68,7 @@
 #'   info <- getInfo(fileName = file_cif, from = "analysis")
 #'   ## randomly show at most 10 "img" objects from file
 #'   DisplayGallery(info = info, image_type = "img", extract_max = 10,
-#'                  sampling = TRUE, write_to = "example.png")
+#'                  sampling = TRUE, write_to = "example.bmp")
 #' } else {
 #'   message(sprintf('Please run `install.packages("IFCdata", repos = "%s", type = "source")` %s',
 #'                   'https://gitdemont.github.io/IFCdata/',

@@ -1020,7 +1020,7 @@ plot_lattice=function(obj) {
                               })
                             }
                           })
-          foo = foo + as.layer(tmp, opposite = FALSE, axes = NULL)
+          foo = foo + latticeExtra::as.layer(tmp, opposite = FALSE, axes = NULL)
         }
       }
     } else {
@@ -1165,7 +1165,7 @@ plot_lattice=function(obj) {
       disp = displayed_n[l]
       if(any(D[,disp])) { # adds layer only if there is at least one point
         tmp = xyplot(D[,"y2"] ~ D[,"x2"], pch = P[[disp]]$style, col = P[[disp]][c("color","lightModeColor")][[color_mode]], subset = D[,disp])
-        foo = foo + as.layer(tmp)
+        foo = foo + latticeExtra::as.layer(tmp)
       }
     }
   }

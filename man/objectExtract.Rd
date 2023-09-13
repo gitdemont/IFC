@@ -151,11 +151,11 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
   ## extract base64 "rgb" colorized version of these "img" objects to base64
   b64 = objectExtract(ifd = IFDs, info = info, mode = "rgb", 
                       export = "base64", base64_id = TRUE,
-                      write_to = "example_\%o_\%c.png")
+                      write_to = "example_\%o_\%c.bmp")
   ## use DisplayGallery to show the first "img" objects and play with ... extra parameters
   ## force_range, add_noise, selection, composite, see objectParam
   DisplayGallery(info = info, offsets = cif_offs, objects = sel,
-                 base64_id = TRUE, write_to = "example_\%o_\%c.png",
+                 base64_id = TRUE, write_to = "example_\%o_\%c.bmp",
                  force_range = c(FALSE,TRUE,FALSE,TRUE), add_noise = FALSE,
                  selection = c(1,2,4,6), composite = "1.7/4.3")
 } else {
