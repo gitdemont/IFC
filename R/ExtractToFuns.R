@@ -140,8 +140,8 @@ polyExtractTo <- function(...,
   
   # define arguments input to param
   param_extra_a = setdiff(names(formals(objectParam)), "...")
-  param_extra_n = c("ifd","param","bypass","verbose",      # arguments to objectExtract
-                    "export","mode","write_to","overwrite")# arguments to objectParam
+  param_extra_n = c("ifd","param","bypass","verbose",             # arguments to objectExtract
+                    "info","export","mode","write_to","overwrite")# arguments to objectParam
   param_extra = names(dots) %in% param_extra_n
   dots = dots[!param_extra] # remove not allowed param
   param_extra_a = setdiff(param_extra_a, param_extra_n)
