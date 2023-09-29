@@ -309,7 +309,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     lt$grid.pars$fontfamily <- "serif"
     lt$fontsize$text <- lt$grid.pars$fontsize
     lt$fontsize$points <- 4
-    for(i in c("xlab","xlab","zlab","main","sub")) {
+    for(i in c("xlab","ylab","zlab","main","sub")) {
       lt[[paste0("par.",i,".text")]]$fontfamily <- "serif"
       lt[[paste0("par.",i,".text")]]$cex = g$axislabelsfontsize/lt$grid.pars$fontsize
       lt[[paste0("par.",i,".text")]]$col = theme_fg_col
