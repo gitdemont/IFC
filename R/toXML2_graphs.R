@@ -39,7 +39,7 @@ toXML2_graphs = function(graphs, verbose = FALSE) {
   if(verbose) message("creating graphs node")
   assert(graphs, cla = "IFC_graphs")
   if(length(graphs)==0) return(xml_new_node(name = "Displays", text = ""))
-  graphs = graphs[sapply(graphs, length) != 0] 
+  graphs = graphs[sapply(graphs, length) != 0]
   graphs = lapply(graphs, FUN=function(g) {
     g$GraphRegion = lapply(g$GraphRegion, FUN = function(x) x[!grepl("def", names(x))]) # it is mandatory to remove def
     g = lapply(g, FUN = function(x) {
@@ -51,7 +51,10 @@ toXML2_graphs = function(graphs, verbose = FALSE) {
     })
     if((length(g$maxpoints) != 0) && ((g$maxpoints == +Inf) || (g$maxpoints == 1))) g$maxpoints=NULL
     g = g[sapply(g, length) != 0] # to remove empty values (e.g. xtrans, ytrans)
-    g
+    if((length(g$title) == 0) || any(g$title %in% "")) g$title = paste0(unlist(lapply(g$BasePop, FUN=function(x) x$name)),collapse=", ")
+    if((length(g$xlabel) == 0) || any(g$xlabel %in% "")) g$xlabel = g$f1
+    g$ylabel = ifelse(any(g$type %in% "histogram"), ifelse(any(as.logical(g$freq)),"Normalized Frequency","Frequency"), ifelse((length(g$ylabel) == 0) || (any(g$ylabel %in% "")), g$f2, g$ylabel))
+    return(g)
   })
   lapply(graphs, FUN=function(i_graph) {
     do.call(what = buildGraph, args = i_graph[!grepl("order", names(i_graph))])

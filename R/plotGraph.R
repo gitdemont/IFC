@@ -286,8 +286,6 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       if(!is_fun && (trans!="return")) {
         if(!any(names(obj$features) %in% trans)) stop(paste0("trying to plot a feature not found in obj$features: ", trans))
         dens_feat = obj$features[D[xy_subset, 1, drop = TRUE], trans, drop = TRUE]
-        dens_ran = cpp_fast_range(dens_feat)
-        dens_feat = (dens_feat-dens_ran[1])/diff(dens_ran)
       }
       coln_stats = c("count","perc","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.","Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
       stats = structure(matrix(numeric(), ncol = length(coln_stats), nrow = 0), dimnames = list(character(), coln_stats))
@@ -337,6 +335,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                               "data" = structure(D[ ,ret_order], features=dens_feat), 
                               "trunc_labels" = trunc_labels,
                               "title" = g$title,
+                              "f1" = g$f1, "f2" = g$f2,
                               "xlab" = g$xlab, "ylab" = g$ylab,
                               "xlim" = Xlim, "ylim" = Ylim, 
                               "trans_x" = Xtrans, "trans_y" = Ytrans,

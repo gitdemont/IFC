@@ -34,6 +34,7 @@
 #' @details x will be truncated according to 'n' parameter. If x is longer than n '...' are appended.
 #' @keywords internal
 trunc_string = function(x, n=22) {
+  if(length(x) == 0) return("")
   x = as.character(x)
   L = nchar(x)
   if(L > n) return(paste0(substr(x, 1, n),"..."))

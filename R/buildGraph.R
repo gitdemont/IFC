@@ -142,6 +142,9 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
   xsize=na.omit(as.integer(xsize)); xsize = xsize[xsize>=0]; assert(xsize, len=1)
   ysize=na.omit(as.integer(ysize)); ysize = ysize[ysize>=0]; assert(ysize, len=1)
   splitterdistance=na.omit(as.integer(splitterdistance)); splitterdistance = splitterdistance[splitterdistance>=0]; assert(splitterdistance, len=1)
+  if(length(title) == 0) title = ""
+  assert(title, len=1, typ="character")
+  if(length(xlabel) == 0) xlabel = ""
   assert(xlabel, len=1, typ="character")
   assert(freq, len=1, alw=c("T","F"))
   font_size_avl = as.integer(c(8:11,(6:14)*2))
@@ -219,6 +222,7 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
       BasePop_name_alw = BasePop_name_alw[1:3]
     }
     assert(f2, len=1, typ="character")
+    if(length(ylabel) == 0) ylabel = ""
     assert(ylabel, len=1, typ="character")
     args = c(args, list(f2=f2)) # adds f2 to args for non histogram
   }

@@ -64,7 +64,6 @@ densCols=function (x, y = NULL,
                    xlim = range(x, na.rm = TRUE, finite = TRUE),
                    ylim = range(y, na.rm = TRUE, finite = TRUE),
                    nbin = 128, colramp = colorRampPalette(c("blue","green","red")), transformation = "asinh") {
-  x_features = attr(x, "features")
   xy <- xy.coords(x, y)
   select <- is.finite(xy$x) & is.finite(xy$y) &
     xy$x >= xlim[1] & xy$x <= xlim[2] &
@@ -78,6 +77,7 @@ densCols=function (x, y = NULL,
     ybin <- cut(x[, 2], mkBreaks(map$x2), labels = FALSE)
     dens <- applyTrans(x = map$fhat[cbind(xbin, ybin)], trans = tr)
   } else {
+    x_features = attr(x, "features")[select]
     ran <- cpp_fast_range(x_features)
     dens <- ((x_features - ran[1])/diff(ran))
     map = NULL
@@ -508,6 +508,11 @@ plot_base=function(obj) {
   Ylim = obj$input$ylim
   disp_n = names(displayed)
   main = obj$input$title
+  if((length(main) == 0) || any(main %in% "")) main = paste0(unlist(lapply(obj$input$base, FUN = function(x) x$name)), collapse = ", ")
+  xlab = obj$input$xlab
+  if((length(xlab) == 0) || any(xlab %in% "")) xlab = obj$input$f1
+  ylab = obj$input$ylab
+  if((length(ylab) == 0) || any(ylab %in% "")) ylab = ifelse(any(obj$input$type %in% c("count","percent")), ifelse(any(obj$input$type %in% "percent"), "Normalized Frequency", "Frequency"), obj$input$f2)
   lt = obj$input$par.settings
   subtitle = FALSE
   if(any(obj$input$add_key %in% c("global", "both"))) {
@@ -518,8 +523,8 @@ plot_base=function(obj) {
   # common plot args
   args_plot = list(xlim = obj$input$xlim, ylim = obj$input$ylim, 
                    main = trunc_string(main, obj$input$trunc_labels), 
-                   xlab = trunc_string(obj$input$xlab, obj$input$trunc_labels),
-                   ylab = trunc_string(obj$input$ylab, obj$input$trunc_labels),
+                   xlab = trunc_string(xlab, obj$input$trunc_labels),
+                   ylab = trunc_string(ylab, obj$input$trunc_labels),
                    cex.lab = lt$par.xlab.text$cex,
                    cex.main = lt$par.main.text$cex,
                    cex.axis = lt$axis.text$cex,
@@ -823,8 +828,20 @@ plot_raster=function(obj, pntsonedge = FALSE) {
         size = 7
         col = map_color(obj$input$displayed[[p]][c("color","lightModeColor")][[color_mode]])
       } else {
+        colramp = colorRampPalette(colConv(obj$input$base[[1]][c("densitycolorsdarkmode", "densitycolorslightmode")][[color_mode]]))
         size = 9
-        col = colorRampPalette(colConv(obj$input$base[[1]][c("densitycolorsdarkmode", "densitycolorslightmode")][[color_mode]]))(255)
+        if(identical(obj$input$trans, "asinh")) {
+          col = colramp(255)
+        } else {
+          col = densCols(x = structure(obj$input$data$x2[obj$input$subset], features=attr(obj$input$data,"features")),
+                         y = obj$input$data$y2[obj$input$subset],
+                         xlim = obj$input$xlim,
+                         ylim = obj$input$ylim,
+                         colramp=colramp,
+                         nbin=obj$input$bin,
+                         transformation=obj$input$trans)
+          if(!identical(pntsonedge, TRUE)) col <- col[!is.na(col)]
+        }
       }
       list(size = size,
            pch = obj$input$displayed[[p]]$style,
@@ -898,7 +915,8 @@ plot_raster=function(obj, pntsonedge = FALSE) {
   }
   
   # redraw key / subtitle / title
-  main = trunc_string(obj$input$title, obj$input$trunc_labels)
+  main = obj$input$title
+  if((length(main) == 0) || any(main %in% "")) main = paste0(unlist(lapply(obj$input$base, FUN = function(x) x$name)), collapse = ", ")
   if(main == "") main = " "
   sub_lab = obj$input$trans
   if(sub_lab == "") sub_lab = " "
@@ -969,11 +987,17 @@ plot_lattice=function(obj) {
   }
   histogramsmoothingfactor = obj$input$histogramsmoothingfactor
   trunc_labels = obj$input$trunc_labels
-  main = trunc_string(obj$input$title, trunc_labels) 
+  main = obj$input$title
+  if((length(main) == 0) || any(main %in% "")) main = paste0(unlist(lapply(obj$input$base, FUN = function(x) x$name)), collapse = ", ")
+  xlab = obj$input$xlab
+  if((length(xlab) == 0) || any(xlab %in% "")) xlab = obj$input$f1
+  ylab = obj$input$ylab
+  if((length(ylab) == 0) || any(ylab %in% "")) ylab = ifelse(any(obj$input$type %in% c("count","percent")), ifelse(any(obj$input$type %in% "percent"), "Normalized Frequency", "Frequency"), obj$input$f2)
+  main = trunc_string(main, trunc_labels)
   if(main == "") main = " "
-  xlab = trunc_string(obj$input$xlab, trunc_labels)
+  xlab = trunc_string(xlab, trunc_labels)
   if(xlab == "") xlab = " "
-  ylab = trunc_string(obj$input$ylab, trunc_labels)
+  ylab = trunc_string(ylab, trunc_labels)
   if(ylab == "") ylab = " "
   if(type %in% c("percent", "count")) {
     # define legend
@@ -986,7 +1010,7 @@ plot_lattice=function(obj) {
       br = do.breaks(Xlim, nbin)
       foo = histogram(~ D[,"x2"], auto.key=FALSE,
                       xlim = Xlim, ylim = Ylim, main = main, xlab = xlab,
-                      ylab = obj$input$ylab,
+                      ylab = ylab,
                       scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)),
                       border = "transparent", nint = nbin, type = type, breaks = br, normalize = normalize,
                       panel = function(x, ...) { })
@@ -1026,7 +1050,7 @@ plot_lattice=function(obj) {
     } else {
       foo = histogram(Ylim ~ Xlim, auto.key=FALSE,
                       xlim = Xlim, ylim = Ylim, main = main, xlab = xlab,
-                      ylab = obj$input$ylab,
+                      ylab = ylab,
                       scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)), border = "transparent",
                       nint = nbin, type = type, normalize = normalize, Ylim = Ylim,
                       panel = function(x, Ylim = Ylim, ...) {
