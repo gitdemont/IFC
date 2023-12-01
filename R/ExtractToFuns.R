@@ -232,11 +232,12 @@ polyExtractTo <- function(...,
     warning("No objects to extract, check the objects you provided.", immediate. = TRUE, call. = FALSE)
     return(invisible(NULL))
   }
+  lab = paste("exporting images to", export)
   if(display_progress) {
     pb = newPB(min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
     ans = lapply(1:L, FUN=function(i) {
-      setPB(pb, value = i, title = title_progress, label = "exporting images to file")
+      setPB(pb, value = i, title = title_progress, label = lab)
       do.call(what = "objectExtract", args = c(list(ifd = lapply(sel[[i]],
                                                                  FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
                                                                                                  offset = off,
