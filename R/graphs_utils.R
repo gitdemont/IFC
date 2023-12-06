@@ -1263,7 +1263,13 @@ plot_stats=function(obj) {
     })
     stats = do.call(what=rbind, args=c(base_s, kids_r))
     rnames = base_n
-    if(length(reg_n) > 0) rnames = unique(c(rnames, unlist(t(sapply(base_n, FUN = function(b) {if(b == "All") {graph_n} else {paste(reg_n, b, sep = " & ") }})))))
+    if(length(reg_n) > 0) rnames = unique(c(rnames, unlist(t(sapply(base_n, FUN = function(b) {
+      if(length(graph_n) == length(reg_n)) {
+        if(b == "All") {graph_n} else {paste(reg_n, b, sep = " & ")}
+      } else {
+        if(b == "All") {reg_n} else {paste(reg_n, b, sep = " & ")}
+      }
+    })))))
     rownames(stats) = rnames
     colnames(stats) = c(coln_stats[1:2], paste0("x-",coln_stats[3:8]))
   } else {
@@ -1316,7 +1322,13 @@ plot_stats=function(obj) {
     })
     stats = do.call(what=rbind, args=c(base_s, kids_r, kids_s))
     rnames = base_n
-    if(length(reg_n) > 0) rnames = c(rnames, unlist(t(sapply(base_n, FUN = function(b) {if(b == "All") {reg_n} else {paste(reg_n, b, sep = " & ") }}))))
+    if(length(reg_n) > 0) rnames = c(rnames, unlist(t(sapply(base_n, FUN = function(b) {
+      if(length(graph_n) == length(reg_n)) {
+        if(b == "All") {graph_n} else {paste(reg_n, b, sep = " & ")}
+      } else {
+        if(b == "All") {reg_n} else {paste(reg_n, b, sep = " & ")}
+      }
+    }))))
     if(length(shown_n) > 0) rnames = c(rnames, unlist(sapply(shown_n, FUN = function(s) paste(base_n, s, sep = " & "))))
     rownames(stats) = rnames
     colnames(stats) = c(coln_stats[1:2], paste0("x-",coln_stats[3:8]), paste0("y-",coln_stats[9:14]))
