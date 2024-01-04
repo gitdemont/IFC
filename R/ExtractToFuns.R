@@ -72,13 +72,7 @@ polyExtractTo <- function(...,
   } else {
     fileName = enc2native(attr(offsets, "fileName_image"))
   }
-  
   # process extra parameters
-  if(length(dots[["display_progress"]]) == 0) { 
-    display_progress = TRUE
-  } else {
-    display_progress = dots[["display_progress"]]
-  }
   if(length(dots[["verbose"]]) == 0) { 
     verbose = FALSE
   } else {
