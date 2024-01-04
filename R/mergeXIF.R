@@ -154,18 +154,14 @@ mergeXIF <- function (fileName, write_to,
   # 33004 corresponds to file date
   # 33005 corresponds to user
   # 33018 corresponds to total object number
-  # 33029 corresponds to merged files in CIF, will be removed since new subset file can't contain this tag
-  # 33030 corresponds to merged files in RIF, will be removed since new subset file can't contain this tag
-  # 33080 corresponds to offset of Features values, will be overwritten if features are found
+  # 33029 corresponds to merged flag for cif merged
+  # 33030 corresponds to merged files in RIF
+  # 33070 corresponds to total cell count 
   # 33081 appears in merged file, it has same val = 33080, but is of typ = 2 and map NULL 
   # 33082 corresponds to binary Features version, will be overwritten if features are found
   # 33083 corresponds to Features values in merged or subset
   # 33090, 33091, 33092, 33093, 33094 corresponds to tags we add to track objects origin
-  unwanted = c(33004, 33005, 33018, 33029, 33030, 33080, 33081, 33082, 33083, 33090, 33091, 33092, 33093, 33094)
-  
-  # tags of StripOffsets (273) and TileOffsets (324)
-  # off_tags = c(273, 324)
-  off_tags = 273
+  unwanted = c(33004, 33005, 33018, 33029, 33030, 33070, 33081, 33082, 33083, 33090, 33091, 33092, 33093, 33094)
   
   # open connection for writing
   tryCatch(suppressWarnings({
@@ -201,9 +197,26 @@ mergeXIF <- function (fileName, write_to,
     # 33029 or 33030 names of files that constitute the merge
     fname2 = collapse_raw(lapply(fileName, FUN = function(x) charToRaw(normalizePath(enc2native(x), mustWork = FALSE, winslash =  "\\"))), as.raw(0x7c))
     if(f_Ext == "rif") {
-      ifd_merged = buildIFD(val = fname2, typ = 2, tag = 33030, endianness = r_endian)
+      seek(toread1, IFD_first[[1]]$tags[["33080"]]$val)
+      fv = readBin(toread1, what = "double", n = 2, size = 4)
+      seek(toread1, IFD_first[[1]]$tags[["33080"]]$val)
+      ifd_merged = c(buildIFD(val = fname2, typ = 2, tag = 33030, endianness = r_endian),
+                     buildIFD(val = 0, typ = 4, tag = 33070, endianness = r_endian),
+                     buildIFD(val = IFD_first[[1]]$tags[["33080"]]$val, typ = 4, tag = 33081, endianness = r_endian),
+                     buildIFD(val = 1, typ = 4, tag = 33082, endianness = r_endian))
     } else {
-      ifd_merged = buildIFD(val = fname2, typ = 2, tag = 33029, endianness = r_endian)
+      seek(toread1, IFD_first[[1]]$tags[["33083"]]$val)
+      fv = readBin(toread1, what = "double", n = 2, size = 4)
+      seek(toread1, IFD_first[[1]]$tags[["33083"]]$val)
+      ifd_merged = c(buildIFD(val = 1, typ = 4, tag = 33029, endianness = r_endian),
+                     buildIFD(val = NULL, typ = 2, tag = 33030, endianness = r_endian),
+                     buildIFD(val = 0, typ = 4, tag = 33070, endianness = r_endian),
+                     buildIFD(val = NULL, typ = 2, tag = 33081, endianness = r_endian),
+                     buildIFD(val = 0, typ = 4, tag = 33082, endianness = r_endian))
+    }
+    if(identical(fv[1], IFD_first[[1]]$tags[["33018"]]$val)) {
+      ifd_merged = c(ifd_merged,
+                     buildIFD(val = readBin(toread1, what = "raw", n = 4 * (2 + prod(fv))), typ = 1, tag = 33083, endianness = r_endian))
     }
     # 33004 now time
     ifd_time = buildIFD(val = format(Sys.time(), "%d-%m-%Y %H:%M:%S %p"), typ = 2, tag = 33004, endianness = r_endian)

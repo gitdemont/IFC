@@ -105,11 +105,12 @@ buildIFD <- function(val, typ, tag, endianness = .Platform$endian) {
 
 #' @title Image Field Directory Writer
 #' @description Writes Image Field Directory (IFD)
-#' @param ifd an ifd extracted by cpp_fastTAGS
-#' @param r_con a connection opened for reading
-#' @param w_con a connection opened for writing
+#' @param ifd an ifd extracted by cpp_fastTAGS.
+#' @param r_con a connection opened for reading.
+#' @param w_con a connection opened for writing.
 #' @param pos current position within 'w_con'. Default is 0.
-#' @param extra extra entries to add to 'ifd'. Default is NULL
+#' @param extra extra entries to add to 'ifd'. Default is NULL.
+#' @param last whether ifd is last one or not.
 #' @param endianness the desired endian-ness ("big" or "little"). Default is .Platform$endian.\cr
 #' Endianness describes the bytes order of data stored within the files. This parameter may not be modified.
 #' @return the position within 'w_con' after 'IFD' and 'extra' content have been written\cr
@@ -144,6 +145,16 @@ writeIFD <- function(ifd, r_con, w_con, pos = 0, extra = NULL, endianness = .Pla
     pos <- pos + ifd[[i_tag]]$byt
   }
   
+  # special for features offset
+  if(any("33080" == names(ifd))) {
+    tmp = cpp_uint32_to_raw(1)
+    if(swap) tmp = rev(tmp)
+    ifd[["33080"]]$raw[5:8] <- tmp
+    tmp = cpp_uint32_to_raw(4)
+    if(swap) tmp = rev(tmp)
+    ifd[["33080"]]$raw[3:4] <- tmp[1:2]
+  }
+  
   # convert next offset
   if(last) {
     off = as.raw(c(0x00,0x00,0x00,0x00))
@@ -170,6 +181,53 @@ writeIFD <- function(ifd, r_con, w_con, pos = 0, extra = NULL, endianness = .Pla
   
   # return current pos
   return(pos)
+}
+
+#' @title IFD Type Detection
+#' @description Detects IFD type
+#' @param ifd an Image Field Directory as extracted by cpp_fastTAGS, cpp_getTAGS or subset of getIFD.
+#' @return an integer, with label attribute.
+#' @keywords internal
+IFDtype <- function(ifd) {
+  typ = 7L
+  i18 = as.numeric(ifd$tags[["33018"]]$val)
+  if(length(i18) != 0) {
+    l30 = ifd$tags[["33030"]]$byt
+    i70 = as.numeric(ifd$tags[["33070"]]$val)
+    if(length(ifd$tags[["33029"]]$val) == 0) {
+      if(length(i70) == 0) {
+        typ = 1L
+      } else {
+        if(length(l30) == 0) {
+          typ = 4L
+        } else {
+          if(identical(i70, as.numeric(0))) {
+            if(l30 == 0) {
+              typ = 2L
+            } else{
+              typ = 3L
+            }
+          } else {
+            if(identical(i70, i18)) {
+              if(l30 == 0) {
+                typ = 5L
+              } else{
+                typ = 6L
+              }
+            } else {
+              typ = 8L
+            }
+          }
+        }
+      }
+    } else {
+      typ = 9L
+    }
+  }
+  N = c("rif",    "sub rif",       "merged rif",
+        "cif",    "cif of sub rif","cif of merged rif",
+        "non xif","sub cif",       "merged cif")
+  structure(typ, label = N[typ])
 }
 
 #' @title RIF/CIF Image Order Test

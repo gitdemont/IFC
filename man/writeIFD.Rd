@@ -16,18 +16,20 @@ writeIFD(
 )
 }
 \arguments{
-\item{ifd}{an ifd extracted by cpp_fastTAGS}
+\item{ifd}{an ifd extracted by cpp_fastTAGS.}
 
-\item{r_con}{a connection opened for reading}
+\item{r_con}{a connection opened for reading.}
 
-\item{w_con}{a connection opened for writing}
+\item{w_con}{a connection opened for writing.}
 
 \item{pos}{current position within 'w_con'. Default is 0.}
 
-\item{extra}{extra entries to add to 'ifd'. Default is NULL}
+\item{extra}{extra entries to add to 'ifd'. Default is NULL.}
 
 \item{endianness}{the desired endian-ness ("big" or "little"). Default is .Platform$endian.\cr
 Endianness describes the bytes order of data stored within the files. This parameter may not be modified.}
+
+\item{last}{whether ifd is last one or not.}
 }
 \value{
 the position within 'w_con' after 'IFD' and 'extra' content have been written\cr

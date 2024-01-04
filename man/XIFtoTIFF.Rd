@@ -70,6 +70,6 @@ Converts and subsets RIF or CIF files to TIFF.
 This function is experimental.
 }
 \details{
-This function is experiment and under development inputs and outputs may change in the future
+This function is experimental and under development inputs and outputs may change in the future
 }
 \keyword{internal}

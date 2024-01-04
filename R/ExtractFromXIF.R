@@ -113,7 +113,9 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   title_progress = basename(fileName)
   
   ##### Initializes values
-  merged = FALSE
+  xif_type = IFDtype(IFD[[1]])
+  merged = any(3 %in% xif_type)
+  feat_where = ifelse(any(c(1,2) %in% xif_type), "33080", ifelse(any(4 %in% xif_type), "33083", NA_character_))
   Files = list()
   features_def = list()
   features = data.frame()
@@ -124,51 +126,33 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   onefile = FALSE
   V = NULL
   
-  # TODO ask AMNIS how merged are defined / can be checked
-  # Merged CIF Files
-  if(!is.null(IFD[[1]]$tags[["33029"]])) {
-    if(IFD[[1]]$tags[["33029"]]$byt != 0) V = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33029")), split = "|", fixed = TRUE)[[1]]
-    LV = length(V)
-    if(LV > 1) merged = TRUE
-    if(merged & recursive) {
-      Files = lapply(1:LV, FUN = function(i) {
-        f = normalizePath(paste(dirname(fileName),basename(V[i]),sep="/"), winslash = "/", mustWork = FALSE)
-        if(file.exists(f)) {
-          ExtractFromXIF(fileName = f, pnt_in_poly_algorithm = pnt_in_poly_algorithm, pnt_in_poly_epsilon = pnt_in_poly_epsilon,
-                         force_default = force_default, verbose = verbose, verbosity = verbosity, ...)
-        } else {
-          warning(paste0("Can't find sub-file defining merged:\n", f), call. = FALSE, immediate. = TRUE)
-          out = list("description"=list(), "fileName"=V[i], "fileName_image"=V[i], "features"=features, "features_def"=features_def, "graphs"=plots, "pops"=pops, "regions"=regions, "images"=data.frame(), "offsets"=c(), "stats"=stats)
-          attr(out, "class") <- c("IFC_data", "Merged")
-          return(out)
-        }
-      })
-    } else {
-      onefile = TRUE
+  if(merged) {
+    if(!is.null(IFD[[1]]$tags[["33030"]])) {
+      if(IFD[[1]]$tags[["33030"]]$byt != 0) V = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33030")), split = "|", fixed = TRUE)[[1]]
+      LV = length(V)
+      if(LV <= 1) {
+        merged = FALSE
+        warning(paste0("Can't retrieve original file names defining merged:\n", fileName), call. = FALSE, immediate. = TRUE)
+      }
+      if(merged & recursive) {
+        Files = lapply(1:LV, FUN = function(i) {
+          f = normalizePath(paste(dirname(fileName),basename(V[i]),sep="/"), winslash = "/", mustWork = FALSE)
+          if(file.exists(f)) {
+            ExtractFromXIF(fileName = f, pnt_in_poly_algorithm = pnt_in_poly_algorithm, pnt_in_poly_epsilon = pnt_in_poly_epsilon,
+                           force_default = force_default, verbose = verbose, verbosity = verbosity, ...)
+          } else {
+            warning(paste0("Can't find sub-file defining merged:\n", f), call. = FALSE, immediate. = TRUE)
+            out = list("description"=list(), "fileName"=V[i], "fileName_image"=V[i], "features"=features, "features_def"=features_def, "graphs"=plots, "pops"=pops, "regions"=regions, "images"=data.frame(), "offsets"=c(), "stats"=stats)
+            attr(out, "class") <- c("IFC_data", "Merged")
+            return(out)
+          }
+        })
+      } else {
+        onefile = TRUE
+      }
     }
   }
-  # Merged RIF Files
-  if(!is.null(IFD[[1]]$tags[["33030"]])) {
-    if(IFD[[1]]$tags[["33030"]]$byt != 0) V = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33030")), split = "|", fixed = TRUE)[[1]]
-    LV = length(V)
-    if(LV > 1) merged = TRUE
-    if(merged & recursive) {
-      Files = lapply(1:LV, FUN = function(i) {
-        f = normalizePath(paste(dirname(fileName),basename(V[i]),sep="/"), winslash = "/", mustWork = FALSE)
-        if(file.exists(f)) {
-          ExtractFromXIF(fileName = f, pnt_in_poly_algorithm = pnt_in_poly_algorithm, pnt_in_poly_epsilon = pnt_in_poly_epsilon,
-                         force_default = force_default, verbose = verbose, verbosity = verbosity, ...)
-        } else {
-          warning(paste0("Can't find sub-file defining merged:\n", f), call. = FALSE, immediate. = TRUE)
-          out = list("description"=list(), "fileName"=V[i], "fileName_image"=V[i], "features"=features, "features_def"=features_def, "graphs"=plots, "pops"=pops, "regions"=regions, "images"=data.frame(), "offsets"=c(), "stats"=stats)
-          attr(out, "class") <- c("IFC_data", "Merged")
-          return(out)
-        }
-      })
-    } else {
-      onefile = TRUE
-    }
-  }
+  
   tmp = read_xml(getFullTag(IFD = IFD, which = 1, tag = "33027", raw = TRUE), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
   acquisition = list("Illumination"=lapply(as_list(xml_find_first(tmp, "//Illumination")), unlist),
                      "Imaging"=lapply(as_list(xml_find_first(tmp, "//Imaging")), unlist),
@@ -262,13 +246,13 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
     tryCatch({
       features = list()
       if(is.binary) {
-        seek(toread, ifelse(merged | onefile, 
-                            ifelse(length(IFD[[1]]$tags[["33083"]]$map)==0, stop("can't find pointer '33083' to extract features"), IFD[[1]]$tags[["33083"]]$val), 
-                            ifelse(length(IFD[[1]]$tags[["33080"]]$map)==0, stop("can't find pointer '33080' to extract features"), IFD[[1]]$tags[["33080"]]$val)))
+        if(length(na.omit(feat_where)) == 0) stop("can't extract features from ", attr(xif_type, "label"))
+        seek(toread, IFD[[1]]$tags[[feat_where]]$val)
         obj_number_r = readBin(toread, what = "double", size = 4, n = 1, endian = endianness)
         feat_number_r = readBin(toread, what = "double", size = 4, n = 1, endian = endianness)
         if((length(obj_number_r) == 0) || (length(feat_number_r) == 0)) stop(fileName, "\nBinary features is of length 0")
-        if(!(merged | onefile)) if(IFD[[1]]$tags[["33018"]]$map != obj_number_r) stop(fileName, "\nMismatch in object number")
+        if(IFD[[1]]$tags[["33018"]]$map != obj_number_r) stop(fileName, "\nMismatch in object number")
+        if((length(IFD[[1]]$tags[["33070"]]$val) != 0) && (IFD[[1]]$tags[["33070"]]$val != 0) && (IFD[[1]]$tags[["33070"]]$val != obj_number_r)) stop(fileName, "\nMismatch in object number (2)")
         if(display_progress) {
           pb = newPB(min = 0, max = obj_number_r, initial = 0, style = 3)
           tryCatch({
@@ -290,6 +274,7 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         }
       } else { 
         # TODO
+        if(xif_type == 9) stop("can't extract features from ", attr(xif_type, "label"))
         stop("\nCan't deal with non-binary features")
         # feat_number=length(features)
         if(display_progress) {
