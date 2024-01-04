@@ -583,26 +583,24 @@ Rcpp::RawVector hpp_readchunk (const std::string fname,
     Rcout << fname << std::endl;
     Rcout << "Extracting " << nbytes << " Bytes @offset:" << offset << std::endl;
   }
-  FILE *fi = std::fopen(fname.c_str(), "rb");
-  if(fi == nullptr) Rcpp::stop("hpp_readchunk: Unable to open file");
-  std::fseek(fi, 0, SEEK_END);
-  std::size_t filesize = std::ftell(fi);
-  if((filesize - offset) < nbytes) {
-    std::fclose(fi);
-    Rcpp::Rcerr << "hpp_readchunk: larger nbytes [" << nbytes << "] to read than remaining filesize - offset ["<< (filesize - offset) << "]\n" << fname  << std::endl;
-    Rcpp::stop("hpp_readchunk: can't read so much bytes");
+  std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
+  if (fi.is_open()) {
+    fi.seekg(0, std::ios::end);
+    std::size_t filesize = fi.tellg();
+    fi.seekg(0, std::ios::beg);
+    if(offset > (filesize - nbytes)) {
+      Rcpp::Rcerr << "hpp_readchunk: larger nbytes [" << nbytes << "] to read than remaining filesize - offset ["<< (filesize - offset) << "]\n" << fname  << std::endl;
+      Rcpp::stop("hpp_readchunk: offset is higher than file size");
+    }
+    fi.seekg(offset, std::ios::beg);
+    std::vector<char> buffer(nbytes);
+    fi.read(buffer.data(), nbytes);
+    Rcpp::RawVector out(buffer.begin(), buffer.end());
+    return out;
+  } else {
+    Rcpp::stop("hpp_readchunk: Unable to open file");
   }
-  if((filesize - offset) > filesize) {
-    std::fclose(fi);
-    Rcpp::Rcerr << "hpp_readchunk: @offset:" << offset << " points to outside of\n" << fname  << std::endl;
-    Rcpp::stop("hpp_readchunk: offset is higher than file size");
-  }
-  Rcpp::RawVector out = Rcpp::no_init_vector(nbytes);
-  std::fseek(fi, offset, SEEK_SET);
-  auto s = std::fread(&out[0], sizeof(char), nbytes, fi);
-  std::fclose(fi);
-  if(s != nbytes) Rcpp::stop("hpp_readchunk: bad read");
-  return out;
+  return 0;
 }
 
 #endif
