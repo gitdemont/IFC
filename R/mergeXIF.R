@@ -197,17 +197,19 @@ mergeXIF <- function (fileName, write_to,
     # 33029 or 33030 names of files that constitute the merge
     fname2 = collapse_raw(lapply(fileName, FUN = function(x) charToRaw(normalizePath(enc2native(x), mustWork = FALSE, winslash =  "\\"))), as.raw(0x7c))
     if(f_Ext == "rif") {
-      seek(toread1, IFD_first[[1]]$tags[["33080"]]$val)
+      feat_pos = IFD_first[[1]]$tags[["33080"]]$val + 4294967296 * (file.size(file_first) %/% 4294967296)
+      seek(toread1, feat_pos)
       fv = readBin(toread1, what = "double", n = 2, size = 4)
-      seek(toread1, IFD_first[[1]]$tags[["33080"]]$val)
+      seek(toread1, feat_pos)
       ifd_merged = c(buildIFD(val = fname2, typ = 2, tag = 33030, endianness = r_endian),
                      buildIFD(val = 0, typ = 4, tag = 33070, endianness = r_endian),
-                     buildIFD(val = IFD_first[[1]]$tags[["33080"]]$val, typ = 4, tag = 33081, endianness = r_endian),
+                     buildIFD(val = feat_pos, typ = 4, tag = 33081, endianness = r_endian),
                      buildIFD(val = 1, typ = 4, tag = 33082, endianness = r_endian))
     } else {
-      seek(toread1, IFD_first[[1]]$tags[["33083"]]$val)
+      feat_pos = FD_first[[1]]$tags[["33083"]]$val
+      seek(toread1, feat_pos)
       fv = readBin(toread1, what = "double", n = 2, size = 4)
-      seek(toread1, IFD_first[[1]]$tags[["33083"]]$val)
+      seek(toread1, feat_pos)
       ifd_merged = c(buildIFD(val = 1, typ = 4, tag = 33029, endianness = r_endian),
                      buildIFD(val = NULL, typ = 2, tag = 33030, endianness = r_endian),
                      buildIFD(val = 0, typ = 4, tag = 33070, endianness = r_endian),

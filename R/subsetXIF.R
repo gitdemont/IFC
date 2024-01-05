@@ -289,7 +289,9 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
                   if(length(is_binary) == 0) is_binary = FALSE
                   if(!is_binary) stop(f, "\nCan't deal with non-binary features")
                   
-                  seek(toread2, IFD_f$tags[[feat_where]]$val)
+                  feat_pos = IFD_f$tags[[feat_where]]$val
+                  if(feat_where == "33080") feat_pos = feat_pos + 4294967296 * (file.size(f) %/% 4294967296)
+                  seek(toread2, feat_pos)
                   obj_number_r = readBin(toread2, what = "raw", n = 4, endian = r_endian)
                   obj_number = readBin(obj_number_r, what = "double", size = 4, n = 1, endian = r_endian)
                   tag33070 = tag33070 + obj_number

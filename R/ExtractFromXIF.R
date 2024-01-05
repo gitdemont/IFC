@@ -123,7 +123,6 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
   plots = list()
   regions = list()
   stats = data.frame()
-  onefile = FALSE
   V = NULL
   
   if(merged) {
@@ -147,8 +146,6 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
             return(out)
           }
         })
-      } else {
-        onefile = TRUE
       }
     }
   }
@@ -247,7 +244,9 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
       features = list()
       if(is.binary) {
         if(length(na.omit(feat_where)) == 0) stop("can't extract features from ", attr(xif_type, "label"))
-        seek(toread, IFD[[1]]$tags[[feat_where]]$val)
+        feat_pos = IFD[[1]]$tags[[feat_where]]$val
+        if(feat_where == "33080") feat_pos = feat_pos + 4294967296 * (file.size(fileName) %/% 4294967296)
+        seek(toread, feat_pos)
         obj_number_r = readBin(toread, what = "double", size = 4, n = 1, endian = endianness)
         feat_number_r = readBin(toread, what = "double", size = 4, n = 1, endian = endianness)
         if((length(obj_number_r) == 0) || (length(feat_number_r) == 0)) stop(fileName, "\nBinary features is of length 0")
