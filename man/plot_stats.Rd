@@ -9,6 +9,9 @@ plot_stats(obj)
 \arguments{
 \item{obj}{an object of class `IFC_plot` as created by \code{\link{plotGraph}}.}
 }
+\value{
+a table of statistics.
+}
 \description{
 Helper to extract `IFC_plot` statistics.
 }

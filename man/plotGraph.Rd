@@ -50,14 +50,12 @@ Note that it only applies when display is seen as overlaying populations.}
 -"data" will use data to define limits.\cr
 -"max" will use data and regions drawn to define limits.}
 
-\item{backend}{backend used for drawing. Allowed are "lattice", "base", "raster", "raster-edge", "raster-hybrid". Default is "lattice".\cr
+\item{backend}{backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
 -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
 -"base" will produce the plot using \pkg{base},\cr
 -"raster" uses "base" for plotting but 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.\cr
 This has the main advantage of being super fast allowing for plotting a huge amount of points while generating smaller objects (in bytes).
-However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.
--"raster-edge" is the same as "raster" except that points outside of limits will be drawn onto the edge.\cr
--"raster-hybrid" uses "raster" for drawing on top of a first "raster-edge" pass to produce an hybrid display.}
+However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.}
 
 \item{...}{other arguments to be passed.}
 }

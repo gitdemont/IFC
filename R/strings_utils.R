@@ -36,7 +36,7 @@
 trunc_string = function(x, n=22) {
   if(length(x) == 0) return("")
   x = as.character(x)
-  L = nchar(x)
+  L = nchar(x,allowNA=TRUE,keepNA=FALSE,type="chars")
   if(L > n) return(paste0(substr(x, 1, n),"..."))
   return(x)
 }

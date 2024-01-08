@@ -9,10 +9,10 @@ Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. av
 \usage{
 readFCS(
   fileName,
-  options = list(header = list(start = list(at = 0, n = 6), space = list(at = 6, n =
-    4), text_beg = list(at = 10, n = 8), text_end = list(at = 18, n = 8), data_beg =
-    list(at = 26, n = 8), data_end = list(at = 34, n = 8)), apply_scale = TRUE, dataset =
-    1, force_header = FALSE, text_only = FALSE, text_check = FALSE, text_empty = FALSE,
+  options = list(header = list(start = list(at = 0, n = 6), space = list(at = 6, n = 4),
+    text_beg = list(at = 10, n = 8), text_end = list(at = 18, n = 8), data_beg = list(at
+    = 26, n = 8), data_end = list(at = 34, n = 8)), apply_scale = TRUE, dataset = 1,
+    force_header = FALSE, text_only = FALSE, text_check = FALSE, text_empty = FALSE,
     text_trim = "none"),
   display_progress = TRUE,
   ...

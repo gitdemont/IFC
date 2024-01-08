@@ -18,6 +18,9 @@ adjustGraph(obj, graph, adjust_graph = TRUE, ...)
 
 \item{...}{other arguments to be passed.}
 }
+\value{
+the adjusted graph.
+}
 \description{
 Helper to readjust `IFC_data` graphs in case of missing feature, region, population.
 }

@@ -36,16 +36,18 @@ myScales=function(x=list(), y=list()) {
   if(length(x$tck)==0) x$tck=c(TRUE,FALSE)
   if(length(x$hyper)==0) x$hyper="P"
   if(length(x$rot)==0) x$rot=45
+  if(length(x$tick.number)==0) x$tick.number=10
   
   if(length(y$alternating)==0) y$alternating=1
   if(length(y$tck)==0) y$tck=c(TRUE,FALSE)
   if(length(y$hyper)==0) y$hyper="P"
   if(length(y$rot)==0) y$rot=0
+  if(length(y$tick.number)==0) y$tick.number=10
   
   x_scale=list("alternating"=x$alternating,"tck"=x$tck,"rot"=x$rot)
   y_scale=list("alternating"=y$alternating,"tck"=y$tck,"rot"=y$rot)
-  x_scale=c(x_scale, base_axis_constr(x$lim, x$hyper))
-  y_scale=c(y_scale, base_axis_constr(y$lim, y$hyper))
+  if(length(x$lim)!=0) x_scale=c(x_scale, base_axis_constr(x$lim, x$hyper, x$tick.number))
+  if(length(y$lim)!=0) y_scale=c(y_scale, base_axis_constr(y$lim, y$hyper, y$tick.number))
   
   return(list("x"=x_scale,"y"=y_scale))
 }
@@ -469,69 +471,437 @@ coord_to_px=function (coord, coordmap, pntsonedge = FALSE) {
                             edge = pntsonedge))
 }
 
+#' @title Graphical Devices Shutdown
+#' @name dev_close
+#' @description Closes all open devices
+#' @param dv a graphical device list. Default is dev.list()
+#' @return invisible(NULL)
+#' @keywords internal
+dev_close=function(dv = dev.list()) {
+  suspendInterrupts({
+    ndv = dev.list()
+    while((length(ndv) != 0) && (!identical(dv, ndv))) { 
+      dev.off(which = tail(ndv, 1))
+      ndv = dev.list()
+    }
+  })
+  return(invisible(NULL))
+}
+
+#' @title Graphical Text Wrap
+#' @name wrap_label
+#' @description
+#' Wraps text grob label into multiple lines
+#' @param label a character string.
+#' @param split see \code{split} \code{\link[base]{strsplit}} called with fixed = FALSE.
+#' @param max_width maximum width in npc to occupy, leave \code{NULL} to auto-compute.
+#' @param ... other arguments to be passed to \code{\link[grid]{textGrob}}.
+#' @return a line wrapped label
+#' @keywords internal
+wrap_label=function(label, split = "\\s", max_width = NULL, ...) {
+  if(length(label) == 0) return(character(0))
+  dots = list(...)
+  conv = function(u) convertWidth(x = u, unitTo = "npc", valueOnly = TRUE)
+  getwidth = function(txt) conv(grobWidth(do.call(what = textGrob, args = c(list(label = txt), dots))))
+  labs = unlist(strsplit(label, "\\s", fixed = FALSE), use.names = FALSE, recursive = TRUE)
+  lab_wrap = labs[1]
+  line_w =  getwidth(lab_wrap)
+  sep_w = getwidth(" ")
+  full_w = ifelse(missing(max_width) && ("vp" %in% names(dots)), 0.8 * conv(dots$vp$width), conv(unit(ifelse(length(max_width) == 0, 1, max_width), "npc")))
+  if(length(labs) > 1) for(i in 2:length(labs)) {
+    next_w = getwidth(labs[i])
+    if((line_w + sep_w + next_w) < full_w) {
+      sep = " "
+      line_w = line_w + sep_w + next_w
+    } else {
+      sep = "\n"
+      line_w = next_w
+    }
+    lab_wrap = paste(lab_wrap, labs[i], sep = sep)
+  }
+  lab_wrap
+}
+
+#' @title `IFC_plot` Default Arguments Computation
+#' @name plot_default_args
+#' @description Helper to extract default plot arguments from `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return a list of default arguments for plotting.
+#' @keywords internal
+plot_default_args=function(obj = list()) {
+  # check obj is `IFC_plot`
+  assert(obj, cla = "IFC_plot")
+  if(inherits(obj, c("error","empty"))) {
+    g = as.list(attr(obj, "graph"))
+    main=g$title;sub=g$BasePop[[1]]$densitytrans;xlab=g$xlabel;ylab=g$ylabel;
+    f1=g$f1;f2=g$f2;xlim=c(g$xmin,g$xmax);ylim=c(g$ymin,g$ymax);
+    hyper_x=g$xlogrange;hyper_y=g$ylogrange;base=g$BasePop;type=g$type;freq=g$freq;
+    color_mode=obj$color_mode;trunc_labels=obj$trunc_labels
+  } else {
+    g = as.list(obj)
+    main=g$input$title;sub=g$input$trans;xlab=g$input$xlab;ylab=g$input$ylab;
+    f1=g$input$f1;f2=g$input$f2;xlim=g$input$xlim;ylim=g$input$ylim;
+    hyper_x=g$input$trans_x;hyper_y=g$input$trans_y;base=g$input$base;type=g$input$type;freq=any(type%in%"percent");
+    color_mode=c("black","white")[obj$input$mode];trunc_labels=obj$input$trunc_labels
+  }
+  # 
+  if((length(color_mode)!=1) || !all(color_mode%in%c("white","black"))) color_mode="white"
+  trunc_labels = suppressWarnings(na.omit(as.numeric(trunc_labels))); if(length(trunc_labels) != 1) trunc_labels=38
+  
+  # main, sub, x- and y- labels
+  if((length(main) == 0) || any(main %in% "")) main = paste0(unlist(lapply(base, FUN = function(x) x$name)), collapse = ", ")
+  if((length(sub) == 0) || any(sub %in% "")) sub = NULL
+  if((length(xlab) == 0) || any(xlab %in% "")) xlab = f1
+  if((length(ylab) == 0) || any(ylab %in% "")) ylab = ifelse(any(c("histogram","percent","count") %in% type),
+                                                             ifelse(TRUE %in% as.logical(freq), "Normalized Frequency", "Frequency"),
+                                                             ifelse(length(f2)==1, f2, ""))
+  main = trunc_string(main, trunc_labels)
+  if(main == "") main = " "
+  xlab = trunc_string(xlab, trunc_labels)
+  if((length(xlab) == 0) || any(xlab %in% "")) xlab = " "
+  ylab = trunc_string(ylab, trunc_labels)
+  if((length(ylab) == 0) || any(ylab %in% "")) ylab = " "
+  if(inherits(x = try(parseTrans(sub), silent = TRUE), what="try-error")) {
+    sub = trunc_string(sub, trunc_labels)
+    if((length(sub) == 0) || any(sub %in% "")) sub = " "
+  } else {
+    if((length(sub) == 0) || any(sub %in% "") || any(sub %in% "asinh")) sub = " "
+  }
+  
+  # limits
+  Xlim = try(suppressWarnings(range(range(xlim, na.rm = TRUE, finite = TRUE))), silent = TRUE)
+  if(inherits(Xlim, "try-error)") || length(unique(Xlim)) != 2 || any(is.infinite(Xlim))) Xlim = c(-0.07,0.07)
+  Ylim = try(suppressWarnings(range(range(ylim, na.rm = TRUE, finite = TRUE))), silent = TRUE)
+  if(inherits(Ylim, "try-error)") || length(unique(Ylim)) != 2 || any(is.infinite(Ylim))) Ylim = c(-0.07,0.07)
+  
+  # transforms
+  trans_x = try(parseTrans(hyper_x), silent = TRUE)
+  if(inherits(trans_x, "try-error")) { Xtrans = "P" } else { Xtrans = hyper_x }
+  trans_y = try(parseTrans(hyper_y), silent = TRUE)
+  if(inherits(trans_y, "try-error")) { Ytrans = "P" } else { Ytrans = hyper_y }
+  
+  # mid point
+  xmid = applyTrans(Xlim, parseTrans(Xtrans)); xmid = applyTrans(xmid[1] + diff(xmid) / 2,  parseTrans(Xtrans), inverse = T)
+  ymid = applyTrans(Ylim, parseTrans(Ytrans)); ymid = applyTrans(ymid[1] + diff(ymid) / 2,  parseTrans(Ytrans), inverse = T)
+  
+  return(list(main = main,
+              sub = sub,
+              Xlim = Xlim,
+              Ylim = Ylim,
+              xlab = xlab,
+              ylab = ylab,
+              xmid = xmid,
+              ymid = ymid,
+              scales = myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)),
+              Xtrans = Xtrans, Ytrans = Ytrans,
+              color_mode = color_mode,
+              trunc_labels = trunc_labels))
+}
+
+#' @title `IFC_plot` Lattice Theme Creation
+#' @name lattice_theme
+#' @description Helper to create lattice theme from `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @param color_mode whether to extract colors from 'obj' in white or black mode. Default is "white".
+#' @param lt an existing lattice theme to modify according to \code{'color_mode'}.
+#' @return a list of graphical parameters for 'lattice' backend.
+#' @keywords internal
+lattice_theme=function(obj = list(), color_mode = c("white", "black")[1], lt = NULL) {
+  g = as.list(attr(obj, "graph"))
+  if(!("axislabelsfontsize" %in% names(g))) g$axislabelsfontsize=10
+  if(!("axistickmarklabelsfontsize" %in% names(g))) g$axistickmarklabelsfontsize=10
+  if(!("graphtitlefontsize" %in% names(g))) g$graphtitlefontsize=12
+  if(!("regionlabelsfontsize" %in% names(g))) g$regionlabelsfontsize=10
+  color_mode=switch(color_mode, "black" = 1, "white" = 2, 2)
+  if(!all(c("layout.heights","layout.widths") %in% names(lt))) {
+    lt <- lattice::standard.theme()
+    if(dev.cur() == 1) {
+      lt$grid.pars <- get.gpar()
+      dev.off()
+    } else {
+      lt$grid.pars <- get.gpar()
+    }
+    lt$grid.pars$fontfamily <- "sans"
+    lt$fontsize$text <- lt$grid.pars$fontsize
+    lt$fontsize$points <- 4
+    lt[["add.text"]]$fontfamily <- lt$grid.pars$fontfamily
+    lt[["add.text"]]$cex = g$regionlabelsfontsize/lt$grid.pars$fontsize
+    lt[["axis.text"]]$fontfamily <- lt$grid.pars$fontfamily
+    lt[["axis.text"]]$cex = g$axistickmarklabelsfontsize/lt$grid.pars$fontsize
+    lt[["par.main.text"]]$fontfamily <- lt$grid.pars$fontfamily
+    lt[["par.main.text"]]$font <- 2
+    lt[["par.main.text"]]$cex = g$graphtitlefontsize/lt$grid.pars$fontsize
+    lt[["par.sub.text"]]$fontfamily <- lt$grid.pars$fontfamily
+    lt[["par.sub.text"]]$font <- 3
+    lt[["par.sub.text"]]$cex = 0.75*g$graphtitlefontsize/lt$grid.pars$fontsize
+    for(i in c("xlab","ylab","zlab")) {
+      lt[[paste0("par.",i,".text")]]$fontfamily <- lt$grid.pars$fontfamily
+      lt[[paste0("par.",i,".text")]]$cex = g$axislabelsfontsize/lt$grid.pars$fontsize
+    }
+  }
+  # update color
+  if(color_mode > 0) {
+    theme_bg_col = c("black","white")[color_mode]
+    theme_fg_col = c("white","black")[color_mode]
+    lt[["background"]]$col           = theme_bg_col
+    lt[["plot.polygon"]]$border      = theme_fg_col
+    lt[["box.dot"]]$col              = theme_fg_col
+    lt[["strip.border"]]$col         = theme_fg_col
+    lt[["superpose.polygon"]]$border = theme_fg_col
+    lt[["box.3d"]]$col               = theme_fg_col
+    for(i in c("xlab","ylab","zlab","main","sub")) lt[[paste0("par.",i,".text")]]$col = theme_fg_col
+    lt[["axis.text"]]$col <- theme_fg_col
+    lt[["axis.line"]]$col <- theme_fg_col
+    lt[["add.text"]]$col <- theme_fg_col
+    lt[["add.line"]]$col <- theme_fg_col
+  }
+  return(lt)
+}
+
+#' @title `IFC_plot` Base Theme Creation
+#' @name base_theme
+#' @description Helper to create base theme from `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @param color_mode whether to extract colors from 'obj' in white or black mode. Default is "white".
+#' @param lt an existing lattice theme to modify according to \code{'color_mode'}.
+#' @return a list of graphical parameters for 'base' and 'raster' backend.
+#' @keywords internal
+base_theme=function(obj = list(), color_mode = c("white", "black")[1], lt = NULL) {
+  if(length(lt) == 0) lt = lattice_theme(obj = obj, color_mode = color_mode)
+  cols_n = c("bg","fg","col","col.axis","col.lab","col.main","col.sub")
+  bg = ifelse(all("black" %in% color_mode), "white", "black")
+  cols = rep(bg, length(cols_n))
+  cols[1] = color_mode
+  names(cols) = cols_n
+  return(c(list(xaxs="i", yaxs="i",
+                family = lt$add.text$fontfamily,
+                cex = 1,
+                cex.main = lt$par.main.text$cex,
+                font.main = lt$par.main.text$font,
+                cex.lab = 1.25 * lt$par.xlab.text$cex,
+                font.lab = lt$par.xlab.text$font,
+                cex.sub = lt$par.sub.text$cex,
+                font.sub = lt$par.sub.text$font,
+                cex.axis = lt$axis.text$cex,
+                font.axis = lt$axis.text$font,
+                mar = c(5,5,2 * (lt$par.main.text$cex + lt$par.sub.text$cex) * par("lheight"), 2) + 0.1,
+                mgp = c(3,1,0),
+                ask=FALSE),
+           as.list(cols)))
+}
+
+#' @title `IFC_plot` Base Title Annotation
+#' @name base_title
+#' @description Helper to add title (and subtitle) when drawing `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return nothing, annotate plot with 'base' and 'raster' backend.
+#' @keywords internal
+base_title=function(obj){
+  g = plot_default_args(obj)
+  mtext(text=g$main, cex=par("cex.main"), side=3, line=0.2 + par("mar")[3] - 2*par("cex.main")*par("lheight"), font=par("font.main"), col=par("col.main"))
+  mtext(text=g$sub, cex=par("cex.sub"), side=3, line=0.2, font=par("font.sub"), col=par("col.sub"))
+}
+
+#' @title `IFC_plot` Base x Axis Annotation
+#' @name base_xaxis
+#' @description Helper to add x axis when drawing `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return nothing, annotate plot with 'base' and 'raster' backend.
+#' @keywords internal
+base_xaxis=function(obj){
+  g=plot_default_args(obj)
+  x_axis=axis(side=1, at=g$scales$x$at, labels=FALSE)
+  text(x=x_axis, y=g$Ylim[1], labels=g$scales$x$labels, xpd=TRUE, adj=c(1, 1.5), srt=45, cex=par("cex.axis"))
+  title(xlab=g$xlab)
+}
+
+#' @title `IFC_plot` Base y Axis Annotation
+#' @name base_yaxis
+#' @description Helper to add y axis when drawing `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return nothing, annotate plot with 'base' and 'raster' backend.
+#' @keywords internal
+base_yaxis=function(obj){
+  g=plot_default_args(obj)
+  y_axis=axis(side=2, at=g$scales$y$at, labels=FALSE)
+  text(y=y_axis, x=g$Xlim[1], labels=g$scales$y$labels, xpd=TRUE, pos=2, offset=0.5, las=1, cex=par("cex.axis"))
+  title(ylab=g$ylab)
+}
+
+#' @title `IFC_plot` Base Axes Annotation
+#' @name base_axes
+#' @description Helper to add axes when drawing `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return nothing, annotate plot with 'base' and 'raster' backend.
+#' @keywords internal
+base_axes=function(obj){
+  base_xaxis(obj)
+  base_yaxis(obj)
+  box()
+}
+
+#' @title `IFC_plot` Base Regions Annotation
+#' @name base_regions
+#' @description Helper to add regions when drawing `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return nothing, annotate plot with 'base' and 'raster' backend.
+#' @keywords internal
+base_regions=function(obj){
+  lt = obj$input$par.settings
+  for(reg in obj$input$regions) {
+    k = reg[c("color","lightcolor")][[obj$input$mode]]
+    coords = reg[c("x","y")]
+    trans_x = parseTrans(obj$input$trans_x)
+    coords$x = applyTrans(coords$x, trans_x)
+    reg$cx = applyTrans(reg$cx, trans_x)
+    lab =  trunc_string(reg$label, obj$input$trunc_labels)
+    if(reg$type=="line") {
+      Ylim = obj$input$ylim
+      if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
+      if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
+      text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=lt$add.text$cex)
+      polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
+    } else {
+      trans_y = parseTrans(obj$input$trans_y)
+      coords$y = applyTrans(coords$y, trans_y)
+      reg$cy = applyTrans(reg$cy, trans_y)
+      if(reg$type=="rect") {
+        coords$x=c(coords$x[1],coords$x[1],coords$x[2],coords$x[2])
+        coords$y=c(coords$y[1],coords$y[2],coords$y[2],coords$y[1])
+      }
+      if(reg$type=="oval") {
+        coords = toEllipse(coords)
+      }
+      text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=lt$add.text$cex) 
+      polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
+    }
+  }
+}
+
+#' @title `IFC_plot` Base Legend Annotation
+#' @name base_key
+#' @description Helper to add legend when drawing `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return nothing, annotate plot with 'base' and 'raster' backend.
+#' @keywords internal
+base_key=function(obj){
+  basepop = obj$input$base
+  displayed = obj$input$displayed
+  sub_lab = obj$input$trans
+  color_mode = obj$input$mode
+  
+  if(!obj$input$type %in% c("percent", "count")) displayed = rev(displayed)
+  if(any(obj$input$add_key %in% c("panel","global","both"))) {
+    args_key = list(x="center",col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[color_mode]]),cex=par("cex")*0.5,
+                    bg="#ADADAD99",pt.cex=0.5,bty="o",box.lty=0,inset=0,xpd=TRUE)
+    if(obj$input$type %in% c("percent", "count")) {
+      args_key=c(args_key, list(lty = c(1,2,3,4,6)[match(sapply(basepop[obj$input$order[names(displayed)]], FUN = function(p) p$linestyle),c("Solid","Dash","Dot","DashDot","DashDotDot"))]))
+    } else {
+      args_key=c(args_key, list(pch=sapply(displayed, FUN=function(p) p$style)))
+    }
+    args_key$legend=names(displayed)
+    temp_key = do.call(args= c(list(plot = FALSE), args_key), what=legend)
+    if(obj$input$add_key %in% c("panel","both")) {
+      args_key$x = graphics::grconvertX(par("plt")[1]  + grid::convertX(unit(1, "picas"), "npc", valueOnly = TRUE), "nfc", "user")
+      args_key$y = graphics::grconvertY(par("plt")[4]  - grid::convertY(unit(1, "picas"), "npc", valueOnly = TRUE), "nfc", "user")
+      do.call(args= args_key, what=legend)
+    }
+    if(obj$input$add_key %in% c("global","both")) {
+      args_key$x = temp_key$rect$left
+      args_key$y = graphics::grconvertY(graphics::grconvertY(2 * par("lheight") * par("cex.sub"), "lines", "nfc") + par("plt")[4] + (1 - par("plt")[4] - graphics::grconvertY(2 * par("lheight") * (par("cex.main") + par("cex.sub")), "lines", "nfc"))/ 2, "nfc", "user") + temp_key$rect$h / 2
+      do.call(args= args_key, what=legend)
+    } 
+  }
+}
+
+#' @title `IFC_plot` Base Empty Plot Creation
+#' @name plot_base_empty
+#' @description Helper to create an empty `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return nothing, plot `IFC_plot` with 'base' backend.
+#' @keywords internal
+plot_base_empty=function(obj) {
+  obj = as.list(obj)
+  g = plot_default_args(obj)
+  old_par <- par(base_theme(obj, g$color_mode, lt = NULL))
+  on.exit(par(old_par), add = TRUE)
+  do.call(args = list(x = g$Xlim, y = g$Ylim, col = NA,
+                      xlim = g$Xlim, ylim = g$Ylim,
+                      main = " ", xlab = " ", ylab = " ",
+                      axes = FALSE),
+          what = plot)
+}
+
+#' @title `IFC_plot` Raster Empty Plot Creation
+#' @name plot_raster_empty
+#' @description Helper to create an empty `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return nothing, plot `IFC_plot` with 'raster' backend.
+#' @keywords internal
+plot_raster_empty=plot_base_empty
+
+#' @title `IFC_plot` Lattice Empty Plot Creation
+#' @name plot_lattice_empty
+#' @description Helper to create an empty `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return an empty lattice trellis from `IFC_plot`.
+#' @keywords internal
+plot_lattice_empty=function(obj) {
+  g = plot_default_args(obj)
+  obj = as.list(obj)
+  cur_trellis = lattice_theme(obj, g$color_mode, obj$input$par.settings)
+  cur_trellis$axis.line$col = g$color_mode
+  cur_trellis$axis.line$alpha = 0
+  cur_trellis$axis.text$col = g$color_mode
+  cur_trellis$axis.text$alpha = 0
+  do.call(args = list(x = y ~ x, data = data.frame(x = g$xmid, y = g$ymid), 
+                      col = g$color_mode,
+                      alpha = 0,
+                      xlim = g$Xlim, ylim = g$Ylim,
+                      main = " ", xlab = " ", ylab = " ",
+                      scales = g$scales,
+                      par.settings = cur_trellis),
+          what = xyplot)
+}
+
 #' @title `IFC_plot` Conversion to 'base' Plot
 #' @name plot_base
 #' @description Helper to convert `IFC_plot` to 'base' plot.
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return nothing, plot `IFC_plot` with 'base' backend.
 #' @keywords internal
 plot_base=function(obj) {
-  old_mar = par("mar")
-  on.exit(par("mar" = old_mar))
-  old_ask = par("ask" = FALSE)
-  on.exit(par(old_ask), add = TRUE)
-  old_axs = par("xaxs","yaxs")
-  on.exit(par(old_axs), add = TRUE)
-  par(xaxs = "i", yaxs = "i")
-  old_colormode = par("bg","fg","col","col.axis","col.lab","col.main","col.sub")
-  on.exit(par(old_colormode), add = TRUE)
-  color_mode = na.omit(as.integer(obj$input$mode))
-  if(length(color_mode) != 1L) color_mode = 2L
-  if(color_mode == 1L) {
-    par(bg = "black", fg = "white",
-        col = "white", col.axis = "white", col.lab = "white", col.main = "white", col.sub = "white")
-  } else {
-    color_mode = 2L
-    par(bg = "white", fg = "black",
-        col = "black", col.axis = "black", col.lab = "black", col.main = "black", col.sub = "black")
-  }
-  
-  # variables for future use
-  n_ticks = 10
   # check obj is `IFC_plot`
   assert(obj, cla = "IFC_plot")
+  
+  # apply theme
+  color_mode = na.omit(as.integer(obj$input$mode))
+  old_par <- par(base_theme(obj, c("black","white")[color_mode], obj$input$par.settings))
+  on.exit(par(old_par), add = TRUE)
   
   # short names
   D = obj$input$data
   displayed = obj$input$displayed
   basepop = obj$input$base
+  disp_n = names(displayed)
   Xlim = obj$input$xlim
   Ylim = obj$input$ylim
-  disp_n = names(displayed)
-  main = obj$input$title
-  if((length(main) == 0) || any(main %in% "")) main = paste0(unlist(lapply(obj$input$base, FUN = function(x) x$name)), collapse = ", ")
-  xlab = obj$input$xlab
-  if((length(xlab) == 0) || any(xlab %in% "")) xlab = obj$input$f1
-  ylab = obj$input$ylab
-  if((length(ylab) == 0) || any(ylab %in% "")) ylab = ifelse(any(obj$input$type %in% c("count","percent")), ifelse(any(obj$input$type %in% "percent"), "Normalized Frequency", "Frequency"), obj$input$f2)
-  lt = obj$input$par.settings
-  subtitle = FALSE
+  
+  # add margin for key
   if(any(obj$input$add_key %in% c("global", "both"))) {
-    par("mar" = c(old_mar[1:2], old_mar[3]+length(displayed) * lt$add.text$cex * 0.5 - 1,old_mar[4]))
-    main = " "
+    old_mar <- par("mar")
+    par("mar" = c(old_mar[1:2],
+                  old_mar[3] + (1 + length(displayed)) * par("lheight") * par("cex") * 0.5,
+                  old_mar[4]))
+    on.exit(par("mar" = old_mar), add = TRUE)
   }
   
   # common plot args
-  args_plot = list(xlim = obj$input$xlim, ylim = obj$input$ylim, 
-                   main = trunc_string(main, obj$input$trunc_labels), 
-                   xlab = trunc_string(xlab, obj$input$trunc_labels),
-                   ylab = trunc_string(ylab, obj$input$trunc_labels),
-                   cex.lab = lt$par.xlab.text$cex,
-                   cex.main = lt$par.main.text$cex,
-                   cex.axis = lt$axis.text$cex,
+  args_plot = list(xlim = obj$input$xlim, ylim = obj$input$ylim,
+                   main = " ",
+                   xlab = " ",
+                   ylab = " ",
                    axes = FALSE)
-  if(args_plot$main == "") args_plot$main = " "
-  if(args_plot$xlab == "") args_plot$xlab = " "
-  if(args_plot$ylab == "") args_plot$ylab = " "
   
   # draw plot
   if(obj$input$type %in% c("percent", "count")) {
@@ -542,7 +912,7 @@ plot_base=function(obj) {
                           freq = obj$input$type == "count",
                           breaks = br,
                           col = "transparent"),
-                     args_plot),
+                      args_plot),
             what = hist)
     if(length(displayed) > 0) {
       for(disp in disp_n) {
@@ -624,8 +994,6 @@ plot_base=function(obj) {
                          args_plot),
                 what = plot)
       }
-      if((length(args_level) == 0) || any(args_level == ""))
-        if(inherits(x = try(parseTrans(obj$input$trans), silent = TRUE), what="try-error")) subtitle = TRUE
     } else {
       if(obj$input$precision == "full") {
         disp = disp_n[length(displayed)]
@@ -669,76 +1037,14 @@ plot_base=function(obj) {
     }
   }
   
-  # axis
-  x_ticks = base_axis_constr(lim = Xlim, trans = obj$input$trans_x, nint = n_ticks)
-  y_ticks = base_axis_constr(lim = Ylim, trans = obj$input$trans_y, nint = n_ticks)
-  x_axis = axis(side = 1, at = x_ticks$at, labels = FALSE)
-  text(x = x_axis, y = Ylim[1], labels = x_ticks$labels, xpd=TRUE, adj = c(1, 1.5),
-       cex = lt$axis.text$cex, cex.axis = lt$axis.text$cex, srt=45)
-  y_axis = axis(side = 2, at = y_ticks$at, labels = FALSE)
-  text(y = y_axis, x = Xlim[1], labels = y_ticks$labels, xpd=TRUE, pos = 2, offset = 0.5,
-       cex = lt$axis.text$cex, cex.axis = lt$axis.text$cex, las=1)
-  box(col = c("white", "black")[color_mode])
-  
   # regions
-  for(reg in obj$input$regions) {
-    k = reg[c("color","lightcolor")][[color_mode]]
-    coords = reg[c("x","y")]
-    trans_x = parseTrans(obj$input$trans_x)
-    coords$x = applyTrans(coords$x, trans_x)
-    reg$cx = applyTrans(reg$cx, trans_x)
-    lab =  trunc_string(reg$label, obj$input$trunc_labels)
-    if(reg$type=="line") {
-      if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
-      if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
-      text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=lt$add.text$cex)
-      polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
-    } else {
-      trans_y = parseTrans(obj$input$trans_y)
-      coords$y = applyTrans(coords$y, trans_y)
-      reg$cy = applyTrans(reg$cy, trans_y)
-      if(reg$type=="rect") {
-        coords$x=c(coords$x[1],coords$x[1],coords$x[2],coords$x[2])
-        coords$y=c(coords$y[1],coords$y[2],coords$y[2],coords$y[1])
-      }
-      if(reg$type=="oval") {
-        coords = toEllipse(coords)
-      }
-      text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=lt$add.text$cex) 
-      polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
-    }
-  }
-  
-  # key / subtitle / title
-  sub_lab = obj$input$trans
-  if(sub_lab == "") sub_lab = " "
-  args_sub = list(text = sub_lab, side = 3, line = 0.2, adj = 0.5, font = 3, cex = lt$par.main.text$cex * 0.8)
-  if(!obj$input$type %in% c("percent", "count")) displayed = rev(displayed)
-  if(any(obj$input$add_key %in% c("panel","global","both"))) {
-    args_key = list(x="topleft",inset=0.025, text.width=strwidth(names(displayed)[which.max(nchar(names(displayed)))], cex=0.5, "user"),
-                    col=sapply(displayed, FUN=function(p) p[c("color","lightModeColor")][[color_mode]]),
-                    cex=lt$add.text$cex * 0.5,bg="#ADADAD99",pt.cex=0.5,bty="o",box.lty=0)
-    if(obj$input$type %in% c("percent", "count")) {
-      args_key=c(args_key, list(lty = c(1,2,3,4,6)[match(basepop[[obj$input$order[disp]]]$linestyle,c("Solid","Dash","Dot","DashDot","DashDotDot"))]))
-    } else {
-      args_key=c(args_key, list(pch=sapply(displayed, FUN=function(p) p$style)))
-    }
-    args_key$legend=names(displayed)
-    if(obj$input$add_key %in% c("panel","both")) {
-      do.call(args= args_key, what=legend) 
-    }
-    if(obj$input$add_key %in% c("global","both")) {
-      args_key$x = "top"
-      args_key$inset = -graphics::grconvertY(1+ length(displayed), "chars", "nfc")
-      args_key$xpd = TRUE
-      # TODO add something better for title positioning
-      do.call(args= args_key, what=legend)
-      mtext(side = 3, line = 2 + length(displayed) * lt$add.text$cex * 0.5, adj = 0.5, args_plot$main, font = 2)
-      args_sub$line = 1.1 + length(displayed) * lt$par.main.text$cex * 0.8
-    } 
-  }
-  # subtitle
-  if(subtitle) do.call(args = args_sub, what = mtext)
+  base_regions(obj)
+  # key
+  base_key(obj)
+  # axis
+  base_axes(obj)
+  # title / subtitle
+  base_title(obj)
 }
 
 #' @title `IFC_plot` Conversion to 'raster' Plot
@@ -747,56 +1053,41 @@ plot_base=function(obj) {
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
 #' @param pntsonedge whether points outside of plotting region should be bounded on the edge. Default is FALSE to clip points.
 #' NA can be used to produce hybrid display, with plot being drawn with `pntsonedge` = FALSE on top of plot with `pntsonedge` = TRUE.
+#' @return plot `IFC_plot` with 'raster' backend and invisibly returns the computed raster.
 #' @keywords internal
 plot_raster=function(obj, pntsonedge = FALSE) {
-  old_mar = par("mar")
-  on.exit(par("mar" = old_mar))
-  old_ask = par("ask" = FALSE)
-  on.exit(par(old_ask), add = TRUE)
-  old_axs = par("xaxs","yaxs")
-  on.exit(par(old_axs), add = TRUE)
-  par(xaxs = "i", yaxs = "i")
-  old_colormode = par("bg","fg","col","col.axis","col.lab","col.main","col.sub")
-  on.exit(par(old_colormode), add = TRUE)
-  color_mode = na.omit(as.integer(obj$input$mode))
-  if(length(color_mode) != 1L) color_mode = 2L
-  if(color_mode == 1L) {
-    par(bg = "black", fg = "white",
-        col = "white", col.axis = "white", col.lab = "white", col.main = "white", col.sub = "white")
-  } else {
-    color_mode = 2L
-    par(bg = "white", fg = "black",
-        col = "black", col.axis = "black", col.lab = "black", col.main = "black", col.sub = "black")
-  }
+  # check obj is `IFC_plot`
+  assert(obj, cla = "IFC_plot")
+  
   if(obj$input$type %in% c("count", "percent")) return(plot_base(obj))
   if(obj$input$type == "density") {
     basepop = obj$input$base
     args_level = basepop[[1]][["densitylevel"]]
     if((length(args_level) != 0) && !any(args_level == "")) return(plot_base(obj))
   }
-  lt = obj$input$par.settings
+  
+  # apply theme
+  color_mode = na.omit(as.integer(obj$input$mode))
+  old_par <- par(base_theme(obj, c("black","white")[color_mode], lt = obj$input$par.settings))
+  on.exit(par(old_par), add = TRUE)
   
   # determines population order
   basepop = obj$input$base
   displayed = obj$input$displayed
   disp_n = names(displayed)
   
-  # copy obj and empty data
-  subtitle = FALSE
-  graph = obj
-  graph$input$data <- graph$input$data[rep(FALSE, nrow(graph$input$data)),,drop = FALSE]
-  graph$input$precision <- "full"
-  graph$input$regions <- list()
-  graph$input$add_key <- FALSE
+  # add margin for key
   if(any(obj$input$add_key %in% c("global", "both"))) {
-    par("mar" = c(old_mar[1:2],old_mar[3]+length(displayed) * lt$add.text$cex * 0.5 - 1,old_mar[4]))
-    graph$input$title = ""
-    graph$input$trans = ""
+    old_mar <- par("mar")
+    par("mar" = c(old_mar[1:2],
+                  old_mar[3] + (1 + length(displayed)) * par("lheight") * par("cex") * 0.5,
+                  old_mar[4]))
+    on.exit(par("mar" = old_mar), add = TRUE)
   }
-  # create empty plot
-  plot_base(graph)
   
-  if(inherits(x = try(parseTrans(obj$input$trans), silent = TRUE), what="try-error")) subtitle = TRUE
+  # create empty plot
+  plot_base_empty(obj)
+  
   # create data specific list for raster plot
   if((obj$input$precision == "light") && (length(disp_n) > 1)) {
     set = disp_n[apply(obj$input$data[,disp_n, drop = FALSE], 1, FUN = function(x) {
@@ -884,59 +1175,16 @@ plot_raster=function(obj, pntsonedge = FALSE) {
   } else {
     img = draw_fn(pntsonedge)
   }
-  # redraw regions
-  for(reg in obj$input$regions) {
-    k = reg[c("color","lightcolor")][[color_mode]]
-    coords = reg[c("x","y")]
-    trans_x = parseTrans(obj$input$trans_x)
-    coords$x = applyTrans(coords$x, trans_x)
-    reg$cx = applyTrans(reg$cx, trans_x)
-    lab =  trunc_string(reg$label, obj$input$trunc_labels)
-    if(reg$type=="line") {
-      Ylim = obj$input$ylim
-      if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
-      if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
-      text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=lt$add.text$cex)
-      polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
-    } else {
-      trans_y = parseTrans(obj$input$trans_y)
-      coords$y = applyTrans(coords$y, trans_y)
-      reg$cy = applyTrans(reg$cy, trans_y)
-      if(reg$type=="rect") {
-        coords$x=c(coords$x[1],coords$x[1],coords$x[2],coords$x[2])
-        coords$y=c(coords$y[1],coords$y[2],coords$y[2],coords$y[1])
-      }
-      if(reg$type=="oval") {
-        coords = toEllipse(coords)
-      }
-      text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=lt$add.text$cex) 
-      polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
-    }
-  }
   
-  # redraw key / subtitle / title
-  main = obj$input$title
-  if((length(main) == 0) || any(main %in% "")) main = paste0(unlist(lapply(obj$input$base, FUN = function(x) x$name)), collapse = ", ")
-  if(main == "") main = " "
-  sub_lab = obj$input$trans
-  if(sub_lab == "") sub_lab = " "
-  args_sub = list(text = sub_lab, side = 3, line = 0.2, adj = 0.5, font = 3, cex = lt$par.main.text$cex * 0.8)
-  if(any(obj$input$add_key %in% c("panel","global","both"))) {
-    args_key = list(x="topleft", inset=0.025, text.width=strwidth(names(displayed)[which.max(nchar(names(displayed)))], cex=0.5, "user"),
-                    col=sapply(rev(displayed), FUN=function(p) p[c("color","lightModeColor")][[color_mode]]),
-                    legend=names(rev(displayed)),cex=lt$add.text$cex * 0.5,bg="#ADADAD99",pt.cex=0.5,bty="o",box.lty=0)
-    if(obj$input$add_key %in% c("panel","both")) do.call(args=c(list(pch=sapply(rev(displayed), FUN=function(p) p$style)), args_key), what=legend)
-    if(obj$input$add_key %in% c("global","both")) {
-      args_key$x = "top"
-      args_key$inset = -graphics::grconvertY(1+ length(displayed), "chars", "nfc")
-      args_key$xpd = TRUE
-      do.call(args=c(list(pch=sapply(rev(displayed), FUN=function(p) p$style)), args_key), what=legend)
-      mtext(side = 3, line = 2 + length(displayed) * lt$add.text$cex * 0.5, adj = 0.5, text = main, font = 2)
-      args_sub$line = 1.1 + length(displayed) * lt$par.main.text$cex * 0.8
-    } 
-  }
-  # subtitle
-  if(subtitle) do.call(args = args_sub, what = mtext)
+  # regions
+  base_regions(obj)
+  # key
+  base_key(obj)
+  # axes
+  base_axes(obj)
+  # subtitle / title
+  base_title(obj)
+  
   return(invisible(img))
 }
 
@@ -944,13 +1192,13 @@ plot_raster=function(obj, pntsonedge = FALSE) {
 #' @name plot_lattice
 #' @description Helper to convert `IFC_plot` to 'lattice' plot.
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return a lattice trellis from `IFC_plot`.
 #' @keywords internal
 plot_lattice=function(obj) {
   old_ask = par("ask" = FALSE)
   on.exit(par(old_ask), add = TRUE)
   # check obj is `IFC_plot`
   assert(obj, cla = "IFC_plot")
-  
   # short names
   xy_subset = obj$input$subset
   P = obj$input$displayed
@@ -958,12 +1206,6 @@ plot_lattice=function(obj) {
   D = obj$input$data[xy_subset,,drop=FALSE]
   nbin = obj$input$bin
   basepop = obj$input$base
-  Xlim = obj$input$xlim
-  Ylim = obj$input$ylim
-  Xtrans = obj$input$trans_x
-  Ytrans = obj$input$trans_y
-  trans_x = parseTrans(Xtrans)
-  trans_y = parseTrans(Ytrans)
   reg_n = names(R)
   displayed = P
   displayed_n = names(P)
@@ -976,29 +1218,20 @@ plot_lattice=function(obj) {
   color_mode = na.omit(as.integer(obj$input$mode))
   if(length(color_mode) != 1L) color_mode = 2L
   if(color_mode != 1L) color_mode = 2L
-  lt = obj$input$par.settings
-  lt[["background"]]$col = c("black", "white")[color_mode]
-  for(i in c("add.line","add.text","axis.line","axis.text","box.3d","box.dot","strip.border",
-             "par.xlab.text","par.ylab.text","par.zlab.text","par.main.text","par.sub.text")) {
-    lt[[i]]$col = c("white", "black")[color_mode]
-  }
-  for(i in c("plot.polygon","superpose.polygon")) {
-    lt[[i]]$border = c("white", "black")[color_mode]
-  }
+  lt <- lattice_theme(obj, c("black","white")[color_mode], obj$input$par.settings)
   histogramsmoothingfactor = obj$input$histogramsmoothingfactor
+  Xlim = obj$input$xlim
+  Ylim = obj$input$ylim
+  Xtrans = obj$input$trans_x
+  Ytrans = obj$input$trans_y
+  trans_x = parseTrans(Xtrans)
+  trans_y = parseTrans(Ytrans)
   trunc_labels = obj$input$trunc_labels
-  main = obj$input$title
-  if((length(main) == 0) || any(main %in% "")) main = paste0(unlist(lapply(obj$input$base, FUN = function(x) x$name)), collapse = ", ")
-  xlab = obj$input$xlab
-  if((length(xlab) == 0) || any(xlab %in% "")) xlab = obj$input$f1
-  ylab = obj$input$ylab
-  if((length(ylab) == 0) || any(ylab %in% "")) ylab = ifelse(any(obj$input$type %in% c("count","percent")), ifelse(any(obj$input$type %in% "percent"), "Normalized Frequency", "Frequency"), obj$input$f2)
-  main = trunc_string(main, trunc_labels)
-  if(main == "") main = " "
-  xlab = trunc_string(xlab, trunc_labels)
-  if(xlab == "") xlab = " "
-  ylab = trunc_string(ylab, trunc_labels)
-  if(ylab == "") ylab = " "
+  labels = plot_default_args(obj)
+  main = labels$main
+  xlab = labels$xlab
+  ylab = labels$ylab
+
   if(type %in% c("percent", "count")) {
     # define legend
     KEY = list("cex"=lt$add.text$cex * 0.5,
@@ -1100,6 +1333,7 @@ plot_lattice=function(obj) {
                  xlim = Xlim, ylim = Ylim,
                  main = main, xlab = xlab, ylab = ylab,
                  xlab.top = xtop,
+                 xlab.top.font = lt$par.sub.text$font,
                  groups=groups,
                  scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)),
                  panel = function(x, y, groups=NULL, subscripts, ...) {
@@ -1197,14 +1431,101 @@ plot_lattice=function(obj) {
   foo = update(foo, par.settings = lt)
 }
 
+#' @title Erroneous `IFC_plot` Conversion to 'base' Plot
+#' @name plot_base_error
+#' @description Helper to produce 'base' plot with error message from `IFC_plot`.
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return nothing, plot `IFC_plot` with 'base' backend.
+#' @keywords internal
+plot_base_error=function(obj) {
+  obj = as.list(obj)
+  g = plot_default_args(obj)
+  old_par <- par(base_theme(obj, g$color_mode, lt = NULL))
+  on.exit(par(old_par), add = TRUE)
+  plot_base_empty(obj)
+  text(x = g$xmid, y = g$ymid, labels=wrap_label(obj$message), col = "red")
+  base_title(obj)
+  base_axes(obj)
+}
+
+#' @title Erroneous `IFC_plot` Conversion to 'raster' Plot
+#' @name plot_raster_error
+#' @description Helper to produce 'raster' plot with error message from `IFC_plot`.
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return nothing, plot `IFC_plot` with 'raster' backend.
+#' @keywords internal
+plot_raster_error=plot_base_error
+
+#' @title Erroneous `IFC_plot` Conversion to 'lattice' Plot
+#' @name plot_lattice_error
+#' @description Helper to produce 'lattice' plot with error message from `IFC_plot`.
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return a lattice trellis from `IFC_plot`.
+#' @keywords internal
+plot_lattice_error=function(obj) {
+  g = plot_default_args(obj)
+  obj = as.list(obj)
+  do.call(args = list(x = y ~ x, data = data.frame(x = g$xmid, y = g$ymid),
+                      xlim = g$Xlim, ylim = g$Ylim,
+                      main = g$main, xlab = g$xlab, ylab = g$ylab,
+                      scales = g$scales,
+                      par.settings = lattice_theme(obj, g$color_mode, obj$input$par.settings),
+                      col = "transparent",
+                      panel = function(x, y, ...) { 
+                        panel.text(x = g$xmid, y = g$ymid, labels=wrap_label(obj$message), col = "red")
+                      }),
+          what = xyplot)
+}
+
+#' @title `IFC_plot` Plotting
+#' @name plot_backend
+#' @description Helper to plot `IFC_plot`
+#' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @param backend the backend used for drawing `IFC_plot` see \code{\link{plotGraph}}.
+#' @return nothing.
+#' @keywords internal
+plot_backend=function(obj, backend = "lattice"){
+  assert(backend, len=1, alw=c("lattice","base","raster","raster-edge","raster-hybrid"))
+  fun = paste0("plot_", sub("^raster.*$", "raster", backend), collapse = "")
+  args = list(obj = obj)
+  if(inherits(obj, c("error", "empty"))) {
+    if(inherits(obj, "error")) {
+      fun = paste0(fun, "_error")
+    } else {
+      if(inherits(obj, "empty")) fun = paste0(fun, "_empty")
+    }
+  } else {
+    if(backend == "raster") args = c(args, list(pntsonedge = FALSE))
+    if(backend == "raster-edge") args = c(args, list(pntsonedge = TRUE))
+    if(backend == "raster-hybrid") args = c(args, list(pntsonedge = NA))
+  }
+  if(backend == "lattice") {
+    plot(do.call(what = fun, args = args))
+  } else {
+    do.call(what = fun, args = args) 
+  }
+}
+
 #' @title `IFC_plot` Statistics Extraction
 #' @name plot_stats
 #' @description Helper to extract `IFC_plot` statistics.
 #' @param obj an object of class `IFC_plot` as created by \code{\link{plotGraph}}.
+#' @return a table of statistics.
 #' @keywords internal
 plot_stats=function(obj) {
   # check obj is `IFC_plot`
   assert(obj, cla = "IFC_plot")
+  if(inherits(obj, c("error","empty"))) {
+    g = as.list(unlist(attr(obj, "graph"),recursive=FALSE,use.names=TRUE))
+    stats = c("Min.","1st Qu.","Median","Mean","3rd Qu.","Max.")
+    if(identical(g$type,"scatter") || identical(g$type,"density") ) {
+      stats = c(paste0("x-",stats), paste0("y-", stats))
+    } else {
+      stats = paste0("x-",stats)
+    }
+    stats = c("count","perc",stats)
+    return(as.table(matrix(NaN, nrow = 1, ncol = length(stats), dimnames = list(setdiff(class(obj), "IFC_plot"), stats))))
+  }
   xy_subset = obj$input$subset
   R = obj$input$regions
   D = obj$input$data[xy_subset,,drop=FALSE]
@@ -1346,80 +1667,77 @@ plot_stats=function(obj) {
 #' -FALSE, graph(s) will be kept only if all features, regions, pops it refers to are found in 'obj',\cr
 #' -NA, graph(s) will be removed no matter if features, regions, pops it refers to are found in 'obj'.
 #' @param ... other arguments to be passed.
+#' @return the adjusted graph.
 #' @keywords internal
 adjustGraph=function(obj, graph, adjust_graph=TRUE, ...) {
   dots = list(...)
   assert(obj, cla = "IFC_data")
   adjust_graph = as.logical(adjust_graph);
   assert(adjust_graph, len = 1, alw = c(as.logical(NA),TRUE,FALSE))
-  f_name = names(obj$features)
-  r_name = names(obj$regions)
-  p_name = names(obj$pops)
-  g = graph
-  if(is.na(adjust_graph)) return(list())
-  
-  # check if x axis is present in obj
-  if(!(g$f1 %in% f_name)) return(list())
-  # check if y axis is present in obj
-  if(g$type != "histogram") if(!(g$f2 %in% f_name)) return(list())
-  
-  # remove BasePop not present in obj, check that at least one base pop will be plot
-  tmp = sapply(g$BasePop, FUN = function(p) p$name %in% p_name)
-  if(!adjust_graph) if(!all(tmp)) return(list())
-  if(!any(tmp)) return(list())
-  g$BasePop = g$BasePop[tmp]
-  
-  # remove GraphRegion not found in obj
-  if(length(g$GraphRegion) !=0 && length(g$GraphRegion[[1]]) != 0) {
-    g$GraphRegion = lapply(g$GraphRegion, FUN = function(r) {
-      foo = sapply(obj$pops,
-                   FUN = function(p) {
-                     bar = all(p$type %in% "G") && 
-                       all(p$region %in% r$name) && 
-                       all(p$base %in% unique(unlist(lapply(g$BasePop, FUN = function(b) b$name)))) &&
-                       all(g$f1 %in% p$fx) &&
-                       all(g$xlogrange %in% obj$regions[[r$name]]$xlogrange)
-                     if(!("line" %in% obj$regions[[r$name]]$type) ||
-                        !("histogram" %in% g$type)) {
-                       bar = all(p$fy %in% g$f2) &&
-                         all(g$ylogrange %in% obj$regions[[r$name]]$ylogrange) &&
-                         !("histogram" %in% g$type) &&
-                         !("line" %in% obj$regions[[r$name]]$type) && bar
-                     }
-                     return(bar)
-                   })
-      if(length(foo) == 0) return(NULL)
-      foo = names(which(foo))
-      if(length(foo) != length(g$BasePop)) return(NULL)
-      return(list(name = r$name , def = foo))
-    })
-    g$GraphRegion = g$GraphRegion[sapply(g$GraphRegion, length) != 0]
-    tmp = length(g$GraphRegion) == length(graph$GraphRegion)
+  tryCatch({
+    f_name = names(obj$features)
+    r_name = names(obj$regions)
+    p_name = names(obj$pops)
+    g = graph
+    if(is.na(adjust_graph)) return(list())
+    
+    # check if x axis is present in obj
+    if(!(g$f1 %in% f_name)) return(list())
+    # check if y axis is present in obj
+    if(g$type != "histogram") if(!(g$f2 %in% f_name)) return(list())
+    
+    # remove BasePop not present in obj, check that at least one base pop will be plot
+    tmp = sapply(g$BasePop, FUN = function(p) p$name %in% p_name)
     if(!adjust_graph) if(!all(tmp)) return(list())
-  }
-  
-  # remove ShownPop not found in obj
-  if(length(g$ShownPop) != 0 && length(g$ShownPop[[1]]) != 0) {
-    tmp = sapply(g$ShownPop, FUN = function(p) p$name %in% p_name)
-    if(!adjust_graph) if(!all(tmp)) return(list())
-    g$ShownPop = g$ShownPop[tmp]
-  }
-  
-  # remove title if BasePop has changed
-  if(length(g$BasePop) != length(graph$BasePop)) g = g[!grepl("title", x = names(g), fixed = TRUE)]
-  
-  # rebuild Graph, mainly to recompute order
-  g = try(do.call(what = buildGraph, args = g[!grepl("order", x = names(g))]), silent = TRUE)
-  if(inherits(x = g, what = "try-error")) return(list())
-  
-  # try to draw the graph
-  dv <- dev.list()
-  on.exit(suspendInterrupts({
-    while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
-      dev.off(which = rev(dev.list())[1])
+    if(!any(tmp)) return(list())
+    g$BasePop = g$BasePop[tmp]
+    
+    # remove GraphRegion not found in obj
+    if(length(g$GraphRegion) !=0 && length(g$GraphRegion[[1]]) != 0) {
+      g$GraphRegion = lapply(g$GraphRegion, FUN = function(r) {
+        foo = sapply(obj$pops,
+                     FUN = function(p) {
+                       bar = all(p$type %in% "G") && 
+                         all(p$region %in% r$name) && 
+                         all(p$base %in% unique(unlist(lapply(g$BasePop, FUN = function(b) b$name)))) &&
+                         all(g$f1 %in% p$fx) &&
+                         all(g$xlogrange %in% obj$regions[[r$name]]$xlogrange)
+                       if(!("line" %in% obj$regions[[r$name]]$type) ||
+                          !("histogram" %in% g$type)) {
+                         bar = all(p$fy %in% g$f2) &&
+                           all(g$ylogrange %in% obj$regions[[r$name]]$ylogrange) &&
+                           !("histogram" %in% g$type) &&
+                           !("line" %in% obj$regions[[r$name]]$type) && bar
+                       }
+                       return(bar)
+                     })
+        if(length(foo) == 0) return(NULL)
+        foo = names(which(foo))
+        if(length(foo) != length(g$BasePop)) return(NULL)
+        return(list(name = r$name , def = foo))
+      })
+      g$GraphRegion = g$GraphRegion[sapply(g$GraphRegion, length) != 0]
+      tmp = length(g$GraphRegion) == length(graph$GraphRegion)
+      if(!adjust_graph) if(!all(tmp)) return(list())
     }
-  }), add = TRUE)
-  drawable = try(plot_lattice(plotGraph(obj = obj, graph = g, draw = FALSE, stats_print = FALSE)), silent = TRUE)
-  if(inherits(x = drawable, what = "try-error")) return(list())
-  return(g)
+    
+    # remove ShownPop not found in obj
+    if(length(g$ShownPop) != 0 && length(g$ShownPop[[1]]) != 0) {
+      tmp = sapply(g$ShownPop, FUN = function(p) p$name %in% p_name)
+      if(!adjust_graph) if(!all(tmp)) return(list())
+      g$ShownPop = g$ShownPop[tmp]
+    }
+    
+    # remove title if BasePop has changed
+    if(length(g$BasePop) != length(graph$BasePop)) g = g[!grepl("title", x = names(g), fixed = TRUE)]
+    
+    # rebuild Graph, mainly to recompute order
+    g = try(do.call(what = buildGraph, args = g[!grepl("order", x = names(g))]), silent = TRUE)
+    if(inherits(x = g, what = "try-error")) return(list())
+    
+    # try to draw the graph
+    drawable = plotGraph(obj = obj, graph = g, draw = FALSE, stats_print = FALSE)
+    if(inherits(x = drawable, what = c("error","empty"))) return(list())
+    return(g)
+  }, error = function(e) return(list()))
 }

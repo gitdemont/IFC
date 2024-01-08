@@ -239,12 +239,8 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   dots = list(...)
   
   # backup dev.list
-  dv = dev.list()
-  on.exit(suspendInterrupts({
-    while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
-      dev.off(which = rev(dev.list())[1])
-    }
-  }), add = TRUE)
+  dv <- dev.list()
+  on.exit(dev_close(dv), add = TRUE)
   
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
@@ -335,43 +331,29 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
       stats = default_stats_1D
       rownames(stats) = paste0("Error: ", G[[i]]$title)
       if(length(G[[i]]) != 0) {
-        g = try(do.call(what = plotGraph, args = c(plotGraph_args, list(graph = G[[i]]))), silent = TRUE)
-        if(!do_draw || inherits(x = g, what = "try-error")) {
-          foo = arrangeGrob(grid.text(label = paste0(ifelse(do_draw,"Error: ","'draw' is set to FALSE "), attr(x = g, which = "condition")$message), gp=gpar(col="red"), draw = FALSE),
-                            top = textGrob(paste0("\n",G[[i]]$title), gp = gpar(fontsize = 8, font=2, lineheight=0.5)))
+        g = do.call(what = plotGraph, args = c(plotGraph_args, list(graph = G[[i]])))
+        if(G[[i]]$type=="histogram") {
+          stats = default_stats_1D
         } else {
-          if(G[[i]]$type=="histogram") {
-            stats = default_stats_1D
-          } else {
-            stats = default_stats_2D
-          }
-          rownames(stats) = paste0("Error: ", G[[i]]$title)
-          foo = switch(backend,
-                       # "raster-hybrid" = grid.grabExpr(grid.echo({plot_raster(g, NA); recordPlot()}, device = default_offscreen),
-                       #                               device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
-                       # "raster-edge" = grid.grabExpr(grid.echo({plot_raster(g, TRUE); recordPlot()}, device = default_offscreen),
-                       #                        device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5),
-                       raster = {
-                         grid.grabExpr(grid.echo({plot_raster(g, FALSE); recordPlot()}, device = default_offscreen),
-                                           device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5)
-                       },
-                       base = {
-                         grid.grabExpr(grid.echo(plot_base(g), device = default_offscreen), 
-                                           device = default_offscreen,
-                                           width = 3*2.54-1.5, height = 3*2.54-0.5)
-                       },
-                       {
-                         grob(p = plot_lattice(g), vp = viewport(x=0.5, y=unit(0.5,"npc")), cl = "lattice")
-                       })
-          foo$children$`graphics-background`$width = unit(1,"npc")
-          foo$children$`graphics-background`$height = unit(1,"npc")
+          stats = default_stats_2D
         }
+        rownames(stats) = paste0("Error: ", G[[i]]$title)
+        if(backend == "lattice") {
+          foo = grob(p = do.call(what = ifelse(inherits(g, "error"),"plot_lattice_error",ifelse(inherits(g, "empty"),"plot_lattice_empty","plot_lattice")), args = list(obj = g)), vp = viewport(x=0.5, y=unit(0.5,"npc")), cl = "lattice")
+        } else {
+          foo = grid.grabExpr(grid.echo({plot_backend(g, backend); recordPlot()}, device = default_offscreen),
+                              device = default_offscreen, width = 3*2.54-1.5, height = 3*2.54-0.5)
+        }
+        foo$children$`graphics-background`$width = unit(1,"npc")
+        foo$children$`graphics-background`$height = unit(1,"npc")
       } else {
         do_stats = FALSE
         do_draw = FALSE
         foo = grob()
       }
-      if(do_stats) try({stats = plot_stats(g)}, silent = TRUE)
+      stats_try = stats
+      if(do_stats) try({stats_try = plot_stats(g)}, silent = TRUE)
+      if(!inherits(stats_try, "try-error")) stats = stats_try
       stList <<- c(stList, list(stats))
       stats = stats[,!grepl("Qu", colnames(stats)),drop=FALSE]
       foo_lay = matrix(c(rep(1,9), c(NA,2,NA)), nrow=4, ncol=3, byrow = TRUE)
@@ -382,7 +364,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
         }
       }
       if(do_stats) {
-        tab = tableGrob(format(stats, scientific=FALSE, digits=5), theme = ttheme_default(base_colour = "black", base_size=4, base_family = "serif"))
+        tab = tableGrob(format(stats, scientific=FALSE, digits=5), theme = ttheme_default(base_colour = "black", base_size=4, base_family = "sans"))
         tab$vp <- viewport(x=0.5, y=unit(1,"npc") - 0.5*unit(sum(tab$heights, na.rm=TRUE),"npc"))
         foo = arrangeGrob(foo, tab, layout_matrix = foo_lay, respect = TRUE)
       }
@@ -463,14 +445,12 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
                           trunc_labels=38, trans="asinh", bin, viewport="ideas", backend="lattice",             # parameters to pass to plotGraph
                           display_progress=TRUE, ...) {
   dots = list(...)
+  dev_old <- options("device" = "pdf")
+  on.exit(options(dev_old), add = TRUE)
   
   # backup dev.list
-  dv = dev.list()
-  on.exit(suspendInterrupts({
-    while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
-      dev.off(which = rev(dev.list())[1])
-    }
-  }), add = TRUE)
+  dv <- dev.list()
+  on.exit(dev_close(dv), add = TRUE)
   
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
@@ -521,12 +501,12 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
         # TODO add a progress bar
         pdf(file=export_to_pdf,
             width=3*max(foo$layout$x)*2.54, height=3*max(foo$layout$y)*2.54, 
-            family="serif", onefile=TRUE, pagecentre=TRUE, useDingbats=FALSE)
+            family="sans", onefile=TRUE, pagecentre=TRUE, useDingbats=FALSE)
         # no reason to have newpage = TRUE unless pdf is not open
         grid.arrange(grobs = foo$grobs[foo$layout$N], top = title_progress, newpage = names(dev.cur()) != "pdf", layout_matrix = foo$matrix, as.table = FALSE)
       } else {
         pdf(file=export_to_pdf, paper = "a4",
-            family="serif", onefile=TRUE, pagecentre=TRUE, useDingbats=FALSE)
+            family="sans", onefile=TRUE, pagecentre=TRUE, useDingbats=FALSE)
         # no reason to have newpage = TRUE unless pdf is not open
         grid.arrange(foo$grobs[[1]], top = title_progress, newpage = names(dev.cur()) != "pdf")
         if(gl > 1) for(i in 2:gl) {
@@ -638,12 +618,8 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
   create_csv = FALSE
   
   # backup dev.list
-  dv = dev.list()
-  on.exit(suspendInterrupts({
-    while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
-      dev.off(which = rev(dev.list())[1])
-    }
-  }), add = TRUE)
+  dv <- dev.list()
+  on.exit(dev_close(dv), add = TRUE)
   
   # change locale
   locale_back = Sys.getlocale("LC_ALL")
@@ -769,7 +745,7 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
     })
     if(create_pdf) {
       pdf(file=write_to, height=3*nrow(lay)*nrow(selection)*2.54, width=3*ncol(lay)*ncol(selection)*2.54,
-          family = "serif",
+          family = "sans",
           onefile=TRUE, pagecentre=TRUE, useDingbats=FALSE)
       if(!missing(main)) args=c(args, top=main)
       # no reason to have newpage = TRUE unless pdf is not open

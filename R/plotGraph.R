@@ -64,6 +64,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                      trunc_labels = 38, trans = "asinh", bin, viewport = "ideas", backend="lattice", ...) {
   dots = list(...)
   ret <- list()
+  # backup dev.list
+  dv <- dev.list()
   
   tryCatch({
     # change locale
@@ -76,7 +78,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class `IFC_data`")
     if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
     assert(color_mode, len=1, alw=c("white","black"))
-    color_mode=c(2,1)[c("white","black")==color_mode]
+    mode=c(2,1)[c("white","black")==color_mode]
     assert(precision, len=1, alw=c("light","full"))
     if(!all(add_key%in%c("panel","global","both",FALSE))) stop("Accepted values for add_key are either: FALSE, 'panel', 'global', 'both' or c('panel', 'global')")
     trunc_labels = na.omit(as.integer(trunc_labels)); trunc_labels=trunc_labels[trunc_labels > 0]
@@ -84,19 +86,13 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     draw = as.logical(draw); assert(draw, len=1, alw=c(TRUE,FALSE))
     stats_print = as.logical(stats_print); assert(stats_print, len=1, alw=c(TRUE,FALSE))
     assert(viewport, len = 1, alw = c("ideas","data","max"))
-    
-    # backup dev.list
-    dv <- dev.list()
-    on.exit(suspendInterrupts({
-      if(!draw) while((length(dev.list()) != 0) && !identical(dv, dev.list())) {
-        dev.off(which = rev(dev.list())[1])
-      }
-    }), add = TRUE)
+    assert(backend, len=1, alw=c("lattice","base","raster"))
     
     # shortcuts
     normalize = FALSE
     P = obj$pops
     R = obj$regions
+    if(missing(graph) || (length(unlist(graph,recursive=TRUE,use.names=FALSE)) == 0)) stop("empty graph")
     g = do.call(what=buildGraph, args=graph)
     foo = c(g$f1, g$f2)
     tmp = foo %in% names(obj$features)
@@ -293,33 +289,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     }
     
     # define text/points size
-    # lt <- custom.theme(bg=c("black","white")[color_mode], fg=c("white","black")[color_mode])
-    theme_bg_col = c("white","black")[color_mode]
-    theme_fg_col = c("black","white")[color_mode]
-    lt <- lattice::standard.theme()
-    lt[["background"]]$col           = theme_bg_col
-    lt[["plot.polygon"]]$border      = theme_fg_col
-    lt[["box.dot"]]$col              = theme_fg_col
-    lt[["strip.border"]]$col         = theme_fg_col
-    lt[["superpose.polygon"]]$border = theme_fg_col
-    lt[["box.3d"]]$col               = theme_fg_col
-    lt$grid.pars <- get.gpar()
-    lt$grid.pars$fontfamily <- "serif"
-    lt$fontsize$text <- lt$grid.pars$fontsize
-    lt$fontsize$points <- 4
-    for(i in c("xlab","ylab","zlab","main","sub")) {
-      lt[[paste0("par.",i,".text")]]$fontfamily <- "serif"
-      lt[[paste0("par.",i,".text")]]$cex = g$axislabelsfontsize/lt$grid.pars$fontsize
-      lt[[paste0("par.",i,".text")]]$col = theme_fg_col
-    }
-    lt[["axis.text"]]$fontfamily <- "serif"
-    lt[["axis.text"]]$cex = g$axistickmarklabelsfontsize/lt$grid.pars$fontsize
-    lt[["axis.text"]]$col <- theme_fg_col
-    lt[["axis.line"]]$col <- theme_fg_col
-    lt[["add.text"]]$fontfamily <- "serif"
-    lt[["add.text"]]$cex = g$regionlabelsfontsize/lt$grid.pars$fontsize
-    lt[["add.text"]]$col <- theme_fg_col
-    lt[["add.line"]]$col <- theme_fg_col
+    lt <- lattice_theme(structure(list(), graph=graph), c("black","white")[mode], lt = NULL)
     if(g$type == "histogram") {
       ret_order = c("Object Number","x1","x2",displayed_n)
     } else {
@@ -336,7 +306,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                               "trunc_labels" = trunc_labels,
                               "title" = g$title,
                               "f1" = g$f1, "f2" = g$f2,
-                              "xlab" = g$xlab, "ylab" = g$ylab,
+                              "xlab" = g$xlabel, "ylab" = g$ylabel,
                               "xlim" = Xlim, "ylim" = Ylim, 
                               "trans_x" = Xtrans, "trans_y" = Ytrans,
                               "trans" = trans,
@@ -354,35 +324,26 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                               "add_key" = add_key,
                               "subset" = xy_subset,
                               "suball" = suball,
-                              "mode" = color_mode))
+                              "mode" = mode))
     class(ret) <- "IFC_plot"
     invisible(ret)
   },
+  error = function(e) {
+    K = "error"
+    if(e$message == "empty graph") {
+      K = "empty"
+      graph <<- list()
+    }
+    ret <<- structure(list(message = e$message, color_mode = color_mode, trunc_labels = trunc_labels), class = c("IFC_plot", K))
+  },
   finally = {
+    attr(ret, "graph") <- graph
     if(stats_print) {
       ret$stats = plot_stats(ret)
       print(ret$stats)
     }
-    if(draw) {
-      # TODO ?
-      #' @param backend backend used for drawing. Allowed are "lattice", "base", "raster", "raster-edge", "raster-hybrid". Default is "lattice".\cr
-      #' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
-      #' -"base" will produce the plot using \pkg{base},\cr
-      #' -"raster" uses "base" for plotting but 2D graphs points will be produced as \code{\link[graphics]{rasterImage}}.\cr
-      #' This has the main advantage of being super fast allowing for plotting a huge amount of points while generating smaller objects (in bytes).
-      #' However, plot quality is impacted with "raster" method and resizing can lead to unpleasant looking.
-      #' -"raster-edge" is the same as "raster" except that points outside of limits will be drawn onto the edge.\cr
-      #' -"raster-hybrid" uses "raster" for drawing on top of a first "raster-edge" pass to produce an hybrid display.
-      assert(backend, len=1, alw=c("lattice","base","raster"))
-      tryCatch({
-        switch(backend,
-               # "raster-hybrid" = plot_raster(ret, NA),
-               # "raster-edge" = plot_raster(ret, TRUE),
-               raster = plot_raster(ret, FALSE),
-               base = plot_base(ret),
-               plot(plot_lattice(ret)))
-      })
-    }
+    dev_close(dv)
+    if(draw) try(plot_backend(ret, backend), silent = FALSE)
     return(invisible(ret))
   })
 }

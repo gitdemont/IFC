@@ -9,6 +9,9 @@ plot_lattice(obj)
 \arguments{
 \item{obj}{an object of class `IFC_plot` as created by \code{\link{plotGraph}}.}
 }
+\value{
+a lattice trellis from `IFC_plot`.
+}
 \description{
 Helper to convert `IFC_plot` to 'lattice' plot.
 }
