@@ -206,7 +206,7 @@ mergeXIF <- function (fileName, write_to,
                      buildIFD(val = feat_pos, typ = 4, tag = 33081, endianness = r_endian),
                      buildIFD(val = 1, typ = 4, tag = 33082, endianness = r_endian))
     } else {
-      feat_pos = FD_first[[1]]$tags[["33083"]]$val
+      feat_pos = IFD_first[[1]]$tags[["33083"]]$val
       seek(toread1, feat_pos)
       fv = readBin(toread1, what = "double", n = 2, size = 4)
       seek(toread1, feat_pos)
