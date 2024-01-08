@@ -123,8 +123,10 @@ Rcpp::IntegerMatrix hpp_align_msk(const Rcpp::IntegerMatrix msk,
         out(i_row, i_col) = msk(i_row, i_col);
       }
     }
-    return out(Rcpp::Range(1, mat_r - 2), Rcpp::Range(1, mat_c  - 2));
-  } else{
+    Rcpp::IntegerMatrix ans = out(Rcpp::Range(1, mat_r - 2), Rcpp::Range(1, mat_c  - 2));
+    if(msk.hasAttribute("removal")) ans.attr("removal") = msk.attr("removal");
+    return ans;
+  } else {
     double sx = dx, sy = dy, ssx, ssy;
     uint8_t deltax = 0, deltay = 0;
     if(dx < 0) {
@@ -143,7 +145,9 @@ Rcpp::IntegerMatrix hpp_align_msk(const Rcpp::IntegerMatrix msk,
                             (msk(i_row + 1, i_col) * ssx + msk(i_row + 1, i_col + 1) * sx) * sy;
       }
     }
-    return out(Rcpp::Range(1 - deltay, mat_r - 2 - deltay), Rcpp::Range(1 - deltax, mat_c  - 2 - deltax));
+    Rcpp::IntegerMatrix ans = out(Rcpp::Range(1 - deltay, mat_r - 2 - deltay), Rcpp::Range(1 - deltax, mat_c  - 2 - deltax));
+    if(msk.hasAttribute("removal")) ans.attr("removal") = msk.attr("removal");
+    return ans;
   }
   return R_NilValue;
 }
