@@ -651,6 +651,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_readFCS
+Rcpp::NumericVector cpp_readFCS(const std::string fname, const std::size_t offset, const uint32_t events, const Rcpp::IntegerVector b_typ, const Rcpp::IntegerVector b_siz, const Rcpp::Nullable<Rcpp::IntegerVector> b_msk, const bool swap);
+RcppExport SEXP _IFC_cpp_readFCS(SEXP fnameSEXP, SEXP offsetSEXP, SEXP eventsSEXP, SEXP b_typSEXP, SEXP b_sizSEXP, SEXP b_mskSEXP, SEXP swapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const std::size_t >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type events(eventsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type b_typ(b_typSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::IntegerVector >::type b_siz(b_sizSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::IntegerVector> >::type b_msk(b_mskSEXP);
+    Rcpp::traits::input_parameter< const bool >::type swap(swapSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_readFCS(fname, offset, events, b_typ, b_siz, b_msk, swap));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_getBits", (DL_FUNC) &_IFC_cpp_getBits, 0},
@@ -704,6 +720,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_mark", (DL_FUNC) &_IFC_cpp_mark, 6},
     {"_IFC_cpp_transform", (DL_FUNC) &_IFC_cpp_transform, 15},
     {"_IFC_cpp_extract", (DL_FUNC) &_IFC_cpp_extract, 18},
+    {"_IFC_cpp_readFCS", (DL_FUNC) &_IFC_cpp_readFCS, 7},
     {NULL, NULL, 0}
 };
 

@@ -84,6 +84,7 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
   
   # set keywords to upper case
   names(text) = toupper(names(text))
+  N = names(text)
   
   # check required keywords
   key_mandatory = c("$DATATYPE","$PAR","$MODE","$BYTEORD","$NEXTDATA",
@@ -94,7 +95,7 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
   if(version == 2.0) key_mandatory = key_mandatory[1:5]
   if(version <  3.1) key_mandatory = setdiff(key_mandatory, c("$CYT"))
   if(version >= 3.2) key_mandatory = setdiff(key_mandatory, c("$MODE", "$BEGINSTEXT", "$ENDSTEXT", "$BEGINANALYSIS", "$ENDANALYSIS"))
-  tmp = key_mandatory %in% names(text)
+  tmp = key_mandatory %in% N
   if(!all(tmp)) msg = c(msg, paste0("`REQUIRED not found`:\n\t- ", paste0(key_mandatory[!tmp], collapse = "\n\t- ")))
   
   # check type/mode/byteord
@@ -107,7 +108,7 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
     if(!(mode %in% c("L","C","U"))) msg = c(msg, paste0("`non-compatible $MODE[",mode,"] (allowed are \"L\",\"C\",\"U\")`"))
     if(mode %in% c("C","U"))  msg = c(msg, paste0("`deprecated $MODE[", mode,"]`"))
   } else {
-    if("$MODE" %in% names(text)) {
+    if("$MODE" %in% N) {
       msg = c(msg, paste0("`$MODE is a deprecated keyword`"))
       if(!(mode %in% c("L"))) msg = c(msg, paste0("`non-compatible $MODE[",mode,"] (allowed is \"L\")`"))
     }
@@ -120,13 +121,13 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
   if((length(n_obj) == 1) && (n_obj == 0)) msg = c(msg, "`$TOT is 0`")
   if((length(n_par) == 1) && (n_par == 0)) msg = c(msg, "`$PAR is 0`")
   if(version > 2.0) {
-    foo = grep("^\\$P\\d+N$", names(text), value = TRUE, ignore.case = TRUE)
+    foo = grep("^\\$P\\d+N$", N, value = TRUE, ignore.case = TRUE)
     if(length(foo) != n_par) msg = c(msg, paste0("`$PnN mismatch between found[",length(foo),"] vs expected[",n_par,"]`"))
   }
   
   # check uniqueness
-  tmp = duplicated(names(text))
-  if(any(tmp)) msg = c(msg, paste0("`non unique`:\n\t- ", paste0(names(text)[tmp], collapse = "\n\t- ")))
+  tmp = duplicated(N)
+  if(any(tmp)) msg = c(msg, paste0("`non unique`:\n\t- ", paste0(N[tmp], collapse = "\n\t- ")))
   
   # check uniqueness of PnN
   PnN = text[paste0("$P",seq_len(n_par),"N")]
@@ -139,17 +140,17 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
   
   # check non empty
   tmp = sapply(text, length) == 0
-  if(any(tmp)) msg = c(msg, paste0("`empty value",ifelse(sum(tmp)==1,"","s")," found`:\n\t- ", paste0(names(text)[tmp], collapse = "\n\t- ")))
+  if(any(tmp)) msg = c(msg, paste0("`empty value",ifelse(sum(tmp)==1,"","s")," found`:\n\t- ", paste0(N[tmp], collapse = "\n\t- ")))
   
   # check keywords names use only 0x20 - 0xFE characters
   if(version >= 3.0) {
     # starting ver 3.0 spe says: The TEXT part should not contain return (ASCII 13), line feed (ASCII 10) or other unpritable characters (unless they are value or delimiter)
-    tmp = sapply(names(text), FUN = function(x) {v = charToRaw(x); all(v >= 0x20 & v <= 0xFE) })
-    if(!all(tmp)) msg = c(msg, paste0("`bad BYTE in name allowed ASCII are [0x20-0xFE (32-126)]`:\n\t- ", paste0(names(text)[!tmp], collapse = "\n\t- ")))
+    tmp = sapply(N, FUN = function(x) {v = charToRaw(x); all(v >= 0x20 & v <= 0xFE) })
+    if(!all(tmp)) msg = c(msg, paste0("`bad BYTE in name allowed ASCII are [0x20-0xFE (32-126)]`:\n\t- ", paste0(N[!tmp], collapse = "\n\t- ")))
   } else {
     # for ver 2.0 spe mentions : The TEXT part should not contain 'carriage return' or 'line feed' characters  (unless they are value or delimiter)
-    tmp = sapply(names(text), FUN = function(x) {v = charToRaw(x); all(v != 0x0A & v != 0x0D) })
-    if(!all(tmp)) msg = c(msg, paste0("`bad BYTE in name 0x0A and 0x0D are not allowed`:\n\t- ", paste0(names(text)[!tmp], collapse = "\n\t- ")))
+    tmp = sapply(N, FUN = function(x) {v = charToRaw(x); all(v != 0x0A & v != 0x0D) })
+    if(!all(tmp)) msg = c(msg, paste0("`bad BYTE in name 0x0A and 0x0D are not allowed`:\n\t- ", paste0(N[!tmp], collapse = "\n\t- ")))
   }
   
   # check numeric keywords are not padded with characters other than 0
@@ -166,11 +167,11 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
       all(xx %in% c("0","1","2","3", "4", "5", "6", "7", "8", "9", "+", "-",".","e"))
     })
   }, finally = suppressWarnings(Sys.setlocale(category = "LC_ALL", locale = old_loc)))
-  if(!all(bar)) msg = c(msg, paste0("`padded numeric (only padding with 0 is allowed)`:\n\t- ", paste0(paste0(names(text)[foo][!bar], "[",text[foo][!bar], "]"), collapse = "\n\t- ")))
+  if(!all(bar)) msg = c(msg, paste0("`padded numeric (only padding with 0 is allowed)`:\n\t- ", paste0(paste0(N[foo][!bar], "[",text[foo][!bar], "]"), collapse = "\n\t- ")))
   
   # check keyword-value pairs do not start with delimiter
   # delimiter = rawToChar(delimiter)
-  foo = sapply(names(text), FUN = function(x) {
+  foo = sapply(N, FUN = function(x) {
     if(length(x) == 0) return(FALSE)
     substr(x, 1,1) == delimiter
   })
@@ -179,7 +180,7 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
     substr(x, 1,1) == delimiter
   })
   tmp = foo | bar
-  if(any(tmp)) msg = c(msg, paste0("`start with delimiter`:\n\t- ", paste0(paste0(names(text)[tmp], "[",text[tmp], "]"), collapse = "\n\t- ")))
+  if(any(tmp)) msg = c(msg, paste0("`start with delimiter`:\n\t- ", paste0(paste0(N[tmp], "[",text[tmp], "]"), collapse = "\n\t- ")))
   
   # check range and amplification
   foo = sapply(seq_len(n_par), FUN = function(i) {
@@ -189,15 +190,23 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
     PnG = paste0("$P",i,"G")
     PnN = paste0("$P",i,"N")
     PnR = paste0("$P",i,"R")
+    PnT = paste0("$P",i,"DATATYPE")
+    TYPE = type
+    if((version >= 3.2) && (PnT %in% N)) {
+      TYPE = text[[PnT]]
+      if(length(TYPE) == 0) TYPE = ""
+      if(!(TYPE %in% c("I","F","D"))) msg = c(msg, paste0("invalid ", PnT , "[", TYPE,"] (allowed are \"I\",\"F\",\"D\")"))
+    }
     if(length(text[[PnB]]) == 0) {
       msg = c(msg, paste0(PnB, " not found (REQUIRED)"))
     } else {
       bit = na.omit(suppressWarnings(as.integer(text[[PnB]])))
       if(length(bit) == 0) {
-        if(!(type == "A" && text[[PnB]] == "*")) msg = c(msg, paste0("invalid PnB [",text[[PnB]],"]"))
+        if(!(identical(text[[PnB]],"*") && identical(type, "A"))) msg = c(msg, paste0("invalid ", PnB, "[",text[[PnB]],"]"))
       } else {
-        if(type == "F" && bit != 32) if(version >= 3.1) c(msg, paste0(PnB, "[",text[[PnB]],"] should be \"32\" with $DATATYPE[F]"))
-        if(type == "D" && bit != 64) if(version >= 3.1) c(msg, paste0(PnB, "[",text[[PnB]],"] should be \"64\" with $DATATYPE[D]"))
+        if(version >= 3.2 && !identical(type, "A") && as.logical(bit %% 8)) msg = c(msg, paste0("invalid ", PnB, "[", text[[PnB]],"] should be divisible by 8 in FCS >= 3.2"))
+        if(TYPE == "F" && bit != 32) if(version >= 3.1) msg = c(msg, paste0("invalid ", PnB, " should be \"32\" with $DATATYPE[F]"))
+        if(TYPE == "D" && bit != 64) if(version >= 3.1) msg = c(msg, paste0("invalid ", PnB, " should be \"64\" with $DATATYPE[D]"))
       }
     }
     if(length(text[[PnR]]) == 0) {
@@ -218,10 +227,10 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
       if(length(trans) != 2) {
         msg = c(msg, paste0(PnE,"[",text[[PnE]],"] should be \"f1,f2\" with numeric f1 and f2"))
       } else {
-        if((version >= 3.1) && (type == "D" || type == "F")) { # starting from FCS3.1 $PnE has to be "0,0" for DATATYPE D and F
-          if((trans[1] != 0) || (trans[2] != 0)) msg = c(msg, paste0(PnE,"[",text[[PnE]],"] should be \"f1,f2\" where f1=0 AND f2=0 with $DATATYPE[",type,"]"))
+        if((version >= 3.1) && (TYPE == "D" || TYPE == "F")) { # starting from FCS3.1 $PnE has to be "0,0" for DATATYPE D and F
+          if((trans[1] != 0) || (trans[2] != 0)) msg = c(msg, paste0(PnE,"[",text[[PnE]],"] should be \"f1,f2\" where f1=0 AND f2=0 with $DATATYPE[",TYPE,"]"))
         } else { # otherwise $PnE always (? for 1.0) had to be f1,f2 with  f1=f2=0 OR (f1!=0 AND f2!=0)
-          if(!(all(trans == 0) || all(trans != 0))) msg = c(msg, paste0(PnE,"[",text[[PnE]],"] should be \"f1,f2\" where (f1=0 AND f2=0, for linear) OR (f1!=0 AND f2!=0, for log) with $DATATYPE[",type,"]"))
+          if(!(all(trans == 0) || all(trans != 0))) msg = c(msg, paste0(PnE,"[",text[[PnE]],"] should be \"f1,f2\" where (f1=0 AND f2=0, for linear) OR (f1!=0 AND f2!=0, for log) with $DATATYPE[",TYPE,"]"))
         }
       }
     }
@@ -235,10 +244,16 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
     return(paste0(msg, collapse="|"))
   })
   bar = unlist(recursive = FALSE, use.names = FALSE, lapply(foo, FUN = function(x) x != ""))
-  if(any(bar)) msg = c(msg, paste0("`bad PnB/PnE/PnG/PnN/PnR keywords`:\n\t- ", paste0(foo[bar], collapse="\n\t- ")))
+  if(any(bar)) {
+    if(version >= 3.2) {
+      msg = c(msg, paste0("`bad PnB/PnDATATYPE/PnE/PnG/PnN/PnR keywords`:\n\t- ", paste0(foo[bar], collapse="\n\t- "))) 
+    } else {
+      msg = c(msg, paste0("`bad PnB/PnE/PnG/PnN/PnR keywords`:\n\t- ", paste0(foo[bar], collapse="\n\t- ")))
+    }
+  }
   
   # check spillover
-  if("$SPILLOVER" %in% names(text)) {
+  if("$SPILLOVER" %in% N) {
     tryCatch({
       sp = convert_spillover(text[["$SPILLOVER"]])
       if(!all(colnames(sp) %in% unlist(recursive = FALSE, use.names = FALSE, PnN))) stop("'spillover' is defined with non PnN names [", paste0(colnames(sp),collapse = ","),"]")
@@ -364,9 +379,9 @@ readFCSdelimiter <- function(fileName, at = 58, version = 3.0, encoding = "UTF-8
     # for FCS3.0 delimiter is an ASCII
     # starting from 3.1 delimiter is an ASCII that is not 0x00 nor 0xFF
     if(version == 3.0) if(raw_delimiter > 0x7F) warning("DELIMITER segment: should be any ASCII [0x00-0x7F (0-127)]",
-                                                    call. = FALSE, immediate. = TRUE)
+                                                        call. = FALSE, immediate. = TRUE)
     if(version >= 3.1) if((raw_delimiter == 0x00) || (raw_delimiter >= 0x7E)) warning("DELIMITER segment: should be a [0x01-0x7E (1-126)] ASCII character",
-                                                                              call. = FALSE, immediate. = TRUE)
+                                                                                      call. = FALSE, immediate. = TRUE)
   }
   return(structure(delimiter, "raw" = raw_delimiter))
 }
@@ -426,7 +441,6 @@ readFCStext <- function(fileName, delimiter, start = 0, end = 0, encoding = "UTF
   
   seek(toread, start)
   text = rawToChar(readBin(toread, what = "raw", n = nend - start))
-  
   # when same character as delimiter is used within keyword-value pair it has to be escaped (repeated twice)
   # according to FCS spe 2.0:
   # -if the separator appears in a keyword or in a keyword value, it must be "quoted" by being repeated
@@ -485,25 +499,25 @@ readFCStext <- function(fileName, delimiter, start = 0, end = 0, encoding = "UTF
   }
   msg = paste0("TEXT (or sup. TEXT) segment: found standard keywords padded with whitespace(s), please consider using `options$text_trim` != \"",trim,"\"\n\t-")
   names(text) = switch(trim,
-         "both" = { 
-           trimws(names(text), which = "both")
-         },
-         "left" = { 
-           found = grep("^\\$[[:alnum:]]+[[:space:]]+$", names(text), ignore.case = TRUE, value = TRUE)
-           if(length(found) != 0) warning(paste0(msg, paste0(found, collapse = "\n\t-")), call. = FALSE, immediate. = TRUE)
-           trimws(names(text), which = "left")
-         },
-         "right" = { 
-           found = grep("^[[:space:]]+\\$[[:alnum:]]$", names(text), ignore.case = TRUE, value = TRUE)
-           if(length(found) != 0) warning(paste0(msg, paste0(found, collapse = "\n\t-")), call. = FALSE, immediate. = TRUE)
-           trimws(names(text), which = "right")
-         },
-         {
-           found = c(grep("^\\$[[:alnum:]]+[[:space:]]+$", names(text), ignore.case = TRUE, value = TRUE),
-                     grep("^[[:space:]]+\\$[[:alnum:]]+$", names(text), ignore.case = TRUE, value = TRUE))
-           if(length(found) != 0) warning(paste0(msg, paste0(found, collapse = "\n\t-")), call. = FALSE, immediate. = TRUE)
-           names(text)
-         })
+                       "both" = { 
+                         trimws(names(text), which = "both")
+                       },
+                       "left" = { 
+                         found = grep("^\\$[[:alnum:]]+[[:space:]]+$", names(text), ignore.case = TRUE, value = TRUE)
+                         if(length(found) != 0) warning(paste0(msg, paste0(found, collapse = "\n\t-")), call. = FALSE, immediate. = TRUE)
+                         trimws(names(text), which = "left")
+                       },
+                       "right" = { 
+                         found = grep("^[[:space:]]+\\$[[:alnum:]]$", names(text), ignore.case = TRUE, value = TRUE)
+                         if(length(found) != 0) warning(paste0(msg, paste0(found, collapse = "\n\t-")), call. = FALSE, immediate. = TRUE)
+                         trimws(names(text), which = "right")
+                       },
+                       {
+                         found = c(grep("^\\$[[:alnum:]]+[[:space:]]+$", names(text), ignore.case = TRUE, value = TRUE),
+                                   grep("^[[:space:]]+\\$[[:alnum:]]+$", names(text), ignore.case = TRUE, value = TRUE))
+                         if(length(found) != 0) warning(paste0(msg, paste0(found, collapse = "\n\t-")), call. = FALSE, immediate. = TRUE)
+                         names(text)
+                       })
   return(text)
 }
 
@@ -512,13 +526,14 @@ readFCStext <- function(fileName, delimiter, start = 0, end = 0, encoding = "UTF
 #' Helper to parse data segment from Flow Cytometry Standard (FCS) compliant files.
 #' @param fileName path to file.
 #' @param text a named list of keywords values.
+#' @param version version of FCS specification.
 #' @param start offset of text start. Default is 0.
 #' @param end offset of text end. Default is 0.
 #' @param scale whether to apply data scaling. It only applies when fcs file is stored as DATATYPE "I". Default is TRUE.\cr
 #' @param display_progress whether to display a progress bar. Default is TRUE.
 #' @param ... other arguments to be passed.
 #' @keywords internal
-readFCSdata <- function(fileName, text, start = 0, end = 0, scale = TRUE, display_progress = TRUE, ...) {
+readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRUE, display_progress = TRUE, ...) {
   if(missing(fileName)) stop("'fileName' can't be missing")
   assert(fileName, len=1)
   fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
@@ -530,10 +545,6 @@ readFCSdata <- function(fileName, text, start = 0, end = 0, scale = TRUE, displa
   assert(scale, len=1, alw = c(TRUE,FALSE))
   title_progress = basename(fileName)
   assert(display_progress, len = 1, alw = c(TRUE,FALSE))
-  
-  # create connection binary reading
-  toread = file(description = fileName, open = "rb")
-  on.exit(close(toread))
   
   # force local
   old_loc = Sys.getlocale(category = "LC_ALL")
@@ -550,89 +561,275 @@ readFCSdata <- function(fileName, text, start = 0, end = 0, scale = TRUE, displa
   features_names = grep("^\\$P\\d+N$", names(text), value = TRUE, ignore.case = TRUE)
   
   # hereafter we create several bit_* variables
+  # bit_t : PnDATATYPE, type of the value FCS >= 3.2
   # bit_v : PnB, bits depth of the value
   # bit_r : PnR, bits range of the value
   # bit_n : number of bytes to read 
   # bit_d : bits depth to read ( = 8 * bit_n )
   # bit_o : bytes order to read
   # bit_m : bits mask, for instance if bit_v is 10 bits but the value is read from 16 bits then 6 bits are not used
-  
+  bit_t = sapply(paste0("$P",seq_len(n_par),"DATATYPE"), FUN = function(x) {
+    ans = text[[x]]
+    if(length(ans) == 0) ans = type
+    return(ans)
+  })
   bit_v = unlist(recursive = FALSE, use.names = FALSE, lapply(text[paste0("$P",seq_len(n_par),"B")], FUN = function(x) suppressWarnings(as.integer(x))))
   msg = c()
   if(n_par != length(features_names)) msg = c(msg, paste0("DATA segment: mismatch between found[",length(features_names),"] vs expected[",n_par,"] number of $PnN"))
   if(n_par != length(bit_v)) msg = c(msg, paste0("DATA segment: mismatch between found[",length(bit_v),"] vs expected[",n_par,"] number of $PnB"))
   if(length(msg) != 0) stop(paste0(msg, collapse = "\n"))
-  
-  # define data_bytes and go to data start position
   data_bytes = end - start + 1
-  seek(toread, start)
-  # type "A" is deprecated in newer version of FCS specifications
-  if(type == "A") {
-    if((data_bytes + start) > file.size(fileName)) stop("DATA segment: points to outside of the file")
-    if(length(unique(bit_v)) == 1) {
-      if(text[["$P1B"]] == "*") {
-        data = setdiff(strsplit(x = readBin(toread, what = "character", n = data_bytes),
-                                split = paste0(sapply(as.raw(c("0x20","0x09","0x2C","0x0D","0x0A")), rawToChar), collapse = "|"))[[1]],
-                       "")
+  
+  if((version <= 3.1) || (type == "A")) {
+    if(length(unique(bit_t)) != 1) stop("DATA segment: file with various $PnDATATYPE is not allowed")
+    # create connection binary reading
+    toread = file(description = fileName, open = "rb")
+    on.exit(close(toread))
+    # go to data start position
+    seek(toread, start)
+    # type "A" is deprecated in newer version of FCS specifications
+    if(type == "A") {
+      bit_t = rep("A", n_par)
+      if((data_bytes + start) > file.size(fileName)) stop("DATA segment: points to outside of the file")
+      if(length(unique(bit_v)) == 1) {
+        if(text[["$P1B"]] == "*") {
+          data = setdiff(strsplit(x = readBin(toread, what = "character", n = data_bytes),
+                                  split = paste0(sapply(as.raw(c("0x20","0x09","0x2C","0x0D","0x0A")), rawToChar), collapse = "|"))[[1]],
+                         "")
+        } else {
+          if(is.na(bit_v[1])) stop("DATA segment: bad $PnB definition for $DATATYPE[A]")
+          data = gsub(paste0("(.{",bit_v,"})"), "\\1 ", readBin(toread, what = "character", n = data_bytes))
+        }
       } else {
-        if(is.na(bit_v[1])) stop("DATA segment: bad $PnB definition for $DATATYPE[A]")
-        data = gsub(paste0("(.{",bit_v,"})"), "\\1 ", readBin(toread, what = "character", n = data_bytes))
+        raw = readBin(toread, what = "raw", n = data_bytes)
+        if(display_progress) {
+          pb = newPB(min = 0, max = n_par, initial = 0, style = 3)
+          on.exit(endPB(pb), add = TRUE)
+          data = sapply(seq_len(n_par), FUN = function(i_par) {
+            setPB(pb, value = i_par, title = title_progress, label = "$DATATYPE[A]: extracting values")
+            bits = as.integer(text[[paste0("$P",i_par,"B")]]) # each PnB determines number of bytes to extract
+            # FIXME it is not clear how to deal with a mix of PnB == * and PnB == integer ?
+            if(is.na(bits)) stop("DATA segment: bad $P",i_par,"B definition for $DATATYPE[A] ", text[[paste0("$P",i_par,"B")]])
+            off = (i_par - 1) * n_par
+            if((off + n_obj) > data_bytes) stop("DATA segment: buffer overrun")
+            sapply(seq_len(n_obj), FUN = function(i_obj) {
+              as.numeric(readBin(con = raw[i_obj + off], what = "character", n = bits))
+            })
+          })
+        } else {
+          data = sapply(seq_len(n_par), FUN = function(i_par) {
+            bits = as.integer(text[[paste0("$P",i_par,"B")]]) # each PnB determines number of bytes to extract
+            off = (i_par - 1) * n_par
+            if((off + n_obj) > data_bytes) stop("DATA segment: buffer overrun")
+            sapply(seq_len(n_obj), FUN = function(i_obj) {
+              as.numeric(readBin(con = raw[i_obj + off], what = "character", n = bits))
+            })
+          })
+        }
       }
     } else {
-      raw = readBin(toread, what = "raw", n = data_bytes)
-      if(display_progress) {
-        pb = newPB(min = 0, max = n_par, initial = 0, style = 3)
-        on.exit(endPB(pb), add = TRUE)
-        data = sapply(seq_len(n_par), FUN = function(i_par) {
-          setPB(pb, value = i_par, title = title_progress, label = "$DATATYPE[A]: extracting values")
-          bits = as.integer(text[[paste0("$P",i_par,"B")]]) # each PnB determines number of bytes to extract
-          # FIXME it is not clear how to deal with a mix of PnB == * and PnB == integer ?
-          if(is.na(bits)) stop("DATA segment: bad $P",i_par,"B definition for $DATATYPE[A] ", text[[paste0("$P",i_par,"B")]])
-          off = (i_par - 1) * n_par
-          if((off + n_obj) > data_bytes) stop("DATA segment: buffer overrun")
-          sapply(seq_len(n_obj), FUN = function(i_obj) {
-            as.numeric(readBin(con = raw[i_obj + off], what = "character", n = bits))
-          })
-        })
+      # some files register wrong dataend offset resulting in an off-by-one byte
+      # the following should allow to correct it
+      if((data_bytes %% 8) %% 2) data_bytes = data_bytes + 1 # go +1
+      if((data_bytes %% 8) %% 2) data_bytes = data_bytes - 1 # go  0
+      if((data_bytes %% 8) %% 2) data_bytes = data_bytes - 1 # go -1
+      off_by = (end - start + 1) - data_bytes
+      if(off_by != 0) warning("DATA segment: offset is off by ",off_by," byte",
+                              call. = FALSE, immediate. = TRUE)
+      if((data_bytes %% 8) %% 2) stop("DATA segment: number of bytes does not respect fcs specifications")
+      
+      # extract order, endianness
+      b_ord = text[["$BYTEORD"]]
+      if(version >= 3.1) if(!any(identical(b_ord, "1,2,3,4"), identical(b_ord, "4,3,2,1"))) stop("DATA segment: bad endianness[",b_ord,"], FCS >= 3.1 spe. only allow `1,2,3,4` or `4,3,2,1`")
+      bit_o = as.integer(strsplit(b_ord, split=",", fixed=TRUE)[[1]])
+      b_ord = paste0(bit_o, collapse = ",")
+      
+      # determines endianness of the file
+      endian = "unk"
+      endian_l = paste0(seq_along(bit_o), collapse = ",")
+      endian_b = paste0(rev(seq_along(bit_o)), collapse = ",")
+      if(endian_l == b_ord) endian = "little"
+      if(endian_b == b_ord) endian = "big"
+      
+      # register bit_v values
+      bit_v_back = bit_v
+      
+      # try bit_v correction
+      alw_b = 2^(3:6) # 8,16,32,64, sizes handled by R
+      bit_corrected = FALSE
+      if(any(!(bit_v %in% alw_b))) {
+        bit_corrected = TRUE
+        bit_v = sapply(bit_v, FUN = function(x) alw_b[x <= alw_b][1])
+      }
+      bit_n = unname(bit_v %/% 8)
+      
+      # try data_length correction and check accuracy of bit_v correction, if any
+      if(sum(n_obj * bit_n) != data_bytes) { # data_length is not OK
+        if(bit_corrected) {                  # bit_v was already corrected
+          bit_v = bit_v_back
+          bit_n = unname(bit_v %/% 8)
+          bit_corrected = FALSE
+          if(sum(n_obj*bit_n)!=data_bytes) { # bit_v is reverted but data_length still does not match
+            stop("DATA segment: can't determine bit depth and DATA length")
+          }
+        } else {                             # bit_v was not corrected, we apply data_length correction
+          data_bytes = sum(n_obj * bit_n)
+          warning("DATA segment: number of bytes has been corrected",
+                  call. = FALSE, immediate. = TRUE)
+        }
+      } else {                               # data_length is OK
+        if(bit_corrected)             {      # check if bit_v was corrected to show a warning
+          warning("DATA segment: bits depth have been corrected to next allowed value",
+                  call. = FALSE, immediate. = TRUE)
+        }
+      }
+      bit_d = unique(bit_v)
+      
+      if(type == "I") { 
+        # FIXME it is not clear how to perform tightbit packing bit_p = xxxxx
+        
+        # setup readBin parameters for each channels
+        args = sapply(bit_n, simplify = FALSE, USE.NAMES = TRUE, FUN = function(x)  list(what = "integer", size = x, signed = x > 2))
+        
+        # compute bit mask
+        bit_r = sapply(text[paste0("$P",seq_len(n_par),"R")], FUN = function(x) suppressWarnings(ceiling(log2(as.numeric(x))))) # as.integer("4294967296") results in NA so we use as.numeric
+        bit_m = lapply(seq_len(n_par), FUN = function(i_par) packBits(as.raw(sapply(seq_len(bit_v[i_par]), FUN = function(i) i <= min(bit_r[i_par],bit_v[i_par])))))
       } else {
-        data = sapply(seq_len(n_par), FUN = function(i_par) {
-          bits = as.integer(text[[paste0("$P",i_par,"B")]]) # each PnB determines number of bytes to extract
-          off = (i_par - 1) * n_par
-          if((off + n_obj) > data_bytes) stop("DATA segment: buffer overrun")
-          sapply(seq_len(n_obj), FUN = function(i_obj) {
-            as.numeric(readBin(con = raw[i_obj + off], what = "character", n = bits))
-          })
-        })
+        # fcs specifications mention:
+        # besides PnB for types "F" and "D" have to be 32 or 64, respectively.
+        bit_d == rep(ifelse(type == "F", 32L, 64L), n_par)
+        
+        # force bits depth, shall always be max allowed depth
+        tmp = bit_v != bit_d
+        if(any(tmp)) {
+          warning(paste0("DATA segment: $PnB keyword",ifelse(sum(tmp) == 0, " has", "s have")," been forced to ", bit_d, ":\n",
+                         paste0(paste0("\t- ", names(bit_v)[tmp]), collapse = "\n")),
+                  call. = FALSE, immediate. = TRUE)
+          for(i in names(bit_v)[tmp]) text[[i]] <- num_to_string(bit_d)
+        }
+        bit_v <- bit_d
+        
+        # fcs specifications mention:
+        # `No bit mask shall be applied when reading type "F" or "D" data`
+        # So, bit_r is set to bit_d to prevent masking
+        # FIXME, however what to do with PnR in type "F" or "D", shall we truncate ?
+        # fcs specifications mention:
+        # `The actual value stored in the data set may exceed this range on both sides of 
+        #  the interval. Specifically, there may be negative values as well as values greater than n1, e.g., as 
+        #  a consequence of compensation``
+        bit_r <- bit_d
+        bit_m = NULL
+        
+        # setup readBin parameters for each channels
+        args = sapply(bit_n, simplify = FALSE, USE.NAMES = TRUE, FUN = function(x)  list(what = "numeric", size = x))
+      }
+      # check data_length before starting reading
+      if((data_bytes + start) > file.size(fileName)) stop("DATA segment: points to outside of the file")
+      
+      
+      # fcs specifications mention that type "I" use unsigned integers only
+      # but readBin can only extracts 8bits and 16bits unsigned integer. So, 
+      # for 32bits and 64bits we have to extract signed integers and convert them afterwards
+      # with cpp_v_intxx_to_uintxx functions
+      if((endian != "unk") &&              # endianness is either "little" or "big" and can be passed to readBin without reordering
+         (length(bit_d) == 1) &&           # every channels have same bits depth
+         (bit_d %in% c(8,16,32,64))) {     # bits depth is a size handled by R
+        if(all(bit_r == bit_d)) {          # there is no masking to apply
+          data = do.call(args = c(list(con = toread, 
+                                       endian = endian, 
+                                       n = data_bytes / args[[1]]$size),
+                                  args[[1]]),
+                         what = readBin)
+        } else { # we are forced to apply bit masking if a PnR is not equal to bit_d
+          # extract order for the whole data
+          ord_ = cpp_get_bytes_order(n_obj, bit_n, bit_o, .Platform$endian != "little") # FIXME
+          # extract mask for the whole data
+          msk_ = rep(unlist(recursive = FALSE, use.names = FALSE, bit_m), n_obj)
+          # extract the whole data in "raw"
+          data = readBin(con = toread, what = "raw", n = data_bytes)
+          # process data according to args, order and mask and make the conversion
+          data = do.call(args = c(list(con = data[ord_] & msk_,
+                                       endian = "little", # FIXME
+                                       n = data_bytes / args[[1]]$size),
+                                  args[[1]]),
+                         what = readBin)
+        }
+        # convert to unsigned integers if needed
+        if(type == "I") {
+          if(args[[1]]$size == 4) data = cpp_v_int32_to_uint32(data)
+          if(args[[1]]$size == 8) data = cpp_v_int64_to_uint64(data)
+        }
+        data = matrix(data, ncol = n_par, nrow = n_obj, byrow = TRUE)
+      } else {
+        # extract order for the whole data
+        ord_ = cpp_get_bytes_order(n_obj, bit_n, bit_o, .Platform$endian != "little") # FIXME
+        # extract mask for the whole data
+        msk_ = rep(unlist(recursive = FALSE, use.names = FALSE, bit_m), n_obj)
+        # define grouping parameter for the whole data
+        spl_ = rep(unlist(recursive = FALSE, use.names = FALSE, mapply(FUN = rep, seq_along(bit_n), bit_n, SIMPLIFY = FALSE)), times = n_obj)
+        
+        if(display_progress) {
+          lab = sprintf("$DATATYPE[%s]: extracting values", type)
+          pb = newPB(min = 0, max = n_par, initial = 0, style = 3)
+          on.exit(endPB(pb), add = TRUE)
+        }
+        
+        # extract the whole data in "raw"
+        data = readBin(con = toread, what = "raw", n = data_bytes)
+        # process data according to args, order and mask and make the conversion
+        data = unlist(recursive = FALSE, use.names = FALSE, by(list(v = data[ord_] & msk_, split = spl_), spl_, FUN = function(x) {
+          i_par = x$split[1]
+          if(display_progress) setPB(pb, value = i_par, title = title_progress, label = lab)
+          if(args[[i_par]]$size %in% c(3,5,6,7)) { # for sizes not handled by R 
+            M = c(1,2,4,8)[args[[i_par]]$size <= c(1,2,4,8)][1]
+            m = M - args[[i_par]]$size
+            bar = split(x$v,ceiling(seq_along(x$v)/args[[i_par]]$size))
+            bar = lapply(bar, FUN = function(i) c(i, rep(as.raw(0x00), m)))
+            foo = readBin(con = unlist(recursive = FALSE, use.names = FALSE, bar),
+                          endian = "little", # FIXME ?
+                          what = args[[i_par]]$what,
+                          n = n_obj,
+                          size = M,
+                          signed = TRUE)
+          } else { # size is handled by R
+            foo = readBin(con = x$v,
+                          endian = "little", # FIXME ?
+                          what = args[[i_par]]$what,
+                          n = n_obj,
+                          size = args[[i_par]]$size,
+                          signed = args[[i_par]]$signed)
+          }
+          # convert to unsigned integers if needed
+          if(type == "I") {
+            if(args[[i_par]]$size == 4) return(cpp_v_int32_to_uint32(foo))
+            if(args[[i_par]]$size == 8) return(cpp_v_int64_to_uint64(foo))
+          }
+          foo
+        }))
+        data = matrix(data, ncol = n_par, nrow = n_obj, byrow = FALSE)
       }
     }
   } else {
+    b_ord = text[["$BYTEORD"]]
+    endian = "unk"
+    if(b_ord == "1,2,3,4") endian = "little" 
+    if(b_ord == "4,3,2,1") endian = "big" 
+    if(endian == "unk") stop("DATA segment: bad endianness[",b_ord,"], FCS >= 3.1 spe. only allow `1,2,3,4` or `4,3,2,1`")
+    
     # some files register wrong dataend offset resulting in an off-by-one byte
     # the following should allow to correct it
     if((data_bytes %% 8) %% 2) data_bytes = data_bytes + 1 # go +1
     if((data_bytes %% 8) %% 2) data_bytes = data_bytes - 1 # go  0
     if((data_bytes %% 8) %% 2) data_bytes = data_bytes - 1 # go -1
     off_by = (end - start + 1) - data_bytes
-    if(off_by != 0) warning("DATA segment: offset is off by ",off_by," byte",
-                            call. = FALSE, immediate. = TRUE)
+    if(off_by != 0) warning("DATA segment: offset is off by ",off_by," byte", call. = FALSE, immediate. = TRUE)
     if((data_bytes %% 8) %% 2) stop("DATA segment: number of bytes does not respect fcs specifications")
     
-    # extract order, endianness
-    b_ord = text[["$BYTEORD"]]
-    bit_o = as.integer(strsplit(b_ord, split=",", fixed=TRUE)[[1]])
-    b_ord = paste0(bit_o, collapse = ",")
-    
-    # determines endianness of the file
-    endian = "unk"
-    endian_l = paste0(seq_along(bit_o), collapse = ",")
-    endian_b = paste0(rev(seq_along(bit_o)), collapse = ",")
-    if(endian_l == b_ord) endian = "little"
-    if(endian_b == b_ord) endian = "big"
-    
-    # register bit_v values
+    # backup bit_v values
     bit_v_back = bit_v
     
     # try bit_v correction
-    alw_b = 2^(1:6) # 2,4,8,16,32,64, sizes handled by R
+    alw_b = as.integer(2^(3:6)) # 8,16,32,64, sizes handled by R
     bit_corrected = FALSE
     if(any(!(bit_v %in% alw_b))) {
       bit_corrected = TRUE
@@ -640,151 +837,24 @@ readFCSdata <- function(fileName, text, start = 0, end = 0, scale = TRUE, displa
     }
     bit_n = unname(bit_v %/% 8)
     
-    # try data_length correction and check accuracy of bit_v correction, if any
-    if(sum(n_obj * bit_n) != data_bytes) { # data_length is not OK
-      if(bit_corrected) {                  # bit_v was already corrected
-        bit_v = bit_v_back
-        bit_n = unname(bit_v %/% 8)
-        bit_corrected = FALSE
-        if(sum(n_obj*bit_n)!=data_bytes) { # bit_v is reverted but data_length still does not match
-          stop("DATA segment: can't determine bit depth and DATA length")
-        }
-      } else {                             # bit_v was not corrected, we apply data_length correction
-        data_bytes = sum(n_obj * bit_n)
-        warning("DATA segment: number of bytes has been corrected",
-                call. = FALSE, immediate. = TRUE)
-      }
-    } else {                               # data_length is OK
-      if(bit_corrected)             {      # check if bit_v was corrected to show a warning
-        warning("DATA segment: bits depth have been corrected to next allowed value",
-                call. = FALSE, immediate. = TRUE)
-      }
-    }
-    bit_d = unique(bit_v)
-    
-    if(type == "I") { 
-      # FIXME it is not clear how to perform tightbit packing bit_p = xxxxx
-      
-      # setup readBin parameters for each channels
-      args = sapply(bit_n, simplify = FALSE, USE.NAMES = TRUE, FUN = function(x)  list(what = "integer", size = x, signed = x > 2))
-      
-      # compute bit mask
-      bit_r = sapply(text[paste0("$P",seq_len(n_par),"R")], FUN = function(x) suppressWarnings(ceiling(log2(as.numeric(x))))) # as.integer("4294967296") results in NA so we use as.numeric
-      bit_m = lapply(seq_len(n_par), FUN = function(i_par) packBits(as.raw(sapply(seq_len(bit_v[i_par]), FUN = function(i) i <= min(bit_r[i_par],bit_v[i_par])))))
-    } else {
-      # fcs specifications mention:
-      # besides PnB for types "F" and "D" have to be 32 or 64, respectively.
-      bit_d == rep(ifelse(type == "F", 32L, 64L), n_par)
-      
-      # force bits depth, shall always be max allowed depth
-      tmp = bit_v != bit_d
-      if(any(tmp)) {
-        warning(paste0("DATA segment: $PnB keyword",ifelse(sum(tmp) == 0, " has", "s have")," been forced to ", bit_d, ":\n",
-                       paste0(paste0("\t- ", names(bit_v)[tmp]), collapse = "\n")),
-                call. = FALSE, immediate. = TRUE)
-        for(i in names(bit_v)[tmp]) text[[i]] <- num_to_string(bit_d)
-      }
-      bit_v <- bit_d
-      
-      # fcs specifications mention:
-      # `No bit mask shall be applied when reading type "F" or "D" data`
-      # So, bit_r is set to bit_d to prevent masking
-      # FIXME, however what to do with PnR in type "F" or "D", shall we truncate ?
-      # fcs specifications mention:
-      # `The actual value stored in the data set may exceed this range on both sides of 
-      #  the interval. Specifically, there may be negative values as well as values greater than n1, e.g., as 
-      #  a consequence of compensation``
-      bit_r <- bit_d
-      bit_m = NULL
-      
-      # setup readBin parameters for each channels
-      args = sapply(bit_n, simplify = FALSE, USE.NAMES = TRUE, FUN = function(x)  list(what = "numeric", size = x))
-    }
-    # check data_length before starting reading
-    if((data_bytes + start) > file.size(fileName)) stop("DATA segment: points to outside of the file")
-    
-    
-    # fcs specifications mention that type "I" use unsigned integers only
-    # but readBin can only extracts 8bits and 16bits unsigned integer. So, 
-    # for 32bits and 64bits we have to extract signed integers and convert them afterwards
-    # with cpp_v_intxx_to_uintxx functions
-    if((endian != "unk") &&              # endianness is either "little" or "big" and can be passed to readBin without reordering
-       (length(bit_d) == 1) &&           # every channels have same bits depth
-       (bit_d %in% c(2,4,8,16,32,64))) { # bits depth is a size handled by R
-      if(all(bit_r == bit_d)) {          # there is no masking to apply
-        data = do.call(args = c(list(con = toread, 
-                                     endian = endian, 
-                                     n = data_bytes / args[[1]]$size),
-                                args[[1]]),
-                       what = readBin)
-      } else { # we are forced to apply bit masking if a PnR is not equal to bit_d
-        # extract order for the whole data
-        ord_ = cpp_get_bytes_order(n_obj, bit_n, bit_o, .Platform$endian != "little") # FIXME
-        # extract mask for the whole data
-        msk_ = rep(unlist(recursive = FALSE, use.names = FALSE, bit_m), n_obj)
-        # extract the whole data in "raw"
-        data = readBin(con = toread, what = "raw", n = data_bytes)
-        # process data according to args, order and mask and make the conversion
-        data = do.call(args = c(list(con = data[ord_] & msk_,
-                                     endian = "little", # FIXME
-                                     n = data_bytes / args[[1]]$size),
-                                args[[1]]),
-                       what = readBin)
-      }
-      # convert to unsigned integers if needed
-      if(type == "I") {
-        if(args[[1]]$size == 4) data = cpp_v_int32_to_uint32(data)
-        if(args[[1]]$size == 8) data = cpp_v_int64_to_uint64(data)
-      }
-      data = matrix(data, ncol = n_par, nrow = n_obj, byrow = TRUE)
-    } else {
-      # extract order for the whole data
-      ord_ = cpp_get_bytes_order(n_obj, bit_n, bit_o, .Platform$endian != "little") # FIXME
-      # extract mask for the whole data
-      msk_ = rep(unlist(recursive = FALSE, use.names = FALSE, bit_m), n_obj)
-      # define grouping parameter for the whole data
-      spl_ = rep(unlist(recursive = FALSE, use.names = FALSE, mapply(FUN = rep, seq_along(bit_n), bit_n, SIMPLIFY = FALSE)), times = n_obj)
-      
-      if(display_progress) {
-        lab = sprintf("$DATATYPE[%s]: extracting values", type)
-        pb = newPB(min = 0, max = n_par, initial = 0, style = 3)
-        on.exit(endPB(pb), add = TRUE)
-      }
-      
-      # extract the whole data in "raw"
-      data = readBin(con = toread, what = "raw", n = data_bytes)
-      # process data according to args, order and mask and make the conversion
-      data = unlist(recursive = FALSE, use.names = FALSE, by(list(v = data[ord_] & msk_, split = spl_), spl_, FUN = function(x) {
-        i_par = x$split[1]
-        if(display_progress) setPB(pb, value = i_par, title = title_progress, label = lab)
-        if(args[[i_par]]$size %in% c(3,5,6,7)) { # for sizes not handled by R 
-          M = c(1,2,4,8)[args[[i_par]]$size <= c(1,2,4,8)][1]
-          m = M - args[[i_par]]$size
-          bar = split(x$v,ceiling(seq_along(x$v)/args[[i_par]]$size))
-          bar = lapply(bar, FUN = function(i) c(i, rep(as.raw(0x00), m)))
-          foo = readBin(con = unlist(recursive = FALSE, use.names = FALSE, bar),
-                        endian = "little", # FIXME ?
-                        what = args[[i_par]]$what,
-                        n = n_obj,
-                        size = M,
-                        signed = TRUE)
-        } else { # size is handled by R
-          foo = readBin(con = x$v,
-                        endian = "little", # FIXME ?
-                        what = args[[i_par]]$what,
-                        n = n_obj,
-                        size = args[[i_par]]$size,
-                        signed = args[[i_par]]$signed)
-        }
-        # convert to unsigned integers if needed
-        if(type == "I") {
-          if(args[[i_par]]$size == 4) return(cpp_v_int32_to_uint32(foo))
-          if(args[[i_par]]$size == 8) return(cpp_v_int64_to_uint64(foo))
-        }
-        foo
-      }))
-      data = matrix(data, ncol = n_par, nrow = n_obj, byrow = FALSE)
-    }
+    types = c(0L,1L,2L,3L)[match(bit_t, c("A", "F", "D", "I"))] # A is not alowed
+    sizes = c(0L,1L,2L,3L)[match(bit_n, c(1, 2, 4, 8))]
+    sizes[bit_t %in% "A"] <- bit_v[bit_t %in% "A"]
+    if(!identical(bit_v_back[types %in% 3L], bit_v[types %in% 3L])) stop("DATA segment: bad PnB, FCS >= 3.2 spe. only allow values divisble by 8")
+    masks = sapply(seq_len(n_par), FUN = function(i) {
+      if(identical(types[i], 3L)) return(suppressWarnings(as.integer(min(8*bit_n[i],ceiling(log2(as.numeric(text[[paste0("$P",i,"R")]])))))))
+      return(c(0L,32L,64L)[types[i] + 1L])
+    })
+    if(anyNA(c(types, sizes, masks))) stop("DATA segment: instructions for bytes lead to NA")
+    if(!all(sizes[types %in% 1L] == 2L)) warning(paste0("DATA segment: $PnB keyword(s) forced to 32 for PnDATAYPE[F]"), call. = FALSE, immediate. = TRUE)
+    if(!all(sizes[types %in% 2L] == 3L)) warning(paste0("DATA segment: $PnB keyword(s) forced to 64 for PnDATAYPE[D]"), call. = FALSE, immediate. = TRUE)
+    args = list(fname = fileName, offset = start, events = n_obj,
+                b_typ = types,
+                b_siz = sizes,
+                b_msk = masks,
+                swap = endian != .Platform$endian)
+    if(all((bit_n * 8) == masks)) args$b_msk = integer(0)
+    data = matrix(do.call(what = cpp_readFCS, args = args), ncol = n_par, nrow = n_obj, byrow = TRUE)
   }
   
   # convert data to data.frame
@@ -800,19 +870,18 @@ readFCSdata <- function(fileName, text, start = 0, end = 0, scale = TRUE, displa
   # When linear scale is used, $PnE/0,0/ shall be entered if the floating point data type is used i.e. "F" or "D"
   # meaning that no scaling shall be used for type "F" and "D". Besides type "A" is deprecated
   if(scale) {
-    if(type == "I") {
-      for(i in seq_len(n_par)) { # log amplification scaling
-        PnE = paste0("$P",i,"E")
-        PnR = paste0("$P",i,"R")
-        trans = text[[PnE]]
-        ran = na.omit(suppressWarnings(as.numeric(text[[PnR]])))
-        if((length(trans) == 0) || (length(ran) == 0)) next # no scaling info, SKIP
-        trans = na.omit(suppressWarnings(as.numeric(strsplit(trans, split = ",", fixed = TRUE)[[1]])))
-        # FIXME should we detect and force range to max range ? in case of mismatch with PnR and actual data range ?
-        if(length(trans) != 2 || trans[1] == 0) next        # invalid PnE info, SKIP
-        if(trans[2] == 0) trans[2] <- 1                     # invalid PnE info, but we apply correction
-        data[,i] <- trans[2] * 10^(trans[1] * data[,i] / ran)
-      }
+    for(i in seq_len(n_par)) { # log amplification scaling
+      if(!identical(bit_t[i], "I")) next                  # type of value is not integer, SKIP
+      PnE = paste0("$P",i,"E")
+      PnR = paste0("$P",i,"R")
+      trans = text[[PnE]]
+      ran = na.omit(suppressWarnings(as.numeric(text[[PnR]])))
+      if((length(trans) == 0) || (length(ran) == 0)) next # no scaling info, SKIP
+      trans = na.omit(suppressWarnings(as.numeric(strsplit(trans, split = ",", fixed = TRUE)[[1]])))
+      # FIXME should we detect and force range to max range ? in case of mismatch with PnR and actual data range ?
+      if(length(trans) != 2 || trans[1] == 0) next        # invalid PnE info, SKIP
+      if(trans[2] == 0) trans[2] <- 1                     # invalid PnE info, but we apply correction
+      data[,i] <- trans[2] * 10^(trans[1] * data[,i] / ran)
     }
     for(i in seq_len(n_par)) {   # gain scaling
       PnE = paste0("$P",i,"E")
@@ -1689,7 +1758,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                          if(any(v < 0x20 | v >= 0x7F)) stop("keyword contains invalid ASCII character, valid are [0x20-0x7E (32-126)]\n\t- ",
                                                             N[i], "[",paste0(paste0("0x",v), collapse = ","),"]")
                          length(charToRaw(gsub(delimiter, delimiter_esc, text_segment1[[i]], fixed=TRUE))) +
-                         length(v) + 2 # 2 for additional delimiters
+                           length(v) + 2 # 2 for additional delimiters
                        }), text2_length,
                        nchar(paste0(header, collapse = ""))
   ))

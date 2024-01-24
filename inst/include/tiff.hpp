@@ -65,18 +65,6 @@ std::string hpp_basename (const std::string fname) {
 static int sizes[13] = {0,1,1,2,4,4,1,1,2,4,4,4,8};
 static int multi[13] = {0,1,1,1,1,2,1,1,1,1,2,1,1};
 
-// template to swap bytes for each types
-template <typename T> T bytes_swap(T val) {
-  T out;
-  char *p_val = (char*)&val;
-  char *p_out = (char*)&out;
-  int size = sizeof(T);
-  for(int i=0; i<size; i++) {
-    p_out[size-1-i] = p_val[i];
-  }
-  return out;
-}
-
 //' @title TIFF Checker
 //' @name cpp_checkTIFF
 //' @description

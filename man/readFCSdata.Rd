@@ -7,6 +7,7 @@
 readFCSdata(
   fileName,
   text,
+  version,
   start = 0,
   end = 0,
   scale = TRUE,
@@ -18,6 +19,8 @@ readFCSdata(
 \item{fileName}{path to file.}
 
 \item{text}{a named list of keywords values.}
+
+\item{version}{version of FCS specification.}
 
 \item{start}{offset of text start. Default is 0.}
 

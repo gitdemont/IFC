@@ -113,6 +113,16 @@ bool lNotisNULL(const Rcpp::Nullable<Rcpp::LogicalVector> x_ = R_NilValue) {
   return false;
 }
 
+// template to swap bytes for each types
+template <typename T> T bytes_swap(T val) {
+  T out;
+  char *p_val = (char*)&val;
+  char *p_out = (char*)&out;
+  int size = sizeof(T);
+  for(int i = 0; i < size; i++) p_out[size-1-i] = p_val[i];
+  return out;
+}
+
 //' @title Multiple Pattern Fixed Matching
 //' @name cpp_mpfmatch
 //' @description

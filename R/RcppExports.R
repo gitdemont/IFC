@@ -699,6 +699,24 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title FCS data extraction
+#' @name cpp_readFCS
+#' @description
+#' This function reads data from FCS 3.2 files
+#' @param fname string, path to file.
+#' @param offset std::size_t, offset position of data start
+#' @param events uint32_t, number of events to read.
+#' @param b_typ Rcpp::IntegerVector, types of values to read. Allowed are 0 for"A", 1 for "F", 2 for "D", and 3 is "I".
+#' @param b_siz Rcpp::IntegerVector, number of bytes to extract for each type. Allowed are 0 for 8 1 for 16, 2 for 32 and 3 for 64 bits.\cr
+#' Note that whatever the input is, when 'b_typ' is 1 (float) 'b_siz' will be set to 32 and when 'b_typ' is 2 (double) 'b_siz' will be set to 64.
+#' @param b_msk Rcpp::IntegerVector, bits to masks when 'b_typ' is 3 (integer). Default is R_NilValue.\cr
+#' When not NULL, it should be of same length as 'b_siz' and contain only [0-64] values.
+#' @param swap bool, whether to swap bytes or not. Default is false.
+#' @source FCS 3.2 specifications. See, J. Spidlen et al. Data File Standard for Flow Cytometry, Version FCS 3.2. Cytometry A 99 100–102(2021) \doi{10.1002/cyto.a.24225}
+#' @return a numeric vector of extracted values.
+#' @keywords internal
+NULL
+
 cpp_getBits <- function() {
     .Call(`_IFC_cpp_getBits`)
 }
@@ -901,5 +919,9 @@ cpp_transform <- function(mat, color, msk, size = as.integer( c(0,0)), mode = "r
 
 cpp_extract <- function(fname, ifd, colors, physicalChannel, xmin, xmax, spatialX, spatialY, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk = 0L, mode = "raw", size = as.integer( c(0,0)), verbose = FALSE) {
     .Call(`_IFC_cpp_extract`, fname, ifd, colors, physicalChannel, xmin, xmax, spatialX, spatialY, removal, add_noise, full_range, force_range, gamma, chan_to_extract, extract_msk, mode, size, verbose)
+}
+
+cpp_readFCS <- function(fname, offset, events, b_typ, b_siz, b_msk = NULL, swap = FALSE) {
+    .Call(`_IFC_cpp_readFCS`, fname, offset, events, b_typ, b_siz, b_msk, swap)
 }
 
