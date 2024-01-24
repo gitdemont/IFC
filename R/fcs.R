@@ -204,7 +204,7 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
       if(length(bit) == 0) {
         if(!(identical(text[[PnB]],"*") && identical(type, "A"))) msg = c(msg, paste0("invalid ", PnB, "[",text[[PnB]],"]"))
       } else {
-        if(version >= 3.2 && !identical(type, "A") && as.logical(bit %% 8)) msg = c(msg, paste0("invalid ", PnB, "[", text[[PnB]],"] should be divisible by 8 in FCS >= 3.2"))
+        if(version >= 3.2 && !identical(type, "A") && as.logical(bit %% 8)) msg = c(msg, paste0("invalid ", PnB, "[", text[[PnB]],"] not divisible by 8 are deprecated in FCS >= 3.2"))
         if(TYPE == "F" && bit != 32) if(version >= 3.1) msg = c(msg, paste0("invalid ", PnB, " should be \"32\" with $DATATYPE[F]"))
         if(TYPE == "D" && bit != 64) if(version >= 3.1) msg = c(msg, paste0("invalid ", PnB, " should be \"64\" with $DATATYPE[D]"))
       }
@@ -236,6 +236,7 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
     }
     gain = na.omit(suppressWarnings(as.numeric(text[[PnG]])))
     if(length(gain) != 0) {
+      if((version >= 3.2) && !identical(TYPE, "I")) msg = c(msg, paste0(PnG,"[",text[[PnG]],"] shall be used for integer type only not $DATATYPE[",TYPE,"]"))
       if(length(text[[PnE]]) != 0) {
         trans = na.omit(suppressWarnings(as.numeric(strsplit(text[[PnE]], split = ",", fixed = TRUE)[[1]])))
         if((length(trans) == 2) && (gain != 1) && ((trans[1] != 0) || (trans[2] != 0))) msg = c(msg, paste0(PnG,"[",text[[PnG]],"] should not be used with logarithmic amplification ($PnE != \"0,0\")",PnE,"[",text[[PnE]],"]"))
@@ -568,20 +569,35 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
   # bit_d : bits depth to read ( = 8 * bit_n )
   # bit_o : bytes order to read
   # bit_m : bits mask, for instance if bit_v is 10 bits but the value is read from 16 bits then 6 bits are not used
-  bit_t = sapply(paste0("$P",seq_len(n_par),"DATATYPE"), FUN = function(x) {
+  bit_t = sapply(paste0("$P",seq_len(n_par),"DATATYPE"), USE.NAMES = FALSE, simplify = TRUE, FUN = function(x) {
     ans = text[[x]]
     if(length(ans) == 0) ans = type
     return(ans)
   })
-  bit_v = unlist(recursive = FALSE, use.names = FALSE, lapply(text[paste0("$P",seq_len(n_par),"B")], FUN = function(x) suppressWarnings(as.integer(x))))
+  bad_b = c()
+  bit_v = unlist(recursive = FALSE, use.names = FALSE, lapply(seq_len(n_par), FUN = function(i) {
+    foo = suppressWarnings(as.integer(text[[paste0("$P",i,"B")]]))
+    ans = foo
+    if(identical(bit_t[i], "F")) ans = 32L
+    if(identical(bit_t[i], "D")) ans = 64L
+    if(!identical(ans, foo)) bad_b <<- c(bad_b,  i)
+    if(length(ans) == 0) ans = NA_integer_
+    return(ans)
+  }))
+  if(length(bad_b) != 0) {
+    warning("DATA segment: $PnB keyword",ifelse(length(bad_b) == 1, " has", "s have")," been forced\n",
+            paste0(paste0("\t- ", "$P",bad_b,"B"), ": ", bit_v[bad_b], collapse = "\n"),
+            call. = FALSE, immediate. = TRUE)
+  }
+  
   msg = c()
   if(n_par != length(features_names)) msg = c(msg, paste0("DATA segment: mismatch between found[",length(features_names),"] vs expected[",n_par,"] number of $PnN"))
-  if(n_par != length(bit_v)) msg = c(msg, paste0("DATA segment: mismatch between found[",length(bit_v),"] vs expected[",n_par,"] number of $PnB"))
+  if(n_par != length(na.omit(bit_v))) msg = c(msg, paste0("DATA segment: mismatch between found[",length(bit_v),"] vs expected[",n_par,"] number of $PnB"))
   if(length(msg) != 0) stop(paste0(msg, collapse = "\n"))
   data_bytes = end - start + 1
   
   if((version <= 3.1) || (type == "A")) {
-    if(length(unique(bit_t)) != 1) stop("DATA segment: file with various $PnDATATYPE is not allowed")
+    if((version != 0) && (length(unique(bit_t)) != 1)) stop("DATA segment: file with various $PnDATATYPE is not allowed")
     # create connection binary reading
     toread = file(description = fileName, open = "rb")
     on.exit(close(toread))
@@ -685,53 +701,26 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
       }
       bit_d = unique(bit_v)
       
-      if(type == "I") { 
-        # FIXME it is not clear how to perform tightbit packing bit_p = xxxxx
-        
-        # setup readBin parameters for each channels
-        args = sapply(bit_n, simplify = FALSE, USE.NAMES = TRUE, FUN = function(x)  list(what = "integer", size = x, signed = x > 2))
-        
-        # compute bit mask
-        bit_r = sapply(text[paste0("$P",seq_len(n_par),"R")], FUN = function(x) suppressWarnings(ceiling(log2(as.numeric(x))))) # as.integer("4294967296") results in NA so we use as.numeric
-        bit_m = lapply(seq_len(n_par), FUN = function(i_par) packBits(as.raw(sapply(seq_len(bit_v[i_par]), FUN = function(i) i <= min(bit_r[i_par],bit_v[i_par])))))
-      } else {
-        # fcs specifications mention:
-        # besides PnB for types "F" and "D" have to be 32 or 64, respectively.
-        bit_d == rep(ifelse(type == "F", 32L, 64L), n_par)
-        
-        # force bits depth, shall always be max allowed depth
-        tmp = bit_v != bit_d
-        if(any(tmp)) {
-          warning(paste0("DATA segment: $PnB keyword",ifelse(sum(tmp) == 0, " has", "s have")," been forced to ", bit_d, ":\n",
-                         paste0(paste0("\t- ", names(bit_v)[tmp]), collapse = "\n")),
-                  call. = FALSE, immediate. = TRUE)
-          for(i in names(bit_v)[tmp]) text[[i]] <- num_to_string(bit_d)
-        }
-        bit_v <- bit_d
-        
-        # fcs specifications mention:
-        # `No bit mask shall be applied when reading type "F" or "D" data`
-        # So, bit_r is set to bit_d to prevent masking
-        # FIXME, however what to do with PnR in type "F" or "D", shall we truncate ?
-        # fcs specifications mention:
-        # `The actual value stored in the data set may exceed this range on both sides of 
-        #  the interval. Specifically, there may be negative values as well as values greater than n1, e.g., as 
-        #  a consequence of compensation``
-        bit_r <- bit_d
-        bit_m = NULL
-        
-        # setup readBin parameters for each channels
-        args = sapply(bit_n, simplify = FALSE, USE.NAMES = TRUE, FUN = function(x)  list(what = "numeric", size = x))
-      }
+      args = sapply(seq_len(n_par), simplify = FALSE, USE.NAMES = TRUE, FUN = function(i) {
+        if(identical(bit_t[i], "I")) return(list(what = "integer", size = bit_n[i], signed = bit_n[i] > 2))
+        return(list(what = "numeric",  size = bit_n[i], signed = TRUE))
+      })
+      bit_r = sapply(seq_len(n_par), FUN = function(i) {
+        x = text[[paste0("$P",i,"R")]]
+        if(identical(bit_t[i], "I")) return(suppressWarnings(ceiling(log2(as.numeric(x))))) # as.integer("4294967296") results in NA so we use as.numeric
+        return(c(32L, 64L)[identical(bit_t[i], "D") + 1L])
+      })
+      bit_m = lapply(seq_len(n_par), FUN = function(i_par) packBits(as.raw(sapply(seq_len(bit_v[i_par]), FUN = function(i) i <= min(bit_r[i_par],bit_v[i_par])))))
+      
       # check data_length before starting reading
       if((data_bytes + start) > file.size(fileName)) stop("DATA segment: points to outside of the file")
-      
       
       # fcs specifications mention that type "I" use unsigned integers only
       # but readBin can only extracts 8bits and 16bits unsigned integer. So, 
       # for 32bits and 64bits we have to extract signed integers and convert them afterwards
       # with cpp_v_intxx_to_uintxx functions
-      if((endian != "unk") &&              # endianness is either "little" or "big" and can be passed to readBin without reordering
+      if((length(unique(bit_t)) == 1) &&   # all same type
+         (endian != "unk") &&              # endianness is either "little" or "big" and can be passed to readBin without reordering
          (length(bit_d) == 1) &&           # every channels have same bits depth
          (bit_d %in% c(8,16,32,64))) {     # bits depth is a size handled by R
         if(all(bit_r == bit_d)) {          # there is no masking to apply
@@ -800,7 +789,7 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
                           signed = args[[i_par]]$signed)
           }
           # convert to unsigned integers if needed
-          if(type == "I") {
+          if(args[[i_par]]$what == "integer") {
             if(args[[i_par]]$size == 4) return(cpp_v_int32_to_uint32(foo))
             if(args[[i_par]]$size == 8) return(cpp_v_int64_to_uint64(foo))
           }
@@ -810,51 +799,58 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
       }
     }
   } else {
-    b_ord = text[["$BYTEORD"]]
-    endian = "unk"
-    if(b_ord == "1,2,3,4") endian = "little" 
-    if(b_ord == "4,3,2,1") endian = "big" 
-    if(endian == "unk") stop("DATA segment: bad endianness[",b_ord,"], FCS >= 3.1 spe. only allow `1,2,3,4` or `4,3,2,1`")
-    
-    # some files register wrong dataend offset resulting in an off-by-one byte
-    # the following should allow to correct it
-    if((data_bytes %% 8) %% 2) data_bytes = data_bytes + 1 # go +1
-    if((data_bytes %% 8) %% 2) data_bytes = data_bytes - 1 # go  0
-    if((data_bytes %% 8) %% 2) data_bytes = data_bytes - 1 # go -1
-    off_by = (end - start + 1) - data_bytes
-    if(off_by != 0) warning("DATA segment: offset is off by ",off_by," byte", call. = FALSE, immediate. = TRUE)
-    if((data_bytes %% 8) %% 2) stop("DATA segment: number of bytes does not respect fcs specifications")
-    
-    # backup bit_v values
-    bit_v_back = bit_v
-    
-    # try bit_v correction
-    alw_b = as.integer(2^(3:6)) # 8,16,32,64, sizes handled by R
-    bit_corrected = FALSE
-    if(any(!(bit_v %in% alw_b))) {
-      bit_corrected = TRUE
-      bit_v = sapply(bit_v, FUN = function(x) alw_b[x <= alw_b][1])
-    }
-    bit_n = unname(bit_v %/% 8)
-    
-    types = c(0L,1L,2L,3L)[match(bit_t, c("A", "F", "D", "I"))] # A is not alowed
-    sizes = c(0L,1L,2L,3L)[match(bit_n, c(1, 2, 4, 8))]
-    sizes[bit_t %in% "A"] <- bit_v[bit_t %in% "A"]
-    if(!identical(bit_v_back[types %in% 3L], bit_v[types %in% 3L])) stop("DATA segment: bad PnB, FCS >= 3.2 spe. only allow values divisble by 8")
-    masks = sapply(seq_len(n_par), FUN = function(i) {
-      if(identical(types[i], 3L)) return(suppressWarnings(as.integer(min(8*bit_n[i],ceiling(log2(as.numeric(text[[paste0("$P",i,"R")]])))))))
-      return(c(0L,32L,64L)[types[i] + 1L])
+    data = try(silent = TRUE, expr = {
+      b_ord = text[["$BYTEORD"]]
+      endian = "unk"
+      if(b_ord == "1,2,3,4") endian = "little" 
+      if(b_ord == "4,3,2,1") endian = "big" 
+      if(endian == "unk") stop("DATA segment: bad endianness[",b_ord,"], FCS >= 3.1 spe. only allow `1,2,3,4` or `4,3,2,1`")
+      
+      # some files register wrong dataend offset resulting in an off-by-one byte
+      # the following should allow to correct it
+      if((data_bytes %% 8) %% 2) data_bytes = data_bytes + 1 # go +1
+      if((data_bytes %% 8) %% 2) data_bytes = data_bytes - 1 # go  0
+      if((data_bytes %% 8) %% 2) data_bytes = data_bytes - 1 # go -1
+      off_by = (end - start + 1) - data_bytes
+      if(off_by != 0) warning("DATA segment: offset is off by ",off_by," byte", call. = FALSE, immediate. = TRUE)
+      if((data_bytes %% 8) %% 2) stop("DATA segment: number of bytes does not respect fcs specifications")
+      
+      # backup bit_v values
+      bit_v_back = bit_v
+      
+      # try bit_v correction
+      alw_b = as.integer(2^(3:6)) # 8,16,32,64, sizes handled by R
+      bit_corrected = FALSE
+      if(any(!(bit_v %in% alw_b))) {
+        bit_corrected = TRUE
+        bit_v = sapply(bit_v, FUN = function(x) alw_b[x <= alw_b][1])
+      }
+      bit_n = unname(bit_v %/% 8)
+      
+      types = c(0L,1L,2L,3L)[match(bit_t, c("A", "F", "D", "I"))] # A is not alowed
+      sizes = c(0L,1L,2L,3L)[match(bit_n, c(1, 2, 4, 8))]
+      sizes[bit_t %in% "A"] <- bit_v[bit_t %in% "A"]
+      if(!identical(bit_v_back[types %in% 3L], bit_v[types %in% 3L])) stop("DATA segment: bad $PnB, FCS >= 3.2 spe. Values not divisble by 8 are deprecated")
+      masks = sapply(seq_len(n_par), FUN = function(i) {
+        if(identical(types[i], 3L)) return(suppressWarnings(as.integer(min(8*bit_n[i],ceiling(log2(as.numeric(text[[paste0("$P",i,"R")]])))))))
+        return(c(0L,32L,64L)[types[i] + 1L])
+      })
+      if(!all(sizes[types %in% 1L] == 2L)) warning(paste0("DATA segment: $PnB keyword(s) forced to 32 for $PnDATAYPE[F]"), call. = FALSE, immediate. = TRUE)
+      if(!all(sizes[types %in% 2L] == 3L)) warning(paste0("DATA segment: $PnB keyword(s) forced to 64 for $PnDATAYPE[D]"), call. = FALSE, immediate. = TRUE)
+      if(anyNA(c(types, sizes, masks))) stop("DATA segment: instructions for bytes lead to NA")
+      args = list(fname = fileName, offset = start, events = n_obj,
+                  b_typ = types,
+                  b_siz = sizes,
+                  b_msk = masks,
+                  swap = endian != .Platform$endian)
+      if(all((bit_n * 8) == masks)) args$b_msk = integer(0)
+      matrix(do.call(what = cpp_readFCS, args = args), ncol = n_par, nrow = n_obj, byrow = TRUE)
     })
-    if(anyNA(c(types, sizes, masks))) stop("DATA segment: instructions for bytes lead to NA")
-    if(!all(sizes[types %in% 1L] == 2L)) warning(paste0("DATA segment: $PnB keyword(s) forced to 32 for PnDATAYPE[F]"), call. = FALSE, immediate. = TRUE)
-    if(!all(sizes[types %in% 2L] == 3L)) warning(paste0("DATA segment: $PnB keyword(s) forced to 64 for PnDATAYPE[D]"), call. = FALSE, immediate. = TRUE)
-    args = list(fname = fileName, offset = start, events = n_obj,
-                b_typ = types,
-                b_siz = sizes,
-                b_msk = masks,
-                swap = endian != .Platform$endian)
-    if(all((bit_n * 8) == masks)) args$b_msk = integer(0)
-    data = matrix(do.call(what = cpp_readFCS, args = args), ncol = n_par, nrow = n_obj, byrow = TRUE)
+    
+    if(inherits(data, "try-error")) {
+      warning(attr(data, "condition")$message, "\n", "retrying with non FCS3.2 parser", call. = FALSE, immediate. = TRUE)
+      data = readFCSdata(fileName = fileName, text = text, version = 0, start = start, end = end, scale = scale, display_progress = display_progress)
+    }
   }
   
   # convert data to data.frame
@@ -884,6 +880,7 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
       data[,i] <- trans[2] * 10^(trans[1] * data[,i] / ran)
     }
     for(i in seq_len(n_par)) {   # gain scaling
+      if((version >= 3.2) && !identical(bit_t[i], "I")) next# gain scaling only apply to "I" in FCS3.2
       PnE = paste0("$P",i,"E")
       PnG = paste0("$P",i,"G")
       gain = na.omit(suppressWarnings(as.numeric(text[[PnG]])))
