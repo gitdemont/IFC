@@ -321,7 +321,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
                                  "x-Min.","x-1st Qu.","x-Median","x-Mean","x-3rd Qu.","x-Max.",
                                  "y-Min.","y-1st Qu.","y-Median","y-Mean","y-3rd Qu.","y-Max.")
   default_offscreen = function(w, h) {
-    pdf(width=w, height=h, onefile=TRUE, pagecentre=TRUE, useDingbats=FALSE)
+    pdf(file=NULL,width=w, height=h, onefile=TRUE, pagecentre=TRUE, useDingbats=FALSE)
     dev.control("enable")
   }
   suppressWarnings({
@@ -445,8 +445,6 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
                           trunc_labels=38, trans="asinh", bin, viewport="ideas", backend="lattice",             # parameters to pass to plotGraph
                           display_progress=TRUE, ...) {
   dots = list(...)
-  dev_old <- options("device" = "pdf")
-  on.exit(options(dev_old), add = TRUE)
   
   # backup dev.list
   dv <- dev.list()
