@@ -13,10 +13,11 @@ FCS 3.2 specifications. See, J. Spidlen et al. Data File Standard for Flow Cytom
 
 \item{events}{uint32_t, number of events to read.}
 
-\item{b_typ}{Rcpp::IntegerVector, types of values to read. Allowed are 0 for"A", 1 for "F", 2 for "D", and 3 is "I".}
+\item{b_typ}{Rcpp::IntegerVector, types of values to read. Allowed are 0 for "A", 1 for "F", 2 for "D", and 3 is "I".}
 
-\item{b_siz}{Rcpp::IntegerVector, number of bytes to extract for each type. Allowed are 0 for 8 1 for 16, 2 for 32 and 3 for 64 bits.\cr
-Note that whatever the input is, when 'b_typ' is 1 (float) 'b_siz' will be set to 32 and when 'b_typ' is 2 (double) 'b_siz' will be set to 64.}
+\item{b_siz}{Rcpp::IntegerVector, number of bytes to extract for each type. Values should be higher than 0.\cr
+Note that whatever the input is, when 'b_typ' is 1 (float) 'b_siz' will be set to 4 and when 'b_typ' is 2 (double) 'b_siz' will be set to 8.\cr
+Note also that when 'b_typ' is 3 (integer), the only allowed values for 'b_siz' are [1-8].\cr}
 
 \item{b_msk}{Rcpp::IntegerVector, bits to masks when 'b_typ' is 3 (integer). Default is R_NilValue.\cr
 When not NULL, it should be of same length as 'b_siz' and contain only [0-64] values.}

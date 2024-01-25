@@ -37,6 +37,20 @@
 #include "utils.hpp"
 using namespace Rcpp;
 
+static uint64_t pow_v[8]  = {1,256,65536,16777216,4294967296,1099511627776,281474976710656,72057594037927936};
+
+uint64_t bytes_conv(const std::vector<char> v) {
+  uint64_t x = 0;
+  for(std::size_t i = 0; i < std::min(v.size(), sizeof(x)); i++) x += (v[i] & 0xff) * pow_v[i];
+  return x;
+}
+
+uint64_t bytes_swap_conv(const std::vector<char> v) {
+  uint64_t x = 0;
+  for(std::size_t k = 0, i = std::min(v.size(), sizeof(x)); i > 0; k++) x += (v[k] & 0xff) * pow_v[--i];
+  return x;
+}
+
 //' @title FCS data extraction
 //' @name cpp_readFCS
 //' @description
@@ -44,9 +58,10 @@ using namespace Rcpp;
 //' @param fname string, path to file.
 //' @param offset std::size_t, offset position of data start
 //' @param events uint32_t, number of events to read.
-//' @param b_typ Rcpp::IntegerVector, types of values to read. Allowed are 0 for"A", 1 for "F", 2 for "D", and 3 is "I".
-//' @param b_siz Rcpp::IntegerVector, number of bytes to extract for each type. Allowed are 0 for 8 1 for 16, 2 for 32 and 3 for 64 bits.\cr
-//' Note that whatever the input is, when 'b_typ' is 1 (float) 'b_siz' will be set to 32 and when 'b_typ' is 2 (double) 'b_siz' will be set to 64.
+//' @param b_typ Rcpp::IntegerVector, types of values to read. Allowed are 0 for "A", 1 for "F", 2 for "D", and 3 is "I".
+//' @param b_siz Rcpp::IntegerVector, number of bytes to extract for each type. Values should be higher than 0.\cr
+//' Note that whatever the input is, when 'b_typ' is 1 (float) 'b_siz' will be set to 4 and when 'b_typ' is 2 (double) 'b_siz' will be set to 8.\cr
+//' Note also that when 'b_typ' is 3 (integer), the only allowed values for 'b_siz' are [1-8].\cr
 //' @param b_msk Rcpp::IntegerVector, bits to masks when 'b_typ' is 3 (integer). Default is R_NilValue.\cr
 //' When not NULL, it should be of same length as 'b_siz' and contain only [0-64] values.
 //' @param swap bool, whether to swap bytes or not. Default is false.
@@ -62,35 +77,41 @@ Rcpp::NumericVector hpp_readFCS (const std::string fname,
                                  const Rcpp::IntegerVector b_siz,
                                  const Rcpp::Nullable<Rcpp::IntegerVector> b_msk = R_NilValue,
                                  const bool swap = false) {
-  if(b_typ.size() != b_siz.size()) Rcpp::stop("hpp_readFCS: 'b_typ' and 'b_siz' should be of same length");
+  if(b_typ.size() != b_siz.size()) {
+    Rcpp::Rcerr << "hpp_readFCS: 'b_typ'[" << b_typ.size() << "] and 'b_siz'["<< b_siz.size() <<"] should be of same length" << std::endl;
+    Rcpp::stop("hpp_readFCS: 'b_typ' and 'b_siz' should be of same length");
+  }
   std::ifstream fi(fname.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (fi.is_open()) {
     fi.seekg(0, std::ios::end);
     std::size_t filesize = fi.tellg();
     
     std::size_t count = 0;
-    Rcpp::IntegerVector V = Rcpp::no_init_vector(b_typ.size());
     for(R_len_t i = 0; i < b_typ.size(); i++) {
+      count += b_siz[i];
       switch(b_typ[i]) {
-      case 0 : { 
+      case 0 :
         if(b_siz[i] <= 0) {
           Rcpp::Rcerr << "hpp_readFCS: size[" << b_siz[i] << "] not handled for b_typ[A]" << std::endl;
           Rcpp::stop("hpp_readFCS: invalid value in 'b_siz'");
         }
-        count += b_siz[i]; V[i] = b_typ[i];
-        }
         break;
-      case 1 : { count += 4; V[i] = b_typ[i]; }
-        break;
-      case 2 : { count += 8; V[i] = b_typ[i];  }
-        break;
-      case 3 : {
-        if(b_siz[i] < 0 || b_siz[i] > 3) {
-          Rcpp::Rcerr << "hpp_readFCS: size[" << b_siz[i] << "] not handled for b_typ[I]" << std::endl;
+      case 1 :
+        if(b_siz[i] != 4) {
+          Rcpp::Rcerr << "hpp_readFCS: size[" << b_siz[i] << "] not handled for b_typ[F]" << std::endl;
           Rcpp::stop("hpp_readFCS: invalid value in 'b_siz'");
         }
-        count += std::pow(2.0, b_siz[i]);
-        V[i] = b_typ[i] + b_siz[i];
+        break;
+      case 2 :
+        if(b_siz[i] != 8) {
+          Rcpp::Rcerr << "hpp_readFCS: size[" << b_siz[i] << "] not handled for b_typ[D]" << std::endl;
+          Rcpp::stop("hpp_readFCS: invalid value in 'b_siz'");
+        } 
+        break;
+      case 3 :
+        if((b_siz[i] < 1) || (b_siz[i] > 8)) {
+          Rcpp::Rcerr << "hpp_readFCS: size[" << b_siz[i] << "] not handled for b_typ[I]" << std::endl;
+          Rcpp::stop("hpp_readFCS: invalid value in 'b_siz'");
         }
         break;
       default: { Rcpp::stop("hpp_readFCS: 'b_typ' not handled"); }
@@ -103,10 +124,6 @@ Rcpp::NumericVector hpp_readFCS (const std::string fname,
     }
     
     Rcpp::NumericVector out = Rcpp::no_init_vector(events * b_typ.size());
-    uint8_t  i08;
-    uint16_t i16;
-    uint32_t i32;
-    uint64_t i64;
     float    n32;
     double   n64;
     R_len_t k = 0;
@@ -115,9 +132,9 @@ Rcpp::NumericVector hpp_readFCS (const std::string fname,
     if(b_msk.isNotNull()) {
       Rcpp::IntegerVector masks(b_msk.get());
       if(masks.size() != 0) {
-        if(b_typ.size() != masks.size()) {
-          Rcpp::Rcerr << "hpp_readFCS: when provided 'b_msk' and 'b_siz' should be of same length" << std::endl;
-          Rcpp::stop("hpp_readFCS: 'b_msk' and 'b_siz' should be of same size");
+        if(b_siz.size() != masks.size()) {
+          Rcpp::Rcerr << "hpp_readFCS: when provided 'b_msk'[" << masks.size() << "] and 'b_siz'["<< b_siz.size() <<"] should be of same length" << std::endl;
+          Rcpp::stop("hpp_readFCS: 'b_msk' and 'b_siz' should be of same length");
         }
         std::vector<uint64_t> m(masks.size());
         for(R_len_t i = 0; i < masks.size(); i++) {
@@ -132,12 +149,12 @@ Rcpp::NumericVector hpp_readFCS (const std::string fname,
         if(swap) {
           for(uint32_t o = 0; o < events; o++) {
             for(R_len_t i = 0; i < b_typ.size(); i++, k++) {
-              switch(V[i]) {
+              switch(b_typ[i]) {
               case 0: {
                 //Rcpp::stop("hpp_readFCS: type[A] is not supported in FCS >= 3.2");
-                std::vector<char> buf(b_siz[i]);
-                fi.read(buf.data(), b_siz[i]);
-                std::string s(buf.begin(), buf.end());
+                std::vector<char> buf_str(b_siz[i]);
+                fi.read(buf_str.data(), b_siz[i]);
+                std::string s(buf_str.begin(), buf_str.end());
                 out[k] = std::stod(s.c_str());
               }
                 break;
@@ -145,28 +162,23 @@ Rcpp::NumericVector hpp_readFCS (const std::string fname,
                 break;
               case 2: { fi.read((char *)&n64,sizeof(n64)); out[k] = bytes_swap(n64); }
                 break;
-              case 3: { fi.read((char *)&i08,sizeof(i08)); out[k] = bytes_swap(i08) & m[i]; }
+              case 3: { 
+                std::vector<char>buf_int(b_siz[i]);
+                fi.read(buf_int.data(),b_siz[i]); out[k] = bytes_swap_conv(buf_int) & m[i];
+              }
                 break;
-              case 4: { fi.read((char *)&i16,sizeof(i16)); out[k] = bytes_swap(i16) & m[i]; }
-                break;
-              case 5: { fi.read((char *)&i32,sizeof(i32)); out[k] = bytes_swap(i32) & m[i]; }
-                break;
-              case 6: { fi.read((char *)&i64,sizeof(i64)); out[k] = bytes_swap(i64) & m[i]; }
-                break;
-              default: { Rcpp::stop("hpp_readFCS: 'b_typ' and 'b_siz' not handled"); }
-              break;
               }
             }
           } 
         } else {
           for(uint32_t o = 0; o < events; o++) {
             for(R_len_t i = 0; i < b_typ.size(); i++, k++) {
-              switch(V[i]) {
-              case 0: { 
+              switch(b_typ[i]) {
+              case 0: {
                 //Rcpp::stop("hpp_readFCS: type[A] is not supported in FCS >= 3.2");
-                std::vector<char> buf(b_siz[i]);
-                fi.read(buf.data(), b_siz[i]);
-                std::string s(buf.begin(), buf.end());
+                std::vector<char> buf_str(b_siz[i]);
+                fi.read(buf_str.data(), b_siz[i]);
+                std::string s(buf_str.begin(), buf_str.end());
                 out[k] = std::stod(s.c_str());
               }
                 break;
@@ -174,16 +186,11 @@ Rcpp::NumericVector hpp_readFCS (const std::string fname,
                 break;
               case 2: { fi.read((char *)&n64,sizeof(n64)); out[k] = n64; }
                 break;
-              case 3: { fi.read((char *)&i08,sizeof(i08)); out[k] = i08 & m[i]; }
+              case 3: {
+                std::vector<char>buf_int(b_siz[i]);
+                fi.read(buf_int.data(),b_siz[i]); out[k] = bytes_conv(buf_int) & m[i];
+              }
                 break;
-              case 4: { fi.read((char *)&i16,sizeof(i16)); out[k] = i16 & m[i]; }
-                break;
-              case 5: { fi.read((char *)&i32,sizeof(i32)); out[k] = i32 & m[i]; }
-                break;
-              case 6: { fi.read((char *)&i64,sizeof(i64)); out[k] = i64 & m[i]; }
-                break;
-              default: { Rcpp::stop("hpp_readFCS: 'b_typ' and 'b_siz' not handled"); }
-              break;
               }
             }
           }
@@ -194,12 +201,12 @@ Rcpp::NumericVector hpp_readFCS (const std::string fname,
     if(swap) {
       for(uint32_t o = 0; o < events; o++) {
         for(R_len_t i = 0; i < b_typ.size(); i++, k++) {
-          switch(V[i]) {
-          case 0: { 
+          switch(b_typ[i]) {
+          case 0: {
             //Rcpp::stop("hpp_readFCS: type[A] is not supported in FCS >= 3.2");
-            std::vector<char> buf(b_siz[i]);
-            fi.read(buf.data(), b_siz[i]);
-            std::string s(buf.begin(), buf.end());
+            std::vector<char> buf_str(b_siz[i]);
+            fi.read(buf_str.data(), b_siz[i]);
+            std::string s(buf_str.begin(), buf_str.end());
             out[k] = std::stod(s.c_str());
           }
             break;
@@ -207,28 +214,23 @@ Rcpp::NumericVector hpp_readFCS (const std::string fname,
             break;
           case 2: { fi.read((char *)&n64,sizeof(n64)); out[k] = bytes_swap(n64); }
             break;
-          case 3: { fi.read((char *)&i08,sizeof(i08)); out[k] = bytes_swap(i08); }
+          case 3: {
+            std::vector<char>buf_int(b_siz[i]);
+            fi.read(buf_int.data(),b_siz[i]); out[k] = bytes_swap_conv(buf_int);
+          }
             break;
-          case 4: { fi.read((char *)&i16,sizeof(i16)); out[k] = bytes_swap(i16); }
-            break;
-          case 5: { fi.read((char *)&i32,sizeof(i32)); out[k] = bytes_swap(i32); }
-            break;
-          case 6: { fi.read((char *)&i64,sizeof(i64)); out[k] = bytes_swap(i64); }
-            break;
-          default: { Rcpp::stop("hpp_readFCS: 'b_typ' and 'b_siz' not handled"); }
-          break;
           }
         }
       } 
     } else {
       for(uint32_t o = 0; o < events; o++) {
         for(R_len_t i = 0; i < b_typ.size(); i++, k++) {
-          switch(V[i]) {
+          switch(b_typ[i]) {
           case 0: {
             //Rcpp::stop("hpp_readFCS: type[A] is not supported in FCS >= 3.2");
-            std::vector<char> buf(b_siz[i]);
-            fi.read(buf.data(), b_siz[i]);
-            std::string s(buf.begin(), buf.end());
+            std::vector<char> buf_str(b_siz[i]);
+            fi.read(buf_str.data(), b_siz[i]);
+            std::string s(buf_str.begin(), buf_str.end());
             out[k] = std::stod(s.c_str());
           }
             break;
@@ -236,16 +238,11 @@ Rcpp::NumericVector hpp_readFCS (const std::string fname,
             break;
           case 2: { fi.read((char *)&n64,sizeof(n64)); out[k] = n64; }
             break;
-          case 3: { fi.read((char *)&i08,sizeof(i08)); out[k] = i08; }
+          case 3: {
+            std::vector<char>buf_int(b_siz[i]);
+            fi.read(buf_int.data(),b_siz[i]); out[k] = bytes_conv(buf_int);
+          }
             break;
-          case 4: { fi.read((char *)&i16,sizeof(i16)); out[k] = i16; }
-            break;
-          case 5: { fi.read((char *)&i32,sizeof(i32)); out[k] = i32; }
-            break;
-          case 6: { fi.read((char *)&i64,sizeof(i64)); out[k] = i64; }
-            break;
-          default: { Rcpp::stop("hpp_readFCS: 'b_typ' and 'b_siz' not handled"); }
-          break;
           }
         }
       }

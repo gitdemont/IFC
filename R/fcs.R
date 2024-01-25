@@ -569,6 +569,7 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
   # bit_d : bits depth to read ( = 8 * bit_n )
   # bit_o : bytes order to read
   # bit_m : bits mask, for instance if bit_v is 10 bits but the value is read from 16 bits then 6 bits are not used
+  # FIXME it is not clear how to perform bit packing 
   bit_t = sapply(paste0("$P",seq_len(n_par),"DATATYPE"), USE.NAMES = FALSE, simplify = TRUE, FUN = function(x) {
     ans = text[[x]]
     if(length(ans) == 0) ans = type
@@ -623,7 +624,7 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
           on.exit(endPB(pb), add = TRUE)
           data = sapply(seq_len(n_par), FUN = function(i_par) {
             setPB(pb, value = i_par, title = title_progress, label = "$DATATYPE[A]: extracting values")
-            bits = as.integer(text[[paste0("$P",i_par,"B")]]) # each PnB determines number of bytes to extract
+            bits = suppressWarnings(as.integer(text[[paste0("$P",i_par,"B")]])) # each PnB determines number of bytes to extract
             # FIXME it is not clear how to deal with a mix of PnB == * and PnB == integer ?
             if(is.na(bits)) stop("DATA segment: bad $P",i_par,"B definition for $DATATYPE[A] ", text[[paste0("$P",i_par,"B")]])
             off = (i_par - 1) * n_par
@@ -634,7 +635,7 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
           })
         } else {
           data = sapply(seq_len(n_par), FUN = function(i_par) {
-            bits = as.integer(text[[paste0("$P",i_par,"B")]]) # each PnB determines number of bytes to extract
+            bits = suppressWarnings(as.integer(text[[paste0("$P",i_par,"B")]])) # each PnB determines number of bytes to extract
             off = (i_par - 1) * n_par
             if((off + n_obj) > data_bytes) stop("DATA segment: buffer overrun")
             sapply(seq_len(n_obj), FUN = function(i_obj) {
@@ -819,24 +820,20 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
       bit_v_back = bit_v
       
       # try bit_v correction
-      alw_b = as.integer(2^(3:6)) # 8,16,32,64, sizes handled by R
-      bit_corrected = FALSE
+      alw_b = as.integer(8*(1:8)) # divisible by 8
       if(any(!(bit_v %in% alw_b))) {
-        bit_corrected = TRUE
         bit_v = sapply(bit_v, FUN = function(x) alw_b[x <= alw_b][1])
       }
       bit_n = unname(bit_v %/% 8)
       
-      types = c(0L,1L,2L,3L)[match(bit_t, c("A", "F", "D", "I"))] # A is not alowed
-      sizes = c(0L,1L,2L,3L)[match(bit_n, c(1, 2, 4, 8))]
-      sizes[bit_t %in% "A"] <- bit_v[bit_t %in% "A"]
+      types = c(0L,1L,2L,3L)[match(bit_t, c("A", "F", "D", "I"))] # A is not allowed
+      sizes = c(1L,2L,3L,4L,5L,6L,7L,8L)[match(bit_n, c(1, 2, 3, 4, 5, 6, 7, 8))]
+      sizes[bit_t %in% "A"] <- bit_v_back[bit_t %in% "A"]
       if(!identical(bit_v_back[types %in% 3L], bit_v[types %in% 3L])) stop("DATA segment: bad $PnB, FCS >= 3.2 spe. Values not divisble by 8 are deprecated")
       masks = sapply(seq_len(n_par), FUN = function(i) {
         if(identical(types[i], 3L)) return(suppressWarnings(as.integer(min(8*bit_n[i],ceiling(log2(as.numeric(text[[paste0("$P",i,"R")]])))))))
         return(c(0L,32L,64L)[types[i] + 1L])
       })
-      if(!all(sizes[types %in% 1L] == 2L)) warning(paste0("DATA segment: $PnB keyword(s) forced to 32 for $PnDATAYPE[F]"), call. = FALSE, immediate. = TRUE)
-      if(!all(sizes[types %in% 2L] == 3L)) warning(paste0("DATA segment: $PnB keyword(s) forced to 64 for $PnDATAYPE[D]"), call. = FALSE, immediate. = TRUE)
       if(anyNA(c(types, sizes, masks))) stop("DATA segment: instructions for bytes lead to NA")
       args = list(fname = fileName, offset = start, events = n_obj,
                   b_typ = types,
@@ -848,7 +845,7 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
     })
     
     if(inherits(data, "try-error")) {
-      warning(attr(data, "condition")$message, "\n", "retrying with non FCS3.2 parser", call. = FALSE, immediate. = TRUE)
+      warning(attr(data, "condition")$message, "\n", "retrying to parse FCS3.2", call. = FALSE, immediate. = TRUE)
       data = readFCSdata(fileName = fileName, text = text, version = 0, start = start, end = end, scale = scale, display_progress = display_progress)
     }
   }
