@@ -73,8 +73,9 @@
 #' -masks, masks defined,\cr
 #' -ViewingModes, modes of visualization,\cr
 #' -checksum, checksum computed,\cr
+#' -Origin_rif, character vector of path of rif used to create cif, if input file was a cif,\cr
 #' -Merged_rif, character vector of path of files used to create rif, if input file was a merged,\cr
-#' -Merged_cif, character vector of path of files used to create cif, if input file was a merged,\cr
+#' -XIF_type, character definig XIF type,\cr
 #' -XIF_test, integer defining XIF type,\cr
 #' -checksum, integer corresponding to file checksum,\cr
 #' -fileName, path of fileName input,\cr
@@ -154,10 +155,11 @@ getInfo <- function(fileName,
     fileName_image = fileName
     IFD = getIFD(fileName = fileName_image, offsets = "first", trunc_bytes = 8, force_trunc = FALSE, verbose = verbose, verbosity = verbosity, bypass = TRUE, ...)
   }
-  Merged_cif = character()
+  Origin_rif = character()
   Merged_rif = character()
-  if(!is.null(IFD[[1]]$tags[["33029"]])) {
-    if(IFD[[1]]$tags[["33029"]]$byt != 0) Merged_cif = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33029")), "|", fixed = TRUE)[[1]]
+  xif_type = IFDtype(IFD[[1]])
+  if(!is.null(IFD[[1]]$tags[["33026"]])) {
+    if(IFD[[1]]$tags[["33026"]]$byt != 0) Origin_rif = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33026")), "|", fixed = TRUE)[[1]]
   }
   if(!is.null(IFD[[1]]$tags[["33030"]])) {
     if(IFD[[1]]$tags[["33030"]]$byt != 0) Merged_rif = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33030")), "|", fixed = TRUE)[[1]]
@@ -283,8 +285,9 @@ getInfo <- function(fileName,
                         "Images" = as.data.frame(do.call(what = "rbind", args = xml_attrs(xml_find_all(tmp_last, "//image"))), stringsAsFactors = FALSE),
                         "masks" = as.data.frame(do.call(what="rbind", xml_attrs(xml_find_all(tmp_last, "//mask"))), stringsAsFactors=FALSE)),
             "ViewingModes" = to_list_node(xml_find_all(tmp_last, "//ViewingModes")),
+            "Origin_rif" = list(Origin_rif),
             "Merged_rif" = list(Merged_rif),
-            "Merged_cif" = list(Merged_cif),
+            "XIF_type" =  attr(xif_type, "label"),
             "XIF_test" = testXIF(fileName_image),
             "checksum" = checksumXIF(fileName_image),
             "fileName" = fileName,

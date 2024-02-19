@@ -58,8 +58,9 @@ a list of information (open .daf file in an text editor for more details) about 
 -masks, masks defined,\cr
 -ViewingModes, modes of visualization,\cr
 -checksum, checksum computed,\cr
+-Origin_rif, character vector of path of rif used to create cif, if input file was a cif,\cr
 -Merged_rif, character vector of path of files used to create rif, if input file was a merged,\cr
--Merged_cif, character vector of path of files used to create cif, if input file was a merged,\cr
+-XIF_type, character definig XIF type,\cr
 -XIF_test, integer defining XIF type,\cr
 -checksum, integer corresponding to file checksum,\cr
 -fileName, path of fileName input,\cr
