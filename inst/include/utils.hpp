@@ -262,9 +262,9 @@ Rcpp::NumericVector hpp_fast_range(const Rcpp::Nullable<Rcpp::NumericVector> x_ 
   if(nNotisNULL(x_)) {
     Rcpp::NumericVector x(x_.get());
     for(R_len_t i = 0; i < x.size(); i++) {
-      if((x[i] != NA_REAL) && (x[i] != R_NaN) && (x[i] != R_NegInf) && (x[i] != R_PosInf)) {
+      if(R_finite(x[i])) {
         if(x[i] > xmax) xmax = x[i];
-        if(x[i] < xmin) xmin = x[i]; 
+        if(x[i] < xmin) xmin = x[i];
       }
     }
   }
@@ -359,12 +359,8 @@ Rcpp::Nullable<Rcpp::NumericVector> hpp_replace_non_finite(const Rcpp::Nullable<
                                                            const double by = 0.0) {
   if(nNotisNULL(V_)) {
     Rcpp::NumericVector V(V_.get());
-    Rcpp::NumericVector out = Rcpp::no_init(V.size()); // new
-    Rcpp::LogicalVector a = is_infinite(V);
-    Rcpp::LogicalVector b = is_nan(V);
-    for(R_len_t i = 0; i < V.size(); i++) {
-      out[i] = (a[i] | b[i]) ? by : V[i];
-    }
+    Rcpp::NumericVector out = Rcpp::no_init(V.size());
+    for(R_len_t i = 0; i < V.size(); i++) out[i] = R_finite(V[i]) ? V[i] : by;
     return out;
   }
   return V_;
@@ -375,18 +371,19 @@ Rcpp::Nullable<Rcpp::NumericVector> hpp_replace_non_finite(const Rcpp::Nullable<
 Rcpp::NumericVector hpp_check_range(const Rcpp::NumericVector x) {
   double Min = R_PosInf, Max = R_NegInf;
   if(nNotisNULL(x)) {
-    Rcpp::LogicalVector a = is_infinite(x);
-    Rcpp::LogicalVector b = is_nan(x);
     for(R_len_t i = 0; i < x.size(); i++) {
-      if(a[i] || b[i]) Rcpp::stop("hpp_check_range: 'x' contains non-finite values");
-      if((x[i] < Min) && (x[i] > -4095.0)) Min = x[i];
-      if(x[i] > Max) Max = x[i];
+      if(R_finite(x[i])) {
+        if(x[i] > Max) Max = x[i]; 
+        if((x[i] < Min) && (x[i] > -4095.0)) Min = x[i];
+      } else {
+        Rcpp::stop("hpp_check_range: 'x' contains non-finite values");
+      }
     }
     if(Min == R_PosInf) Min = Max;
   } else {
     Rcpp::stop("hpp_check_range: 'x' is empty");
   }
-  if(Min > Max) return Rcpp::NumericVector::create(Max, Min); // New
+  if(Min > Max) return Rcpp::NumericVector::create(Max, Min);
   return Rcpp::NumericVector::create(Min, Max);
 }
 
