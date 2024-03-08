@@ -54,7 +54,7 @@ newPB <- function(title, label,
   args = list("newPB: can't create progress bar")
   session = NULL
   if(with_seed(requireNamespace("shiny", quietly = TRUE), NULL)) session = shiny::getDefaultReactiveDomain()
-  if((length(session) != 0) && inherits(session, "ShinySession")) {
+  if((length(session) != 0) && inherits(session, c("ShinySession","session_proxy"))) {
     args = list(session = session,
                 min = 0,
                 max = max)
