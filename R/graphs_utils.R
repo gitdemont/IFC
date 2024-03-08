@@ -1674,12 +1674,12 @@ adjustGraph=function(obj, graph, adjust_graph=TRUE, ...) {
   assert(obj, cla = "IFC_data")
   adjust_graph = as.logical(adjust_graph);
   assert(adjust_graph, len = 1, alw = c(as.logical(NA),TRUE,FALSE))
+  if(is.na(adjust_graph)) return(list())
   tryCatch({
     f_name = names(obj$features)
     r_name = names(obj$regions)
     p_name = names(obj$pops)
     g = graph
-    if(is.na(adjust_graph)) return(list())
     
     # check if x axis is present in obj
     if(!(g$f1 %in% f_name)) return(list())

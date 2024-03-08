@@ -30,15 +30,8 @@
 #' @title Remove Features from an IFC_data Object
 #' @description
 #' Removes regions from an already existing `IFC_data` object.
-#' @param obj an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
+#' @inheritParams data_rm_graphs
 #' @param features a character vector of features names to remove within 'obj'. Note that "Object Number" is not allowed and will be excluded from 'features' if present.
-#' @param list_only whether to return a list of elements that will be impacted by the removal. Default is TRUE.
-#' If FALSE then modified object will be returned.
-#' @param adjust_graph whether to try to adjust graph(s) when possible. Default is TRUE.\cr
-#' -TRUE, graph(s) will be kept if possible using only regions, pops it depends that can be found in 'obj',\cr
-#' -FALSE, graph(s) will be kept only if all features, regions, pops it refers to are found in 'obj',\cr
-#' -NA, graph(s) will be removed no matter if features, regions, pops it refers to are found in 'obj'.
-#' @param ... Other arguments to be passed.
 #' @return an `IFC_data` object or a list of elements impacted by removal depending on 'list_only' parameter.
 #' @export
 data_rm_features <- function(obj, features, list_only = TRUE, adjust_graph = TRUE, ...) {
@@ -134,17 +127,15 @@ data_rm_features <- function(obj, features, list_only = TRUE, adjust_graph = TRU
   }
   to_remove_pops = unique(to_remove_pops)
   
-  # search graphs that depend on input pops
+  # search graphs that depend on input features
   to_remove_graphs = integer()
-  if(length(obj$graphs) > 0) for(i in 1:length(obj$graphs)) {
-    g = obj$graphs[[i]]
-    base = sapply(g$BasePop, FUN = function(p) p$name)
-    shown = sapply(g$ShownPop, FUN = function(p) p$name)
-    region = sapply(g$GraphRegion, FUN = function(r) r$name)
-    region_def = sapply(g$GraphRegion, FUN = function(r) r$def)
-    if(any(c(to_remove_pops %in% c(base, shown, region_def), to_remove_features %in% unlist(g[c("f1","f2")])))) {
-      to_remove_graphs = c(to_remove_graphs, i)
-    }
+  oo = obj
+  oo$pops = obj$pops[setdiff(names(oo$pops), to_remove_pops)]
+  oo$regions = obj$regions[setdiff(names(oo$regions), to_remove_regions)]
+  oo$features = obj$features[setdiff(names(oo$features), to_remove_features)]
+  oo$features_def = obj$features_def[setdiff(names(oo$features_def), to_remove_features)]
+  for(i in seq_along(obj$graphs)) {
+    if(length(adjustGraph(oo, obj$graphs[[i]], adjust_graph = adjust_graph)) == 0) to_remove_graphs = c(to_remove_graphs, i)
   }
   to_remove_graphs = unique(to_remove_graphs)
   
@@ -185,6 +176,6 @@ data_rm_features <- function(obj, features, list_only = TRUE, adjust_graph = TRU
   pops_back = obj$pops
   obj$pops = list()
   obj = data_add_pops(obj, pops = pops_back[!(names(pops_back) %in% to_remove_pops)], ...)
-  obj = data_rm_graphs(obj = obj, graphs = to_remove_graphs, list_only = list_only, adjust_graph = adjust_graph)
+  obj = data_rm_graphs(obj = obj, graphs = to_remove_graphs, list_only = list_only, adjust_graph = NA)
   return(obj)
 }
