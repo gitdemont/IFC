@@ -309,7 +309,7 @@ StatsReport <- function(obj, stats) {
         "RD - Median" = abs(median(fv1) - median(fv2)) / (mad(fv1) + mad(fv2)),
         "Variance"    = ifelse(length(fv1) == 1, 0, var(fv1)),
         "max"         = max(fv1),
-        "geomean"     = exp(mean(log(fv1))),
+        "geomean"     = exp(mean(log(fv1), na.rm=TRUE)),
         "Mode" = {
           # How to compute concentration ?
           # What to do here ? the following does not work
