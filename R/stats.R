@@ -301,15 +301,19 @@ StatsReport <- function(obj, stats) {
             return(0)
           }
           ifelse(n1 %in% names(obj$pops) && fn %in% names(obj$features),
-                               sum(is.na(as.numeric(obj$features[p1, fn, drop = TRUE]))),
-                               0)
+                 sum(is.na(as.numeric(obj$features[p1, fn, drop = TRUE]))),
+                 0)
         },
         "MAD"         = mad(fv1),
         "min"         = min(fv1),
         "RD - Median" = abs(median(fv1) - median(fv2)) / (mad(fv1) + mad(fv2)),
         "Variance"    = ifelse(length(fv1) == 1, 0, var(fv1)),
         "max"         = max(fv1),
-        "geomean"     = exp(mean(log(fv1), na.rm=TRUE)),
+        "geomean"     = {
+          v = log(fv1)
+          v = v[is.finite(v)]
+          ifelse(length(v) == 0, NaN, exp(mean(v)))
+        },
         "Mode" = {
           # How to compute concentration ?
           # What to do here ? the following does not work
