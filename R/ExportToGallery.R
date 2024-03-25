@@ -127,6 +127,7 @@ ExportToGallery <- function(...,
   }
   
   # reattribute needed param
+  has_offsets = !missing(offsets)
   offsets = input[["offsets"]]
   param = input[["param"]]
   if(length(offsets) == 0) {
@@ -233,7 +234,7 @@ ExportToGallery <- function(...,
   
   # check input offsets if any
   compute_offsets = TRUE
-  if(!missing(offsets)) {
+  if(has_offsets) {
     if(!("IFC_offset" %in% class(offsets))) {
       warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
     } else {
