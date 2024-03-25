@@ -473,14 +473,14 @@ ExportToGallery <- function(...,
                        ncol(ret),
                        nrow(ret),
                        type,
-                       base64_encode(objectWrite(x = ret, type = type, raw()))))
+                       cpp_base64_encode(objectWrite(x = ret, type = type, raw()))))
       } else {
         return(sprintf("<img %s width='%s' height='%s' src='data:image/%s;base64,%s'>",
                        base64_att,
                        ncol(ret),
                        nrow(ret),
                        type,
-                       base64_encode(objectWrite(x = ret, type = type, raw()))))
+                       cpp_base64_encode(objectWrite(x = ret, type = type, raw()))))
       }
     }
     return(ret)

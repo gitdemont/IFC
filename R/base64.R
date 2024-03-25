@@ -1,10 +1,10 @@
 ################################################################################
 # This file is released under the GNU General Public License, Version 3, GPL-3 #
-# Copyright (C) 2020 Yohann Demont                                             #
+# Copyright (C) 2024 Yohann Demont                                             #
 #                                                                              #
 # It is part of IFC package, please cite:                                      #
 # -IFC: An R Package for Imaging Flow Cytometry                                #
-# -YEAR: 2020                                                                  #
+# -YEAR: 2024                                                                  #
 # -COPYRIGHT HOLDERS: Yohann Demont, Gautier Stoll, Guido Kroemer,             #
 #                     Jean-Pierre Marolleau, Loïc Garçon,                      #
 #                     INSERM, UPD, CHU Amiens                                  #
@@ -27,13 +27,26 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
-#' @title Raw Images to Base64 Encoding
+#' @title Raw to Base64 Encoding
 #' @description
-#' Encodes raw image vector to base64 string
+#' Encodes raw vector to base64 string
 #' @param x a raw vector.
+#' @param url a bool whether to encode for base64 url string. Default is \code{FALSE}. 
 #' @source \url{https://en.wikibooks.org/wiki/Algorithm_Implementation/Miscellaneous/Base64}
 #' @keywords internal
-base64_encode <- function(x) {
+base64_encode <- function(x, url = FALSE) {
   if(is.null(x)) return("")
-  return(cpp_base64_encode(x))
+  return(structure(cpp_base64_encode(x, url), url = url))
+}
+
+#' @title Base64 to Raw Decoding
+#' @description
+#' Decodes base64 string to raw vector
+#' @param x a base64 encoded string.
+#' @param url a bool whether to decode from base64 url encoding. Default is \code{identical(attr(x, "url", exact = TRUE), TRUE)}.
+#' @source \url{https://en.wikibooks.org/wiki/Algorithm_Implementation/Miscellaneous/Base64}
+#' @keywords internal
+base64_decode <- function(x, url = identical(attr(x, "url", exact = TRUE), TRUE)) {
+  if(is.null(x)) return(raw(0))
+  return(cpp_base64_decode(x, url))
 }

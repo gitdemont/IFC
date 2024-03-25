@@ -39,3 +39,8 @@ The R Core Team, The R Foundation, under GPL >= 2.0
 trigo_pnt_in_poly is an adaptation of pointinpolygon.c from SDMTools R package
 authored by Jeremy VanDerWal, Lorena Falconi, Stephanie Januchowski, Luke Shoo
 and Collin Storlie under GPL (>= 2)
+
+--------------------------------------------------------------------------------
+hpp_base64_encode and hpp_base64_decode in base64.hpp are adapations from
+https://en.wikibooks.org/wiki/Algorithm_Implementation/Miscellaneous/Base64
+it also contains r2c code from Dirk Eddelbuettel under CC-BY-SA 4.0

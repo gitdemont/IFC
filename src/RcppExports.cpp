@@ -169,16 +169,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_base64_encode
-std::string cpp_base64_encode(const Rcpp::RawVector x);
-RcppExport SEXP _IFC_cpp_base64_encode(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const Rcpp::RawVector >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_base64_encode(x));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cpp_writeBMP
 Rcpp::RawVector cpp_writeBMP(const Rcpp::NumericVector image);
 RcppExport SEXP _IFC_cpp_writeBMP(SEXP imageSEXP) {
@@ -186,6 +176,28 @@ BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type image(imageSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_writeBMP(image));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_base64_encode
+std::string cpp_base64_encode(const Rcpp::RawVector x, const bool url);
+RcppExport SEXP _IFC_cpp_base64_encode(SEXP xSEXP, SEXP urlSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const Rcpp::RawVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const bool >::type url(urlSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_base64_encode(x, url));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_base64_decode
+Rcpp::RawVector cpp_base64_decode(std::string x, const bool url);
+RcppExport SEXP _IFC_cpp_base64_decode(SEXP xSEXP, SEXP urlSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< std::string >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const bool >::type url(urlSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_base64_decode(x, url));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -683,8 +695,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_get_bytes_order", (DL_FUNC) &_IFC_cpp_get_bytes_order, 4},
     {"_IFC_cpp_replace_non_finite", (DL_FUNC) &_IFC_cpp_replace_non_finite, 2},
     {"_IFC_cpp_computeGamma", (DL_FUNC) &_IFC_cpp_computeGamma, 1},
-    {"_IFC_cpp_base64_encode", (DL_FUNC) &_IFC_cpp_base64_encode, 1},
     {"_IFC_cpp_writeBMP", (DL_FUNC) &_IFC_cpp_writeBMP, 1},
+    {"_IFC_cpp_base64_encode", (DL_FUNC) &_IFC_cpp_base64_encode, 2},
+    {"_IFC_cpp_base64_decode", (DL_FUNC) &_IFC_cpp_base64_decode, 2},
     {"_IFC_cpp_checkTIFF", (DL_FUNC) &_IFC_cpp_checkTIFF, 1},
     {"_IFC_cpp_getoffsets_noid", (DL_FUNC) &_IFC_cpp_getoffsets_noid, 5},
     {"_IFC_cpp_getTAGS", (DL_FUNC) &_IFC_cpp_getTAGS, 5},

@@ -183,3 +183,8 @@ https://www.R-project.org/Licenses/
 trigo_pnt_in_poly in gate.hpp is an adaptation of File src/pointinpolygon.c
 from SDMTools R package authored by Jeremy VanDerWal, Lorena Falconi, Stephanie
 Januchowski, Luke Shoo and Collin Storlie under GPL (>= 2)
+
+--------------------------------------------------------------------------------
+hpp_base64_encode and hpp_base64_decode in base64.hpp are adapations from
+https://en.wikibooks.org/wiki/Algorithm_Implementation/Miscellaneous/Base64
+in public domain it also contains r2c from Dirk Eddelbuettel under CC-BY-SA 4.0

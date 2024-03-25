@@ -36,7 +36,6 @@
 #include <fstream>
 using namespace Rcpp;
 
-static std::string base64_LUT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 // check platform endian
 std::string hpp_getEndian () {
@@ -413,45 +412,6 @@ double hpp_computeGamma (const Rcpp::NumericVector V) {
   V_w -= V["xmin"];
   V_m -= V["xmin"];
   return (( std::log(V_y / 255) ) / (std::log(V_m / V_w)));
-}
-
-//' @title Raw to Base64 Conversion
-//' @name cpp_base64_encode
-//' @description
-//' Converts a raw vector to base64 string.
-//' @param x RawVector.
-//' @return a string, representing the base64 encoding of x.
-//' @keywords internal
-////' @export
-// [[Rcpp::export(rng = false)]]
-std::string hpp_base64_encode (const Rcpp::RawVector x) {
-  R_len_t i = 0, a = x.size() / 3, b = x.size() % 3;
-  std::string out;
-  out.reserve(((a) + (b > 0)) * 4);
-  for(R_len_t idx = 0; idx < a; idx++, i += 3) { 
-    uint32_t val = (x[i] << 16) + (x[i + 1] << 8) + x[i + 2];
-    for(short k = 18; k >= 0; k -= 6) {
-      out.push_back(base64_LUT[(val >> k) & 0x3F]);
-    }
-  }
-  switch(b) {
-  case 1: {
-    uint32_t val  = x[i++] << 16;
-    out.push_back(base64_LUT[(val >> 18) & 0x3F]);
-    out.push_back(base64_LUT[(val >> 12) & 0x3F]);
-    out.append(2,'=');
-    break;
-  }
-  case 2: {
-    uint32_t val  = (x[i] << 16) + (x[i + 1] << 8);
-    out.push_back(base64_LUT[(val >> 18) & 0x3F]);
-    out.push_back(base64_LUT[(val >> 12) & 0x3F]);
-    out.push_back(base64_LUT[(val >>  6) & 0x3F]);
-    out.push_back('=');
-    break;
-  }
-  }
-  return out;
 }
 
 //' @title BMP Writer

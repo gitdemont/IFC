@@ -145,20 +145,31 @@ NULL
 #' @keywords internal
 NULL
 
-#' @title Raw to Base64 Conversion
-#' @name cpp_base64_encode
-#' @description
-#' Converts a raw vector to base64 string.
-#' @param x RawVector.
-#' @return a string, representing the base64 encoding of x.
-#' @keywords internal
-NULL
-
 #' @title BMP Writer
 #' @name cpp_writeBMP
 #' @description
 #' Transforms 3D [0,1] image to uncompressed bmp
 #' @param image, a [0,1] normalized image matrix or 3D array. If 3D array, 3rd dimension should be of length 1 or 3.
+#' @keywords internal
+NULL
+
+#' @title Raw to Base64 Conversion
+#' @name cpp_base64_encode
+#' @description
+#' Converts a raw vector to base64 string.
+#' @param x RawVector.
+#' @param url a bool, whether to convert for url. Default is false.
+#' @return a string, representing the base64 encoding of x.
+#' @keywords internal
+NULL
+
+#' @title Base64 to Raw Conversion
+#' @name cpp_base64_decode
+#' @description
+#' Converts a base64 string to raw vector.
+#' @param x a string.
+#' @param url a bool, whether to convert for url. Default is false.
+#' @return a RawVector, representing the decoding of base64 string.
 #' @keywords internal
 NULL
 
@@ -774,12 +785,16 @@ cpp_computeGamma <- function(V) {
     .Call(`_IFC_cpp_computeGamma`, V)
 }
 
-cpp_base64_encode <- function(x) {
-    .Call(`_IFC_cpp_base64_encode`, x)
-}
-
 cpp_writeBMP <- function(image) {
     .Call(`_IFC_cpp_writeBMP`, image)
+}
+
+cpp_base64_encode <- function(x, url = FALSE) {
+    .Call(`_IFC_cpp_base64_encode`, x, url)
+}
+
+cpp_base64_decode <- function(x, url = FALSE) {
+    .Call(`_IFC_cpp_base64_decode`, x, url)
 }
 
 cpp_checkTIFF <- function(fname) {

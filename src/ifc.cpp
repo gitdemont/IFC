@@ -32,6 +32,7 @@
 #include <Rcpp.h>
 #include "../inst/include/align.hpp"
 #include "../inst/include/assert.hpp"
+#include "../inst/include/base64.hpp"
 #include "../inst/include/gate.hpp"
 #include "../inst/include/utils.hpp"
 #include "../inst/include/tiff.hpp"
@@ -273,19 +274,6 @@ double cpp_computeGamma (const Rcpp::NumericVector V) {
   return hpp_computeGamma (V);
 }
 
-//' @title Raw to Base64 Conversion
-//' @name cpp_base64_encode
-//' @description
-//' Converts a raw vector to base64 string.
-//' @param x RawVector.
-//' @return a string, representing the base64 encoding of x.
-//' @keywords internal
-////' @export
-// [[Rcpp::export(rng = false)]]
-std::string cpp_base64_encode (const Rcpp::RawVector x) {
-  return hpp_base64_encode (x);
-}
-
 //' @title BMP Writer
 //' @name cpp_writeBMP
 //' @description
@@ -299,6 +287,35 @@ Rcpp::RawVector cpp_writeBMP (const Rcpp::NumericVector image) {
 }
 // END utils
 
+// FROM base64
+//' @title Raw to Base64 Conversion
+//' @name cpp_base64_encode
+//' @description
+//' Converts a raw vector to base64 string.
+//' @param x RawVector.
+//' @param url a bool, whether to convert for url. Default is false.
+//' @return a string, representing the base64 encoding of x.
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+std::string cpp_base64_encode (const Rcpp::RawVector x, const bool url = false) {
+ return hpp_base64_encode (x, url);
+}
+
+//' @title Base64 to Raw Conversion
+//' @name cpp_base64_decode
+//' @description
+//' Converts a base64 string to raw vector.
+//' @param x a string.
+//' @param url a bool, whether to convert for url. Default is false.
+//' @return a RawVector, representing the decoding of base64 string.
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+Rcpp::RawVector cpp_base64_decode(std::string x, const bool url = false) {
+  return hpp_base64_decode (x, url);
+}
+// END base64
 
 // FROM tiff
 //' @title TIFF Checker

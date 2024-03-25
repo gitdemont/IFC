@@ -233,7 +233,7 @@ objectExtract <- function(ifd,
                          ncol(img[[i]]),
                          nrow(img[[i]]),
                          param$type,
-                         base64_encode(objectWrite(x = img[[i]], type = param$type, raw())))
+                         cpp_base64_encode(objectWrite(x = img[[i]], type = param$type, raw())))
                })
              } else {
                img = lapply(1:length(img), FUN=function(i) {
@@ -242,7 +242,7 @@ objectExtract <- function(ifd,
                          ncol(img[[i]]),
                          nrow(img[[i]]),
                          param$type,
-                         base64_encode(objectWrite(x = img[[i]], type = param$type, raw())))
+                         cpp_base64_encode(objectWrite(x = img[[i]], type = param$type, raw())))
                })
              }
            })
