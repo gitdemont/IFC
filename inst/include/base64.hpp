@@ -84,21 +84,23 @@ std::string hpp_base64_encode (const Rcpp::RawVector x, const bool url = false) 
 }
 
 // helpers for base64 decoding
-char convb64(const char x) {
+char convb64(const char x, char *abort) {
   if(65 <= x && x <= 90) return x - 65;
   if(97 <= x && x <= 122) return x - 71;
   if(48 <= x && x <= 57) return x + 4;
   if(x == 43) return 62;
   if(x == 47) return 63;
+  if(*abort == 0) *abort = x;
   return 0;
 }
 
-char convb64_url(const char x) {
+char convb64_url(const char x, char *abort) {
   if(65 <= x && x <= 90) return x - 65;
   if(97 <= x && x <= 122) return x - 71;
   if(48 <= x && x <= 57) return x + 4;
   if(x == 45) return 62;
   if(x == 95) return 63;
+  if(*abort == 0) *abort = x;
   return 0;
 }
 
@@ -118,26 +120,43 @@ Rcpp::RawVector hpp_base64_decode(std::string x, const bool url = false) {
   if(x.length() == 0) return out;
   std::string::iterator it = x.begin();
   R_len_t i = 0;
+  char abort = 0;
   if(url) {
-    while(it != x.end()) {
-      out[i] = convb64_url(*it++) << 2; 
-      char b = convb64_url(*it++);
-      char c = convb64_url(*it++);
+    while(!abort && (it != x.end())) {
+      out[i] = convb64_url(*(it++), &abort) << 2; 
+      char b = convb64_url(*(it++), &abort);
+      char c = convb64_url(*(it++), &abort);
       out[i++] += ((b & 0xF0) >> 4);
       out[i++] = ((b & 0x0F) << 4) + ((c & 0x3C) >> 2);
-      out[i++] = ((c & 0x03) << 6) + convb64_url(*it++);
+      out[i++] = ((c & 0x03) << 6) + convb64_url(*(it++), &abort);
     }
   } else {
-    while(it != x.end()) {
-      out[i] = convb64(*it++) << 2; 
-      char b = convb64(*it++);
-      char c = convb64(*it++);
+    while(!abort && (it != x.end())) {
+      out[i] = convb64(*(it++), &abort) << 2; 
+      char b = convb64(*(it++), &abort);
+      char c = convb64(*(it++), &abort);
       out[i++] += ((b & 0xF0) >> 4);
       out[i++] = ((b & 0x0F) << 4) + ((c & 0x3C) >> 2);
-      out[i++] = ((c & 0x03) << 6) + convb64(*it++);
-    } 
+      out[i++] = ((c & 0x03) << 6) + convb64(*(it++), &abort);
+    }
   }
-  for(; i >= 0; ) if(out[--i]) break; // remove trailing 0 due to base64 final padding with '='
+  // inspect and trim last bytes
+  std::string msg = "";
+  if(it != x.end()) msg.append("\n-premature ending");
+  Rcpp::RawVector V = Rcpp::no_init_vector(4);
+  R_len_t pos = 1;
+  bool bad = false;
+  char foo = 0;
+  for(short k = 0; k < V.size(); k++) {
+    V[k] = *(--it);
+    if(V[k] == abort) pos = k + 2;
+    if(!bad) bad = (V[k] != 65 && V[k] != 61) && !(url ? convb64_url(V[k], &foo) : convb64(V[k], &foo));
+  }
+  if(!((V[3] != 61 && V[2] != 61) &&
+     ((V[1] == 61 && V[0] == 61) || (V[1] != 61)))) msg.append("\n-invalid padding");
+  if(bad) msg.append("\n-invalid base64 character");
+  if(msg != "") Rcpp::warning(msg);
+  i -= pos;
   if(i < 0) return 0;
   return out[Rcpp::Range(0, i)];
 }
