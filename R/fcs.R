@@ -155,8 +155,7 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
   
   # check numeric keywords are not padded with characters other than 0
   bar = TRUE
-  old_loc = Sys.getlocale(category = "LC_ALL")
-  suppressWarnings(Sys.setlocale(category = "LC_ALL", locale = "C"))
+  old_loc <- setloc(c("LC_NUMERIC" = "C"))
   tryCatch({
     foo = sapply(text, FUN = function(x) (length(x) !=0) && (!is.na(suppressWarnings(as.numeric(x)))))
     bar = sapply(text[foo], FUN = function(x) {
@@ -166,7 +165,7 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
       if(any(xx == "x")) return(TRUE) # to handle raw to num conversion
       all(xx %in% c("0","1","2","3", "4", "5", "6", "7", "8", "9", "+", "-",".","e"))
     })
-  }, finally = suppressWarnings(Sys.setlocale(category = "LC_ALL", locale = old_loc)))
+  }, finally = suppressWarnings(setloc(old_loc)))
   if(!all(bar)) msg = c(msg, paste0("`padded numeric (only padding with 0 is allowed)`:\n\t- ", paste0(paste0(N[foo][!bar], "[",text[foo][!bar], "]"), collapse = "\n\t- ")))
   
   # check keyword-value pairs do not start with delimiter
@@ -548,9 +547,9 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
   assert(display_progress, len = 1, alw = c(TRUE,FALSE))
   
   # force local
-  old_loc = Sys.getlocale(category = "LC_ALL")
-  suppressWarnings(Sys.setlocale(category = "LC_ALL", locale = "C"))
-  on.exit(suppressWarnings(Sys.setlocale(category = "LC_ALL", locale = old_loc)), add = TRUE)
+  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
+  setloc(c("LC_NUMERIC" = "C"))
   
   # retrieve info to extract data
   type = text[["$DATATYPE"]]
@@ -1594,9 +1593,8 @@ ExtractFromFCS <- function(fileName, ...) {
 ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytometer = "Image Stream", ...) {
   dots = list(...)
   # change locale
-  locale_back = Sys.getlocale("LC_ALL")
-  on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)))
-  suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
+  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
   
   old_enc <- options("encoding")

@@ -27,6 +27,25 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
+#' @title Get Locale
+#' @description Retrieves current R locale
+#' @return a named vector whose members are current locale value.
+#' @keywords internal
+getloc <- function() {
+  sapply(setdiff(.LC.categories, "LC_ALL"), Sys.getlocale)
+}
+
+#' @title Set Locale
+#' @description Sets aspects of locale
+#' @param locale a named vector with locale values to modify. Default is getloc().
+#' @return a named vector of the locale values used before the application of the function.
+#' @keywords internal
+setloc <- function(locale = getloc()) {
+  cur_loc <- getloc()
+  suppressWarnings(sapply(names(locale), FUN = function(x) Sys.setlocale(x, locale[x])))
+  return(cur_loc)
+}
+
 #' @title String Truncation
 #' @description Truncates character strings
 #' @param x a string

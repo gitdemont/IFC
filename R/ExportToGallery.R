@@ -116,9 +116,8 @@ ExportToGallery <- function(...,
   old_ask <- devAskNewPage(ask = FALSE)
   on.exit(devAskNewPage(ask = old_ask), add = TRUE)
   # change locale
-  locale_back = Sys.getlocale("LC_ALL")
-  on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
-  suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
+  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   
   # check input
   input = whoami(entries = as.list(match.call()))

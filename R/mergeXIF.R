@@ -61,9 +61,8 @@ mergeXIF <- function (fileName, write_to,
                       add_tracking = TRUE, ...) {
   dots = list(...)
   # change locale
-  locale_back = Sys.getlocale("LC_ALL")
-  on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
-  suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
+  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   
   # check madatory param
   if(missing(fileName)) stop("'fileName' can't be missing")

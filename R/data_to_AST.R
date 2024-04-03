@@ -57,9 +57,8 @@ data_to_AST = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
                        display_progress = TRUE, verbose = FALSE, ...) {
   dots = list(...)
   # change locale
-  locale_back = Sys.getlocale("LC_ALL")
-  on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
-  suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
+  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
   
   # check mandatory param

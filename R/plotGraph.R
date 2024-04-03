@@ -69,9 +69,8 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   
   tryCatch({
     # change locale
-    locale_back = Sys.getlocale("LC_ALL")
-    on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
-    suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
+    locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+    on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
     
     # check mandatory param
     if(missing(obj)) stop("'obj' can't be missing")

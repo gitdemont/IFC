@@ -243,9 +243,8 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   on.exit(dev_close(dv), add = TRUE)
   
   # change locale
-  locale_back = Sys.getlocale("LC_ALL")
-  on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
-  suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
+  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   
   # check mandatory param
   if(missing(obj)) stop("'obj' can't be missing")
@@ -451,9 +450,8 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
   on.exit(dev_close(dv), add = TRUE)
   
   # change locale
-  locale_back = Sys.getlocale("LC_ALL")
-  on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
-  suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
+  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   
   # check mandatory param
   if(missing(obj)) stop("'obj' can't be missing")
@@ -620,9 +618,8 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
   on.exit(dev_close(dv), add = TRUE)
   
   # change locale
-  locale_back = Sys.getlocale("LC_ALL")
-  on.exit(suppressWarnings(Sys.setlocale("LC_ALL", locale = locale_back)), add = TRUE)
-  suppressWarnings(Sys.setlocale("LC_ALL", locale = "English"))
+  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   
   # check fileName or obj
   if(missing(obj) && missing(fileName)) stop("you should provide either 'fileName' or 'obj'")
