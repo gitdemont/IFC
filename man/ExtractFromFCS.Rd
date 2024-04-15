@@ -4,7 +4,7 @@
 \alias{ExtractFromFCS}
 \title{FCS File Reader}
 \source{
-Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \doi{10.1002/cyto.a.20825}.
+Data File Standard for Flow Cytometry, version FCS 3.2 from Spidlen J. et al. available at \doi{10.1002/cyto.a.24225}.
 }
 \usage{
 ExtractFromFCS(fileName, ...)
@@ -13,7 +13,9 @@ ExtractFromFCS(fileName, ...)
 \item{fileName}{path(s) of file(s). If multiple files are provided they will be merged and 
 populations will be created to identify each single file within returned `IFC_data` object.}
 
-\item{...}{other arguments to be passed to readFCS function, with the exception of 'options$text_only'.}
+\item{...}{other arguments to be passed to readFCS function, with the exception of 'options$text_only'.\cr
+Experimental (as of v0.2.1.300), ExtractFromFCS could handle FCS 3.2 files. However, it is important to note that R has no native support for 64bits unsigned integers which are defined in the FCS 3.2 standard.
+So, large integers are extracted as double (8bits) and precision loss will happen for > 2^53 integers on 64bits platforms.}
 }
 \value{
 A named list of class `IFC_data`, whose members are:\cr

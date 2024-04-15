@@ -1149,8 +1149,10 @@ readFCSdataset <- function(fileName, options, display_progress = TRUE, ...) {
 #' @param ... other arguments to be passed.
 #' @details 'options' may be tweaked according to file type, instrument and software used to generate it.\cr
 #' Default 'options' should allow to read most files.\cr
-#' 'options' members with the exception of 'header' may be passed thanks to '...'.
-#' @source Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \doi{10.1002/cyto.a.20825}.
+#' 'options' members with the exception of 'header' may be passed thanks to '...'.\cr
+#' Experimental (as of v0.2.1.300), readFCS could handle FCS 3.2 files. However, it is important to note that R has no native support for 64bits unsigned integers which are defined in the FCS 3.2 standard.
+#' So, those integers are extracted as double (8bits) and precision loss will happen for > 2^53 integers on 64bits platforms.
+#' @source Data File Standard for Flow Cytometry, version FCS 3.2 from Spidlen J. et al. available at \doi{10.1002/cyto.a.24225}.
 #' @return a list whose elements are lists for each dataset stored within the file.\cr
 #' each sub-list contains:\cr
 #' - header, list of header information corresponding to 'options'\cr
@@ -1528,8 +1530,10 @@ FCS_to_data <- function(fcs, ...) {
 #' Extracts data from Flow Cytometry Standard (FCS) Files.
 #' @param fileName path(s) of file(s). If multiple files are provided they will be merged and 
 #' populations will be created to identify each single file within returned `IFC_data` object.
-#' @source Data File Standard for Flow Cytometry, version FCS 3.1 from Spidlen J. et al. available at \doi{10.1002/cyto.a.20825}.
-#' @param ... other arguments to be passed to readFCS function, with the exception of 'options$text_only'.
+#' @source Data File Standard for Flow Cytometry, version FCS 3.2 from Spidlen J. et al. available at \doi{10.1002/cyto.a.24225}.
+#' @param ... other arguments to be passed to readFCS function, with the exception of 'options$text_only'.\cr
+#' Experimental (as of v0.2.1.300), ExtractFromFCS could handle FCS 3.2 files. However, it is important to note that R has no native support for 64bits unsigned integers which are defined in the FCS 3.2 standard.
+#' So, large integers are extracted as double (8bits) and precision loss will happen for > 2^53 integers on 64bits platforms.
 #' @return A named list of class `IFC_data`, whose members are:\cr
 #' -description, a list of descriptive information,\cr
 #' -Merged_fcs, character vector of path of files used to create fcs, if input was a merged,\cr
