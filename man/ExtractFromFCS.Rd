@@ -15,7 +15,7 @@ populations will be created to identify each single file within returned `IFC_da
 
 \item{...}{other arguments to be passed to readFCS function, with the exception of 'options$text_only'.\cr
 Experimental (as of v0.2.1.300), ExtractFromFCS could handle FCS 3.2 files. However, it is important to note that R has no native support for 64bits unsigned integers which are defined in the FCS 3.2 standard.
-So, large integers are extracted as double (8bits) and precision loss will happen for > 2^53 integers on 64bits platforms.}
+So, large integers are extracted as double (8 bytes) and precision loss will happen for > 2^53 integers on 64bits platforms.}
 }
 \value{
 A named list of class `IFC_data`, whose members are:\cr
