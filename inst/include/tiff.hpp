@@ -349,8 +349,9 @@ Rcpp::List hpp_getTAGS (const std::string fname,
           IFD_tag = bytes_swap(IFD_tag);
           IFD_type = bytes_swap(IFD_type);
           IFD_count = bytes_swap(IFD_count);
-          IFD_value = bytes_swap(IFD_value);
           IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
+          if(IFD_bytes < 4) IFD_value = IFD_value << (8 * (4 - IFD_bytes));
+          IFD_value = bytes_swap(IFD_value);
           
           if((IFD_type > 12) || (IFD_type < 1)) {
             Rcpp::Rcerr << "\nhpp_getTAGS: in IFD: " << k << " @" << pos + 12 << " IFD_type=" << IFD_type << " is not allowed" << std::endl;
@@ -886,6 +887,7 @@ Rcpp::List hpp_fastTAGS (const std::string fname,
       uint16_t IFD_type;
       uint32_t IFD_count;
       uint32_t IFD_value;
+      uint32_t IFD_bytes;
       std::memcpy(&IFD_tag, buf_dir_entry, 2);
       std::memcpy(&IFD_type, buf_dir_entry + 2, 2);
       std::memcpy(&IFD_count, buf_dir_entry + 4, 4);
@@ -909,7 +911,10 @@ Rcpp::List hpp_fastTAGS (const std::string fname,
         IFD_type = bytes_swap(IFD_type);
         IFD_count = bytes_swap(IFD_count);
         IFD_value = bytes_swap(IFD_value);
+        IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
+        if(IFD_bytes < 4) IFD_value = IFD_value << (8 * (4 - IFD_bytes));
       } else {
+        IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
         raw[ 0] = buf_dir_entry[ 0];
         raw[ 1] = buf_dir_entry[ 1];
         raw[ 2] = buf_dir_entry[ 2];
@@ -923,7 +928,6 @@ Rcpp::List hpp_fastTAGS (const std::string fname,
         raw[10] = buf_dir_entry[10];
         raw[11] = buf_dir_entry[11];
       }
-      uint32_t IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
       ifd_val = IFD_value;
       if((IFD_bytes > 4) || (IFD_tag == 273)) {
         if(is_bigfile) {
@@ -943,8 +947,8 @@ Rcpp::List hpp_fastTAGS (const std::string fname,
       pos += 12;
       
       INFOS[k] = Rcpp::List::create(_["tag"] = IFD_tag,
-                                    _["val"] = ifd_val, 
-                                    _["byt"] = IFD_bytes, 
+                                    _["val"] = ifd_val,
+                                    _["byt"] = IFD_bytes,
                                     _["raw"] = raw);
       NAMES[k] = to_string(IFD_tag);
     }
