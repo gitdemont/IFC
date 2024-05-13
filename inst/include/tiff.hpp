@@ -910,9 +910,9 @@ Rcpp::List hpp_fastTAGS (const std::string fname,
         IFD_tag = bytes_swap(IFD_tag);
         IFD_type = bytes_swap(IFD_type);
         IFD_count = bytes_swap(IFD_count);
-        IFD_value = bytes_swap(IFD_value);
         IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
         if(IFD_bytes < 4) IFD_value = IFD_value << (8 * (4 - IFD_bytes));
+        IFD_value = bytes_swap(IFD_value);
       } else {
         IFD_bytes = sizes[IFD_type] * multi[IFD_type] * IFD_count;
         raw[ 0] = buf_dir_entry[ 0];
