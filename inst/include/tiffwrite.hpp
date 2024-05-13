@@ -108,12 +108,12 @@ Rcpp::RawVector cast_vector ( SEXP x,
                               const uint8_t what = 1,
                               const bool swap = false) {
   switch( what ) {
-  case 1: return cast_vector_T<uint8_t>(x, what, swap);
-  case 2: return cast_vector_T<int8_t>(x, what, swap);
-  case 3: return cast_vector_T<uint16_t>(x, what, swap);
-  case 4: return cast_vector_T<int16_t>(x, what, swap);
-  case 5: return cast_vector_T<uint32_t>(x, what, swap);
-  case 6: return cast_vector_T<int32_t>(x, what, swap);
+  case 1: return cast_vector_T<int8_t>(x, what, swap);
+  case 2: return cast_vector_T<uint8_t>(x, what, swap);
+  case 3: return cast_vector_T<int16_t>(x, what, swap);
+  case 4: return cast_vector_T<uint16_t>(x, what, swap);
+  case 5: return cast_vector_T<int32_t>(x, what, swap);
+  case 6: return cast_vector_T<uint32_t>(x, what, swap);
   case 7: return cast_vector_T<float_t>(x, what, swap);
   case 8: return cast_vector_T<double_t>(x, what, swap);
   }
@@ -203,7 +203,7 @@ Rcpp::RawVector cast_image_T (SEXP x,
 //' Casts image from RAW, INT or REAL SEXP vector
 //' @param x SEXP, the image to cast
 //' @param what uint8_t, type to use for casting. Default is \code{1}.
-//' Allowed are 1=uint8_t, 2=int8_t, 3=uint16_t, 4=int16_t, 5=uint32_t, 6=int32_t, 7=float_t, 8=double_t.
+//' Allowed are 1=int8_t, 2=uint8_t, 3=int16_t, 4=uint16_t, 5=int32_t, 6=uint32_t, 7=float_t, 8=double_t.
 //' @param swap bool, whether single scalar values of \code{x} should be swap. Default is \code{false}.
 //' @return a Rcpp::RawVector
 //' @keywords internal
@@ -213,12 +213,12 @@ Rcpp::RawVector hpp_cast_image ( SEXP x,
                                  const uint8_t what = 1,
                                  const bool swap = false) {
   switch( what ) {
-  case 1: return cast_image_T<uint8_t>(x, what, swap);
-  case 2: return cast_image_T<int8_t>(x, what, swap);
-  case 3: return cast_image_T<uint16_t>(x, what, swap);
-  case 4: return cast_image_T<int16_t>(x, what, swap);
-  case 5: return cast_image_T<uint32_t>(x, what, swap);
-  case 6: return cast_image_T<int32_t>(x, what, swap);
+  case 1: return cast_image_T<int8_t>(x, what, swap);
+  case 2: return cast_image_T<uint8_t>(x, what, swap);
+  case 3: return cast_image_T<int16_t>(x, what, swap);
+  case 4: return cast_image_T<uint16_t>(x, what, swap);
+  case 5: return cast_image_T<int32_t>(x, what, swap);
+  case 6: return cast_image_T<uint32_t>(x, what, swap);
   case 7: return cast_image_T<float_t>(x, what, swap);
   case 8: return cast_image_T<double_t>(x, what, swap);
   }
@@ -449,14 +449,14 @@ Rcpp::RawVector hpp_tag_extcnt_T ( const Rcpp::Vector<RTYPE>&map,
   switch(typ) {
   case 1: return as<Rcpp::RawVector>(map);
   case 2: return hpp_string_to_raw(as<Rcpp::CharacterVector>(map), bytes);
-  case 3: return cast_vector(map, 3, swap);
-  case 4: return cast_vector(map, 5, swap);
-  case 5: return cast_vector(map, 5, swap);
+  case 3: return cast_vector(map, 4, swap);
+  case 4: return cast_vector(map, 6, swap);
+  case 5: return cast_vector(map, 6, swap);
   case 6: return as<Rcpp::RawVector>(map);
   case 7: return as<Rcpp::RawVector>(map);
-  case 8: return cast_vector(map, 4, swap);
-  case 9: return cast_vector(map, 6, swap);
-  case 10: return cast_vector(map, 6, swap);
+  case 8: return cast_vector(map, 3, swap);
+  case 9: return cast_vector(map, 5, swap);
+  case 10: return cast_vector(map, 5, swap);
   case 11: return cast_vector(map, 7, swap);
   case 12: return cast_vector(map, 8, swap);
   }
@@ -603,7 +603,7 @@ Rcpp::RawVector hpp_writeIFD ( const Rcpp::RawVector img,
     Rcpp::List::create(_["tag"] = 279, _["typ"] = 4, _["map"] = 0),
     Rcpp::List::create(_["tag"] = 284, _["typ"] = 3, _["map"] = 1),
     Rcpp::List::create(_["tag"] = 305, _["typ"] = 2, _["map"] = Rcpp::collapse(ver)),
-    Rcpp::List::create(_["tag"] = 339, _["typ"] = 3, _["map"] = rep(what > 6 ? 3 : what % 2 ? 1 : 2, d[2]))
+    Rcpp::List::create(_["tag"] = 339, _["typ"] = 3, _["map"] = rep(what > 6 ? 3 : what % 2 ? 2 : 1, d[2]))
   );
   if(!((rgb && (d[2] == 3)) || (d[2] <= 1))) {
     default_ifd = hpp_c(default_ifd, Rcpp::List::create(Rcpp::List::create(_["tag"] = 338, _["typ"] = 3, _["map"] = rep(0, d[2] - 1)))); 

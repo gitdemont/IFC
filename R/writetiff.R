@@ -55,7 +55,7 @@ setupimage <- function(image, what, compression, endianness = .Platform$endian) 
             length(endianness) == 1 && endianness %in% c("little","big"))
   
   # determine type and bits
-  z = switch(what, "uint8" = 1, "int8" = 2, "uint16" = 3, "int16" = 4, "uint32" = 5, "int32" = 6, "float" = 7, "double" = 8, 0)
+  z = switch(what, "int8" = 1, "uint8" = 2, "int16" = 3, "uint16" = 4, "int32" = 5, "uint32" = 6, "float" = 7, "double" = 8, 0)
   ans = cpp_cast_image(image, z, !identical(endianness, .Platform$endian))
   a = attributes(ans)
   
