@@ -37,7 +37,8 @@ If \code{'offsets'} are not provided, extra arguments can also be passed with \c
 A list (for every extracted objects) of list (for every exported channels) depending on '\code{param$export}' parameter:\cr
 -\code{"matrix"}, a matrix when '\code{param$mode}' is set to \code{"raw"} or \code{"gray"} OR an array when '\code{param$mode}' is \code{"rgb"},\cr
 -\code{"base64"}, a data-uri string,\cr
--\code{"file"}, an invisible file path corresponding to the location of exported file(s).
+-\code{"file"}, an invisible file path corresponding to the location of exported file(s).\cr
+-\code{"multi"}, an invisible file path corresponding to the location of exported file(s).
 }
 \description{
 Function to shortcut extraction, normalization and eventually colorization of images or masks to various format.

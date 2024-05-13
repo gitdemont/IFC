@@ -32,8 +32,8 @@
 .onLoad <- function(libname, pkgname) {
   data_avl <- requireNamespace("IFCdata", quietly = TRUE)
   image_deps_avl <- c(jpeg = requireNamespace("jpeg", quietly = TRUE),
-                      png = requireNamespace("png", quietly = TRUE),
-                      tiff = requireNamespace("tiff", quietly = TRUE))
+                      png = requireNamespace("png", quietly = TRUE))
+  .pkgenv[["version"]] <- packageVersion("IFC")
   .pkgenv[["data_avl"]] <- data_avl
   .pkgenv[["image_deps_avl"]] <- image_deps_avl
   invisible()
@@ -41,7 +41,7 @@
 
 .onAttach <- function(lib, pkg) {
   # startup message
-  msg <- c(paste("Package 'IFC' version", packageVersion("IFC")),
+  msg <- c(paste("Package 'IFC' version", .pkgenv[["version"]]),
            "\nType `citation(\"IFC\")` for citing this R package in publications.")
   if(!.pkgenv[["data_avl"]]) {
     msg <- c(msg,

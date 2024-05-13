@@ -54,7 +54,7 @@ polyExtractTo <- function(...,
                           mode = "raw") {
   # check mandatory parameters
   assert(image_type, len = 1, alw = c("img", "msk"))
-  assert(export, len = 1, alw = c("file", "matrix", "base64"))
+  assert(export, len = 1, alw = c("file", "matrix", "base64", "multi"))
   
   dots=list(...)
   
@@ -103,7 +103,11 @@ polyExtractTo <- function(...,
     assert(mode, len = 1, alw = c("rgb", "gray", "raw"))
     write_to = "%o_%c.bmp"
   } else {
-    assert(mode, len = 1, alw = c("rgb", "gray"))
+    if(export == "multi") {
+      assert(mode, len = 1, alw = "raw")
+    } else {
+      assert(mode, len = 1, alw = c("rgb", "gray"))
+    }
     write_to = NULL
     if(export == "base64") {
       write_to = "%o_%c.bmp"
@@ -111,10 +115,8 @@ polyExtractTo <- function(...,
       overwrite = dots[["overwrite"]]
     }
     if(length(param) != 0) {
-      if(((param$export == "file") && (export == "file")) ||
-         (export != "file")) {
-        write_to = param$write_to
-      }
+      if(((param$export == "file") && (export == "file")) || (export != "file")) write_to = param$write_to
+      if(((param$export == "multi") && (export == "multi")) || (export != "multi")) write_to = param$write_to
       base64_id = param$base64_id
       base64_att = param$base64_att
     }
@@ -467,3 +469,63 @@ ExtractMasks_toBase64 <- function(...,
   do.call(what = polyExtractTo, args = c(dots, args))
 }
 
+
+#' @title Shortcut for Batch Images Extraction to Multichannel Tiff
+#' @description
+#' Function to shortcut extraction images to multichannel tiff ! excludes mask.
+#' @inheritParams ExtractMasks_toMatrix
+#' @param write_to used to compute respectively exported file name.\cr
+#' Exported \code{"multi"} extension will be deduced from this pattern. Allowed export are \code{".tif"}, code{".tiff"}.
+#' Placeholders, if found, will be substituted:\cr
+#' -\code{\%d}: with full path directory,\cr
+#' -\code{\%p}: with first parent directory,\cr
+#' -\code{\%e}: with extension (without leading .),\cr
+#' -\code{\%s}: with shortname (i.e. basename without extension),\cr
+#' -\code{\%o}: with object_id,\cr
+#' A good trick is to use: \code{"\%d/\%s/\%s_\%o.tiff"}.
+#' @param overwrite whether to overwrite file or not. Default is \code{FALSE}.
+#' @note Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractImages_toMulti}} input arguments.
+#' @details If \code{'param'} is provided in \code{'...'}:\cr
+#' -\code{'param$export'<-"multi"}, \code{'param$mode'<-"raw"} and \code{'param$overwrite'<-'overwrite'} will be overwritten.\cr
+#' -if \code{'write_to'} is not missing, \code{'param$write_to'<-'write_to'} will be overwritten. Otherwise, \code{'param$write_to'} will be used \strong{only} if \code{'param$export'} was \code{"multi"}.\cr\cr
+#' \code{'write_to'} has to be provided if \code{'param'} can't be found in \code{'...'} or if \code{'param$export'} was not \code{"multi"}. 
+#' @return It invisibly returns a list of exported file path of corresponding to objects extracted.
+#' @export
+ExtractImages_toMulti <- function(...,
+                                  objects,
+                                  offsets,
+                                  display_progress = TRUE,
+                                  write_to,
+                                  overwrite = FALSE) {
+  dots = list(...)
+  dots = dots[!(names(dots) %in% c("image_type", "export"))]
+  args = list(image_type = "img", export = "multi", mode = "raw")
+  if(!missing(objects)) args = c(args, list(objects = objects))
+  if(!missing(offsets)) args = c(args, list(offsets = offsets))
+  args = c(args, list(display_progress = display_progress, overwrite = overwrite))
+  if(!missing(write_to)) args = c(args, list(write_to = write_to))
+  do.call(what = polyExtractTo, args = c(dots, args))
+}
+
+#' @title Shortcut for Batch Masks Extraction to Multichannel Tiff
+#' @description
+#' Function to shortcut extraction of masks to multichannel tiff ! excludes image.
+#' @inheritParams ExtractImages_toFile
+#' @note Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractMasks_toMulti}} input arguments.
+#' @inherit ExtractImages_toMulti details return
+#' @export
+ExtractMasks_toMulti <- function(...,
+                                 objects,
+                                 offsets,
+                                 display_progress = TRUE,
+                                 write_to,
+                                 overwrite = FALSE) {
+  dots = list(...)
+  dots = dots[!(names(dots) %in% c("image_type", "export"))]
+  args = list(image_type = "msk", export = "multi", mode = "raw")
+  if(!missing(objects)) args = c(args, list(objects = objects))
+  if(!missing(offsets)) args = c(args, list(offsets = offsets))
+  args = c(args, list(display_progress = display_progress, overwrite = overwrite))
+  if(!missing(write_to)) args = c(args, list(write_to = write_to))
+  do.call(what = polyExtractTo, args = c(dots, args))
+}

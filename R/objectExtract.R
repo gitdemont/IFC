@@ -107,7 +107,8 @@
 #' @return A list (for every extracted objects) of list (for every exported channels) depending on '\code{param$export}' parameter:\cr
 #' -\code{"matrix"}, a matrix when '\code{param$mode}' is set to \code{"raw"} or \code{"gray"} OR an array when '\code{param$mode}' is \code{"rgb"},\cr
 #' -\code{"base64"}, a data-uri string,\cr
-#' -\code{"file"}, an invisible file path corresponding to the location of exported file(s). 
+#' -\code{"file"}, an invisible file path corresponding to the location of exported file(s).\cr
+#' -\code{"multi"}, an invisible file path corresponding to the location of exported file(s).
 #' @export
 objectExtract <- function(ifd, 
                           param, 
@@ -142,7 +143,7 @@ objectExtract <- function(ifd,
     }
   }
   # create dir to export files
-  if(param$export == "file") if(!dir.exists(param$dir_name)) if(!dir.create(param$dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", param$dir_name))
+  if(param$export == "file" || param$export == "multi") if(!dir.exists(param$dir_name)) if(!dir.create(param$dir_name, recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", param$dir_name))
   
   # shortcut
   chan_to_extract = param$chan_to_extract
@@ -202,6 +203,24 @@ objectExtract <- function(ifd,
     
     ##### export image
     switch(param$export,
+           "multi" = { #TODO add code to fill ImageDescription TAG 270
+             export_name = formatn(splitp_obj = param$splitp_obj,
+                                   splitf_obj = param$splitf_obj,
+                                   object = n_ifd[i_ifd])
+             if(file.exists(export_name)) {
+               if(param$overwrite) {
+                 objectWrite(x = array(unlist(img, use.names = FALSE, recursive = TRUE), dim =  c(dim(img[[1]]), length(img), 1)),
+                             type = "multi", export_name, tags = list(list(tag = 33003, typ = 4, map = n_ifd[i_ifd])))
+               } else {
+                 warning(paste0("multi ", export_name, " already exists and will not be overwritten"), call. = FALSE, immediate. = TRUE)
+               }
+             } else {
+               if(!dir.exists(dirname(export_name))) if(!dir.create(dirname(export_name), recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dirname(export_name)))
+               objectWrite(x = array(unlist(img, use.names = FALSE, recursive = TRUE), dim =  c(dim(img), length(img), 1)),
+                           type = "multi", export_name, tags = list(list(tag = 33003, typ = 4, map = n_ifd[i_ifd])))
+             }
+             img = normalizePath(export_name, winslash = "/", mustWork = FALSE)
+           }, 
            "file" = {
              img = lapply(1:length(img), FUN = function(i) {
                export_name = formatn(splitp_obj = param$splitp_obj,
@@ -246,14 +265,14 @@ objectExtract <- function(ifd,
                })
              }
            })
-    names(img) <- c(channels$name[channels$physicalChannel %in% chan_to_keep],composite)
+    if(param$export != "multi") names(img) <- c(channels$name[channels$physicalChannel %in% chan_to_keep],composite)
     attr(img, "object_id") <- ifd[[i_ifd]]$infos$OBJECT_ID # adds object_id number so as to further check that extracted image is expected one
     attr(img, "offset_id") <- n_ifd[i_ifd] # adds offset_id number further check that extracted mask is expected one
     attr(img, "channel_id") <- c(chan_to_keep, composite) # adds channel_id (physical's one) number so as to be able to create a Gallery
     attr(img, "removal") <- param$removal
     return(img)
   }))
-  if(param$export == "file") {
+  if(param$export == "file" || param$export == "multi") {
     return(invisible(foo))
   }
   return(foo)

@@ -35,9 +35,9 @@
 #' This argument is not mandatory but it may allow to save time for repeated image export on same file.
 #' If missing, the default, \code{'info'} will be extracted thanks to \code{'...'}.
 #' @param mode color mode export. Either \code{"rgb"}, \code{"gray"} or \code{"raw"}. Default is \code{"raw"}.
-#' Note that \code{"raw"} is only possible when \code{'export'} is \code{"matrix"}.
-#' @param export format mode export. Either \code{"file"}, \code{"matrix"}, \code{"base64"}. Default is \code{"matrix"}.
-#' @param write_to used when export is \code{"file"} or \code{"base64"} to compute respectively exported file name or base64 id attribute.\cr
+#' Note that \code{"raw"} is only possible when \code{'export'} is \code{"matrix"} or \code{"multi"}.
+#' @param export format mode export. Either \code{"file"}, \code{"matrix"}, \code{"base64"}, or \code{"multi"}. Default is \code{"matrix"}.
+#' @param write_to used when export is not \code{"matrix"} to compute exported file name or base64 id attribute.\cr
 #' Exported file extension and base64 MIME type will be deduced from this pattern. Allowed export are \code{".bmp"}, \code{".jpg"}, \code{".jpeg"}, \code{".png"}, \code{".tif"}, \code{".tiff"}.
 #' Note that \code{".bmp"} are faster but not compressed producing bigger data.\cr
 #' Placeholders, if found, will be substituted:\cr
@@ -46,9 +46,10 @@
 #' -\code{\%e}: with extension (without leading .),\cr
 #' -\code{\%s}: with shortname (i.e. basename without extension),\cr
 #' -\code{\%o}: with object_id,\cr
-#' -\code{\%c}: with channel_id.\cr
+#' -\code{\%c}: with channel_id (not possible when \code{'export'} is \code{"multi"}).\cr
 #' A good trick is to use:\cr
 #' -\code{"\%d/\%s/\%s_\%o_\%c.tiff"}, when \code{'export'} is \code{"file"},\cr
+#' -\code{"\%d/\%s/\%s_\%o.tiff"}, when \code{'export'} is \code{"multi"},\cr
 #' -\code{"\%o_\%c.bmp"}, when \code{'export'} is \code{"base64"}.\cr
 #' Note that if missing and \code{'export'} is not \code{"file"}, \code{'write_to'} will be set to \code{"\%o_\%c.bmp"}.
 #' @param base64_id whether to add id attribute to base64 exported object. Default is \code{FALSE}.\cr
@@ -96,7 +97,7 @@
 objectParam <- function(...,
                         info,
                         mode = c("rgb", "gray", "raw")[3],
-                        export = c("file", "matrix", "base64")[2],
+                        export = c("file", "matrix", "base64", "multi")[2],
                         write_to,
                         base64_id = FALSE,
                         base64_att = "",
@@ -148,7 +149,7 @@ objectParam <- function(...,
   full_range = as.logical(full_range); assert(full_range, alw = c(TRUE,FALSE))
   force_range = as.logical(force_range); assert(force_range, alw = c(TRUE,FALSE))
   spatial_correction = as.logical(spatial_correction); assert(spatial_correction, alw = c(TRUE, FALSE))
-  assert(export, len = 1, alw = c("file", "matrix", "base64")) 
+  assert(export, len = 1, alw = c("file", "matrix", "base64", "multi")) 
   assert(mode, len = 1, alw = c("rgb", "gray", "raw")) 
   overwrite = as.logical(overwrite); assert(overwrite, alw = c(TRUE, FALSE))
   
@@ -273,10 +274,11 @@ objectParam <- function(...,
   ##### compute extre param for export == "file" or ""base64"
   ans$splitf_obj <- splitf(ans$fileName_image)
   if(export != "matrix") { 
-    if(mode == "raw") stop("can't export as \"raw\" when '", export, "' is choosen")
-    if(export == "file") { # file
+    if((mode == "raw" && export != "multi") ||
+       (mode != "raw" && export == "multi")) stop("can't 'export' to \"",export,"\" when 'mode' \"", mode, "\" is choosen")
+    if(export == "file" || export == "multi") { # file
       # not allowed to write file without user input
-      if(missing(write_to)) stop("'write_to' can't be missing when 'export' is \"file\"")
+      if(missing(write_to)) stop("'write_to' can't be missing when 'export' is \"file\" or \"multi\"")
     } else { # base64
       base64_id = as.logical(base64_id)
       assert(base64_id, len = 1, alw = c(TRUE,FALSE))
@@ -296,9 +298,10 @@ objectParam <- function(...,
   type = getFileExt(ans$write_to)
   switch(type,
          "jpg" = {type <- "jpeg"},
-         "tif" = {type <- "tiff"})
+         "tif" = {type <- "tiff"} )
   ##### check type
   assert(type, len = 1, alw = c("bmp", "jpeg", "png", "tiff"))
+  if(export == "multi" && type != "tiff") stop("when 'export' is \"multi\", file extension has to be \"tiff\" not \"", type, "\"")
   ans$type <- type
   
   class(ans) <- "IFC_param"

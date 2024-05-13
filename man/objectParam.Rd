@@ -8,7 +8,7 @@ objectParam(
   ...,
   info,
   mode = c("rgb", "gray", "raw")[3],
-  export = c("file", "matrix", "base64")[2],
+  export = c("file", "matrix", "base64", "multi")[2],
   write_to,
   base64_id = FALSE,
   base64_att = "",
@@ -33,11 +33,11 @@ This argument is not mandatory but it may allow to save time for repeated image 
 If missing, the default, \code{'info'} will be extracted thanks to \code{'...'}.}
 
 \item{mode}{color mode export. Either \code{"rgb"}, \code{"gray"} or \code{"raw"}. Default is \code{"raw"}.
-Note that \code{"raw"} is only possible when \code{'export'} is \code{"matrix"}.}
+Note that \code{"raw"} is only possible when \code{'export'} is \code{"matrix"} or \code{"multi"}.}
 
-\item{export}{format mode export. Either \code{"file"}, \code{"matrix"}, \code{"base64"}. Default is \code{"matrix"}.}
+\item{export}{format mode export. Either \code{"file"}, \code{"matrix"}, \code{"base64"}, or \code{"multi"}. Default is \code{"matrix"}.}
 
-\item{write_to}{used when export is \code{"file"} or \code{"base64"} to compute respectively exported file name or base64 id attribute.\cr
+\item{write_to}{used when export is not \code{"matrix"} to compute exported file name or base64 id attribute.\cr
 Exported file extension and base64 MIME type will be deduced from this pattern. Allowed export are \code{".bmp"}, \code{".jpg"}, \code{".jpeg"}, \code{".png"}, \code{".tif"}, \code{".tiff"}.
 Note that \code{".bmp"} are faster but not compressed producing bigger data.\cr
 Placeholders, if found, will be substituted:\cr
@@ -46,9 +46,10 @@ Placeholders, if found, will be substituted:\cr
 -\code{\%e}: with extension (without leading .),\cr
 -\code{\%s}: with shortname (i.e. basename without extension),\cr
 -\code{\%o}: with object_id,\cr
--\code{\%c}: with channel_id.\cr
+-\code{\%c}: with channel_id (not possible when \code{'export'} is \code{"multi"}).\cr
 A good trick is to use:\cr
 -\code{"\%d/\%s/\%s_\%o_\%c.tiff"}, when \code{'export'} is \code{"file"},\cr
+-\code{"\%d/\%s/\%s_\%o.tiff"}, when \code{'export'} is \code{"multi"},\cr
 -\code{"\%o_\%c.bmp"}, when \code{'export'} is \code{"base64"}.\cr
 Note that if missing and \code{'export'} is not \code{"file"}, \code{'write_to'} will be set to \code{"\%o_\%c.bmp"}.}
 

@@ -2,7 +2,7 @@ Package: IFC
 Encoding: UTF-8
 Type: Package
 Title: Tools for Imaging Flow Cytometry
-Version: 0.2.1.504
+Version: 0.2.1.600
 Date: 2024-05-13
 Maintainer: Yohann Demont <git.demont@gmail.com>
 Authors@R: c(person(given = 'Yohann', family = 'Demont', email = 'git.demont@gmail.com', role = c('aut', 'cre')), person(given = 'Gautier', family = 'Stoll', role = 'ctb'), person(given = 'Guido', family = 'Kroemer', role = 'ldr'), person(given = 'Jean-Pierre', family = 'Marolleau', role = 'ldr'), person(given = 'Loïc', family = 'Garçon', role = 'ldr'))
@@ -12,6 +12,6 @@ Copyright: file inst/COPYRIGHTS
 License: GPL-3
 Depends: R (>= 3.4.0)
 Imports: Rcpp (>= 0.10.0), xml2, utils, grid, gridExtra, gridGraphics, lattice, latticeExtra, KernSmooth, DT, visNetwork
-Suggests: IFCdata, shiny, reticulate, png, tiff, jpeg
+Suggests: IFCdata, shiny, reticulate, png, jpeg
 LinkingTo: Rcpp
 Additional_repositories: https://gitdemont.github.io/IFCdata/

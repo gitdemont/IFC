@@ -679,6 +679,34 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_cast_image
+Rcpp::RawVector cpp_cast_image(SEXP x, const uint8_t what, const bool swap);
+RcppExport SEXP _IFC_cpp_cast_image(SEXP xSEXP, SEXP whatSEXP, SEXP swapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const uint8_t >::type what(whatSEXP);
+    Rcpp::traits::input_parameter< const bool >::type swap(swapSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_cast_image(x, what, swap));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_writeIFD
+Rcpp::RawVector cpp_writeIFD(const Rcpp::RawVector img, const Rcpp::List tags, const uint32_t offset, const std::string endianness, const bool rgb, const bool last, const bool verbose);
+RcppExport SEXP _IFC_cpp_writeIFD(SEXP imgSEXP, SEXP tagsSEXP, SEXP offsetSEXP, SEXP endiannessSEXP, SEXP rgbSEXP, SEXP lastSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const Rcpp::RawVector >::type img(imgSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List >::type tags(tagsSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type endianness(endiannessSEXP);
+    Rcpp::traits::input_parameter< const bool >::type rgb(rgbSEXP);
+    Rcpp::traits::input_parameter< const bool >::type last(lastSEXP);
+    Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_writeIFD(img, tags, offset, endianness, rgb, last, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_getBits", (DL_FUNC) &_IFC_cpp_getBits, 0},
@@ -734,6 +762,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_transform", (DL_FUNC) &_IFC_cpp_transform, 15},
     {"_IFC_cpp_extract", (DL_FUNC) &_IFC_cpp_extract, 18},
     {"_IFC_cpp_readFCS", (DL_FUNC) &_IFC_cpp_readFCS, 7},
+    {"_IFC_cpp_cast_image", (DL_FUNC) &_IFC_cpp_cast_image, 3},
+    {"_IFC_cpp_writeIFD", (DL_FUNC) &_IFC_cpp_writeIFD, 7},
     {NULL, NULL, 0}
 };
 

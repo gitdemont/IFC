@@ -38,7 +38,8 @@ objectWrite <- function(x, type, ...) {
   dots=list(...)
   switch(type, 
          png = png::writePNG(image = x, ...),
-         tiff = tiff::writeTIFF(what = x, ...),
+         tiff = writetiff(image = x, ..., what = "uint8"),
+         multi = writemulti(image = x, ..., what = "int16"),
          jpeg = jpeg::writeJPEG(image = x, ...),
          bmp = {
            if((length(dots) != 0)) {

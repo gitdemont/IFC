@@ -58,9 +58,9 @@ However, if \code{'param'} is provided, \code{'...'} will be \strong{ignored}.}
 This argument is not mandatory but it may allow to save time for repeated image export on same file.
 If missing, the default, \code{'info'} will be extracted thanks to \code{'...'}.}
     \item{\code{mode}}{color mode export. Either \code{"rgb"}, \code{"gray"} or \code{"raw"}. Default is \code{"raw"}.
-Note that \code{"raw"} is only possible when \code{'export'} is \code{"matrix"}.}
-    \item{\code{export}}{format mode export. Either \code{"file"}, \code{"matrix"}, \code{"base64"}. Default is \code{"matrix"}.}
-    \item{\code{write_to}}{used when export is \code{"file"} or \code{"base64"} to compute respectively exported file name or base64 id attribute.\cr
+Note that \code{"raw"} is only possible when \code{'export'} is \code{"matrix"} or \code{"multi"}.}
+    \item{\code{export}}{format mode export. Either \code{"file"}, \code{"matrix"}, \code{"base64"}, or \code{"multi"}. Default is \code{"matrix"}.}
+    \item{\code{write_to}}{used when export is not \code{"matrix"} to compute exported file name or base64 id attribute.\cr
 Exported file extension and base64 MIME type will be deduced from this pattern. Allowed export are \code{".bmp"}, \code{".jpg"}, \code{".jpeg"}, \code{".png"}, \code{".tif"}, \code{".tiff"}.
 Note that \code{".bmp"} are faster but not compressed producing bigger data.\cr
 Placeholders, if found, will be substituted:\cr
@@ -69,9 +69,10 @@ Placeholders, if found, will be substituted:\cr
 -\code{\%e}: with extension (without leading .),\cr
 -\code{\%s}: with shortname (i.e. basename without extension),\cr
 -\code{\%o}: with object_id,\cr
--\code{\%c}: with channel_id.\cr
+-\code{\%c}: with channel_id (not possible when \code{'export'} is \code{"multi"}).\cr
 A good trick is to use:\cr
 -\code{"\%d/\%s/\%s_\%o_\%c.tiff"}, when \code{'export'} is \code{"file"},\cr
+-\code{"\%d/\%s/\%s_\%o.tiff"}, when \code{'export'} is \code{"multi"},\cr
 -\code{"\%o_\%c.bmp"}, when \code{'export'} is \code{"base64"}.\cr
 Note that if missing and \code{'export'} is not \code{"file"}, \code{'write_to'} will be set to \code{"\%o_\%c.bmp"}.}
     \item{\code{base64_id}}{whether to add id attribute to base64 exported object. Default is \code{FALSE}.\cr
@@ -116,7 +117,8 @@ Note that this parameter takes the precedence over \code{'full_range'}.}
 A list (for every extracted objects) of list (for every exported channels) depending on '\code{param$export}' parameter:\cr
 -\code{"matrix"}, a matrix when '\code{param$mode}' is set to \code{"raw"} or \code{"gray"} OR an array when '\code{param$mode}' is \code{"rgb"},\cr
 -\code{"base64"}, a data-uri string,\cr
--\code{"file"}, an invisible file path corresponding to the location of exported file(s).
+-\code{"file"}, an invisible file path corresponding to the location of exported file(s).\cr
+-\code{"multi"}, an invisible file path corresponding to the location of exported file(s).
 }
 \description{
 Extracts / Decompress objects stored in RIF or CIF Files.

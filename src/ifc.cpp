@@ -45,6 +45,7 @@
 #include "../inst/include/group.hpp"
 #include "../inst/include/plot.hpp"
 #include "../inst/include/fcs.hpp"
+#include "../inst/include/tiffwrite.hpp"
 using namespace Rcpp;
 
 //' @title Get Current Compilation Bits Depth
@@ -59,7 +60,6 @@ unsigned int cpp_getBits () {
   std::size_t foo = 0;
   return sizeof(foo);
 }
-
 
 // FROM align
 //' @title Spatial Offsets Image Correction
@@ -1147,3 +1147,51 @@ Rcpp::NumericVector cpp_readFCS (const std::string fname,
   return hpp_readFCS(fname, offset, events, b_typ, b_siz, b_msk, swap);
  }
 // END fcs
+
+// FROM tiffwrite
+//' @title Cast Image
+//' @name cpp_cast_image
+//' @description
+//' Casts image from RAW, INT or REAL SEXP vector
+//' @param x SEXP, the image to cast
+//' @param what uint8_t, type to use for casting. Default is \code{1}.
+//' Allowed are 1=uint8_t, 2=int8_t, 3=uint16_t, 4=int16_t, 5=uint32_t, 6=int32_t, 7=float_t, 8=double_t.
+//' @param swap bool, whether single scalar values of \code{x} should be swap. Default is \code{false}.
+//' @return a Rcpp::RawVector
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+Rcpp::RawVector cpp_cast_image ( SEXP x,
+                                 const uint8_t what = 1,
+                                 const bool swap = false) {
+  return hpp_cast_image(x, what, swap);
+}
+
+
+//' @title IFD Tag Writter
+//' @name cpp_writeIFD
+//' @description
+//' Writes TIFF IFD (Image Field Directory).
+//' @param img RawVector, an encoded image. It should contain 'dims', 'what' and 'comp' attributes.
+//' @param tags List, extra tags to be included to IFD. Expecting a list whose sub-elements are list containing:\cr
+//' -'tag' uint16_t, tag number, it should be [1-65535],\cr
+//' -'typ' uint16_t typ number, it should be [1-12],\cr
+//' -'map' SEXP vector of values to write, it should not be empty and should be even for 'typ' 5 and 10.
+//' @param offset std::size_t, position of the IFD beginning. Default is \code{0}.
+//' @param endianness std::string, "little" or "big".
+//' @param rgb bool, whether to write channels as rgb. Default is \code{false}.
+//' @param last bool, whether IFD is the last one. Default is \code{false}.
+//' @param verbose bool, whether to display information (use for debugging purpose). Default is \code{false}.
+//' @return a RawVector
+////' @export
+// [[Rcpp::export(rng = false)]]
+Rcpp::RawVector cpp_writeIFD ( const Rcpp::RawVector img,
+                               const Rcpp::List tags,
+                               const uint32_t offset = 0,
+                               const std::string endianness = "little",
+                               const bool rgb = false,
+                               const bool last = false,
+                               const bool verbose = false) {
+  return hpp_writeIFD(img, tags, offset, endianness, rgb, last, verbose);
+}
+// END tiffwrite
