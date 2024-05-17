@@ -201,6 +201,9 @@ objectExtract <- function(ifd,
       return(tmp)
     }))
     
+    meta = list("269" = list(tag = 269, typ = 2, map = n_ifd[i_ifd]),
+                "33003" = list(tag = 33003, typ = 4, map = ifd[[i_ifd]]$infos$OBJECT_ID))
+    
     ##### export image
     switch(param$export,
            "multi" = { #TODO add code to fill ImageDescription TAG 270
@@ -210,14 +213,14 @@ objectExtract <- function(ifd,
              if(file.exists(export_name)) {
                if(param$overwrite) {
                  objectWrite(x = array(unlist(img, use.names = FALSE, recursive = TRUE), dim =  c(dim(img[[1]]), length(img), 1)),
-                             type = "multi", export_name, tags = list(list(tag = 33003, typ = 4, map = n_ifd[i_ifd])))
+                             type = "multi", export_name, tags = meta)
                } else {
                  warning(paste0("multi ", export_name, " already exists and will not be overwritten"), call. = FALSE, immediate. = TRUE)
                }
              } else {
                if(!dir.exists(dirname(export_name))) if(!dir.create(dirname(export_name), recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dirname(export_name)))
                objectWrite(x = array(unlist(img, use.names = FALSE, recursive = TRUE), dim =  c(dim(img), length(img), 1)),
-                           type = "multi", export_name, tags = list(list(tag = 33003, typ = 4, map = n_ifd[i_ifd])))
+                           type = "multi", export_name, tags = meta)
              }
              img = normalizePath(export_name, winslash = "/", mustWork = FALSE)
            }, 
@@ -229,13 +232,13 @@ objectExtract <- function(ifd,
                                      object = n_ifd[i_ifd])
                if(file.exists(export_name)) {
                  if(param$overwrite) {
-                   objectWrite(x = img[[i]], type = param$type, export_name)
+                   objectWrite(x = img[[i]], type = param$type, export_name, tags = meta)
                  } else {
                    warning(paste0("file ", export_name, " already exists and will not be overwritten"), call. = FALSE, immediate. = TRUE)
                  }
                } else {
                  if(!dir.exists(dirname(export_name))) if(!dir.create(dirname(export_name), recursive = TRUE, showWarnings = FALSE)) stop(paste0("can't create\n", dirname(export_name)))
-                 objectWrite(x = img[[i]], type = param$type, export_name)
+                 objectWrite(x = img[[i]], type = param$type, export_name, tags = meta)
                }
                return(normalizePath(export_name, winslash = "/", mustWork = FALSE))
              })

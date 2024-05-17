@@ -1177,7 +1177,7 @@ Rcpp::RawVector cpp_cast_image ( SEXP x,
 //' -'tag' uint16_t, tag number, it should be [1-65535],\cr
 //' -'typ' uint16_t typ number, it should be [1-12],\cr
 //' -'map' SEXP vector of values to write, it should not be empty and should be even for 'typ' 5 and 10.
-//' @param offset std::size_t, position of the IFD beginning. Default is \code{0}.
+//' @param offset uint32_t, position of the IFD beginning. Default is \code{0}.
 //' @param endianness std::string, "little" or "big".
 //' @param rgb bool, whether to write channels as rgb. Default is \code{false}.
 //' @param last bool, whether IFD is the last one. Default is \code{false}.

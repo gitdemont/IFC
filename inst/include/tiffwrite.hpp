@@ -46,7 +46,7 @@ static uint8_t wsizes[9] = {0,1,1,2,2,4,4,4,8};
 
 // [[Rcpp::export(rng = false)]]
 Rcpp::RawVector uint16_to_raw (const uint16_t x) {
-  Rcpp::RawVector out(2);
+  Rcpp::RawVector out = Rcpp::no_init_vector(2);
   out[0] = (x      ) & 0xff;
   out[1] = (x >>  8) & 0xff;
   return out;
@@ -54,7 +54,7 @@ Rcpp::RawVector uint16_to_raw (const uint16_t x) {
 
 // [[Rcpp::export(rng = false)]]
 Rcpp::RawVector uint32_to_raw (const uint32_t x) {
-  Rcpp::RawVector out(4);
+  Rcpp::RawVector out = Rcpp::no_init_vector(4);
   out[0] = (x      ) & 0xff;
   out[1] = (x >>  8) & 0xff;
   out[2] = (x >> 16) & 0xff;
@@ -99,6 +99,7 @@ Rcpp::RawVector cast_vector_T (SEXP x,
       for(std::size_t i = 0, j = 0; i < foo.size(); i++, j += siz) toBYTE_T(foo[i], out, j, swap);
       return out;
     }
+    default: Rcpp::stop("cast_vector: 'x' not supported SEXPTYPE[%u]",  TYPEOF(x));
   }
   return 0;
 }
@@ -117,7 +118,7 @@ Rcpp::RawVector cast_vector ( SEXP x,
   case 7: return cast_vector_T<float_t>(x, what, swap);
   case 8: return cast_vector_T<double_t>(x, what, swap);
   }
-  Rcpp::stop("cast_vector: bad 'what' value");
+  Rcpp::stop("cast_vector: bad 'what' value[%u]", what);
   return 0;
 }
 
@@ -141,7 +142,7 @@ Rcpp::RawVector cast_image_T (SEXP x,
     for(R_len_t h = 0, j = 0; h < d[0]; h++) {
       for(R_len_t w = 0; w < d[1]; w++) {
         for(R_len_t c = 0; c < d[2]; c++) {
-          for(R_len_t f = 0; f < d[3]; f++, j += siz) {
+          for(R_len_t f = 0; f < d[3]; f++) {
             out[j++] = img[h + w * d[0] + c * d[1] * d[0] + f * d[2] * d[1] * d[0]];
           }
         }
@@ -156,9 +157,9 @@ Rcpp::RawVector cast_image_T (SEXP x,
     if(img.size() == 0) return def;
     Rcpp::IntegerVector d = img.hasAttribute("dim") ? img.attr("dim") : Rcpp::IntegerVector::create(img.size(), 1, 1, 1);
     while(d.size() < 4) d.push_back(1);
+    Rcpp::RawVector out = Rcpp::no_init_vector(img.size() * siz);
     std::vector<int> xx = as<std::vector<int>>(img);
     std::vector<T> foo(xx.begin(), xx.end());
-    Rcpp::RawVector out = Rcpp::no_init_vector(foo.size() * siz);
     for(R_len_t h = 0, j = 0; h < d[0]; h++) {
       for(R_len_t w = 0; w < d[1]; w++) {
         for(R_len_t c = 0; c < d[2]; c++) {
@@ -177,9 +178,9 @@ Rcpp::RawVector cast_image_T (SEXP x,
     if(img.size() == 0) return def;
     Rcpp::IntegerVector d = img.hasAttribute("dim") ? img.attr("dim") : Rcpp::IntegerVector::create(img.size(), 1, 1, 1);
     while(d.size() < 4) d.push_back(1);
+    Rcpp::RawVector out = Rcpp::no_init_vector(img.size() * siz);
     std::vector<double> xx = as<std::vector<double>>(img);
     std::vector<T> foo(xx.begin(), xx.end());
-    Rcpp::RawVector out = Rcpp::no_init_vector(foo.size() * siz);
     for(R_len_t h = 0, j = 0; h < d[0]; h++) {
       for(R_len_t w = 0; w < d[1]; w++) {
         for(R_len_t c = 0; c < d[2]; c++) {
@@ -222,7 +223,7 @@ Rcpp::RawVector hpp_cast_image ( SEXP x,
   case 7: return cast_image_T<float_t>(x, what, swap);
   case 8: return cast_image_T<double_t>(x, what, swap);
   }
-  Rcpp::stop("hpp_cast_image: bad 'what' value");
+  Rcpp::stop("hpp_cast_image: bad 'what' value[%u]", what);
   return 0;
 }
 
@@ -253,7 +254,7 @@ SEXP hpp_c ( SEXP x, SEXP y ) {
   case STRSXP: return hpp_c_T<STRSXP>(x, y);
   case RAWSXP: return hpp_c_T<RAWSXP>(x, y);
   case VECSXP: return hpp_c_T<VECSXP>(x, y);
-  default: Rcpp::stop("hpp_c: not supported type[%u] in 'x'",  TYPEOF(x));
+  default: Rcpp::stop("hpp_c: 'x' not supported SEXPTYPE[%u]",  TYPEOF(x));
   }
 }
 
@@ -269,6 +270,7 @@ Rcpp::CharacterVector getversion(const std::string pkg = "IFC") {
   Rcpp::Environment env = Rcpp::Environment::namespace_env(pkg);
   Rcpp::List L = env[".pkgenv"];
   Rcpp::List LL(0);
+  Rcpp::CharacterVector sep = Rcpp::CharacterVector::create(".");
   if(L.containsElementNamed("version")) {
     LL = L["version"];
   } else {
@@ -280,7 +282,7 @@ Rcpp::CharacterVector getversion(const std::string pkg = "IFC") {
     Rcpp::List LLL = LL[0];
     Rcpp::CharacterVector V(0);
     for(R_len_t i = 0; i < LLL.size(); i++) {
-      if(V.size()) V = hpp_c(V, Rcpp::CharacterVector::create("."));
+      if(V.size()) V = hpp_c(V, sep);
       V = hpp_c(V, Rcpp::CharacterVector::create(std::to_string(as<int>(LLL[i]))));
     }
     return V;
@@ -346,7 +348,7 @@ Rcpp::List hpp_tags_clean ( const Rcpp::List IFD, const R_len_t pos = 0, const b
         Rprintf("'ifd'@%u 'tag'[=%i] typ'[%i] should be [1-12]\n", i - pos, itag, ityp);
         isok = false;
       }
-      if(SEXPsize(ifd["map"]) == 0) {
+      if(SEXPsize(ifd["map"], verbose) == 0) {
         Rprintf("'ifd'@%u 'tag'[=%i] 'map' should not be a 0-length vector\n", i - pos, itag);
         isok = false;
       }
@@ -474,7 +476,7 @@ Rcpp::RawVector hpp_tag_extcnt ( SEXP map,
   case REALSXP: return hpp_tag_extcnt_T<REALSXP>(map, typ, tag, swap);
   case STRSXP: return hpp_tag_extcnt_T<STRSXP>(map, typ, tag, swap);
   case RAWSXP: return hpp_tag_extcnt_T<RAWSXP>(map, typ, tag, swap);
-  default: Rcpp::stop("hpp_tag_extcnt: not supported type[%u] in 'map'",  TYPEOF(map));
+  default: Rcpp::stop("hpp_tag_extcnt: 'map' not supported SEXPTYPE[%u]",  TYPEOF(map));
   }
 }
 
@@ -550,7 +552,7 @@ Rcpp::RawVector hpp_tag_mincnt ( SEXP map,
   case REALSXP: return hpp_tag_mincnt_T<REALSXP>(map, typ, tag, pos, swap);
   case STRSXP: return hpp_tag_mincnt_T<STRSXP>(map, typ, tag, pos, swap);
   case RAWSXP: return hpp_tag_mincnt_T<RAWSXP>(map, typ, tag, pos, swap);
-  default: Rcpp::stop("hpp_tag_mincnt: not supported type[%u] in 'map'", TYPEOF(map));
+  default: Rcpp::stop("hpp_tag_mincnt: 'map' not supported SEXPTYPE[%u]", TYPEOF(map));
   }
 }
 
@@ -563,7 +565,7 @@ Rcpp::RawVector hpp_tag_mincnt ( SEXP map,
 //' -'tag' uint16_t, tag number, it should be [1-65535],\cr
 //' -'typ' uint16_t typ number, it should be [1-12],\cr
 //' -'map' SEXP vector of values to write, it should not be empty and should be even for 'typ' 5 and 10.
-//' @param offset std::size_t, position of the IFD beginning. Default is \code{0}.
+//' @param offset uint32_t, position of the IFD beginning. Default is \code{0}.
 //' @param endianness std::string, "little" or "big".
 //' @param rgb bool, whether to write channels as rgb. Default is \code{false}.
 //' @param last bool, whether IFD is the last one. Default is \code{false}.
@@ -580,9 +582,9 @@ Rcpp::RawVector hpp_writeIFD ( const Rcpp::RawVector img,
                                const bool verbose = false) {
   if(!(img.hasAttribute("dims") && img.hasAttribute("what") && img.hasAttribute("comp"))) Rcpp::stop("hpp_writeIFD: bad 'img' format");
   Rcpp::IntegerVector d = img.attr("dims");
-  if(d.size() != 5) Rcpp::stop("hpp_writeIFD: 'img' illegal dims attribute");
+  if(d.size() != 5) Rcpp::stop("hpp_writeIFD: 'img' illegal attr(img, \"dims\")");
   uint8_t what = img.attr("what");
-  if(what <= 0 || what >= 9) Rcpp::stop("hpp_writeIFD: 'img' illegal what attribute");
+  if(what <= 0 || what >= 9) Rcpp::stop("hpp_writeIFD: 'img' illegal attr(img, \"what\")");
   uint16_t comp = img.attr("comp");
   unsigned int foo = 1;
   char *bar = (char*)&foo;

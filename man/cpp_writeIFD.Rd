@@ -11,7 +11,7 @@
 -'typ' uint16_t typ number, it should be [1-12],\cr
 -'map' SEXP vector of values to write, it should not be empty and should be even for 'typ' 5 and 10.}
 
-\item{offset}{std::size_t, position of the IFD beginning. Default is \code{0}.}
+\item{offset}{uint32_t, position of the IFD beginning. Default is \code{0}.}
 
 \item{endianness}{std::string, "little" or "big".}
 

@@ -37,19 +37,24 @@
 objectWrite <- function(x, type, ...) {
   dots=list(...)
   switch(type, 
-         png = png::writePNG(image = x, ...),
-         tiff = writetiff(image = x, ..., what = "uint8"),
-         multi = writemulti(image = x, ..., what = "int16"),
-         jpeg = jpeg::writeJPEG(image = x, ...),
+         png = {
+           text = c("software" = paste0("IFC ",asNamespace("IFC")[[".pkgenv"]][["version"]]))
+           text = c(text, dots$text)
+           text = c(text, c("title" = dots$tags$`269`$map))
+           dots = dots[!(names(dots) %in% c("text", "tags"))]
+           do.call(what = png::writePNG, args = c(list(image = x, text = text), dots))
+         },
+         tiff = do.call(what = writetiff, args = c(list(image = x), dots)),
+         multi = do.call(what = writetiff, args = c(list(image = x), dots)),
+         jpeg = {
+           dots = dots[!(names(dots) %in% "tags")]
+           do.call(what = jpeg::writeJPEG, args = c(list(image = x), dots))
+         },
          bmp = {
            if((length(dots) != 0)) {
              switch(typeof(dots[[1]]),
                     raw = return(cpp_writeBMP(image = x)),
-                    character = {
-                      towrite = file(description = dots[[1]], open = "wb")
-                      on.exit(close(towrite))
-                      return(writeBin(object = cpp_writeBMP(image = x), con = towrite))
-                    },
+                    character = return(writeBin(object = cpp_writeBMP(image = x), con = dots[[1]])),
                     stop("objectWrite: target should be raw() or a character file path")
                     )
            }

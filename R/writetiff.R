@@ -176,7 +176,7 @@ writemulti <- function(image, write_to = raw(0),
   } else {
     for(iframe in seq_len(dd[4])) {
       ret = cpp_writeIFD(setupimage(image[,,,iframe], what, ifelse(compression, 8, 1), endianness), tags, pos, endianness, as.rgb, iframe == dd[4], verb)
-      pos = attr(ret, "offset")
+      pos = attr(ret, "offset"); attributes(ret) <- NULL
       ans = c(ans, ret)
     }
   }
@@ -219,14 +219,8 @@ writetiff <- function(image, ..., what = "uint8") {
   tmp = grepl("as.rgb", names(dots), fixed = TRUE)
   if(any(tmp)) dots = dots[!tmp]
   what = match.arg(arg = what, choices = c("uint8","int8","uint16","int16","uint32","int32","float","double"), several.ok = FALSE)
-  vmax = switch(what, "uint8" = 255, "int" = 127, "uint16" = 65535, "int16" = 32767, "uint32" = 4294967295, "int32" = 2147483647, 1)
+  vmax = switch(what, "uint8" = 255, "int8" = 127, "uint16" = 65535, "int16" = 32767, "uint32" = 4294967295, "int32" = 2147483647, 1)
   d = dim(image)
   is.rgb = (length(d) == 3) && (d[3] == 3)
-  if(substr(what,1,1) == "u") {
-    img = image * vmax
-    img[img < 0] <- 0
-    do.call(args = c(dots, list(image = img, as.rgb = is.rgb, what = what)), what = writemulti) 
-  } else {
-    do.call(args = c(dots, list(image = image * vmax, as.rgb = is.rgb, what = what)), what = writemulti)
-  }
+  do.call(args = c(dots, list(image = image * vmax, as.rgb = is.rgb, what = what)), what = writemulti)
 }
