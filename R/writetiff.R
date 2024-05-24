@@ -224,3 +224,109 @@ writetiff <- function(image, ..., what = "uint8") {
   is.rgb = (length(d) == 3) && (d[3] == 3)
   do.call(args = c(dots, list(image = image * vmax, as.rgb = is.rgb, what = what)), what = writemulti)
 }
+
+#' @title Image Field Directory Tag Editor
+#' @description
+#' Edits tag value in file IFDs (Image Field Directory).
+#' @param IFD an object of class `IFC_ifd_list` extracted by \code{\link{getIFD}}.
+#' @param which scalar, integer (index) or the name of 'IFD' sub-element to edit 'tag' to.
+#' @param tag scalar, integer (index) or the name of the desired 'tag' in IFD[[which]].
+#' @param value value used to fill the 'tag'. For the moment only string is supported.
+#' @param force whether to force edition. Needed when 'tag' value already exceed 4 bytes. Default is \code{FALSE}.
+#' @details /!\ file will be modified /!\
+#' /!\ When \code{'force'} needs to be \code{TRUE}, 'value' will be appended to file \strong{but} former tag 'value' will still be present in file \strong{and not} erased.\cr
+#' Will only work when 'tag' is present in TIFF file.\cr
+#' Will only work for TIFF files produced by \pkg{IFC}
+#' @return It invisibly returns path of edited file.
+#' @keywords internal
+editTag <- function(IFD, which, tag, value, force = FALSE) {
+  if(!("IFC_ifd_list" %in% class(IFD))) stop("'IFD' object is not of class `IFC_ifd_list`")
+  fileName = attr(x = IFD, which = "fileName_image")
+  endian = ifelse(readBin(fileName, what = "raw", n = 1) == 0x49, "little", "big")
+  if(!missing(value)) {
+    if(length(value) == 0) {
+      warning("empty 'value' is not supported")
+      return(invisible(fileName)) 
+    }
+    stopifnot(length(value) == 1, typeof(value) == "character")
+  } else {
+    return(invisible(fileName))
+  }
+  force = na.omit(force)
+  stopifnot(length(which) == 1, length(tag) == 1, length(force) == 1, typeof(force) == "logical")
+  i_ifd = 0
+  if(typeof(which) == "character") {
+    tmp = names(IFD) %in% which
+    if(any(tmp)) i_ifd = head(na.omit(which(tmp)))
+  } else {
+    which = na.omit(as.integer(which))
+    if(which >= 1 && which <= length(IFD)) i_ifd = which
+  }
+  if(i_ifd == 0) {
+    warning("can't find 'which'[", which, "] in 'IFD'")
+    return(invisible(fileName))
+  }
+  if(!identical(substr(getFullTag(IFD, which = which, tag = "305"),0,3), "IFC")) stop("'fileName' should have been produced by `IFC` package")
+  ifd = IFD[[which]]
+  i_tag = 0
+  if(typeof(tag) == "character") {
+    tmp = names(ifd$tags) == tag
+    if(any(tmp)) i_tag = head(na.omit(which(tmp)))
+  } else {
+    tag = na.omit(as.integer(tag))
+    if((tag >= 1) && (tag <= length(ifd$tags))) i_tag = tag
+  }
+  if(i_tag == 0) {
+    warning("can't find 'tag'[", tag, "] in IFD[[", which, "]] tags")
+    return(invisible(fileName))
+  }
+  if(ifd$tags[[i_tag]]$typ != 2) {
+    warning("'tag'[", tag, "] in IFD[[", which, "]] of type=",ifd[[i_tag]]$typ," is not supported (should be 2)")
+    return(invisible(fileName))
+  }
+  if(ifd$tags[[i_tag]]$byt > 4 && !force) {
+    warning("'tag'[", tag, "] in IFD[[", which, "]] can't be modified unless 'force'=TRUE")
+    return(invisible(fileName))
+  }
+  tag_offset = ifd$curr_IFD_offset + 2 + (i_tag - 1) * 12
+  raw = unlist(c(iconv(value, from = "UTF8", to = "UTF8", toRaw = TRUE), raw(1)), use.names = FALSE, recursive = FALSE)
+  l = length(raw)
+  fs = file.size(fileName)
+  if(l + fs > (2^32-1)) stop("'value' is too big to be stored")
+  if(l > 2^31-1) l = l - 2^32
+  towrite = file(description = enc2native(fileName), open = "r+b")
+  on.exit(close(towrite))
+  # modify tag count
+  seek(towrite, tag_offset + 4, origin = "start", rw = "write")
+  writeBin(object = as.integer(l), size = 4, con = towrite, endian = endian)
+  if(l > 4) {
+    # set tag value to point to end of file
+    seek(towrite, tag_offset + 8, origin = "start", rw = "write")
+    if(fs > 2^31-1) fs = fs - 2^32
+    writeBin(object = as.integer(fs), size = 4, con = towrite, endian = endian)
+    # append value to end of file
+    seek(towrite, 0, origin = "end", rw = "write")
+    writeBin(object = raw, con = towrite)
+  } else {
+    # set tag value to new value
+    seek(towrite, tag_offset + 8, origin = "start", rw = "write")
+    writeBin(object = raw, con = towrite)
+    while(l < 4) raw = c(raw, raw(1))
+  }
+  return(invisible(fileName))
+}
+
+#' @title Metadata Editor
+#' @description
+#' Edits metadata in TIFF file
+#' @param fileName path to file.
+#' @param metadata string used to fill tag "270" of first IFD of 'fileName'. Default is \code{NULL}.
+#' @details /!\ file will be modified /!\
+#' It will only work for 1st time edition of TIFF files produced by \pkg{IFC}.
+#' @return It invisibly returns path of edited file.
+#' @keywords internal
+editMetadata <- function(fileName, metadata = NULL) {
+  IFD = getIFD(fileName)
+  if(!identical(suppressWarnings(getFullTag(IFD, which = 1, tag = "270")), "N/A")) stop("'metadata' edition is not allowed")
+  editTag(IFD = IFD, which = 1, tag = "270", value = metadata, force = FALSE)
+}
