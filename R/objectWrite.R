@@ -45,7 +45,7 @@ objectWrite <- function(x, type, ...) {
            do.call(what = png::writePNG, args = c(list(image = x, text = text), dots))
          },
          tiff = do.call(what = writetiff, args = c(list(image = x), dots)),
-         multi = do.call(what = writetiff, args = c(list(image = x), dots)),
+         multi = do.call(what = writemulti, args = c(list(image = x), dots)),
          jpeg = {
            dots = dots[!(names(dots) %in% "tags")]
            do.call(what = jpeg::writeJPEG, args = c(list(image = x), dots))

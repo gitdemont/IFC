@@ -182,6 +182,7 @@ polyExtractTo <- function(...,
              "tif" = {type <- "tiff"})
       ##### check type
       assert(type, len = 1, alw = c("bmp", "jpeg", "png", "tiff"))
+      if(param$export == "multi" && type != "tiff") stop("when 'export' is \"multi\", file extension has to be \"tiff\" not \"", type, "\"")
       param$type <- type
     }
   }
