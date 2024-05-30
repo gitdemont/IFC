@@ -61,7 +61,8 @@
 #' @param composite character vector of image composite. Default is \code{""}, for no image composite.\cr
 #' Should be like \code{"1.05/2.4/4.55"} for a composition of 5 perc. of channel 1, 40 perc. of channel 2 and 50 perc. of channel 55.\cr
 #' Note that channels should have been acquired and final image composition should be 100 perc., otherwise an error is thrown.\cr
-#' Note that each composite will be appended after \code{'selection'}.
+#' Note that each composite will be appended after \code{'selection'}.\cr
+#' Note that composite will be forced to \code{""} when \code{'export'} is \code{"multi"}.
 #' @param selection physical channels to extract.\cr
 #' Note that this parameter will be ordered.\cr
 #' Default is \code{"all"} to extract all acquired channels.\cr
@@ -169,6 +170,10 @@ objectParam <- function(...,
   }
   
   ##### ensure composite is well formatted
+  if((export == "multi") && !identical(composite, "")) {
+    warning("'composite' has been forced to \"\" for 'export'=\"multi\"")
+    composite = ""
+  }
   composite = as.character(composite); assert(composite, typ = "character")
   if(!all(gsub("\\.|\\/|[[:digit:]]","",composite) %in% "")) stop("'composite' is not well formatted")
   
@@ -188,7 +193,7 @@ objectParam <- function(...,
                              paste0(composite_chan[tmp],collapse=","),"] which ",ifelse(sum(tmp)>1,"are","is"),
                              " not part of physical channels acquired [",paste0(channels$physicalChannel, collapse=","),"]"))
     composite = gsub("\\/", ",", composite)
-    } else {
+  } else {
     composite = NULL
     composite_chan = NULL
     composite_desc = list()

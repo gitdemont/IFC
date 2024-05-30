@@ -182,10 +182,11 @@ polyExtractTo <- function(...,
              "tif" = {type <- "tiff"})
       ##### check type
       assert(type, len = 1, alw = c("bmp", "jpeg", "png", "tiff"))
-      if(param$export == "multi" && type != "tiff") stop("when 'export' is \"multi\", file extension has to be \"tiff\" not \"", type, "\"")
       param$type <- type
     }
   }
+  if(param$export == "multi" && param$type != "tiff") stop("when 'export' is \"multi\", file extension has to be \"tiff\" not \"", param$type, "\"")
+  if(param$export == "multi" && !identical(param$composite, NULL)) stop("provided 'param$composite' is not compatible with 'export'=\"multi\", please run objectParam() with 'composite'=\"\"")
   param$fileName_image = enc2native(param$fileName_image)
   fileName = param$fileName_image
   title_progress = basename(fileName)
