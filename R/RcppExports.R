@@ -153,6 +153,15 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title Get Current Package Version
+#' @name cpp_getversion
+#' @description
+#' Retrieve package version number.
+#' @param pkg s std::string. Default is \code{"IFC"}
+#' @return a Rcpp::CharacterVector
+#' @keywords internal
+NULL
+
 #' @title Raw to Base64 Conversion
 #' @name cpp_base64_encode
 #' @description
@@ -307,6 +316,14 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title Uint32 to Int32 32bits Conversion
+#' @name cpp_uint32_to_int32
+#' @description
+#' Converts 32bits integer from unsigned to signed
+#' @param x uint32_t.
+#' @keywords internal
+NULL
+
 #' @title Offset to Raw Conversion
 #' @name cpp_offset_to_raw
 #' @description
@@ -322,14 +339,6 @@ NULL
 #' Converts raw to offset
 #' @param x RawVector.
 #' @param swap bool, whether to swap or not.
-#' @keywords internal
-NULL
-
-#' @title Uint32 to Int32 32bits Conversion
-#' @name cpp_uint32_to_int32
-#' @description
-#' Converts 32bits integer from unsigned to signed
-#' @param x uint32_t.
 #' @keywords internal
 NULL
 
@@ -818,6 +827,10 @@ cpp_writeBMP <- function(image) {
     .Call(`_IFC_cpp_writeBMP`, image)
 }
 
+cpp_getversion <- function(pkg = "IFC") {
+    .Call(`_IFC_cpp_getversion`, pkg)
+}
+
 cpp_base64_encode <- function(x, url = FALSE) {
     .Call(`_IFC_cpp_base64_encode`, x, url)
 }
@@ -870,16 +883,16 @@ cpp_int32_to_uint32 <- function(x) {
     .Call(`_IFC_cpp_int32_to_uint32`, x)
 }
 
+cpp_uint32_to_int32 <- function(x) {
+    .Call(`_IFC_cpp_uint32_to_int32`, x)
+}
+
 cpp_offset_to_raw <- function(x, swap = FALSE) {
     .Call(`_IFC_cpp_offset_to_raw`, x, swap)
 }
 
 cpp_raw_to_offset <- function(x, swap = FALSE) {
     .Call(`_IFC_cpp_raw_to_offset`, x, swap)
-}
-
-cpp_uint32_to_int32 <- function(x) {
-    .Call(`_IFC_cpp_uint32_to_int32`, x)
 }
 
 cpp_int64_to_uint64 <- function(x) {

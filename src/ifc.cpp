@@ -35,6 +35,7 @@
 #include "../inst/include/base64.hpp"
 #include "../inst/include/gate.hpp"
 #include "../inst/include/utils.hpp"
+#include "../inst/include/import.hpp"
 #include "../inst/include/tiff.hpp"
 #include "../inst/include/color.hpp"
 #include "../inst/include/trans.hpp"
@@ -287,6 +288,21 @@ Rcpp::RawVector cpp_writeBMP (const Rcpp::NumericVector image) {
 }
 // END utils
 
+// FROM import
+//' @title Get Current Package Version
+//' @name cpp_getversion
+//' @description
+//' Retrieve package version number.
+//' @param pkg s std::string. Default is \code{"IFC"}
+//' @return a Rcpp::CharacterVector
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+Rcpp::CharacterVector cpp_getversion(const std::string pkg = "IFC") {
+  return hpp_getversion(pkg);
+}
+// END import
+
 // FROM base64
 //' @title Raw to Base64 Conversion
 //' @name cpp_base64_encode
@@ -522,6 +538,18 @@ uint32_t cpp_int32_to_uint32 (const int32_t x) {
   return hpp_int32_to_uint32 (x);
 }
 
+//' @title Uint32 to Int32 32bits Conversion
+//' @name cpp_uint32_to_int32
+//' @description
+//' Converts 32bits integer from unsigned to signed
+//' @param x uint32_t.
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+int32_t cpp_uint32_to_int32 (const uint32_t x) {
+  return hpp_uint32_to_int32 (x);
+}
+
 //' @title Offset to Raw Conversion
 //' @name cpp_offset_to_raw
 //' @description
@@ -546,18 +574,6 @@ Rcpp::RawVector cpp_offset_to_raw (const double x, const bool swap = false) {
 // [[Rcpp::export]]
 double cpp_raw_to_offset (const Rcpp::RawVector x, const bool swap = false) {
   return hpp_raw_to_offset(x, swap);
-}
-
-//' @title Uint32 to Int32 32bits Conversion
-//' @name cpp_uint32_to_int32
-//' @description
-//' Converts 32bits integer from unsigned to signed
-//' @param x uint32_t.
-//' @keywords internal
-////' @export
-// [[Rcpp::export(rng = false)]]
-int32_t cpp_uint32_to_int32 (const uint32_t x) {
-  return hpp_uint32_to_int32 (x);
 }
 
 //' @title Int64 to Uint64 64bits Conversion

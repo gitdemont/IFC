@@ -37,30 +37,8 @@
 #include <string>
 #include "trans.hpp"
 #include "utils.hpp"
+#include "import.hpp"
 using namespace Rcpp;
-
-// import setPB from 'IFC' package
-void hpp_setPB (SEXP pb,
-                double value = 0.0,
-                const std::string title = "",
-                const std::string label = "") {
-  Rcpp::Function asNamespace("asNamespace");
-  Rcpp::Environment IFC = asNamespace("IFC");
-  Rcpp::Function setPB = IFC["setPB"];
-  if(TYPEOF(pb) != NILSXP) setPB(pb, value, title, label);
-}
-
-// import basename from 'base' package
-std::string hpp_basename (const std::string fname) {
-  Environment base("package:base");
-  Function basename = base["basename"];
-  Rcpp::Nullable<Rcpp::CharacterVector> out_ = basename(fname);
-  if(out_.isNotNull()) {
-    Rcpp::CharacterVector out(out_.get());
-    return as<std::string>(out[0]);
-  }
-  return "";
-}
 
 static int sizes[13] = {0,1,1,2,4,4,1,1,2,4,4,4,8};
 static int multi[13] = {0,1,1,1,1,2,1,1,1,1,2,1,1};
@@ -155,7 +133,7 @@ Rcpp::NumericVector hpp_getoffsets_noid(const std::string fname,
         if(!offset) Rcpp::stop("hpp_getoffsets_noid: No IFD offsets found");
         while(offset) {
           if((++count % count_max) == 0) {
-            out = c_vector(out, tmp);
+            out = hpp_c(out, tmp);
             tmp.fill(0);
             count = 1;
             Rcpp::checkUserInterrupt();
@@ -192,7 +170,7 @@ Rcpp::NumericVector hpp_getoffsets_noid(const std::string fname,
         if(!offset) Rcpp::stop("hpp_getoffsets_noid: No IFD offsets found");
         while(offset) {
           if((++count % count_max) == 0) {
-            out = c_vector(out, tmp);
+            out = hpp_c(out, tmp);
             tmp.fill(0);
             count = 1;
             Rcpp::checkUserInterrupt();
@@ -224,7 +202,7 @@ Rcpp::NumericVector hpp_getoffsets_noid(const std::string fname,
           std::memcpy(&offset, buf_offset, sizeof(offset));
         }
       }
-      return c_vector(out, tmp);
+      return hpp_c(out, tmp);
   }
   else {
     Rcpp::stop("hpp_getoffsets_noid: Unable to open file");
@@ -1014,11 +992,11 @@ Rcpp::List hpp_getoffsets_wid(const std::string fname,
       std::size_t off = offset;
       while(off){
         if((++count % count_max) == 0) {
-          out_obj = c_vector(out_obj, tmp_obj);
+          out_obj = hpp_c(out_obj, tmp_obj);
           tmp_obj.fill(0);
-          out_typ = c_vector(out_typ, tmp_typ);
+          out_typ = hpp_c(out_typ, tmp_typ);
           tmp_typ.fill(0);
-          out_off = c_vector(out_off, tmp_off);
+          out_off = hpp_c(out_off, tmp_off);
           tmp_off.fill(0);
           count = 1;
           Rcpp::checkUserInterrupt();
@@ -1038,9 +1016,9 @@ Rcpp::List hpp_getoffsets_wid(const std::string fname,
         tmp_typ[count - 1] = iNotisNULL(infos["TYPE"])      ? infos["TYPE"]      : NA_REAL;
         tmp_off[count - 1] = IFD["curr_IFD_offset"];
       }
-      Rcpp::List out = Rcpp::List::create(_["OBJECT_ID"] = c_vector(out_obj, tmp_obj),
-                                          _["TYPE"] = c_vector(out_typ, tmp_typ),
-                                          _["OFFSET"] = c_vector(out_off, tmp_off));
+      Rcpp::List out = Rcpp::List::create(_["OBJECT_ID"] = hpp_c(out_obj, tmp_obj),
+                                          _["TYPE"] = hpp_c(out_typ, tmp_typ),
+                                          _["OFFSET"] = hpp_c(out_off, tmp_off));
       // if(display_progress) Rcout << ", done!" << std::endl;
       return out;
   }

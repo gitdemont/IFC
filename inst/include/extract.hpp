@@ -35,6 +35,7 @@
 #include <iostream>
 #include <fstream>
 #include "utils.hpp"
+#include "import.hpp"
 #include "color.hpp"
 #include "decomp.hpp"
 #include "tiff.hpp"
@@ -42,15 +43,6 @@
 #include "matrix_logic.hpp"
 #include "align.hpp"
 using namespace Rcpp;
-
-// use stats::quantile to compute input_range for matrix normalization
-Rcpp::NumericVector hpp_quantile(const Rcpp::NumericMatrix mat,
-                                 const double prob1 = 0.0,
-                                 const double prob2 = 1.0) {
-  Rcpp::Environment senv = Rcpp::Environment::namespace_env("stats");
-  Rcpp::Function sfun = senv["quantile"];
-  return sfun(mat, Rcpp::Named("probs", Rcpp::NumericVector::create(prob1, prob2)));
-}
 
 //' @title Matrix Normalization
 //' @name cpp_normalize

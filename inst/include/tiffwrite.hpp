@@ -39,6 +39,8 @@
 #define IFC_TIFFWRITE_HPP
 
 #include <Rcpp.h>
+#include "utils.hpp"
+#include "import.hpp"
 using namespace Rcpp;
 
 static int tsizes[13] = {0,1,1,2,4,4,1,1,2,4,4,4,8};
@@ -46,20 +48,12 @@ static uint8_t wsizes[9] = {0,1,1,2,2,4,4,4,8};
 
 // [[Rcpp::export(rng = false)]]
 Rcpp::RawVector uint16_to_raw (const uint16_t x) {
-  Rcpp::RawVector out = Rcpp::no_init_vector(2);
-  out[0] = (x      ) & 0xff;
-  out[1] = (x >>  8) & 0xff;
-  return out;
+  return Rcpp::RawVector::create((x      ) & 0xff, (x >>  8) & 0xff);
 }
 
 // [[Rcpp::export(rng = false)]]
 Rcpp::RawVector uint32_to_raw (const uint32_t x) {
-  Rcpp::RawVector out = Rcpp::no_init_vector(4);
-  out[0] = (x      ) & 0xff;
-  out[1] = (x >>  8) & 0xff;
-  out[2] = (x >> 16) & 0xff;
-  out[3] = (x >> 24) & 0xff;
-  return out;
+  return Rcpp::RawVector::create((x      ) & 0xff, (x >>  8) & 0xff, (x >> 16) & 0xff, (x >> 24) & 0xff);
 }
 
 // template to cast scalar value and copy it to vector
@@ -99,7 +93,7 @@ Rcpp::RawVector cast_vector_T (SEXP x,
       for(std::size_t i = 0, j = 0; i < foo.size(); i++, j += siz) toBYTE_T(foo[i], out, j, swap);
       return out;
     }
-    default: Rcpp::stop("cast_vector: 'x' not supported SEXPTYPE[%u]",  TYPEOF(x));
+    default: Rcpp::stop("cast_vector: 'x' not supported SEXPTYPE[%s]", Rcpp::type2name(x));
   }
   return 0;
 }
@@ -227,90 +221,6 @@ Rcpp::RawVector hpp_cast_image ( SEXP x,
   return 0;
 }
 
-// template to concatenate 2 vectors
-template <int RTYPE>
-Rcpp::Vector<RTYPE> hpp_c_T ( Rcpp::Nullable<Rcpp::Vector<RTYPE>> x_,
-                              Rcpp::Nullable<Rcpp::Vector<RTYPE>> y_) {
-  if(x_.isNotNull() && y_.isNotNull()) {
-    Rcpp::Vector<RTYPE> x(x_.get());
-    Rcpp::Vector<RTYPE> y(y_.get());
-    Rcpp::Vector<RTYPE> out = Rcpp::no_init_vector(x.size() + y.size());
-    std::copy(x.begin(), x.end(), out.begin());
-    std::copy(y.begin(), y.end(), out.begin() + x.size());
-    return(out);
-  } else {
-    if(x_.isNotNull()) return x_.get();
-    if(y_.isNotNull()) return y_.get();
-  }
-  return 0;
-}
-
-// [[Rcpp::export(rng = false)]]
-SEXP hpp_c ( SEXP x, SEXP y ) {
-  switch( TYPEOF(x) ) {
-  case NILSXP: return y;
-  case INTSXP: return hpp_c_T<INTSXP>(x, y);
-  case REALSXP: return hpp_c_T<REALSXP>(x, y);
-  case STRSXP: return hpp_c_T<STRSXP>(x, y);
-  case RAWSXP: return hpp_c_T<RAWSXP>(x, y);
-  case VECSXP: return hpp_c_T<VECSXP>(x, y);
-  default: Rcpp::stop("hpp_c: 'x' not supported SEXPTYPE[%u]",  TYPEOF(x));
-  }
-}
-
-//' @title Get Current IFC Version
-//' @name getversion
-//' @description
-//' Retrieve IFC package version from IFC environment.
-//' @return a std::string
-//' @keywords internal
-////' @export
-// [[Rcpp::export(rng = false)]]
-Rcpp::CharacterVector getversion(const std::string pkg = "IFC") {
-  Rcpp::Environment env = Rcpp::Environment::namespace_env(pkg);
-  Rcpp::List L = env[".pkgenv"];
-  Rcpp::List LL(0);
-  Rcpp::CharacterVector sep = Rcpp::CharacterVector::create(".");
-  if(L.containsElementNamed("version")) {
-    LL = L["version"];
-  } else {
-    Rcpp::Environment uenv = Rcpp::Environment::namespace_env("utils");
-    Rcpp::Function ufun = uenv["packageVersion"];
-    LL = ufun(pkg);
-  }
-  if(LL.size()) {
-    Rcpp::List LLL = LL[0];
-    Rcpp::CharacterVector V(0);
-    for(R_len_t i = 0; i < LLL.size(); i++) {
-      if(V.size()) V = hpp_c(V, sep);
-      V = hpp_c(V, Rcpp::CharacterVector::create(std::to_string(as<int>(LLL[i]))));
-    }
-    return V;
-  }
-  return 0;
-}
-
-// template to get SEXP size
-template <int RTYPE>
-R_len_t SEXPsize_T ( Rcpp::Nullable<Rcpp::Vector<RTYPE>> x_ ) {
-  Rcpp::Vector<RTYPE> x(x_.get());
-  return x.size();
-}
-
-// [[Rcpp::export(rng = false)]]
-R_len_t SEXPsize ( SEXP x, const bool verbose = false ) {
-  switch( TYPEOF (x) ) {
-  case NILSXP: return 0;
-  case INTSXP: return SEXPsize_T<INTSXP>(x);
-  case REALSXP: return SEXPsize_T<REALSXP>(x);
-  case STRSXP: return SEXPsize_T<STRSXP>(x);
-  case RAWSXP: return SEXPsize_T<RAWSXP>(x);
-  case VECSXP: return SEXPsize_T<VECSXP>(x);
-  }
-  if(verbose) Rprintf("'map' SEXPTYPE[%i] is not handled", TYPEOF (x));
-  return 0;
-}
-
 // [[Rcpp::export(rng = false)]]
 Rcpp::List sub_list ( const Rcpp::List L,
                       const Rcpp::Nullable<Rcpp::IntegerVector> x_ = R_NilValue) {
@@ -348,7 +258,7 @@ Rcpp::List hpp_tags_clean ( const Rcpp::List IFD, const R_len_t pos = 0, const b
         Rprintf("'ifd'@%u 'tag'[=%i] typ'[%i] should be [1-12]\n", i - pos, itag, ityp);
         isok = false;
       }
-      if(SEXPsize(ifd["map"], verbose) == 0) {
+      if(SEXPsize(ifd["map"]) == 0) {
         Rprintf("'ifd'@%u 'tag'[=%i] 'map' should not be a 0-length vector\n", i - pos, itag);
         isok = false;
       }
@@ -370,7 +280,7 @@ Rcpp::List hpp_tags_clean ( const Rcpp::List IFD, const R_len_t pos = 0, const b
       if((itag <= 0) || (itag > 65535)) isok = false;
       int32_t ityp = ifd["typ"];
       if((ityp <= 0) || (ityp > 12)) isok = false; 
-      if(SEXPsize(ifd["map"], true) == 0) isok = false;
+      if(SEXPsize(ifd["map"]) == 0) isok = false;
       if(((ityp == 5) || (ityp == 10)) && (SEXPsize(ifd["map"]) % 2)) isok = false;
       if(isok && (std::find(tags.begin(), tags.end(), itag) == tags.end())) {
         tokeep.push_back(i);
@@ -476,7 +386,7 @@ Rcpp::RawVector hpp_tag_extcnt ( SEXP map,
   case REALSXP: return hpp_tag_extcnt_T<REALSXP>(map, typ, tag, swap);
   case STRSXP: return hpp_tag_extcnt_T<STRSXP>(map, typ, tag, swap);
   case RAWSXP: return hpp_tag_extcnt_T<RAWSXP>(map, typ, tag, swap);
-  default: Rcpp::stop("hpp_tag_extcnt: 'map' not supported SEXPTYPE[%u]",  TYPEOF(map));
+  default: Rcpp::stop("hpp_tag_extcnt: 'map' not supported SEXPTYPE[%s]", Rcpp::type2name(map));
   }
 }
 
@@ -552,7 +462,7 @@ Rcpp::RawVector hpp_tag_mincnt ( SEXP map,
   case REALSXP: return hpp_tag_mincnt_T<REALSXP>(map, typ, tag, pos, swap);
   case STRSXP: return hpp_tag_mincnt_T<STRSXP>(map, typ, tag, pos, swap);
   case RAWSXP: return hpp_tag_mincnt_T<RAWSXP>(map, typ, tag, pos, swap);
-  default: Rcpp::stop("hpp_tag_mincnt: 'map' not supported SEXPTYPE[%u]", TYPEOF(map));
+  default: Rcpp::stop("hpp_tag_mincnt: 'map' not supported SEXPTYPE[%s]", Rcpp::type2name(map));
   }
 }
 
@@ -586,10 +496,8 @@ Rcpp::RawVector hpp_writeIFD ( const Rcpp::RawVector img,
   uint8_t what = img.attr("what");
   if(what <= 0 || what >= 9) Rcpp::stop("hpp_writeIFD: 'img' illegal attr(img, \"what\")");
   uint16_t comp = img.attr("comp");
-  unsigned int foo = 1;
-  char *bar = (char*)&foo;
-  bool swap = endianness != (bar ? "little" : "big");
-  Rcpp::CharacterVector ver = getversion("IFC");
+  bool swap = endianness != hpp_getEndian();
+  Rcpp::CharacterVector ver = hpp_getversion("IFC");
   if(ver.size()) ver = hpp_c(Rcpp::CharacterVector::create(" "), ver);
   ver = hpp_c(Rcpp::CharacterVector::create("IFC"), ver);
   

@@ -115,7 +115,7 @@ to_xml_list = function(x, name, kids, indent = "  ", escape = "\n") {
 #' @return an R object that points to the C-level structure instance.
 #' @keywords internal
 xml_new_node <- function(name, attrs, .children, text, ...) {
-  if(missing(text) && missing(attrs)) stop("should be either a 'text' node or a 'attr' node")
+  # if(missing(text) && missing(attrs)) stop("should be either a 'text' node or a 'attr' node")
   tmp <- xml_new_root("foo")
   tmp %>% xml_add_child(.value = name)
   node <- xml_find_first(tmp, xpath = name)

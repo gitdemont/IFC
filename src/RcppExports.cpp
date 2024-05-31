@@ -179,6 +179,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_getversion
+Rcpp::CharacterVector cpp_getversion(const std::string pkg);
+RcppExport SEXP _IFC_cpp_getversion(SEXP pkgSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const std::string >::type pkg(pkgSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_getversion(pkg));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_base64_encode
 std::string cpp_base64_encode(const Rcpp::RawVector x, const bool url);
 RcppExport SEXP _IFC_cpp_base64_encode(SEXP xSEXP, SEXP urlSEXP) {
@@ -333,6 +343,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_uint32_to_int32
+int32_t cpp_uint32_to_int32(const uint32_t x);
+RcppExport SEXP _IFC_cpp_uint32_to_int32(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const uint32_t >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_uint32_to_int32(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_offset_to_raw
 Rcpp::RawVector cpp_offset_to_raw(const double x, const bool swap);
 RcppExport SEXP _IFC_cpp_offset_to_raw(SEXP xSEXP, SEXP swapSEXP) {
@@ -353,16 +373,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Rcpp::RawVector >::type x(xSEXP);
     Rcpp::traits::input_parameter< const bool >::type swap(swapSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_raw_to_offset(x, swap));
-    return rcpp_result_gen;
-END_RCPP
-}
-// cpp_uint32_to_int32
-int32_t cpp_uint32_to_int32(const uint32_t x);
-RcppExport SEXP _IFC_cpp_uint32_to_int32(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const uint32_t >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_uint32_to_int32(x));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -724,6 +734,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_replace_non_finite", (DL_FUNC) &_IFC_cpp_replace_non_finite, 2},
     {"_IFC_cpp_computeGamma", (DL_FUNC) &_IFC_cpp_computeGamma, 1},
     {"_IFC_cpp_writeBMP", (DL_FUNC) &_IFC_cpp_writeBMP, 1},
+    {"_IFC_cpp_getversion", (DL_FUNC) &_IFC_cpp_getversion, 1},
     {"_IFC_cpp_base64_encode", (DL_FUNC) &_IFC_cpp_base64_encode, 2},
     {"_IFC_cpp_base64_decode", (DL_FUNC) &_IFC_cpp_base64_decode, 2},
     {"_IFC_cpp_checkTIFF", (DL_FUNC) &_IFC_cpp_checkTIFF, 1},
@@ -737,9 +748,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_inv_smoothLinLog", (DL_FUNC) &_IFC_cpp_inv_smoothLinLog, 4},
     {"_IFC_cpp_uint32_to_raw", (DL_FUNC) &_IFC_cpp_uint32_to_raw, 1},
     {"_IFC_cpp_int32_to_uint32", (DL_FUNC) &_IFC_cpp_int32_to_uint32, 1},
+    {"_IFC_cpp_uint32_to_int32", (DL_FUNC) &_IFC_cpp_uint32_to_int32, 1},
     {"_IFC_cpp_offset_to_raw", (DL_FUNC) &_IFC_cpp_offset_to_raw, 2},
     {"_IFC_cpp_raw_to_offset", (DL_FUNC) &_IFC_cpp_raw_to_offset, 2},
-    {"_IFC_cpp_uint32_to_int32", (DL_FUNC) &_IFC_cpp_uint32_to_int32, 1},
     {"_IFC_cpp_int64_to_uint64", (DL_FUNC) &_IFC_cpp_int64_to_uint64, 1},
     {"_IFC_cpp_uint64_to_int64", (DL_FUNC) &_IFC_cpp_uint64_to_int64, 1},
     {"_IFC_cpp_v_int32_to_uint32", (DL_FUNC) &_IFC_cpp_v_int32_to_uint32, 1},

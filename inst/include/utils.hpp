@@ -39,44 +39,66 @@ using namespace Rcpp;
 
 // check platform endian
 std::string hpp_getEndian () {
-  std::string out = "";
   unsigned int foo = 1;
   char *bar = (char*)&foo;
   switch(*bar) {
-  case 0: {
-    out = "big";
+  case 0: return "big";
+  case 1: return "little";
   }
-    break;
-  case 1: {
-    out = "little";
-  }
-    break;
-  }
-  return out;
+  return "";
 }
 
-// combine Rcpp Vectors
-template <int RTYPE> Rcpp::Vector<RTYPE>
-c_vector_T( const Rcpp::Vector<RTYPE>&x, const Rcpp::Vector<RTYPE>&y) {
-  Rcpp::Vector<RTYPE> out(x.size() + y.size());
-  std::copy(x.begin(), x.end(), out.begin());
-  std::copy(y.begin(), y.end(), out.begin() + x.size());
-  return(out);
-}
-SEXP c_vector( SEXP x, SEXP y) {
-  if((TYPEOF(x) == NILSXP) && (TYPEOF(y) == NILSXP)) return R_NilValue;
-  if(TYPEOF(x) == NILSXP) return y;
-  if(TYPEOF(y) == NILSXP) return x;
-  if(TYPEOF(x) != TYPEOF(y)) Rcpp::stop("c_vector: 'x' and 'y' should have same RTYPE");
-  switch( TYPEOF(x) ) {
-  case NILSXP: return R_NilValue;
-  case LGLSXP: return c_vector_T<LGLSXP>(x, y);
-  case INTSXP: return c_vector_T<INTSXP>(x, y);
-  case REALSXP: return c_vector_T<REALSXP>(x, y);
-  case STRSXP: return c_vector_T<STRSXP>(x, y);
-  case RAWSXP: return c_vector_T<RAWSXP>(x, y);
-  default: Rcpp::stop("c_vector: not supported type in 'x'");
+// template to concatenate 2 vectors
+template <int RTYPE>
+Rcpp::Vector<RTYPE> hpp_c_T ( Rcpp::Nullable<Rcpp::Vector<RTYPE>> x_,
+                              Rcpp::Nullable<Rcpp::Vector<RTYPE>> y_) {
+  if(x_.isNotNull() && y_.isNotNull()) {
+    Rcpp::Vector<RTYPE> x(x_.get());
+    Rcpp::Vector<RTYPE> y(y_.get());
+    Rcpp::Vector<RTYPE> out = Rcpp::no_init_vector(x.size() + y.size());
+    std::copy(x.begin(), x.end(), out.begin());
+    std::copy(y.begin(), y.end(), out.begin() + x.size());
+    return(out);
+  } else {
+    if(x_.isNotNull()) return x_.get();
+    if(y_.isNotNull()) return y_.get();
   }
+  return 0;
+}
+
+// [[Rcpp::export(rng = false)]]
+SEXP hpp_c ( SEXP x, SEXP y ) {
+  switch( TYPEOF(x) ) {
+  case NILSXP: return y;
+  case LGLSXP: return hpp_c_T<LGLSXP>(x, y);
+  case INTSXP: return hpp_c_T<INTSXP>(x, y);
+  case REALSXP: return hpp_c_T<REALSXP>(x, y);
+  case STRSXP: return hpp_c_T<STRSXP>(x, y);
+  case RAWSXP: return hpp_c_T<RAWSXP>(x, y);
+  case VECSXP: return hpp_c_T<VECSXP>(x, y);
+  default: Rcpp::stop("hpp_c: 'x' not supported SEXPTYPE[%s]", Rcpp::type2name(x));
+  }
+}
+
+// template to get SEXP size
+template <int RTYPE>
+R_len_t SEXPsize_T ( Rcpp::Nullable<Rcpp::Vector<RTYPE>> x_ ) {
+  Rcpp::Vector<RTYPE> x(x_.get());
+  return x.size();
+}
+
+// [[Rcpp::export(rng = false)]]
+R_len_t SEXPsize ( SEXP x ) {
+  switch( TYPEOF (x) ) {
+  case NILSXP: return 0;
+  case INTSXP: return SEXPsize_T<INTSXP>(x);
+  case REALSXP: return SEXPsize_T<REALSXP>(x);
+  case STRSXP: return SEXPsize_T<STRSXP>(x);
+  case RAWSXP: return SEXPsize_T<RAWSXP>(x);
+  case VECSXP: return SEXPsize_T<VECSXP>(x);
+  default: Rprintf("SEXPsize: 'x' SEXPTYPE[%s] is not handled", Rcpp::type2name(x));
+  }
+  return 0;
 }
 
 // Ensures NumericVector is not NULL

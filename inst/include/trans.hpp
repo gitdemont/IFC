@@ -161,9 +161,9 @@ Rcpp::RawVector hpp_offset_to_raw (const double x, const bool swap = false) {
   if(swap) {
     Rcpp::RawVector aa = Rcpp::rev(hpp_uint32_to_raw(a));
     Rcpp::RawVector bb = Rcpp::rev(hpp_uint32_to_raw(b));
-    return c_vector(bb, aa);
+    return hpp_c(bb, aa);
   }
-  return c_vector(hpp_uint32_to_raw(b), hpp_uint32_to_raw(a));
+  return hpp_c(hpp_uint32_to_raw(b), hpp_uint32_to_raw(a));
 }
 
 //' @title Offset to Raw Conversion

@@ -74,10 +74,13 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
   # obj_count = as.integer(getInfo(fileName, warn = FALSE, force_default = TRUE, display_progress = FALSE)$objcount)
   
   type = as.integer(XIF_test == 1) + 1L
+  pb = NULL
   if(fast || (XIF_test < 0)) {
     obj_pb = obj_estimated
-    pb = newPB(min = 0, max = ifelse(obj_pb <= 0, 1, obj_pb), initial = 0, style = 3, title = basename(fileName))
-    on.exit(endPB(pb))
+    if(display_progress) {
+      pb = newPB(min = 0, max = ifelse(obj_pb <= 0, 1, obj_pb), initial = 0, style = 3, title = basename(fileName))
+      on.exit(endPB(pb))
+    }
     offsets = cpp_getoffsets_noid(fileName, obj_count = obj_pb, display_progress = display_progress, pb = pb, verbose = verbose)
     offsets = offsets[offsets != 0]
     offsets_1 = offsets[1]
@@ -87,8 +90,10 @@ getOffsets <- function(fileName, fast = TRUE, display_progress = TRUE, verbose =
     message("Offsets were extracted from XIF file with fast method.\nCorrect mapping between offsets and objects ids is not guaranteed.")
   } else {
     obj_pb = obj_estimated / (as.integer(XIF_test != 1) + 1L)
-    pb = newPB(min = 0, max = ifelse(obj_pb <= 0, 1, obj_pb), initial = 0, style = 3, title = basename(fileName))
-    on.exit(endPB(pb))
+    if(display_progress) {
+      pb = newPB(min = 0, max = ifelse(obj_pb <= 0, 1, obj_pb), initial = 0, style = 3, title = basename(fileName))
+      on.exit(endPB(pb))
+    }
     offsets = as.data.frame(do.call(what = "cbind", args = cpp_getoffsets_wid(fileName, obj_count = obj_pb, display_progress = display_progress, pb = pb, verbose = verbose)), stringsAsFactors = FALSE)
     offsets = offsets[offsets$OFFSET != 0, ]
     offsets_i = offsets[offsets$TYPE == 2, ]
