@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{cpp_writeIFD}
 \alias{cpp_writeIFD}
-\title{IFD Tag Writter}
+\title{IFD Tag Writer}
 \arguments{
 \item{img}{RawVector, an encoded image. It should contain 'dims', 'what' and 'comp' attributes.}
 

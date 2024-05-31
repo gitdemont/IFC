@@ -289,12 +289,13 @@ ExportToNumpy <- function(...,
       pb = newPB(min = 0, max = L, initial = 0, style = 3)
       ans = lapply(1:L, FUN = function(i) {
         setPB(pb, value = i, title = title_progress, label = "exporting objects to numpy")
-        do.call(what = "objectExtract", args = c(list(ifd = lapply(sel[[i]],
+        do.call(what = "objectExtract", args = c(list(ifd = structure(lapply(sel[[i]],
                                                                    FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
                                                                                                    offset = off,
                                                                                                    trunc_bytes = 1, 
                                                                                                    force_trunc = TRUE, 
                                                                                                    verbose = verbose)),
+                                                      fileName_image = fileName, class = "IFC_ifd_list"),
                                                       param = param,
                                                       verbose = verbose,
                                                       bypass = TRUE),
@@ -303,12 +304,13 @@ ExportToNumpy <- function(...,
       })
     } else {
       ans = lapply(1:L, FUN = function(i) {
-        do.call(what = "objectExtract", args = c(list(ifd = lapply(sel[[i]],
+        do.call(what = "objectExtract", args = c(list(ifd = structure(lapply(sel[[i]],
                                                                    FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
                                                                                                    offset = off,
                                                                                                    trunc_bytes = 1, 
                                                                                                    force_trunc = TRUE, 
                                                                                                    verbose = verbose)),
+                                                      fileName_image = fileName, class = "IFC_ifd_list"),
                                                       param = param,
                                                       verbose = verbose,
                                                       bypass = TRUE),

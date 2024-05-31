@@ -203,6 +203,7 @@ objectExtract <- function(ifd,
     
     meta = list("269" = list(tag = 269, typ = 2, map = n_ifd[i_ifd]),
                 "270" = list(tag = 270, typ = 2, map = "N/A"),
+                "306" = list(tag = 306, typ = 2, map = formatdate(getFullTag(ifd, i_ifd, "306"))),
                 "33003" = list(tag = 33003, typ = 4, map = ifd[[i_ifd]]$infos$OBJECT_ID))
     
     ##### export image

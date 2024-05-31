@@ -70,7 +70,7 @@ setupimage <- function(image, what, compression, endianness = .Platform$endian) 
   return(ans)
 }
 
-#' @title Tiff Writter
+#' @title Tiff Writer
 #' @name writemulti
 #' @description
 #' Writes TIFF.
@@ -87,7 +87,7 @@ setupimage <- function(image, what, compression, endianness = .Platform$endian) 
 #' Default provides an example as how to include \code{"N/A"} image description (tag=270) and date (tag=306)
 #' @param as.rgb whether to write image as RGB. Default is FALSE. It will be possible only for array where 3rd dimension length is 3.
 #' @param compression whether image should be lossless compressed with deflate algorithm. Default is FALSE.
-#' @param what bits mode used to store image. Default is \code{"uint16"}. Allowed are \code{"uint8"}, \code{"int8"}, \code{"uint16"}, \code{"int16"}, \code{"uint32"}, \code{"int32"}, \code{"float"} and \code{"double"}.
+#' @param what bits mode used to store image. Default is \code{"int16"}. Allowed are \code{"uint8"}, \code{"int8"}, \code{"uint16"}, \code{"int16"}, \code{"uint32"}, \code{"int32"}, \code{"float"} and \code{"double"}.
 #' @param endianness The endian-ness ("big" or "little") of the return object. Default is .Platform$endian.\cr
 #' Endianness describes the bytes order of data stored within the files.
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
@@ -185,7 +185,7 @@ writemulti <- function(image, write_to = raw(0),
   return(invisible(write_to))
 }
 
-#' @title Tiff Writter
+#' @title Tiff Writer
 #' @name writetiff
 #' @description
 #' Writes TIFF from [0-1] Normalized Image.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/writetiff.R
 \name{writemulti}
 \alias{writemulti}
-\title{Tiff Writter}
+\title{Tiff Writer}
 \usage{
 writemulti(
   image,
@@ -36,7 +36,7 @@ Default provides an example as how to include \code{"N/A"} image description (ta
 
 \item{compression}{whether image should be lossless compressed with deflate algorithm. Default is FALSE.}
 
-\item{what}{bits mode used to store image. Default is \code{"uint16"}. Allowed are \code{"uint8"}, \code{"int8"}, \code{"uint16"}, \code{"int16"}, \code{"uint32"}, \code{"int32"}, \code{"float"} and \code{"double"}.}
+\item{what}{bits mode used to store image. Default is \code{"int16"}. Allowed are \code{"uint8"}, \code{"int8"}, \code{"uint16"}, \code{"int16"}, \code{"uint32"}, \code{"int32"}, \code{"float"} and \code{"double"}.}
 
 \item{endianness}{The endian-ness ("big" or "little") of the return object. Default is .Platform$endian.\cr
 Endianness describes the bytes order of data stored within the files.}

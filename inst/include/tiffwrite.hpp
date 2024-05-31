@@ -466,7 +466,7 @@ Rcpp::RawVector hpp_tag_mincnt ( SEXP map,
   }
 }
 
-//' @title IFD Tag Writter
+//' @title IFD Tag Writer
 //' @name cpp_writeIFD
 //' @description
 //' Writes TIFF IFD (Image Field Directory).

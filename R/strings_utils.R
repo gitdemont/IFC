@@ -310,6 +310,26 @@ formatn <- function(splitp_obj, splitf_obj, channel = "", object = "") {
   return(paste0(splitp_obj$decomp, collapse=""))
 }
 
+#' @title Date Converter
+#' @description Formats date.
+#' @param x a string.
+#' @param iso whether returned value should be ISO8601. Default is \code{FALSE}.
+#' @param tryFormats format to try. See \code{\link[base]{format.Date}}. Default is \code{c("\%m/\%d/\%Y \%I:\%M:\%S \%p", "\%d/\%m/\%Y \%H:\%M:\%S", "\%Y:\%m:\%d \%H:\%M:\%S", "\%Y-\%m-\%dT\%H:\%M:\%SZ")}.
+#' @param tz time zone name. See \code{\link[base]{format.Date}}. Default is "UTC".
+#' @return formatted date
+#' @keywords internal
+formatdate <- function(x, iso = FALSE, tryFormats = c("%m/%d/%Y %I:%M:%S %p", "%d/%m/%Y %H:%M:%S", "%Y:%m:%d %H:%M:%S", "%Y-%m-%dT%H:%M:%SZ"), tz="UTC") {
+  xx = try(as.POSIXlt(x, tryFormats = tryFormats, tz = tz), silent = TRUE)
+  if(inherits(xx, "try-error")) return(x)
+  if(iso) {
+    xxx = try(format.POSIXlt(xx, format = "%Y-%m-%dT%H:%M:%SZ"), silent = TRUE)
+  } else {
+    xxx = try(format.POSIXlt(xx, format = "%Y:%m:%d %H:%M:%S"), silent = TRUE)
+  }
+  if(inherits(xxx, "try-error")) return(x)
+  return(xxx)
+}
+
 #' @title First Letter Only Capitalization
 #' @description
 #' Helper to capitalize the first letter of strings and leave the rest to lower case

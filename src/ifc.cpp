@@ -1184,7 +1184,7 @@ Rcpp::RawVector cpp_cast_image ( SEXP x,
 }
 
 
-//' @title IFD Tag Writter
+//' @title IFD Tag Writer
 //' @name cpp_writeIFD
 //' @description
 //' Writes TIFF IFD (Image Field Directory).

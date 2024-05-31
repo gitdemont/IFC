@@ -2,7 +2,7 @@
 % Please edit documentation in R/writetiff.R
 \name{writetiff}
 \alias{writetiff}
-\title{Tiff Writter}
+\title{Tiff Writer}
 \usage{
 writetiff(image, ..., what = "uint8")
 }

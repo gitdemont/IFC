@@ -40,7 +40,7 @@ objectWrite <- function(x, type, ...) {
          png = {
            text = c("software" = paste0("IFC ",asNamespace("IFC")[[".pkgenv"]][["version"]]))
            text = c(text, dots$text)
-           text = c(text, c("title" = dots$tags$`269`$map))
+           text = c(text, c("title" = dots$tags$`269`$map, "creation time" = dots$tags$`306`$map))
            dots = dots[!(names(dots) %in% c("text", "tags"))]
            do.call(what = png::writePNG, args = c(list(image = x, text = text), dots))
          },
