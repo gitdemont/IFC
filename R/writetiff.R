@@ -93,6 +93,7 @@ setupimage <- function(image, what, compression, endianness = .Platform$endian) 
 #' @param verbose whether to display information (use for debugging purpose). Default is FALSE.
 #' @param verbosity quantity of information displayed when verbose is TRUE; 1: normal, 2: rich. Default is 1.
 #' @examples
+#' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a cif file
 #'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
@@ -118,8 +119,9 @@ setupimage <- function(image, what, compression, endianness = .Platform$endian) 
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
+#' }
 #' @return It invisibly returns full path of exported file or a raw vector when \code{write_to = raw(0)} otherwise.
-#' @export
+#' @keywords internal
 writemulti <- function(image, write_to = raw(0),
                        tags = list(list(tag = 270, typ = 2, map = "N/A"), # ImageDescription
                                    list(tag = 306, typ = 2, map = "N/A")),# Date
@@ -196,6 +198,7 @@ writemulti <- function(image, write_to = raw(0),
 #' /!\ Note that image should range from 0 to 1.
 #' /!\ Note that \code{as.rgb} that will be automatically filled with \code{TRUE} if \code{image} is 3D array with 3rd dimension being of length 3. So, if an RGB output is not desired, you should provide a 4D array.
 #' @examples
+#' \dontrun{
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a cif file
 #'   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
@@ -212,15 +215,20 @@ writemulti <- function(image, write_to = raw(0),
 #'                   'https://gitdemont.github.io/IFCdata/',
 #'                   'to install extra files required to run this example.'))
 #' }
+#' }
 #' @inherit writemulti return
-#' @export
+#' @keywords internal
 writetiff <- function(image, ..., what = "uint8") {
   dots = list(...)
   tmp = grepl("as.rgb", names(dots), fixed = TRUE)
   if(any(tmp)) dots = dots[!tmp]
   what = match.arg(arg = what, choices = c("uint8","int8","uint16","int16","uint32","int32","float","double"), several.ok = FALSE)
-  vmax = switch(what, "uint8" = 255, "int8" = 127, "uint16" = 65535, "int16" = 32767, "uint32" = 4294967295, "int32" = 2147483647, 1)
+  vmax = switch(what, "uint8" = 255, "int8" = 255, "uint16" = 65535, "int16" = 65535, "uint32" = 4294967295, "int32" = 4294967295, 1)
   d = dim(image)
   is.rgb = (length(d) == 3) && (d[3] == 3)
-  do.call(args = c(dots, list(image = image * vmax, as.rgb = is.rgb, what = what)), what = writemulti)
+  if(substr(what, 0, 1) == "u") {
+    do.call(args = c(dots, list(image = image * vmax, as.rgb = is.rgb, what = what)), what = writemulti) 
+  } else {
+    do.call(args = c(dots, list(image = floor((image - 0.5) * vmax), as.rgb = is.rgb, what = what)), what = writemulti)
+  }
 }

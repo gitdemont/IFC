@@ -4,7 +4,7 @@
 \alias{xml_new_node}
 \title{List to XML Conversion}
 \usage{
-xml_new_node(name, attrs, .children, text, ...)
+xml_new_node(name, attrs, .children, text, ..., root = FALSE)
 }
 \arguments{
 \item{name}{name of the node to create.}
@@ -14,6 +14,10 @@ xml_new_node(name, attrs, .children, text, ...)
 \item{.children}{a list containing XML node elements or content.}
 
 \item{text}{the text content for the new XML node.}
+
+\item{...}{other arguments to be passed, not used.}
+
+\item{root}{whether node is root. Default is \code{FALSE}.}
 }
 \value{
 an R object that points to the C-level structure instance.

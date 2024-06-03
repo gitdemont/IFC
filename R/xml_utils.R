@@ -112,13 +112,18 @@ to_xml_list = function(x, name, kids, indent = "  ", escape = "\n") {
 #' @param attrs a named list of name-value pairs to be used as attributes for the XML node.
 #' @param .children a list containing XML node elements or content.
 #' @param text the text content for the new XML node.
+#' @param ... other arguments to be passed, not used.
+#' @param root whether node is root. Default is \code{FALSE}.
 #' @return an R object that points to the C-level structure instance.
 #' @keywords internal
-xml_new_node <- function(name, attrs, .children, text, ...) {
-  # if(missing(text) && missing(attrs)) stop("should be either a 'text' node or a 'attr' node")
-  tmp <- xml_new_root("foo")
-  tmp %>% xml_add_child(.value = name)
-  node <- xml_find_first(tmp, xpath = name)
+xml_new_node <- function(name, attrs, .children, text, ..., root = FALSE) {
+  if(root) {
+    node <- xml_new_root(.value = name)
+  } else {
+    tmp <- xml_new_root("foo")
+    tmp %>% xml_add_child(.value = name)
+    node <- xml_find_first(tmp, xpath = name)
+  }
   if(!missing(text)) {
     node %>% xml_set_text(value = text) 
   }

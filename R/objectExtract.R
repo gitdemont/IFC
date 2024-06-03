@@ -201,14 +201,13 @@ objectExtract <- function(ifd,
       return(tmp)
     }))
     
-    meta = list("269" = list(tag = 269, typ = 2, map = n_ifd[i_ifd]),
-                "270" = list(tag = 270, typ = 2, map = "N/A"),
-                "306" = list(tag = 306, typ = 2, map = formatdate(getFullTag(ifd, i_ifd, "306"))),
-                "33003" = list(tag = 33003, typ = 4, map = ifd[[i_ifd]]$infos$OBJECT_ID))
-    
     ##### export image
     switch(param$export,
            "multi" = { #TODO add code to fill ImageDescription TAG 270
+             meta = list("269" = list(tag = 269, typ = 2, map = n_ifd[i_ifd]),
+                         "270" = list(tag = 270, typ = 2, map = "N/A"),
+                         "306" = list(tag = 306, typ = 2, map = formatdate(suppressWarnings(getFullTag(ifd, i_ifd, "306")))),
+                         "33003" = list(tag = 33003, typ = 4, map = ifd[[i_ifd]]$infos$OBJECT_ID))
              export_name = formatn(splitp_obj = param$splitp_obj,
                                    splitf_obj = param$splitf_obj,
                                    object = n_ifd[i_ifd])
@@ -227,6 +226,10 @@ objectExtract <- function(ifd,
              img = normalizePath(export_name, winslash = "/", mustWork = FALSE)
            }, 
            "file" = {
+             meta = list("269" = list(tag = 269, typ = 2, map = n_ifd[i_ifd]),
+                         "270" = list(tag = 270, typ = 2, map = "N/A"),
+                         "306" = list(tag = 306, typ = 2, map = formatdate(suppressWarnings(getFullTag(ifd, i_ifd, "306")))),
+                         "33003" = list(tag = 33003, typ = 4, map = ifd[[i_ifd]]$infos$OBJECT_ID))
              img = lapply(1:length(img), FUN = function(i) {
                export_name = formatn(splitp_obj = param$splitp_obj,
                                      splitf_obj = param$splitf_obj,
@@ -246,6 +249,10 @@ objectExtract <- function(ifd,
              })
            },
            "base64" = {
+             meta = list("269" = list(tag = 269, typ = 2, map = n_ifd[i_ifd]),
+                         "270" = list(tag = 270, typ = 2, map = "N/A"),
+                         "306" = list(tag = 306, typ = 2, map = formatdate(suppressWarnings(getFullTag(ifd, i_ifd, "306")))),
+                         "33003" = list(tag = 33003, typ = 4, map = ifd[[i_ifd]]$infos$OBJECT_ID))
              if(param$base64_id) {
                img = lapply(1:length(img), FUN=function(i) {
                  sprintf("<img id='%s' %s width='%i' height='%i' src='data:image/%s;base64,%s'>",

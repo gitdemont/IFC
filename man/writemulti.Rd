@@ -52,6 +52,7 @@ It invisibly returns full path of exported file or a raw vector when \code{write
 Writes TIFF.
 }
 \examples{
+\dontrun{
 if(requireNamespace("IFCdata", quietly = TRUE)) {
   ## use a cif file
   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
@@ -78,3 +79,5 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
                   'to install extra files required to run this example.'))
 }
 }
+}
+\keyword{internal}

@@ -29,6 +29,7 @@ it is aimed to simplify the use of \code{\link{writemulti}} by requiring minimal
 /!\ Note that \code{as.rgb} that will be automatically filled with \code{TRUE} if \code{image} is 3D array with 3rd dimension being of length 3. So, if an RGB output is not desired, you should provide a 4D array.
 }
 \examples{
+\dontrun{
 if(requireNamespace("IFCdata", quietly = TRUE)) {
   ## use a cif file
   file_cif <- system.file("extdata", "example.cif", package = "IFCdata")
@@ -46,3 +47,5 @@ if(requireNamespace("IFCdata", quietly = TRUE)) {
                   'to install extra files required to run this example.'))
 }
 }
+}
+\keyword{internal}
