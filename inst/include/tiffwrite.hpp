@@ -244,7 +244,7 @@ Rcpp::List hpp_tags_clean ( const Rcpp::List IFD, const R_len_t pos = 0, const b
     for(R_len_t i = 0; i < IFD.size(); i++) {
       Rcpp::List ifd = IFD[i];
       if(!(ifd.containsElementNamed("tag") && ifd.containsElementNamed("typ") && ifd.containsElementNamed("map"))) {
-        Rprintf("'ifd'@%f should contain 'tag', 'typ' and 'map' elements\n", i - pos);
+        Rprintf("'ifd'@%u should contain 'tag', 'typ' and 'map' elements\n", i - pos);
         continue; 
       }
       bool isok = true;
