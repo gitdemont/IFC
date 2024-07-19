@@ -487,13 +487,13 @@ num_to_string <- function(x, precision = 22) {
 #' @title Next Component Prediction
 #' @description
 #' Helper to define next allowed component in a boolean vector.
-#' @param x a string, current component.
+#' @param x a string, current component. Default is character(0).
 #' @param count an integer, representing current number of opened/closed bracket.
-#' @param obj_alias a string, alias used for population name.
+#' @param obj_alias a character vector, alias used for name(s). Default is character(0).
 #' @return a vector of next allowed components.
 #' @keywords internal
-next_bool = function(x = "", count = 0L, obj_alias) {
-  if(identical(x, "")) return(c("Not", "(", obj_alias))
+next_bool = function(x = character(0), count = 0L, obj_alias = character(0)) {
+  if(length(x) == 0) return(c("Not", "(", obj_alias))
   return(switch(x,
                 "And" = {
                   c("Not", "(", obj_alias)
@@ -522,13 +522,14 @@ next_bool = function(x = "", count = 0L, obj_alias) {
 #' @title Boolean Expression Validation
 #' @description
 #' Helper to check if a boolean vector is valid.
-#' @param x a string vector representing the boolean expression to be validated.
+#' @param x a string vector representing the boolean expression to be validated. Default is ""
 #' @param all_names a character vector of scalars which are allowed to be part of the the boolean expression.
 #' @return x is returned if no exception is raised during validation process.
 #' @keywords internal
 validate_bool = function(x = "", all_names = "") {
   operators = c("And", "Or", "Not", "(", ")")
   all_names = setdiff(all_names, c(operators, ""))
+  if(length(x) == 0) stop("object definition is not possible: empty")
   if(!any(all_names %in% x)) stop("object definition is not possible: no match found")
   obj_alias = gen_altnames("foo", forbidden = c("", operators, all_names, x))
   count = 0L

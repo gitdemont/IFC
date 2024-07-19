@@ -7,7 +7,7 @@
 validate_bool(x = "", all_names = "")
 }
 \arguments{
-\item{x}{a string vector representing the boolean expression to be validated.}
+\item{x}{a string vector representing the boolean expression to be validated. Default is ""}
 
 \item{all_names}{a character vector of scalars which are allowed to be part of the the boolean expression.}
 }
