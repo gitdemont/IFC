@@ -493,6 +493,7 @@ num_to_string <- function(x, precision = 22) {
 #' @return a vector of next allowed components.
 #' @keywords internal
 next_bool = function(x = "", count = 0L, obj_alias) {
+  if(identical(x, "")) return(c("Not", "(", obj_alias))
   return(switch(x,
                 "And" = {
                   c("Not", "(", obj_alias)
