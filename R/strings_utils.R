@@ -405,23 +405,25 @@ map_style <- function(style, toR = FALSE) {
 #' @name random_name
 #' @description
 #' Generates random name
-#' @param n number of characters of the desired return name. Default is 10.
-#' @param ALPHA upper case letters. Default is LETTERS.
-#' @param alpha lower case letters. Default is letters.
-#' @param num integer to use. Default is 0:9 
-#' @param special characters. Default is c("#", "@@", "?", "!", "&", "\%", "$").
-#' @param forbidden forbidden character vector. Default is character().
+#' @param n number of characters of the desired return name. Default is \code{10}.
+#' @param ALPHA upper case letters. Default is \code{LETTERS}.
+#' @param alpha lower case letters. Default is \code{letters}.
+#' @param num integer to use. Default is \code{0L:9L} 
+#' @param special characters. Default is \code{c("#", "@@", "?", "!", "&", "\%", "$")}.
+#' @param forbidden forbidden character vector. Default is \code{character()}.
+#' @param prefix string to be prepended. Default is \code{""}.
 #' @details 'forbidden' should not encompass all possible returned value otherwise the function will never end.
 #' @return a character string.
 #' @keywords internal
-random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, special = c("#", "@", "?", "!", "&", "%", "$"), forbidden = character()) {
+random_name <- function(n = 10, ALPHA = LETTERS, alpha = letters, num = 0L:9L, special = c("#", "@", "?", "!", "&", "%", "$"), forbidden = character(), prefix = "") {
   if(length(ALPHA)!=0) assert(ALPHA, alw = LETTERS)
   if(length(alpha)!=0) assert(alpha, alw = letters)
   if(length(num)!=0) assert(num, cla="integer", alw = 0L:9L)
-  forbidden = unique(forbidden); assert(forbidden, typ = "character")
-  id = paste0(sample(x = c(ALPHA, alpha, num, special), size = n, replace = TRUE), collapse = "")
+  if(length(forbidden)!=0) forbidden = unique(forbidden); assert(forbidden, typ = "character")
+  assert(prefix, len = 1, typ = "character")
+  id = paste0(prefix, paste0(sample(x = c(ALPHA, alpha, num, special), size = n, replace = TRUE), collapse = ""))
   while(id %in% forbidden) {
-    id = paste0(sample(x = c(ALPHA, alpha, num, special), size = n, replace = TRUE), collapse = "")
+    id = paste0(prefix, paste0(sample(x = c(ALPHA, alpha, num, special), size = n, replace = TRUE), collapse = ""))
   }
   return(id)
 }

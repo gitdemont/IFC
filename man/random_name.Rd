@@ -10,21 +10,24 @@ random_name(
   alpha = letters,
   num = 0L:9L,
   special = c("#", "@", "?", "!", "&", "\%", "$"),
-  forbidden = character()
+  forbidden = character(),
+  prefix = ""
 )
 }
 \arguments{
-\item{n}{number of characters of the desired return name. Default is 10.}
+\item{n}{number of characters of the desired return name. Default is \code{10}.}
 
-\item{ALPHA}{upper case letters. Default is LETTERS.}
+\item{ALPHA}{upper case letters. Default is \code{LETTERS}.}
 
-\item{alpha}{lower case letters. Default is letters.}
+\item{alpha}{lower case letters. Default is \code{letters}.}
 
-\item{num}{integer to use. Default is 0:9}
+\item{num}{integer to use. Default is \code{0L:9L}}
 
-\item{special}{characters. Default is c("#", "@", "?", "!", "&", "\%", "$").}
+\item{special}{characters. Default is \code{c("#", "@", "?", "!", "&", "\%", "$")}.}
 
-\item{forbidden}{forbidden character vector. Default is character().}
+\item{forbidden}{forbidden character vector. Default is \code{character()}.}
+
+\item{prefix}{string to be prepended. Default is \code{""}.}
 }
 \value{
 a character string.
