@@ -237,8 +237,6 @@ createOME <- function(dims, param, name, date, what = "int16", endianness = .Pla
                 PhysicalSizeX=PhysicalSizeX, # FIXME 2
                 PhysicalSizeY=PhysicalSizeY, # FIXME 2
                 Interleaved = "false",       # FIXME 2
-                PhysicalSizeXUnit="µm",
-                PhysicalSizeYUnit="µm",
                 BigEndian=ifelse(endianness == "big", "true", "false"),
                 SignificantBits=SignificantBits,
                 Type=what
