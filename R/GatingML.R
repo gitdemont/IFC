@@ -405,7 +405,7 @@ fromXML2_gating  <- function(xml_nodes, type = "rect") {
         reg$color = meta$rcolors[1]
         reg$lightcolor = meta$rcolors[length(meta$rcolors)]
       }
-      ref = do.call(what=buildRegion, args=reg)
+      reg = do.call(what=buildRegion, args=reg)
       if(length(meta$xtext) != 0) reg$cx = as.numeric(meta$xtext)
       if(length(meta$ytext) != 0) reg$cy = as.numeric(meta$ytext)
       if(length(meta$xlog) != 0) reg$xlogrange = meta$xlog
@@ -553,6 +553,7 @@ readGatingML <- function(fileName, ...) {
         # modify obj
         if("obj" %in% N) x$obj = as.integer(strsplit(x$obj, split="|", fixed=TRUE)[[1]])
         x$type = "T"
+        x$base = "All"
         return(x)
       })
       names(tagged) = sapply(tagged, FUN=function(x) x$name)
