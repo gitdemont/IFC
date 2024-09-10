@@ -145,6 +145,7 @@ toXML2_graphs_gs = function(graphs) {
 #' @return a xml_node.
 #' @keywords internal
 toXML2_graphpop_gs <- function(pop, reg, verbose = FALSE) {
+  sync = attr(reg, "sync")
   # color conversion
   reg$colors = paste0(map_color(c(reg$color,reg$lightcolor), FALSE),collapse="|")
   # only keep what is needed
@@ -156,14 +157,15 @@ toXML2_graphpop_gs <- function(pop, reg, verbose = FALSE) {
   
   # write custom_info
   info_attrs = list("rtext"=reg$label,
-                     "xtext"=reg$cx,
-                     "ytext"=reg$cy,
-                     "lineat"=reg$y[1],
-                     "rcolors"=reg$colors,
-                     "colors"=pop$colors,
-                     "pch"=map_style(pop$style, toR = FALSE),
-                     "xlog"=reg$xlogrange,
-                     "ylog"=reg$ylogrange)
+                    "xtext"=reg$cx,
+                    "ytext"=reg$cy,
+                    "lineat"=reg$y[1],
+                    "rcolors"=reg$colors,
+                    "colors"=pop$colors,
+                    "pch"=map_style(pop$style, toR = FALSE),
+                    "xlog"=reg$xlogrange,
+                    "ylog"=reg$ylogrange)
+  if(length(sync) != 0) info_attrs = c(info_attrs, list("rsync"=sync))
   
   # only add xtrans/ytrans if they are not empty
   if(length(reg$xtrans)!=0) info_attrs = c(info_attrs, list("xtrans"=reg$xtrans))
@@ -405,7 +407,8 @@ fromXML2_gating  <- function(xml_nodes, type = "rect") {
         reg$color = meta$rcolors[1]
         reg$lightcolor = meta$rcolors[length(meta$rcolors)]
       }
-      reg = do.call(what=buildRegion, args=reg)
+      attr(reg, "sync") <- meta$rsync
+      reg = keep_attributes(reg, what=buildRegion)
       if(length(meta$xtext) != 0) reg$cx = as.numeric(meta$xtext)
       if(length(meta$ytext) != 0) reg$cy = as.numeric(meta$ytext)
       if(length(meta$xlog) != 0) reg$xlogrange = meta$xlog
@@ -423,7 +426,7 @@ fromXML2_gating  <- function(xml_nodes, type = "rect") {
     }
     return(list(# meta = meta, no need to return meta 
       region = reg,
-      pop = do.call(what=buildPopulation, pop)))
+      pop = keep_attributes(pop, what=buildPopulation)))
   })
 }
 

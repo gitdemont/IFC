@@ -62,7 +62,7 @@ data_add_regions <- function(obj, regions, ...) {
   assert(obj, cla = "IFC_data")
   
   # try to coerce regions inputs
-  regions = lapply(regions, FUN=function(x) do.call(what=buildRegion, args=x))
+  regions = lapply(regions, keep_attributes, what=buildRegion)
   names(regions) = sapply(regions, FUN=function(x) x$label)
   
   # removes duplicated inputs

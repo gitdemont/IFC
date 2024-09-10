@@ -446,8 +446,11 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       })
       regions=mapply(FUN = append, regions, regions_tmp, SIMPLIFY = FALSE)
       rm(regions_tmp)
-      ##### changes unknown color names in regions
-      for(i in 1:length(regions)) {
+      ##### changes unknown color names in regions and retrieves sync attribute if any
+      for(i in seq_along(regions)) {
+        sync = regions[[i]]$sync
+        regions[[i]] = regions[[i]][setdiff(names(regions[[i]]), "sync")]
+        attr(regions[[i]], "sync") = sync
         regions[[i]]$color = map_color(regions[[i]]$color)
         regions[[i]]$lightcolor = map_color(regions[[i]]$lightcolor)
       }

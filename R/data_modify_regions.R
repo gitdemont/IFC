@@ -45,10 +45,10 @@ data_modify_regions <- function(obj, regions, display_progress = TRUE, ...) {
   mutation = names(regions)
   if(!all(mutation %in% names(obj$regions))) stop("can't find regions to modify in 'obj'", call. = FALSE)
   R = lapply(regions, FUN = function(x) {
-    reg = do.call(what = buildRegion, args = x)
-    reg$color = map_color(reg$color)
-    reg$lightcolor = map_color(reg$lightcolor)
-    reg
+    xx = keep_attributes(x, what = buildRegion)
+    xx$color = map_color(xx$color)
+    xx$lightcolor = map_color(xx$lightcolor)
+    xx
   })
   names(R) = sapply(R, FUN = function(x) x$label)
   tmp = duplicated(names(R))
@@ -71,7 +71,11 @@ data_modify_regions <- function(obj, regions, display_progress = TRUE, ...) {
   ans = obj
   N = names(ans$regions)
   K = class(ans$regions)
-  ans$regions[mutation] = R
+  ans$regions[mutation] = lapply(seq_along(mutation), FUN = function(i) {
+    x = ans$regions[mutation][[i]]
+    for(k in setdiff(names(attributes(x)),c("names","dim","dimnames"))) { attr(R[[i]], k) <- attr(x, k) }
+    R[[i]]
+  })
   names(ans$regions) = sapply(ans$regions, FUN = function(r) r$label)
   class(ans$regions) <- K
   

@@ -156,9 +156,9 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     if(length(is_binary)==0) {is_binary=FALSE}
 
     # try to coerce inputs to compatible daf format
-    pops = lapply(pops, FUN=function(x) do.call(what=buildPopulation, args=x))
+    pops = lapply(pops, keep_attributes, what=buildPopulation)
     names(pops) = sapply(pops, FUN=function(x) x$name)
-    regions = lapply(regions, FUN=function(x) do.call(what=buildRegion, args=x))
+    regions = lapply(regions, keep_attributes, what=buildRegion)
     names(regions) = sapply(regions, FUN=function(x) x$label)
     features = lapply(features, FUN=function(x) do.call(what=buildFeature, args=x))
     names(features) = sapply(features, FUN=function(x) x$name)
@@ -286,12 +286,14 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     }
     if(length(regions)!=0) for(i in 1:length(regions)) {
       reg = regions[[i]]
+      A = attr(reg, "sync")
       reg = reg[sapply(reg, length) != 0]
       if(verbose) cat(paste0("creating region: ", reg$label, "\n"))
       if(reg$label%in%regions_daf_label) {
         warning(paste0(reg$label, ", not exported: trying to export an already defined region"), immediate. = TRUE, call. = FALSE)
         next
       }
+      if(length(A) == 1) reg$sync = A
       new_nodes$regions = c(new_nodes$regions,
                             raw_2020,
                             charToRaw(to_xml_list(reg[-which(names(reg)%in%c("x","y"))], name = "Region", escape = rawToChar(c(collapse$regions,raw_2020)),

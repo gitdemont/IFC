@@ -45,7 +45,7 @@ data_modify_pops <- function(obj, pops, display_progress = TRUE, ...){
   assert(obj, cla = "IFC_data")
   mutation = names(pops)
   if(!all(mutation %in% names(obj$pops))) stop("can't find pops to modify in 'obj'", call. = FALSE)
-  P = lapply(pops, FUN = function(x) do.call(what = buildPopulation, args = x))
+  P = lapply(pops, keep_attributes, what = buildPopulation)
   names(P) = sapply(P, FUN = function(x) x$name)
   tmp = duplicated(names(P))
   if(any(tmp)) stop(paste0("duplicated pops found: ", unique(names(pops)[tmp])), call. = FALSE)
