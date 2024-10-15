@@ -386,8 +386,8 @@ toCapFirstOnly <- function(text) {
 #' @return a character vector.
 #' @keywords internal
 map_color <- function(color, toR = TRUE) {
-  set1 = c("Teal", "Green", "Lime", "Control")
-  set2 = c("Cyan4", "Green4", "Chartreuse", "Gray81")
+  set1 = c("Teal", "Green", "Lime", "Control", "0")
+  set2 = c("Cyan4", "Green4", "Chartreuse", "Gray81", "Gray82")
   if(toR) {
     foo = color %in% set1
     if(any(foo)) {
@@ -413,10 +413,10 @@ map_color <- function(color, toR = TRUE) {
 #' @return an integer vector when toR is TRUE or a character vector.
 #' @keywords internal
 map_style <- function(style, toR = FALSE) {
-  set1 = c("Simple Dot", "Cross", "Plus", 
-                       "Empty Circle", "Empty Diamond", "Empty Square", 
-                       "Empty Triangle", "Solid Diamond", "Solid Square", 
-                       "Solid Triangle")
+  set1 = c("Simple Dot", "Cross", "Plus",
+           "Empty Circle", "Empty Diamond", "Empty Square",
+           "Empty Triangle", "Solid Diamond", "Solid Square",
+           "Solid Triangle")
   set2 = c(20, 4, 3, 1, 5, 0, 2, 18, 15, 17)
   if(toR) {
     foo = style %in% set1
