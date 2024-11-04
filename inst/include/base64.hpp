@@ -83,27 +83,6 @@ std::string hpp_base64_encode (const Rcpp::RawVector x, const bool url = false) 
   return r2c(out);
 }
 
-// helpers for base64 decoding
-char convb64(const char x, char *abort) {
-  if(65 <= x && x <= 90) return x - 65;
-  if(97 <= x && x <= 122) return x - 71;
-  if(48 <= x && x <= 57) return x + 4;
-  if(x == 43) return 62;
-  if(x == 47) return 63;
-  if(*abort == 0) *abort = x;
-  return 0;
-}
-
-char convb64_url(const char x, char *abort) {
-  if(65 <= x && x <= 90) return x - 65;
-  if(97 <= x && x <= 122) return x - 71;
-  if(48 <= x && x <= 57) return x + 4;
-  if(x == 45) return 62;
-  if(x == 95) return 63;
-  if(*abort == 0) *abort = x;
-  return 0;
-}
-
 //' @title Base64 to Raw Conversion
 //' @name cpp_base64_decode
 //' @description
@@ -116,48 +95,67 @@ char convb64_url(const char x, char *abort) {
 // [[Rcpp::export(rng = false)]]
 Rcpp::RawVector hpp_base64_decode(std::string x, const bool url = false) {
   if((x.length() % 4) != 0) Rcpp::stop("hpp_base64_decode: not a base64 encoded string");
+  if(x.length() == 0) return 0;
   Rcpp::RawVector out = Rcpp::no_init_vector(3 * x.length() / 4);
-  if(x.length() == 0) return out;
-  std::string::iterator it = x.begin();
-  R_len_t i = 0;
-  char abort = 0;
-  if(url) {
-    while(!abort && (it != x.end())) {
-      out[i] = convb64_url(*(it++), &abort) << 2; 
-      char b = convb64_url(*(it++), &abort);
-      char c = convb64_url(*(it++), &abort);
-      out[i++] += ((b & 0xF0) >> 4);
-      out[i++] = ((b & 0x0F) << 4) + ((c & 0x3C) >> 2);
-      out[i++] = ((c & 0x03) << 6) + convb64_url(*(it++), &abort);
-    }
-  } else {
-    while(!abort && (it != x.end())) {
-      out[i] = convb64(*(it++), &abort) << 2; 
-      char b = convb64(*(it++), &abort);
-      char c = convb64(*(it++), &abort);
-      out[i++] += ((b & 0xF0) >> 4);
-      out[i++] = ((b & 0x0F) << 4) + ((c & 0x3C) >> 2);
-      out[i++] = ((c & 0x03) << 6) + convb64(*(it++), &abort);
-    }
+  
+  // create LUT for conversion
+  Rcpp::RawVector LUT_RAW(256);
+  LUT_RAW.fill(64);
+  std::string LUT = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  std::string::iterator it_lut = LUT.begin();
+  while(it_lut != LUT.end()) { 
+    unsigned char v = *(it_lut++);
+    LUT_RAW[v] = 65 <= v && v <= 90 ? v - 65 : 97 <= v && v <= 122 ? v - 71 : 48 <= v && v <= 57 ? v + 4 : 64;
   }
+  if(url) {
+    LUT_RAW[45] = 62; // -
+    LUT_RAW[95] = 63; // _
+  } else {
+    LUT_RAW[43] = 62; // +
+    LUT_RAW[47] = 63; // /
+  }
+  
+  // convert from base64
+  std::string::iterator it = x.begin();
+  R_len_t i = 0, j = 0;
+  short pos = 1;
+  while((pos == 1) && (it != x.end())) {
+    j += 4;
+    unsigned char a = LUT_RAW[*(it++)];
+    unsigned char b = LUT_RAW[*(it++)];
+    if(a >= 64 || b >= 64) pos = 4;
+    unsigned char c = LUT_RAW[*(it++)];
+    if(c >= 64) pos = 3;
+    unsigned char d = LUT_RAW[*(it++)];
+    if(d >= 64) pos = 2;
+    out[i++] = (a << 2) + ((b & 0xF0) >> 4);
+    out[i++] = ((b & 0x0F) << 4) + ((c & 0x3C) >> 2);
+    out[i++] = ((c & 0x03) << 6) + d;
+  }
+  
   // inspect and trim last bytes
   std::string msg = "";
   if(it != x.end()) msg.append("\n-premature ending");
+  i -= pos;
+  if(i <= 0) return 0;
   Rcpp::RawVector V = Rcpp::no_init_vector(4);
-  R_len_t pos = 1;
-  bool bad = false;
-  char foo = 0;
-  for(short k = 0; k < V.size(); k++) {
-    V[k] = *(--it);
-    if(V[k] == abort) pos = k + 2;
-    if(!bad) bad = (V[k] != 65 && V[k] != 61) && !(url ? convb64_url(V[k], &foo) : convb64(V[k], &foo));
+  short bad = 0;
+  for(short k = 0; k < V.size(); k++) { 
+    V[k] = (unsigned char) *(--it);
+    if(!bad && V[k] != 61 && LUT_RAW[V[k]] >= 64) {bad = k + 1; break;}
   }
   if(!((V[3] != 61 && V[2] != 61) &&
      ((V[1] == 61 && V[0] == 61) || (V[1] != 61)))) msg.append("\n-invalid padding");
-  if(bad) msg.append("\n-invalid base64 character");
+  if(bad) {
+    std::stringstream s;
+    s << std::uppercase << "0x" << std::hex << (unsigned short) V[bad - 1];
+    msg.append("\n-invalid base64 character[");
+    msg.append(s.str());
+    msg.append("] @");
+    msg.append(std::to_string(j - (bad - 1)));
+  }
   if(msg != "") Rcpp::warning(msg);
-  i -= pos;
-  if(i < 0) return 0;
+  if(pos == 1) return out;
   return out[Rcpp::Range(0, i)];
 }
 
