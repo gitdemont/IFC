@@ -502,7 +502,7 @@ ExtractImages_toMulti <- function(...,
                                   write_to,
                                   overwrite = FALSE) {
   dots = list(...)
-  dots = dots[!(names(dots) %in% c("image_type", "export"))]
+  dots = dots[!(names(dots) %in% c("image_type", "export", "mode"))]
   args = list(image_type = "img", export = "multi", mode = "raw")
   if(!missing(objects)) args = c(args, list(objects = objects))
   if(!missing(offsets)) args = c(args, list(offsets = offsets))
@@ -525,7 +525,7 @@ ExtractMasks_toMulti <- function(...,
                                  write_to,
                                  overwrite = FALSE) {
   dots = list(...)
-  dots = dots[!(names(dots) %in% c("image_type", "export"))]
+  dots = dots[!(names(dots) %in% c("image_type", "export", "mode"))]
   args = list(image_type = "msk", export = "multi", mode = "raw")
   if(!missing(objects)) args = c(args, list(objects = objects))
   if(!missing(offsets)) args = c(args, list(offsets = offsets))
