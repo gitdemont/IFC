@@ -44,7 +44,7 @@ setloc <- function(locale = getloc()) {
   cur_loc <- getloc()
   suppressWarnings(sapply(setdiff(intersect(names(locale), .LC.categories), ""), FUN = function(x) {
     foo = try(Sys.setlocale(x, locale[x]), silent = TRUE)
-    if(inherits(foo, "try-error")) message(attr(foo, "condition")$message)
+    if(inherits(foo, "try-error")) message("can't set locale ['", x, "'='", locale[x], "'] ", attr(foo, "condition")$message, appendLF = TRUE)
   }))
   return(cur_loc)
 }
