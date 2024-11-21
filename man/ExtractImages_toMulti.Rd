@@ -27,7 +27,7 @@ If \code{'offsets'} are not provided, extra arguments can also be passed with \c
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
 \item{write_to}{used to compute respectively exported file name.\cr
-Exported \code{"multi"} extension will be deduced from this pattern. Allowed export are \code{".tif"}, code{".tiff"}.
+Exported \code{"multi"} extension will be deduced from this pattern. Allowed export are \code{".tif"}, \code{".tiff"}.
 Placeholders, if found, will be substituted:\cr
 -\code{\%d}: with full path directory,\cr
 -\code{\%p}: with first parent directory,\cr

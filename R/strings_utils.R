@@ -32,7 +32,7 @@
 #' @return a named vector whose members are current locale value.
 #' @keywords internal
 getloc <- function() {
-  sapply(setdiff(.LC.categories, "LC_ALL"), Sys.getlocale)
+  sapply(setdiff(.LC.categories, c("LC_ALL","")), Sys.getlocale)
 }
 
 #' @title Set Locale
@@ -42,7 +42,10 @@ getloc <- function() {
 #' @keywords internal
 setloc <- function(locale = getloc()) {
   cur_loc <- getloc()
-  suppressWarnings(sapply(names(locale), FUN = function(x) Sys.setlocale(x, locale[x])))
+  suppressWarnings(sapply(setdiff(intersect(names(locale), .LC.categories), ""), FUN = function(x) {
+    foo = try(Sys.setlocale(x, locale[x]), silent = TRUE)
+    if(inherits(foo, "try-error")) message(attr(foo, "condition")$message)
+  }))
   return(cur_loc)
 }
 

@@ -479,7 +479,7 @@ ExtractMasks_toBase64 <- function(...,
 #' Function to shortcut extraction images to multichannel tiff ! excludes mask.
 #' @inheritParams ExtractMasks_toMatrix
 #' @param write_to used to compute respectively exported file name.\cr
-#' Exported \code{"multi"} extension will be deduced from this pattern. Allowed export are \code{".tif"}, code{".tiff"}.
+#' Exported \code{"multi"} extension will be deduced from this pattern. Allowed export are \code{".tif"}, \code{".tiff"}.
 #' Placeholders, if found, will be substituted:\cr
 #' -\code{\%d}: with full path directory,\cr
 #' -\code{\%p}: with first parent directory,\cr
@@ -514,7 +514,7 @@ ExtractImages_toMulti <- function(...,
 #' @title Shortcut for Batch Masks Extraction to Multichannel Tiff
 #' @description
 #' Function to shortcut extraction of masks to multichannel tiff ! excludes image.
-#' @inheritParams ExtractImages_toFile
+#' @inheritParams ExtractImages_toMulti
 #' @note Arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExtractMasks_toMulti}} input arguments.
 #' @inherit ExtractImages_toMulti details return
 #' @export

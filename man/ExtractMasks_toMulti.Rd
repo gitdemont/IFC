@@ -27,16 +27,14 @@ If \code{'offsets'} are not provided, extra arguments can also be passed with \c
 \item{display_progress}{whether to display a progress bar. Default is TRUE.}
 
 \item{write_to}{used to compute respectively exported file name.\cr
-Exported \code{"file"} extension will be deduced from this pattern. Allowed export are \code{".bmp"}, \code{".jpg"}, \code{".jpeg"}, \code{".png"}, \code{".tif"}, \code{".tiff"}.
-Note that \code{".bmp"} is faster but files are not compressed producing bigger data.\cr
+Exported \code{"multi"} extension will be deduced from this pattern. Allowed export are \code{".tif"}, \code{".tiff"}.
 Placeholders, if found, will be substituted:\cr
--\code{\%d}: with full path directory\cr
--\code{\%p}: with first parent directory\cr
--\code{\%e}: with extension (without leading .)\cr
--\code{\%s}: with shortname (i.e. basename without extension)\cr
--\code{\%o}: with object_id\cr
--\code{\%c}: with channel_id\cr
-A good trick is to use: \code{"\%d/\%s/\%s_\%o_\%c.tiff"}.}
+-\code{\%d}: with full path directory,\cr
+-\code{\%p}: with first parent directory,\cr
+-\code{\%e}: with extension (without leading .),\cr
+-\code{\%s}: with shortname (i.e. basename without extension),\cr
+-\code{\%o}: with object_id,\cr
+A good trick is to use: \code{"\%d/\%s/\%s_\%o.tiff"}.}
 
 \item{overwrite}{whether to overwrite file or not. Default is \code{FALSE}.}
 }
