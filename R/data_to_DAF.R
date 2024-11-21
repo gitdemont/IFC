@@ -85,7 +85,7 @@ data_to_DAF = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
                        fullname = TRUE, cifdir = dirname(obj$fileName), ntry = +Inf, ...) {
   dots = list(...)
   # change locale
-  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
   on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
   

@@ -98,7 +98,7 @@ DisplayGallery <- function(...,
   old_ask <- devAskNewPage(ask = FALSE)
   on.exit(devAskNewPage(ask = old_ask), add = TRUE)
   # change locale
-  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
   on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
 
   # check input

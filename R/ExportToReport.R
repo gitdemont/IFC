@@ -243,7 +243,7 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   on.exit(dev_close(dv), add = TRUE)
   
   # change locale
-  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
   on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   
   # check mandatory param
@@ -450,7 +450,7 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
   on.exit(dev_close(dv), add = TRUE)
   
   # change locale
-  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
   on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   
   # check mandatory param
@@ -618,7 +618,7 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
   on.exit(dev_close(dv), add = TRUE)
   
   # change locale
-  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
   on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   
   # check fileName or obj

@@ -71,7 +71,7 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
                        add_tracking = TRUE, ...) {
   dots = list(...)
   # change locale
-  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
   on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   
   # check madatory param

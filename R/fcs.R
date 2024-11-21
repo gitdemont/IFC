@@ -547,7 +547,7 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
   assert(display_progress, len = 1, alw = c(TRUE,FALSE))
   
   # force local
-  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
   on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   setloc(c("LC_NUMERIC" = "C"))
   
@@ -1597,7 +1597,7 @@ ExtractFromFCS <- function(fileName, ...) {
 ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytometer = "Image Stream", ...) {
   dots = list(...)
   # change locale
-  locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+  locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
   on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
   now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
   

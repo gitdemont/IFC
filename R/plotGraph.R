@@ -69,7 +69,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
   
   tryCatch({
     # change locale
-    locale_back <- setloc(c("LC_ALL" = "English.UTF-8"))
+    locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
     on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
     
     # check mandatory param
