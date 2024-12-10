@@ -75,7 +75,7 @@ jobs:
         run: |
           remotes::install_github(repo = "gitdemont/IFCdata", ref = "master", dependencies = FALSE)
           remotes::install_deps(dependencies = TRUE)
-          remotes::install_cran("any")
+          remotes::install_cran(c("any", "sessioninfo"))
         shell: Rscript {0}
 
       - name: Session info
