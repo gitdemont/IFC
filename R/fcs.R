@@ -991,7 +991,7 @@ readFCSdataset <- function(fileName, options, display_progress = TRUE, ...) {
                                start = extra_off1, end = extra_off2,
                                encoding = "UTF-8", empty = options$text_empty, trim = options$text_trim)
       NEXTRA = names(extra_text)
-      names(extra_text) = toupper(extra_text)
+      names(extra_text) = toupper(names(extra_text))
       tmp = names(extra_text) %in% names(text)
       if(any(tmp)) warning("TEXT (or sup. TEXT) segment: supplemental TEXT segment contains keyword",ifelse(sum(tmp)==0,"","s")," already found in TEXT segment that will be discarded:\n\t- ",
                            paste0(NEXTRA[tmp], collapse = "\n\t- "),
