@@ -123,11 +123,17 @@ Rcpp::RawVector hpp_base64_decode(std::string x, const bool url = false) {
     j += 4;
     unsigned char a = LUT_RAW[*(it++)];
     unsigned char b = LUT_RAW[*(it++)];
-    if(a >= 64 || b >= 64) pos = 4;
     unsigned char c = LUT_RAW[*(it++)];
-    if(c >= 64) pos = 3;
     unsigned char d = LUT_RAW[*(it++)];
-    if(d >= 64) pos = 2;
+    if(a >= 64 || b >= 64) {
+      pos = 4;
+    } else {
+      if(c >= 64) {
+        pos = 3; 
+      } else {
+        if(d >= 64) pos = 2;
+      }
+    };
     out[i++] = (a << 2) + ((b & 0xF0) >> 4);
     out[i++] = ((b & 0x0F) << 4) + ((c & 0x3C) >> 2);
     out[i++] = ((c & 0x03) << 6) + d;
@@ -137,10 +143,9 @@ Rcpp::RawVector hpp_base64_decode(std::string x, const bool url = false) {
   std::string msg = "";
   if(it != x.end()) msg.append("\n-premature ending");
   i -= pos;
-  if(i <= 0) return 0;
-  Rcpp::RawVector V = Rcpp::no_init_vector(4);
   short bad = 0;
-  for(short k = 0; k < V.size(); k++) { 
+  Rcpp::RawVector V = Rcpp::no_init_vector(4);
+  for(short k = 0; k < V.size(); k++) {
     V[k] = (unsigned char) *(--it);
     if(!bad && V[k] != 61 && LUT_RAW[V[k]] >= 64) {bad = k + 1; break;}
   }
@@ -155,6 +160,7 @@ Rcpp::RawVector hpp_base64_decode(std::string x, const bool url = false) {
     msg.append(std::to_string(j - (bad - 1)));
   }
   if(msg != "") Rcpp::warning(msg);
+  if(i < 0) return 0;
   if(pos == 1) return out;
   return out[Rcpp::Range(0, i)];
 }
