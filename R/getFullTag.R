@@ -72,7 +72,7 @@ getFullTag <- function(IFD, which = 1, tag = "256", raw = FALSE) {
       return(NULL)
     }
   }
-  if(ifd$tags[[tag]]$off) {
+  if(ifd$tags[[tag]]$byt > 4) {
     toread = file(description = attr(IFD, "fileName_image"), open = "rb")
     on.exit(close(toread))
     seek(toread, where = ifd$tags[[tag]]$val, origin = "start")
