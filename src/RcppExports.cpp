@@ -179,6 +179,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_readchunk
+Rcpp::RawVector cpp_readchunk(const std::string fname, const std::size_t offset, const uint32_t nbytes, const bool verbose);
+RcppExport SEXP _IFC_cpp_readchunk(SEXP fnameSEXP, SEXP offsetSEXP, SEXP nbytesSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const std::string >::type fname(fnameSEXP);
+    Rcpp::traits::input_parameter< const std::size_t >::type offset(offsetSEXP);
+    Rcpp::traits::input_parameter< const uint32_t >::type nbytes(nbytesSEXP);
+    Rcpp::traits::input_parameter< const bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_readchunk(fname, offset, nbytes, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_getversion
 Rcpp::CharacterVector cpp_getversion(const std::string pkg);
 RcppExport SEXP _IFC_cpp_getversion(SEXP pkgSEXP) {
@@ -734,6 +747,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_replace_non_finite", (DL_FUNC) &_IFC_cpp_replace_non_finite, 2},
     {"_IFC_cpp_computeGamma", (DL_FUNC) &_IFC_cpp_computeGamma, 1},
     {"_IFC_cpp_writeBMP", (DL_FUNC) &_IFC_cpp_writeBMP, 1},
+    {"_IFC_cpp_readchunk", (DL_FUNC) &_IFC_cpp_readchunk, 4},
     {"_IFC_cpp_getversion", (DL_FUNC) &_IFC_cpp_getversion, 1},
     {"_IFC_cpp_base64_encode", (DL_FUNC) &_IFC_cpp_base64_encode, 2},
     {"_IFC_cpp_base64_decode", (DL_FUNC) &_IFC_cpp_base64_decode, 2},

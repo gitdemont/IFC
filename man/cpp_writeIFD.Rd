@@ -27,3 +27,4 @@ a RawVector
 \description{
 Writes TIFF IFD (Image Field Directory).
 }
+\keyword{internal}

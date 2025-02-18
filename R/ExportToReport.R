@@ -244,7 +244,8 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
   
   # change locale
   locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
-  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
+  enc_back <- options("encoding" = "UTF-8")
+  on.exit(suspendInterrupts({setloc(locale_back); options(enc_back)}), add = TRUE)
   
   # check mandatory param
   if(missing(obj)) stop("'obj' can't be missing")
@@ -451,7 +452,8 @@ ExportToReport = function(obj, selection, write_to, overwrite=FALSE, onepage=TRU
   
   # change locale
   locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
-  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
+  enc_back <- options("encoding" = "UTF-8")
+  on.exit(suspendInterrupts({setloc(locale_back); options(enc_back)}), add = TRUE)
   
   # check mandatory param
   if(missing(obj)) stop("'obj' can't be missing")
@@ -619,7 +621,8 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
   
   # change locale
   locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
-  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
+  enc_back <- options("encoding" = "UTF-8")
+  on.exit(suspendInterrupts({setloc(locale_back); options(enc_back)}), add = TRUE)
   
   # check fileName or obj
   if(missing(obj) && missing(fileName)) stop("you should provide either 'fileName' or 'obj'")

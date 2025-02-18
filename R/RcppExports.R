@@ -153,6 +153,18 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title File Raw Chunk Extraction
+#' @name cpp_readchunk
+#' @description
+#' Reads binary chunk from file.
+#' @param fname string, path to file.
+#' @param offset std::size_t, where to start reading from the beginning.
+#' @param nbytes uint32_t, number of bytes.
+#' @param verbose bool, whether to display information (use for debugging purpose). Default is false.
+#' @return a RawVector
+#' @keywords internal
+NULL
+
 #' @title Get Current Package Version
 #' @name cpp_getversion
 #' @description
@@ -765,6 +777,7 @@ NULL
 #' @param last bool, whether IFD is the last one. Default is \code{false}.
 #' @param verbose bool, whether to display information (use for debugging purpose). Default is \code{false}.
 #' @return a RawVector
+#' @keywords internal
 NULL
 
 cpp_getBits <- function() {
@@ -825,6 +838,10 @@ cpp_computeGamma <- function(V) {
 
 cpp_writeBMP <- function(image) {
     .Call(`_IFC_cpp_writeBMP`, image)
+}
+
+cpp_readchunk <- function(fname, offset, nbytes, verbose = FALSE) {
+    .Call(`_IFC_cpp_readchunk`, fname, offset, nbytes, verbose)
 }
 
 cpp_getversion <- function(pkg = "IFC") {

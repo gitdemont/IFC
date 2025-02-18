@@ -83,7 +83,10 @@ getFullTag <- function(IFD, which = 1, tag = "256", raw = FALSE) {
            },
            { # 2 ASCII, 1 Byte
              if(length(ifd$tags[[tag]]$byt) == 0) return(character(0))
-             tmpcon <- rawConnection(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = FALSE))
+             locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
+             enc_back <- options("encoding" = "UTF-8")
+             on.exit(suspendInterrupts({setloc(locale_back); options(enc_back)}), add = TRUE)
+             tmpcon <- rawConnection(readBin(toread, n = ifd$tags[[tag]]$byt, what = "raw", signed = FALSE), open = "rb")
              on.exit(close(tmpcon), add = TRUE)
              return(paste(suppressWarnings(readLines(tmpcon, skipNul = FALSE, encoding = "UTF-8")), sep = "", collapse = "\n"))
            },

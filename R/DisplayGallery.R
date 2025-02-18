@@ -99,7 +99,8 @@ DisplayGallery <- function(...,
   on.exit(devAskNewPage(ask = old_ask), add = TRUE)
   # change locale
   locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
-  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
+  enc_back <- options("encoding" = "UTF-8")
+  on.exit(suspendInterrupts({setloc(locale_back); options(enc_back)}), add = TRUE)
 
   # check input
   input = whoami(entries = as.list(match.call()))

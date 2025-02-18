@@ -72,7 +72,8 @@ XIFtoTIFF <- function (fileName, write_to, objects, offsets,
   dots = list(...)
   # change locale
   locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
-  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
+  enc_back <- options("encoding" = "UTF-8")
+  on.exit(suspendInterrupts({setloc(locale_back); options(enc_back)}), add = TRUE)
   
   # check madatory param
   if(missing(fileName)) stop("'fileName' can't be missing")

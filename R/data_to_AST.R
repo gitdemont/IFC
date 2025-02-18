@@ -58,7 +58,8 @@ data_to_AST = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
   dots = list(...)
   # change locale
   locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
-  on.exit(suspendInterrupts(setloc(locale_back)), add = TRUE)
+  enc_back <- options("encoding" = "UTF-8")
+  on.exit(suspendInterrupts({setloc(locale_back); options(enc_back)}), add = TRUE)
   now = format(Sys.time(), format = "%d-%b-%y %H:%M:%S")
   
   # check mandatory param
