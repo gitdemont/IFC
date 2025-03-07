@@ -141,7 +141,7 @@ subsetXIF <- function (fileName, write_to, objects, offsets, fast = TRUE,
   # Merged RIF Files
   if(!is.null(IFDs[[1]]$tags[["33030"]])) 
     if(IFDs[[1]]$tags[["33030"]]$byt != 0)
-      V = strsplit(as.character(getFullTag(IFD = IFDs, which = 1, tag="33030")), "|", fixed = TRUE)[[1]]
+      V = strsplit(as.character(getFullTag(IFD = IFDs, which = 1, tag="33030")), "|", fixed = TRUE, useBytes = TRUE)[[1]]
   
   if(length(V) > 1) Files = normalizePath(paste(dirname(fileName), basename(V), sep = "/"), winslash = "/", mustWork = FALSE)
   

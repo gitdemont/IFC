@@ -159,10 +159,10 @@ getInfo <- function(fileName,
   Merged_rif = character()
   xif_type = IFDtype(IFD[[1]])
   if(!is.null(IFD[[1]]$tags[["33026"]])) {
-    if(IFD[[1]]$tags[["33026"]]$byt != 0) Origin_rif = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33026")), "|", fixed = TRUE)[[1]]
+    if(IFD[[1]]$tags[["33026"]]$byt != 0) Origin_rif = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33026")), "|", fixed = TRUE, useBytes = TRUE)[[1]]
   }
   if(!is.null(IFD[[1]]$tags[["33030"]])) {
-    if(IFD[[1]]$tags[["33030"]]$byt != 0) Merged_rif = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33030")), "|", fixed = TRUE)[[1]]
+    if(IFD[[1]]$tags[["33030"]]$byt != 0) Merged_rif = strsplit(as.character(getFullTag(IFD = IFD, which = 1, tag="33030")), "|", fixed = TRUE, useBytes = TRUE)[[1]]
   }
   if(file_extension == "daf" & from == "acquisition") file_extension = "cif"
   tmp_acq = read_xml(getFullTag(IFD = IFD, which = 1, tag = "33027", raw = TRUE), options=c("HUGE","RECOVER","NOENT","NOBLANKS","NSCLEAN"))
