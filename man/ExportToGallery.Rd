@@ -48,7 +48,8 @@ Note that members not found will be automatically removed and a warning will be 
 \item{export}{export format. Either "file", "matrix", "base64". Default is "matrix".}
 
 \item{write_to}{used when 'export' is "file" or "base64" to compute respectively filename or base64 id attribute.
-Exported type will be deduced from this pattern. Allowed export are '.bmp', '.jpg', '.jpeg', '.png', '.tif', '.tiff'.
+Exported type will be deduced from this pattern. Allowed export are '.bmp', '.jpg', '.jpeg', '.png', '.tif', '.tiff'.\cr
+'.pdf' can also be used when 'export' is not "base64".
 Note that '.bmp' are faster but not compressed producing bigger data.\cr
 Placeholders, if found, will be substituted:\cr
 -\%d: with full path directory\cr
@@ -85,7 +86,7 @@ If add_lines < 1, no separating lines are added.}
 \item{bg_color}{background color for main, channels and separating lines. Default is "grey20".}
 
 \item{dpi}{integer, the resolution of the image in DPI (dots per inch). Default is 300.\cr
-Please note that whetever this parameter is final resolution will be 96 dpi.\cr
+Please note that whatever this parameter is final resolution will be 96 dpi.\cr
 However image will be scaled according this parameter and magnification factor will be equal to this parameter divided by 96.}
 
 \item{scale}{a named list whose members are 'size', 'style', 'color', 'xoff', 'yoff'. Default is list() to draw no scale. Otherwise,\cr
@@ -94,7 +95,8 @@ This parameter can't be lesser than 6px nor higher than image width + scale text
 -'style' a character string. Scale's bar style, either "dash" or "line". Default is "dash".\cr
 -'color' a character string. color of the scale. Default is "white".\cr
 -'xoff' positive integer. x offset in image to draw scale, starting from bottom left corner.\cr
--'yoff' positive integer. y offset in image to draw scale, starting from bottom left corner.}
+-'yoff' positive integer. y offset in image to draw scale, starting from bottom left corner.\cr
+\code{'scale'=TRUE}, can eventually be used to draw scale with default parameters.}
 
 \item{extract_max}{maximum number of objects to extract. Default is 10. Use +Inf to extract all.}
 
@@ -106,7 +108,8 @@ This parameter can't be lesser than 6px nor higher than image width + scale text
 Depending on 'export':\cr
 -"matrix", a rgb array,\cr
 -"base64", a data-uri string,\cr
--"file", an invisible vector of ids corresponding to the objects exported.
+-"file", invisibly returns path of exported file.\cr
+with ids attribute corresponding to the objects exported.
 }
 \description{
 Exports gallery of `IFC_img` / `IFC_msk` objects

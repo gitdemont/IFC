@@ -44,7 +44,8 @@
 #' Note that members not found will be automatically removed and a warning will be thrown.
 #' @param export export format. Either "file", "matrix", "base64". Default is "matrix".
 #' @param write_to used when 'export' is "file" or "base64" to compute respectively filename or base64 id attribute.
-#' Exported type will be deduced from this pattern. Allowed export are '.bmp', '.jpg', '.jpeg', '.png', '.tif', '.tiff'.
+#' Exported type will be deduced from this pattern. Allowed export are '.bmp', '.jpg', '.jpeg', '.png', '.tif', '.tiff'.\cr
+#' '.pdf' can also be used when 'export' is not "base64".
 #' Note that '.bmp' are faster but not compressed producing bigger data.\cr
 #' Placeholders, if found, will be substituted:\cr
 #' -\%d: with full path directory\cr
@@ -72,7 +73,7 @@
 #' If add_lines < 1, no separating lines are added.
 #' @param bg_color background color for main, channels and separating lines. Default is "grey20".
 #' @param dpi integer, the resolution of the image in DPI (dots per inch). Default is 300.\cr
-#' Please note that whetever this parameter is final resolution will be 96 dpi.\cr
+#' Please note that whatever this parameter is final resolution will be 96 dpi.\cr
 #' However image will be scaled according this parameter and magnification factor will be equal to this parameter divided by 96.
 #' @param scale a named list whose members are 'size', 'style', 'color', 'xoff', 'yoff'. Default is list() to draw no scale. Otherwise,\cr
 #' -'size' positive integer. Scale's bar size in micro-meter. Default is '7'.\cr
@@ -80,7 +81,8 @@
 #' -'style' a character string. Scale's bar style, either "dash" or "line". Default is "dash".\cr
 #' -'color' a character string. color of the scale. Default is "white".\cr
 #' -'xoff' positive integer. x offset in image to draw scale, starting from bottom left corner.\cr
-#' -'yoff' positive integer. y offset in image to draw scale, starting from bottom left corner.
+#' -'yoff' positive integer. y offset in image to draw scale, starting from bottom left corner.\cr
+#' \code{'scale'=TRUE}, can eventually be used to draw scale with default parameters.
 #' @param extract_max maximum number of objects to extract. Default is 10. Use +Inf to extract all.
 #' @param sampling whether to sample objects or not. Default is FALSE.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
@@ -89,7 +91,8 @@
 #' @return Depending on 'export':\cr
 #' -"matrix", a rgb array,\cr
 #' -"base64", a data-uri string,\cr
-#' -"file", an invisible vector of ids corresponding to the objects exported. 
+#' -"file", invisibly returns path of exported file.\cr
+#' with ids attribute corresponding to the objects exported.
 #' @export
 ExportToGallery <- function(...,
                             objects,
@@ -284,7 +287,7 @@ ExportToGallery <- function(...,
     type = getFileExt(write_to)
     if (type == "jpg") type = "jpeg"
     if (type == "tif") type = "tiff"
-    assert(type, len = 1, alw = c("bmp", "jpeg", "png", "tiff"))
+    assert(type, len = 1, alw = c("bmp", "jpeg", "png", "tiff", "pdf"))
     splitf_obj = splitf(param$fileName_image)
     splitp_obj = splitp(write_to)
     if(length(objects) > 10) {
@@ -324,10 +327,11 @@ ExportToGallery <- function(...,
       warning(paste0("ExportToGallery: No objects to export, check the objects you provided.\n",
                      "Can't create 'write_to' =", write_to, " from file.\n", param$fileName_image),
               immediate. = TRUE, call. = FALSE)
-      return(invisible(NULL))
+      return(invisible(structure(character(), ids = numeric())))
     } else {
       warning("ExportToGallery: No objects to export, check the objects you provided.\n", immediate. = TRUE, call. = FALSE)
-      return(NULL)
+      if(export == "base64") return(invisible(structure(character(), ids = numeric())))
+      return(structure(array(NA_real_, dim = c(0,0,3)), ids = numeric()))
     }
   }
   tryCatch({
@@ -457,35 +461,48 @@ ExportToGallery <- function(...,
     }
     
     # add scale bar
-    if(length(scale) != 0) ret = do.call(what = "addScaleBar", args = c(list(image = ret), scale))
+    if(length(scale) != 0) {
+      mag = param$magnification
+      pix = switch(as.character(mag), "60" = 0.3, "40" = 0.5, "20" = 1.0)
+      if(identical(scale, TRUE)) {
+        ret = do.call(what = "addScaleBar", args = list(image = ret, pix = pix))
+      } else {
+        scale = scale[setdiff(names(scale), c("image", "pix"))]
+        if(length(scale) != 0) ret = do.call(what = "addScaleBar", args = c(list(image = ret, pix = pix), scale)) 
+      }
+    }
     if(export == "file") {
-      args = list(filename = write_to, width = zoom*d[2], height = zoom*d[1], units = "px", res = 96)
-      if(type == "tiff") args = c(args, list(compression = "none"))
+      write_to = normalizePath(write_to, winslash = "/", mustWork = FALSE)
+      if(type == "pdf") {
+        args = list(file = write_to, width = zoom*d[2]/96, height = zoom*d[1]/96)
+      } else {
+        args = list(filename = write_to, width = zoom*d[2], height = zoom*d[1], units = "px", res = 96)
+      }
       do.call(what = type, args = args)
       grid.raster(image = ret, interpolate = TRUE)
       dev.off(dev.cur())
-      message(paste0("\n######################\n", normalizePath(write_to, winslash = "/", mustWork = FALSE), "\nhas been successfully ", ifelse(overwritten, "overwritten", "exported"), "\n"))
-      return(invisible(ids))
+      message(paste0("\n######################\n", write_to, "\nhas been successfully ", ifelse(overwritten, "overwritten", "exported"), "\n"))
+      return(invisible(structure(write_to, ids = ids)))
     }
     if(export == "base64") {
       if(base64_id) {
-        return(sprintf("<img id=%s %s width='%s' height='%s' src='data:image/%s;base64,%s'>",
+        return(structure(sprintf("<img id=%s %s width='%s' height='%s' src='data:image/%s;base64,%s'>",
                        write_to,
                        base64_att,
                        ncol(ret),
                        nrow(ret),
                        type,
-                       cpp_base64_encode(objectWrite(x = ret, type = type, raw()))))
+                       cpp_base64_encode(objectWrite(x = ret, type = type, raw()))), ids = ids))
       } else {
-        return(sprintf("<img %s width='%s' height='%s' src='data:image/%s;base64,%s'>",
+        return(structure(sprintf("<img %s width='%s' height='%s' src='data:image/%s;base64,%s'>",
                        base64_att,
                        ncol(ret),
                        nrow(ret),
                        type,
-                       cpp_base64_encode(objectWrite(x = ret, type = type, raw()))))
+                       cpp_base64_encode(objectWrite(x = ret, type = type, raw()))), ids = ids))
       }
     }
-    return(ret)
+    return(structure(ret, ids = ids))
   }, error = function(e) {
     stop(ifelse(export == "file", paste0(normalizePath(write_to, winslash = "/", mustWork = FALSE), " has been incompletely ", ifelse(overwritten, "overwritten", "exported"), "\n", e$message), e$message), call. = FALSE)
   })

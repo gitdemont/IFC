@@ -31,16 +31,16 @@
 #' @name addScaleBar
 #' @description Adds scale bar to image
 #' @param image a [0,1] image.
-#' @param size positive integer. Scale's bar size in micro-meter. Default is '7'.\cr
+#' @param size positive integer. Scale's bar size in micro-meter. Default is \code{7}.\cr
 #' This parameter can't be lesser than 6px and higher than image width + scale text.
-#' @param style a character string. Scale's bar style, either 'dash' or 'line'. Default is 'dash'.
-#' @param color a character string. color of the scale. Default is 'white'.
-#' @param res positive integer. Resolution in ppi of 'image'. Default is '96'.
-#' @param xoff positive integer. x offset in image to draw scale, starting from bottom left corner.
-#' @param yoff positive integer. y offset in image to draw scale, starting from bottom left corner.
+#' @param style a character string. Scale's bar style, either \code{"dash"} or \code{"line"}. Default is \code{"dash"}.
+#' @param color a character string. Color of the scale. Default is \code{"white"} .
+#' @param pix positive numeric. Size of one pixel in micro-meter. Default is \code{0.3} for 60x magnification, use \code{0.5} for 40x and \code{1} for 20x.
+#' @param xoff positive integer. x offset in image to draw scale, starting from bottom left corner. Default is \code{0}.
+#' @param yoff positive integer. y offset in image to draw scale, starting from bottom left corner. Default is \code{0}.
 #' @return an image with scale added to the bottom left corner.
 #' @keywords internal
-addScaleBar <- function(image, size, style=c("dash","line")[1], color="white", res=96, xoff = 0, yoff = 0) {
+addScaleBar <- function(image, size=7, style=c("dash","line")[1], color="white", pix=c(0.3,0.5,1)[1], xoff=0, yoff=0) {
   # several checks
   size = na.omit(as.integer(size)); size = size[size>0]
   assert(size, len = 1, typ = "integer")
@@ -49,8 +49,8 @@ addScaleBar <- function(image, size, style=c("dash","line")[1], color="white", r
   assert(style, len = 1, alw = c("dash","line"))
   color = na.omit(as.character(color))
   assert(color, len = 1, typ = "character")
-  res = na.omit(as.integer(res)); res = res[res>=0]
-  assert(res, len = 1, typ = "integer")
+  pix = na.omit(as.numeric(pix)); pix = pix[pix>=0]
+  assert(pix, len = 1, typ = "numeric")
   xoff = na.omit(as.integer(xoff)); xoff = xoff[xoff>=0]
   assert(xoff, len = 1, typ = "integer")
   yoff = na.omit(as.integer(yoff)); yoff = yoff[yoff>=0]
@@ -59,7 +59,7 @@ addScaleBar <- function(image, size, style=c("dash","line")[1], color="white", r
   # add text
   lum = getLuminance(color)
   d = dim(image)
-  bar_w = ceiling(as.numeric(size)*res/25.4)
+  bar_w = ceiling(as.numeric(size)/pix)
   if(d[2] <= (bar_w+ 10 + xoff + 7*(nchar(size))+4)) stop("'scale' is outside of image width range")
   if(yoff > (d[1] - 12)) stop("'scale' is outside of image height range")
   if(style == "dash") bar_scheme = c(1,1,1,0,0,0)
