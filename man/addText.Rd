@@ -13,11 +13,11 @@ addText(image, text, color, xoff = 0, yoff = 0, corner = "TL")
 
 \item{color}{a character string. color of the text.}
 
-\item{xoff}{positive integer. x offset in image to start writing text.}
+\item{xoff}{positive integer. x offset in image to start writing text. Default is \code{0}.}
 
-\item{yoff}{positive integer. y offset in image to start writing text.}
+\item{yoff}{positive integer. y offset in image to start writing text. Default is \code{0}.}
 
-\item{corner}{a character string. where to position text in the image. Allowed are "TL", "TR", "BL", "BR", for top-left, top-right, bottom-left, bottom-right, respectively.}
+\item{corner}{a character string. where to position text in the image. Allowed are \code{"TL"}, \code{"TR"}, \code{"BL"}, \code{"BR"}, for top-left, top-right, bottom-left, bottom-right, respectively.}
 }
 \value{
 an image with text added.

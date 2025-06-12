@@ -30,36 +30,37 @@
 #' @title Gallery Display
 #' @description
 #' Displays gallery of `IFC_img` / `IFC_msk` objects
-#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
-#' If 'param' is provided 'export'(="base64") and the above parameters will be overwritten.\cr
-#' If 'offsets' are not provided extra arguments can also be passed with ... to \code{\link{getOffsets}}.\cr
-#' /!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.
+#' @param ... arguments to be passed to \code{\link{objectExtract}} with the exception of \code{'ifd'} and \code{'bypass'}(=\strong{TRUE}).\cr
+#' If \code{'param'} is provided \code{'export'}(=\strong{"base64"}) and the above parameters will be overwritten.\cr
+#' If \code{'offsets'} are not provided extra arguments can also be passed with \code{...} \code{\link{getOffsets}}.\cr
+#' \strong{/!\\} If not any of \code{'fileName'}, \code{'info'} and \code{'param'} can be found in \code{'...'} then \code{attr(offsets, "fileName_image")} will be used as \code{'fileName'} input parameter to pass to \code{\link{objectParam}}.
 #' @param objects integer vector, IDEAS objects ids numbers to use.
 #' This argument is not mandatory, if missing, the default, all objects will be used.
 #' @param offsets object of class `IFC_offset`. 
 #' This argument is not mandatory but it may allow to save time for repeated image export on same file.
-#' @param image_type image_type of desired offsets. Either "img" or "msk". Default is "img".
+#' @param image_type image_type of desired offsets. Either \code{"img"} or \code{"msk"}. Default is \code{"img"}.
 #' @param layout a character vector of [acquired channels + 'composite' images] members to export. Default is missing to export everything.\cr
 #' Note that members can be missing to be removed from final display.\cr
 #' Note that members not found will be automatically removed and a warning will be thrown.
-#' @param name id of the datatable container. Default is DisplayGallery.
-#' @param caption whether to display caption name or not. Default is FALSE.
-#' @param pageLength integer, number of objects to display per page. Default is 10.
-#' @param pdf_pageSize string, page dimension when exporting to pdf. Default is "A2".
-#' @param pdf_pageOrientation string, page orientation when exporting to pdf. Default is "landscape". Allowed are "landscape" or "portrait".
-#' @param pdf_image_dpi integer, desired image resolution. Default is 96, for full resolution.
-#' @param extract_max maximum number of objects to extract. Default is 10. Use +Inf to extract all.
-#' @param sampling whether to sample objects or not. Default is FALSE.
-#' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @param mode (\code{\link{objectParam}} argument) color mode export. Either "rgb" or "gray". Default is "rgb".
+#' @param name id of the datatable container. Default is \code{"DisplayGallery"}.
+#' @param caption whether to display caption name or not. Default is \code{FALSE}.
+#' @param pageLength integer, number of objects to display per page. Default is \code{10}.
+#' @param pdf_pageSize string, page dimension when exporting to pdf. Default is \code{"A2"}.
+#' @param pdf_pageOrientation string, page orientation when exporting to pdf. Default is \code{"landscape"}. Allowed are \code{"landscape"} or \code{"portrait"}.
+#' @param pdf_image_dpi integer, desired image resolution. Default is \code{96}, for full resolution.
+#' @param extract_max maximum number of objects to extract. Default is \code{10}. Use \code{+Inf} to extract all.
+#' @param sampling whether to sample objects or not. Default is \code{FALSE}.
+#' @param display_progress whether to display a progress bar. Default is \code{TRUE}.
+#' @param mode (\code{\link{objectParam}} argument) color mode export. Either \code{"rgb"} or \code{"gray"}. Default is \code{"rgb"}.
 #' @details arguments of \code{\link{objectExtract}} will be deduced from \code{\link{DisplayGallery}} input arguments.\cr
-#' Please note that PDF export link will be available if 'write_to' will not result in a "bmp".\cr
-#' Please note that exporting to "tiff" may depend on browser capabilities.\cr
+#' Please note that PDF export link will be available if \code{'write_to'} does not result in a \code{"bmp"}.\cr
+#' Please note that viewing PDF with gallery exported as \code{"tiff"} may depend on browser capabilities.\cr
 #' Please note that a warning may be sent if gallery to display contains large amount of data. This is due to use of datatable() from \pkg{DT}.\cr
-#' Warning message:\cr
-#' In instance$preRenderHook(instance) :\cr
-#' It seems your data is too big for client-side DataTables. You may consider server-side processing: http://rstudio.github.io/DT/server.html\cr
-#' For these reasons, it may be better to use "png" extension to display images.
+#' \verb{
+#' In instance$preRenderHook(instance) :
+#' It seems your data is too big for client-side DataTables. You may consider server-side processing: http://rstudio.github.io/DT/server.html
+#' }
+#' For these reasons, it may be better to use \code{"png"} extension to display images.
 #' @examples
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
 #'   ## use a cif file
@@ -101,22 +102,7 @@ DisplayGallery <- function(...,
   locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
   enc_back <- options("encoding" = "UTF-8")
   on.exit(suspendInterrupts({setloc(locale_back); options(enc_back)}), add = TRUE)
-
-  # check input
-  input = whoami(entries = as.list(match.call()))
-  if(!any(sapply(input, FUN = function(i) length(i) != 0))) {
-    stop("can't determine what to extract with provided parameters.\n try to input at least one of: 'fileName', 'info', 'param' or 'offsets'")
-  }
   
-  # reattribute needed param
-  offsets = input[["offsets"]]
-  param = input[["param"]]
-  if(length(offsets) == 0) {
-    fileName = enc2native(input[["fileName"]])
-  } else {
-    fileName = enc2native(attr(offsets, "fileName_image"))
-  }
-
   # check mandatory param
   name = as.character(name); assert(name, len = 1, typ = "character")
   assert(image_type, len = 1, alw = c("img", "msk"))
@@ -140,96 +126,19 @@ DisplayGallery <- function(...,
   pdf_image_dpi = na.omit(as.integer(pdf_image_dpi)); pdf_image_dpi = pdf_image_dpi[pdf_image_dpi>=0]
   assert(pdf_image_dpi, len = 1, typ = "integer")
 
-  # process extra parameters
-  if(length(dots[["verbose"]]) == 0) { 
-    verbose = FALSE
-  } else {
-    verbose = dots[["verbose"]]
-  }
-  if(length(dots[["verbosity"]]) == 0) {
-    verbosity = 1
-  } else {
-    verbosity = dots[["verbosity"]]
-  }
-  if(length(dots[["fast"]]) == 0) { 
-    fast = TRUE
-  } else {
-    fast = dots[["fast"]]
-  }
-  fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
-  verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
-  verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
+  # precompute param
+  dots=dots[setdiff(names(dots), c("mode","export"))]
+  args=list(mode = mode, export = "base64")
+  if(!missing(offsets)) args = c(args, list(offsets = offsets))
   
-  # should be checked before being passed to objectParam/objectExtract
-  if(length(dots[["size"]]) == 0) {
-    size = c(0,0)
-  } else {
-    size = dots[["size"]]
-  }
-  # should be checked before being passed to objectParam/objectExtract
-  if(length(dots[["force_width"]]) == 0) {
-    force_width = TRUE
-  } else {
-    force_width = dots[["force_width"]]
-  }
-  
-  param_extra = names(dots) %in% c("ifd","param","mode","export","size","force_width","bypass","verbose")
-  dots = dots[!param_extra] # remove not allowed param
-  param_param = names(dots) %in% c("write_to","base64_id","base64_att","overwrite",
-                                   "composite","selection","random_seed",
-                                   "removal","add_noise","full_range","force_range","spatial_correction")
-  dots_param = dots[param_param] # keep param_param for objectParam
-  dots = dots[!param_param]
-
-  # compute object param
-  # 1: prefer using 'param' if found,
-  # 2: otherwise use 'info' if found,
-  # 3: finally look at fileName
-  if(length(param) == 0) {  
-    if(length(input$info) == 0) { 
-      param = do.call(what = "objectParam",
-                      args = c(list(fileName = fileName,
-                                    export = "base64",
-                                    mode = mode,
-                                    size = size, 
-                                    force_width = force_width), dots_param))
-    } else {
-      param = do.call(what = "objectParam",
-                      args = c(list(info = quote(input$info),
-                                    export = "base64",
-                                    mode = mode,
-                                    size = size, 
-                                    force_width = force_width), dots_param))
-    }
-  } else {
-    param = input$param
-    param$export = "base64"
-    param$mode = mode
-  }
-  param$fileName_image = enc2native(param$fileName_image)
+  param = do.call(what = dotsParam, args = c(dots, args))
   fileName = param$fileName_image
   title_progress = basename(fileName)
+  file_extension = getFileExt(fileName)
   
-  # check input offsets if any
-  compute_offsets = TRUE
-  if(length(offsets) != 0) {
-    if(!("IFC_offset" %in% class(offsets))) {
-      warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
-    } else {
-      if(attr(offsets, "checksum") != param$checksum) {
-        warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
-      } else {
-        compute_offsets = FALSE
-      }
-    }
-  }
-  if(compute_offsets) {
-    offsets = suppressMessages(getOffsets(fileName = param$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
-  }
-  
-  # check objects to extract
-  nobj = as.integer(attr(x = offsets, which = "obj_count"))
-  
+  # check objects
+  nobj = as.integer(param$objcount)
+  N = nchar(sprintf("%1.f",abs(nobj-1)))
   if(missing(objects)) {
     objects = as.integer(0:(nobj - 1))
   } else {
@@ -246,61 +155,19 @@ DisplayGallery <- function(...,
     if(!is.list(SEED)) SEED = do.call(fetch_seed, list(seed = SEED))
     with_seed({objects=sample(objects,extract_max)}, SEED$seed, SEED$kind, SEED$normal.kind, SEED$sample.kind)
   } else {
-    objects=objects[1:extract_max]
+    objects=objects[seq_len(extract_max)]
   }
-  if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width should be provided when 'object' length not equal to one")
+  # if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width should be provided when 'object' length not equal to one")
   
-  # extract objects
-  sel = subsetOffsets(offsets = offsets, objects = objects, image_type = image_type)
-  sel = split(sel, ceiling(seq_along(sel)/20))
-  L=length(sel)
-  if(L == 0) {
-    warning("DisplayGallery: No objects to display, check the objects you provided.", immediate. = TRUE, call. = FALSE)
-    return(invisible(NULL))
-  }
-  tryCatch({
-    if(display_progress) {
-      pb = newPB(min = 0, max = L, initial = 0, style = 3)
-      ans = lapply(1:L, FUN=function(i) {
-        setPB(pb, value = i, title = title_progress, label = "exporting objects")
-        do.call(what = "objectExtract", args = c(list(ifd = structure(lapply(sel[[i]],
-                                                                   FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
-                                                                                                   offset = off,
-                                                                                                   trunc_bytes = 1, 
-                                                                                                   force_trunc = TRUE, 
-                                                                                                   verbose = verbose)),
-                                                      fileName_image = fileName, class = "IFC_ifd_list"),
-                                                      param = param,
-                                                      verbose = verbose,
-                                                      bypass = TRUE),
-                                                 dots))
-      })
-    } else {
-      ans = lapply(1:L, FUN=function(i) {
-        do.call(what = "objectExtract", args = c(list(ifd = structure(lapply(sel[[i]],
-                                                                   FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
-                                                                                                   offset = off,
-                                                                                                   trunc_bytes = 1, 
-                                                                                                   force_trunc = TRUE, 
-                                                                                                   verbose = verbose)),
-                                                      fileName_image = fileName, class = "IFC_ifd_list"),
-                                                      param = param,
-                                                      verbose = verbose,
-                                                      bypass = TRUE),
-                                                 dots))
-      })
-    }
-  }, error = function(e) {
-    stop(e$message, call. = FALSE)
-  }, finally = {
-    if(display_progress) endPB(pb)
-  })
-  channel_id = attr(ans[[1]][[1]], "channel_id")
-  if(L>1) {
-    ans = do.call(what="c", args=ans)
-  } else {
-    ans = ans[[1]]
-  }
+  # extract images/masks
+  dots=dots[setdiff(names(dots), c("param","mode","objects","display_progress"))]
+  args = list(param = param, mode = mode, objects = objects, display_progress = display_progress)
+  if(!missing(offsets)) args = c(args, list(offsets = offsets))
+  if(image_type == "img") { fun = ExtractImages_toBase64 } else { fun = ExtractMasks_toBase64 }
+  ans = do.call(what = fun, args = c(dots, args))
+  L = length(ans)
+  
+  channel_id = attr(ans, "channel_id")
   # change layout
   if(missing(layout)) layout = channel_id
   layout = as.character(layout)
@@ -315,7 +182,6 @@ DisplayGallery <- function(...,
   if(image_type == "img") {
     ids = sapply(ans, attr, which="object_id")
     if(!all(objects == ids)) {
-      warning("Extracted object_ids differ from expected ones. Concider running with 'fast' = FALSE", call. = FALSE, immediate. = TRUE)
       dat = cbind(true_ids = names(ans), ids = ids, 
                   do.call(what = "rbind", args = lapply(ans, FUN=function(i) i[layout])))
       txt_col = 2

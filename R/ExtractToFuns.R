@@ -27,33 +27,22 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
-#' @title Shortcut for Batch Images or Masks Extraction
+#' @title Shortcut for Parameters Retrieval
 #' @description
-#' Function to shortcut extraction, normalization and eventually colorization of images or masks to various format.
-#' @param \dots arguments to be passed to \code{\link{objectExtract}} with the exception of \code{'ifd'} and \code{'bypass'}(=\strong{TRUE}).\cr
+#' Function to retrieve parameters from input.
+#' @param \dots arguments to be passed to \code{\link{objectExtract}} for `IFC_param` retrieval.\cr
 #' \strong{/!\\} If not any of \code{'fileName'}, \code{'info'} and \code{'param'} can be found in \code{'...'} then \code{attr(offsets, "fileName_image")} will be used as \code{'fileName'} input parameter to pass to \code{\link{objectParam}}.
-#' @param objects integer vector, IDEAS objects ids numbers to use.
-#' This argument is not mandatory, if missing, the default, all objects will be used.
-#' @param offsets object of class `IFC_offset`.
-#' This argument is not mandatory but it may allow to save time for repeated image export on same file.\cr
-#' If \code{'offsets'} are not provided, extra arguments can also be passed with \code{'...'} to \code{\link{getOffsets}}.
-#' @param display_progress whether to display a progress bar. Default is \code{TRUE}.
-#' @param image_type (\code{\link{subsetOffsets}} argument) type of desired object offsets. Default is \code{"img"}. Allowed are \code{"img"} or \code{"msk"}.
 #' @param export (\code{\link{objectParam}} argument) format mode export. Either \code{"file"}, \code{"matrix"}, \code{"base64"}. Default is \code{"matrix"}.
-#' @param mode (\code{\link{objectParam}} argument) color mode export. Either \code{"raw"}, \code{"rgb"}, \code{"gray"}. Default is \code{"raw"}.
-#' @note Arguments of \code{\link{objectExtract}} will be deduced from input arguments.
+#' @param mode (\code{\link{objectParam}} argument) color mode export. Either \code{"raw"}, \code{"rgb"}, \code{"gray"}. Default is \code{"rgb"}.
+#' @note Arguments of \code{\link{objectParam}} will be deduced from input arguments.
 #' @details If \code{'param'} is provided in \code{'...'}, \code{'param$export'<-'export'} and \code{'param$mode'<-'mode'} \strong{only} will be overwritten.
-#' @inherit objectExtract return
+#' @inherit objectParam return
 #' @keywords internal
-polyExtractTo <- function(...,
-                          objects,
-                          offsets,
-                          display_progress = TRUE,
-                          image_type = "img",
-                          export = "matrix",
-                          mode = "raw") {
+dotsParam <- function(...,
+                      export = "matrix",
+                      mode = "raw") {
   # check mandatory parameters
-  assert(image_type, len = 1, alw = c("img", "msk"))
+  assert(mode, len = 1, alw = c("rgb", "gray", "raw"))
   assert(export, len = 1, alw = c("file", "matrix", "base64", "multi"))
   
   dots=list(...)
@@ -67,39 +56,15 @@ polyExtractTo <- function(...,
   # reattribute needed param
   offsets = input[["offsets"]]
   param = input[["param"]]
-  if(length(offsets) == 0) {
-    fileName = enc2native(input[["fileName"]])
-  } else {
-    fileName = enc2native(attr(offsets, "fileName_image"))
-  }
-  # process extra parameters
-  if(length(dots[["verbose"]]) == 0) { 
-    verbose = FALSE
-  } else {
-    verbose = dots[["verbose"]]
-  }
-  if(length(dots[["verbosity"]]) == 0) { 
-    verbosity = 1
-  } else {
-    verbosity = dots[["verbosity"]]
-  }
-  if(length(dots[["fast"]]) == 0) { 
-    fast = TRUE
-  } else {
-    fast = dots[["fast"]]
-  }
-
-  fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
-  verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
-  verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
-  display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
+  fileName = enc2native(input[["fileName"]])
+  if(length(fileName) == 0 && length(offsets) != 0 && file.exists(enc2native(attr(offsets, "fileName_image")))) fileName = enc2native(attr(offsets, "fileName_image"))
   
   # force 'base64_id', 'base64_att', 'mode', 'write_to' and 'overwrite' parameters depending on 'export'
   overwrite = FALSE
   base64_id = FALSE
   base64_att = ""
   if(export == "matrix") {
-    if(length(param) != 0) mode = param$mode
+    # if(length(param) != 0) mode = param$mode
     assert(mode, len = 1, alw = c("rgb", "gray", "raw"))
     write_to = "%o_%c.bmp"
   } else {
@@ -188,6 +153,70 @@ polyExtractTo <- function(...,
   if(param$export == "multi" && param$type != "tiff") stop("when 'export' is \"multi\", file extension has to be \"tiff\" not \"", param$type, "\"")
   if(param$export == "multi" && !identical(param$composite, NULL)) stop("provided 'param$composite' is not compatible with 'export'=\"multi\", please run objectParam() with 'composite'=\"\"")
   param$fileName_image = enc2native(param$fileName_image)
+  return(param)
+}
+
+#' @title Shortcut for Batch Images or Masks Extraction
+#' @description
+#' Function to shortcut extraction, normalization and eventually colorization of images or masks to various format.
+#' @param \dots arguments to be passed to \code{\link{objectExtract}} with the exception of \code{'ifd'} and \code{'bypass'}(=\strong{TRUE}).\cr
+#' \strong{/!\\} If not any of \code{'fileName'}, \code{'info'} and \code{'param'} can be found in \code{'...'} then \code{attr(offsets, "fileName_image")} will be used as \code{'fileName'} input parameter to pass to \code{\link{objectParam}}.
+#' @param objects integer vector, IDEAS objects ids numbers to use.
+#' This argument is not mandatory, if missing, the default, all objects will be used.
+#' @param offsets object of class `IFC_offset`.
+#' This argument is not mandatory but it may allow to save time for repeated image export on same file.\cr
+#' If \code{'offsets'} are not provided, extra arguments can also be passed with \code{'...'} to \code{\link{getOffsets}}.
+#' @param display_progress whether to display a progress bar. Default is \code{TRUE}.
+#' @param image_type (\code{\link{subsetOffsets}} argument) type of desired object offsets. Default is \code{"img"}. Allowed are \code{"img"} or \code{"msk"}.
+#' @param export (\code{\link{objectParam}} argument) format mode export. Either \code{"file"}, \code{"matrix"}, \code{"base64"}. Default is \code{"matrix"}.
+#' @param mode (\code{\link{objectParam}} argument) color mode export. Either \code{"raw"}, \code{"rgb"}, \code{"gray"}. Default is \code{"raw"}.
+#' @note Arguments of \code{\link{objectExtract}} will be deduced from input arguments.
+#' @details If \code{'param'} is provided in \code{'...'}, \code{'param$export'<-'export'} and \code{'param$mode'<-'mode'} \strong{only} will be overwritten.
+#' @inherit objectExtract return
+#' @keywords internal
+polyExtractTo <- function(...,
+                          objects,
+                          offsets,
+                          display_progress = TRUE,
+                          image_type = "img",
+                          export = "matrix",
+                          mode = "raw") {
+  # check mandatory parameters
+  assert(image_type, len = 1, alw = c("img", "msk"))
+  assert(mode, len = 1, alw = c("rgb", "gray", "raw"))
+  assert(export, len = 1, alw = c("file", "matrix", "base64", "multi"))
+  
+  dots=list(...)
+  
+  # check input
+  input = whoami(entries = as.list(match.call()))
+  if(!any(sapply(input, FUN = function(i) length(i) != 0))) {
+    stop("can't determine what to extract with provided parameters.\n try to input at least one of: 'fileName', 'info', 'param' or 'offsets'")
+  }
+  # reattribute needed param
+  offsets = input[["offsets"]]
+  fileName = enc2native(input[["fileName"]])
+  if(length(fileName) == 0 && length(offsets) != 0 && file.exists(enc2native(attr(offsets, "fileName_image")))) fileName = enc2native(attr(offsets, "fileName_image"))
+    
+  # process extra parameters
+  if(length(dots[["verbose"]]) == 0) { 
+    verbose = FALSE
+  } else {
+    verbose = dots[["verbose"]]
+  }
+  if(length(dots[["fast"]]) == 0) { 
+    fast = TRUE
+  } else {
+    fast = dots[["fast"]]
+  }
+
+  fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
+  verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
+  display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
+  
+  # precompute param
+  param = do.call(what = dotsParam, args = c(dots, list(mode = mode, export = export)))
+  dots = dots[setdiff(names(dots), c("param","verbose","ifd","bypass"))]
   fileName = param$fileName_image
   title_progress = basename(fileName)
   
@@ -210,7 +239,6 @@ polyExtractTo <- function(...,
   
   # check objects to extract
   nobj = as.integer(attr(x = offsets, which = "obj_count"))
-  
   if(missing(objects)) {
     objects = as.integer(0:(nobj - 1))
   } else {
@@ -234,33 +262,45 @@ polyExtractTo <- function(...,
   if(display_progress) {
     pb = newPB(min = 0, max = L, initial = 0, style = 3)
     on.exit(endPB(pb))
-    ans = lapply(1:L, FUN=function(i) {
+    ans = lapply(seq_len(L), FUN=function(i) {
       setPB(pb, value = i, title = title_progress, label = lab)
-      do.call(what = "objectExtract", args = c(list(ifd = structure(lapply(sel[[i]],
-                                                                 FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
-                                                                                                 offset = off,
-                                                                                                 trunc_bytes = 1, 
-                                                                                                 force_trunc = TRUE, 
-                                                                                                 verbose = verbose)),
-                                                    fileName_image = fileName, class = "IFC_ifd_list"),
-                                                    param = param,
-                                                    verbose = verbose,
-                                                    bypass = TRUE),
-                                               dots))
+      do.call(
+        what = "objectExtract",
+        args = c(
+          list(
+            ifd = structure(
+              lapply(
+                sel[[i]],
+                FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
+                                                offset = off,
+                                                trunc_bytes = 1, 
+                                                force_trunc = TRUE, 
+                                                verbose = verbose)),
+              fileName_image = fileName, class = "IFC_ifd_list"),
+            param = param,
+            verbose = verbose,
+            bypass = TRUE),
+          dots))
     })
-  } else{
-    ans = lapply(1:L, FUN=function(i) {
-      do.call(what = "objectExtract", args = c(list(ifd = structure(lapply(sel[[i]],
-                                                                 FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
-                                                                                                 offset = off,
-                                                                                                 trunc_bytes = 1, 
-                                                                                                 force_trunc = TRUE, 
-                                                                                                 verbose = verbose)),
-                                                    fileName_image = fileName, class = "IFC_ifd_list"),
-                                                    param = param,
-                                                    verbose = verbose,
-                                                    bypass = TRUE),
-                                               dots))
+  } else {
+    ans = lapply(seq_len(L), FUN=function(i) {
+      do.call(
+        what = "objectExtract",
+        args = c(
+          list(
+            ifd = structure(
+              lapply(
+                sel[[i]],
+                FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
+                                                offset = off,
+                                                trunc_bytes = 1, 
+                                                force_trunc = TRUE, 
+                                                verbose = verbose)),
+              fileName_image = fileName, class = "IFC_ifd_list"),
+            param = param,
+            verbose = verbose,
+            bypass = TRUE),
+          dots))
     })
   }
   channel_id = attr(ans[[1]][[1]], "channel_id")

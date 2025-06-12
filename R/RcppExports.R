@@ -145,6 +145,38 @@ NULL
 #' @keywords internal
 NULL
 
+#' @title Matrix to Matrix Writer According to Mask with Offsets
+#' @name cpp_mark
+#' @description
+#' Writes matrix \code{'B'} in matrix \code{'A'} according to \code{'mask'}.
+#' @param A a NumericMatrix.
+#' @param B a NumericMatrix.
+#' @param mask a NumericMatrix.
+#' @param xoff x offset in \code{'A'} to start writing \code{'B'}.
+#' @param yoff x offset in \code{'A'} to start writing \code{'B'}.
+#' @param invert a logical. Default is \code{false}.
+#' When \code{false}, the default, values of \code{'B'} are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
+#' When \code{true}, values of '\code{1-B}' are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
+#' @details indices resulting from writing B outside of A will trigger error.
+#' @keywords internal
+NULL
+
+#' @title Matrix to Matrix Writer According to Mask with Offsets
+#' @name cpp_mark2
+#' @description
+#' Writes matrix \code{'B'} in matrix \code{'A'} according to \code{'mask'}.
+#' @param A a NumericMatrix.
+#' @param B a NumericMatrix.
+#' @param mask a NumericMatrix.
+#' @param xoff x offset in \code{'A'} to start writing \code{'B'}.
+#' @param yoff x offset in \code{'A'} to start writing \code{'B'}.
+#' @param invert a logical. Default is \code{false}.
+#' When \code{false}, the default, values of \code{'B'} are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
+#' When \code{true}, values of '\code{1-B}' are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
+#' @details indices resulting from writing B outside of A will be skipped.
+#' @keywords internal
+NULL
+
 #' @title BMP Writer
 #' @name cpp_writeBMP
 #' @description
@@ -658,21 +690,6 @@ NULL
 #' @keywords internal
 NULL
 
-#' @title Matrix to Matrix Writer According to Mask with Offsets
-#' @name cpp_mark
-#' @description
-#' Writes matrix \code{'B'} in matrix \code{'A'} according to \code{'mask'}.
-#' @param A a NumericMatrix.
-#' @param B a NumericMatrix.
-#' @param mask a NumericMatrix.
-#' @param xoff x offset in \code{'A'} to start writing \code{'B'}.
-#' @param yoff x offset in \code{'A'} to start writing \code{'B'}.
-#' @param invert a logical. Default is \code{false}.
-#' When \code{false}, the default, values of \code{'B'} are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
-#' When \code{true}, values of '\code{1-B}' are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
-#' @keywords internal
-NULL
-
 #' @title Matrix Transformation
 #' @name cpp_transform
 #' @description
@@ -836,6 +853,14 @@ cpp_computeGamma <- function(V) {
     .Call(`_IFC_cpp_computeGamma`, V)
 }
 
+cpp_mark <- function(A, B, mask, xoff = 0L, yoff = 0L, invert = FALSE) {
+    .Call(`_IFC_cpp_mark`, A, B, mask, xoff, yoff, invert)
+}
+
+cpp_mark2 <- function(A, B, mask, xoff = 0L, yoff = 0L, invert = FALSE) {
+    .Call(`_IFC_cpp_mark2`, A, B, mask, xoff, yoff, invert)
+}
+
 cpp_writeBMP <- function(image) {
     .Call(`_IFC_cpp_writeBMP`, image)
 }
@@ -982,10 +1007,6 @@ cpp_cleanse <- function(mat, msk, add_noise = TRUE, bg = 0.0, sd = 0.0) {
 
 cpp_mask <- function(A, B, mask) {
     .Call(`_IFC_cpp_mask`, A, B, mask)
-}
-
-cpp_mark <- function(A, B, mask, xoff = 0L, yoff = 0L, invert = FALSE) {
-    .Call(`_IFC_cpp_mark`, A, B, mask, xoff, yoff, invert)
 }
 
 cpp_transform <- function(mat, color, msk, size = as.integer( c(0,0)), mode = "raw", type = 2L, input_range = as.numeric( c(0.0,4095.0)), add_noise = TRUE, bg = 0.0, sd = 0.0, full_range = FALSE, force_range = FALSE, gamma = 1.0, spatialX = 0.0, spatialY = 0.0) {

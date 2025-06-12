@@ -169,6 +169,36 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_mark
+Rcpp::NumericMatrix cpp_mark(const Rcpp::NumericMatrix A, const Rcpp::NumericMatrix B, const Rcpp::NumericMatrix mask, const R_len_t xoff, const R_len_t yoff, const bool invert);
+RcppExport SEXP _IFC_cpp_mark(SEXP ASEXP, SEXP BSEXP, SEXP maskSEXP, SEXP xoffSEXP, SEXP yoffSEXP, SEXP invertSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type B(BSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type mask(maskSEXP);
+    Rcpp::traits::input_parameter< const R_len_t >::type xoff(xoffSEXP);
+    Rcpp::traits::input_parameter< const R_len_t >::type yoff(yoffSEXP);
+    Rcpp::traits::input_parameter< const bool >::type invert(invertSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_mark(A, B, mask, xoff, yoff, invert));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_mark2
+Rcpp::NumericMatrix cpp_mark2(const Rcpp::NumericMatrix A, const Rcpp::NumericMatrix B, const Rcpp::NumericMatrix mask, const R_len_t xoff, const R_len_t yoff, const bool invert);
+RcppExport SEXP _IFC_cpp_mark2(SEXP ASEXP, SEXP BSEXP, SEXP maskSEXP, SEXP xoffSEXP, SEXP yoffSEXP, SEXP invertSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type A(ASEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type B(BSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type mask(maskSEXP);
+    Rcpp::traits::input_parameter< const R_len_t >::type xoff(xoffSEXP);
+    Rcpp::traits::input_parameter< const R_len_t >::type yoff(yoffSEXP);
+    Rcpp::traits::input_parameter< const bool >::type invert(invertSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_mark2(A, B, mask, xoff, yoff, invert));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_writeBMP
 Rcpp::RawVector cpp_writeBMP(const Rcpp::NumericVector image);
 RcppExport SEXP _IFC_cpp_writeBMP(SEXP imageSEXP) {
@@ -618,21 +648,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cpp_mark
-Rcpp::NumericMatrix cpp_mark(const Rcpp::NumericMatrix A, const Rcpp::NumericMatrix B, const Rcpp::NumericMatrix mask, const R_len_t xoff, const R_len_t yoff, const bool invert);
-RcppExport SEXP _IFC_cpp_mark(SEXP ASEXP, SEXP BSEXP, SEXP maskSEXP, SEXP xoffSEXP, SEXP yoffSEXP, SEXP invertSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type A(ASEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type B(BSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type mask(maskSEXP);
-    Rcpp::traits::input_parameter< const R_len_t >::type xoff(xoffSEXP);
-    Rcpp::traits::input_parameter< const R_len_t >::type yoff(yoffSEXP);
-    Rcpp::traits::input_parameter< const bool >::type invert(invertSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_mark(A, B, mask, xoff, yoff, invert));
-    return rcpp_result_gen;
-END_RCPP
-}
 // cpp_transform
 Rcpp::NumericVector cpp_transform(const Rcpp::NumericMatrix mat, const Rcpp::NumericVector color, const Rcpp::IntegerMatrix msk, const Rcpp::IntegerVector size, const std::string mode, const uint16_t type, const Rcpp::NumericVector input_range, const bool add_noise, const double bg, const double sd, const bool full_range, const bool force_range, const double gamma, const double spatialX, const double spatialY);
 RcppExport SEXP _IFC_cpp_transform(SEXP matSEXP, SEXP colorSEXP, SEXP mskSEXP, SEXP sizeSEXP, SEXP modeSEXP, SEXP typeSEXP, SEXP input_rangeSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP, SEXP full_rangeSEXP, SEXP force_rangeSEXP, SEXP gammaSEXP, SEXP spatialXSEXP, SEXP spatialYSEXP) {
@@ -746,6 +761,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_get_bytes_order", (DL_FUNC) &_IFC_cpp_get_bytes_order, 4},
     {"_IFC_cpp_replace_non_finite", (DL_FUNC) &_IFC_cpp_replace_non_finite, 2},
     {"_IFC_cpp_computeGamma", (DL_FUNC) &_IFC_cpp_computeGamma, 1},
+    {"_IFC_cpp_mark", (DL_FUNC) &_IFC_cpp_mark, 6},
+    {"_IFC_cpp_mark2", (DL_FUNC) &_IFC_cpp_mark2, 6},
     {"_IFC_cpp_writeBMP", (DL_FUNC) &_IFC_cpp_writeBMP, 1},
     {"_IFC_cpp_readchunk", (DL_FUNC) &_IFC_cpp_readchunk, 4},
     {"_IFC_cpp_getversion", (DL_FUNC) &_IFC_cpp_getversion, 1},
@@ -783,7 +800,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_normalize", (DL_FUNC) &_IFC_cpp_normalize, 5},
     {"_IFC_cpp_cleanse", (DL_FUNC) &_IFC_cpp_cleanse, 5},
     {"_IFC_cpp_mask", (DL_FUNC) &_IFC_cpp_mask, 3},
-    {"_IFC_cpp_mark", (DL_FUNC) &_IFC_cpp_mark, 6},
     {"_IFC_cpp_transform", (DL_FUNC) &_IFC_cpp_transform, 15},
     {"_IFC_cpp_extract", (DL_FUNC) &_IFC_cpp_extract, 18},
     {"_IFC_cpp_readFCS", (DL_FUNC) &_IFC_cpp_readFCS, 7},

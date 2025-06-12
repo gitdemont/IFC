@@ -58,7 +58,7 @@ Placeholders, if found, will be substituted:\cr
 -\code{\%e}: with extension of (without leading .)\cr
 -\code{\%s}: with shortname (i.e. basename without extension)\cr
 -\code{\%o}: with objects (at most 10, will be collapse with "_", if more than one).\cr
--\code{\%c}: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
+-\code{\%c}: with channel_id (will be collapse with "_", if more than one, composite if any will be bracketed).
 A good trick is to use:\cr
 -\code{"\%d/\%s_Obj[\%o]_Ch[\%c].npy"}, when \code{'export'} is \code{"file"}.}
 

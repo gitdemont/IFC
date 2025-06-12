@@ -275,6 +275,56 @@ double cpp_computeGamma (const Rcpp::NumericVector V) {
   return hpp_computeGamma (V);
 }
 
+//' @title Matrix to Matrix Writer According to Mask with Offsets
+//' @name cpp_mark
+//' @description
+//' Writes matrix \code{'B'} in matrix \code{'A'} according to \code{'mask'}.
+//' @param A a NumericMatrix.
+//' @param B a NumericMatrix.
+//' @param mask a NumericMatrix.
+//' @param xoff x offset in \code{'A'} to start writing \code{'B'}.
+//' @param yoff x offset in \code{'A'} to start writing \code{'B'}.
+//' @param invert a logical. Default is \code{false}.
+//' When \code{false}, the default, values of \code{'B'} are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
+//' When \code{true}, values of '\code{1-B}' are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
+//' @details indices resulting from writing B outside of A will trigger error.
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+Rcpp::NumericMatrix cpp_mark (const Rcpp::NumericMatrix A,
+                              const Rcpp::NumericMatrix B,
+                              const Rcpp::NumericMatrix mask,
+                              const R_len_t xoff = 0,
+                              const R_len_t yoff = 0,
+                              const bool invert = false) {
+  return hpp_mark (A, B, mask, xoff, yoff, invert);
+}
+
+//' @title Matrix to Matrix Writer According to Mask with Offsets
+//' @name cpp_mark2
+//' @description
+//' Writes matrix \code{'B'} in matrix \code{'A'} according to \code{'mask'}.
+//' @param A a NumericMatrix.
+//' @param B a NumericMatrix.
+//' @param mask a NumericMatrix.
+//' @param xoff x offset in \code{'A'} to start writing \code{'B'}.
+//' @param yoff x offset in \code{'A'} to start writing \code{'B'}.
+//' @param invert a logical. Default is \code{false}.
+//' When \code{false}, the default, values of \code{'B'} are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
+//' When \code{true}, values of '\code{1-B}' are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
+//' @details indices resulting from writing B outside of A will be skipped.
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+Rcpp::NumericMatrix cpp_mark2 (const Rcpp::NumericMatrix A,
+                               const Rcpp::NumericMatrix B,
+                               const Rcpp::NumericMatrix mask,
+                               const R_len_t xoff = 0,
+                               const R_len_t yoff = 0,
+                               const bool invert = false) {
+  return hpp_mark2 (A, B, mask, xoff, yoff, invert);
+}
+
 //' @title BMP Writer
 //' @name cpp_writeBMP
 //' @description
@@ -1028,30 +1078,6 @@ Rcpp::NumericMatrix cpp_mask (const Rcpp::NumericMatrix A,
                               const Rcpp::NumericMatrix B,
                               const Rcpp::NumericMatrix mask) {
   return hpp_mask (A, B, mask);
-}
-
-//' @title Matrix to Matrix Writer According to Mask with Offsets
-//' @name cpp_mark
-//' @description
-//' Writes matrix \code{'B'} in matrix \code{'A'} according to \code{'mask'}.
-//' @param A a NumericMatrix.
-//' @param B a NumericMatrix.
-//' @param mask a NumericMatrix.
-//' @param xoff x offset in \code{'A'} to start writing \code{'B'}.
-//' @param yoff x offset in \code{'A'} to start writing \code{'B'}.
-//' @param invert a logical. Default is \code{false}.
-//' When \code{false}, the default, values of \code{'B'} are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
-//' When \code{true}, values of '\code{1-B}' are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
-//' @keywords internal
-////' @export
-// [[Rcpp::export(rng = false)]]
-Rcpp::NumericMatrix cpp_mark (const Rcpp::NumericMatrix A,
-                              const Rcpp::NumericMatrix B,
-                              const Rcpp::NumericMatrix mask,
-                              const R_len_t xoff = 0,
-                              const R_len_t yoff = 0,
-                              const bool invert = false) {
-  return hpp_mark (A, B, mask, xoff, yoff, invert);
 }
 
 //' @title Matrix Transformation

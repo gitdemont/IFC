@@ -17,8 +17,7 @@ addScaleBar(
 \arguments{
 \item{image}{a [0,1] image.}
 
-\item{size}{positive integer. Scale's bar size in micro-meter. Default is \code{7}.\cr
-This parameter can't be lesser than 6px and higher than image width + scale text.}
+\item{size}{positive integer. Scale's bar size in micro-meter. Default is \code{7}.}
 
 \item{style}{a character string. Scale's bar style, either \code{"dash"} or \code{"line"}. Default is \code{"dash"}.}
 
@@ -26,9 +25,9 @@ This parameter can't be lesser than 6px and higher than image width + scale text
 
 \item{pix}{positive numeric. Size of one pixel in micro-meter. Default is \code{0.3} for 60x magnification, use \code{0.5} for 40x and \code{1} for 20x.}
 
-\item{xoff}{positive integer. x offset in image to draw scale, starting from bottom left corner. Default is \code{0}.}
+\item{xoff}{x offset in image to draw scale, starting from bottom left corner. Default is \code{0}.}
 
-\item{yoff}{positive integer. y offset in image to draw scale, starting from bottom left corner. Default is \code{0}.}
+\item{yoff}{y offset in image to draw scale, starting from bottom left corner. Default is \code{0}.}
 }
 \value{
 an image with scale added to the bottom left corner.

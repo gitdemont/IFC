@@ -56,7 +56,7 @@
 #' -\code{\%e}: with extension of (without leading .)\cr
 #' -\code{\%s}: with shortname (i.e. basename without extension)\cr
 #' -\code{\%o}: with objects (at most 10, will be collapse with "_", if more than one).\cr
-#' -\code{\%c}: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
+#' -\code{\%c}: with channel_id (will be collapse with "_", if more than one, composite if any will be bracketed).
 #' A good trick is to use:\cr
 #' -\code{"\%d/\%s_Obj[\%o]_Ch[\%c].npy"}, when \code{'export'} is \code{"file"}.
 #' @param overwrite whether to overwrite file or not. Default is \code{FALSE}.
@@ -83,21 +83,6 @@ ExportToNumpy <- function(...,
                           write_to, 
                           overwrite = FALSE) {
   dots=list(...)
-  
-  # check input
-  input = whoami(entries = as.list(match.call()))
-  if(!any(sapply(input, FUN = function(i) length(i) != 0))) {
-    stop("can't determine what to extract with provided parameters.\n try to input at least one of: 'fileName', 'info', 'param' or 'offsets'")
-  }
-  
-  # reattribute needed param
-  offsets = input[["offsets"]]
-  param = input[["param"]]
-  if(length(offsets) == 0) {
-    fileName = enc2native(input[["fileName"]])
-  } else {
-    fileName = enc2native(attr(offsets, "fileName_image"))
-  }
   
   # check mandatory param
   assert(image_type, len = 1, alw = c("img", "msk"))
@@ -128,92 +113,20 @@ ExportToNumpy <- function(...,
   overwrite = as.logical(overwrite); assert(overwrite, len = 1, alw = c(TRUE,FALSE))
   assert(python, len = 1, typ = "character")
   
-  # process extra parameters
-  if(length(dots[["verbose"]]) == 0) { 
-    verbose = FALSE
-  } else {
-    verbose = dots[["verbose"]]
-  }
-  if(length(dots[["verbosity"]]) == 0) { 
-    verbosity = 1
-  } else {
-    verbosity = dots[["verbosity"]]
-  }
-  if(length(dots[["fast"]]) == 0) { 
-    fast = TRUE
-  } else {
-    fast = dots[["fast"]]
-  }
-  fast = as.logical(fast); assert(fast, len = 1, alw = c(TRUE, FALSE))
-  verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
-  verbosity = as.integer(verbosity); assert(verbosity, len = 1, alw = c(1, 2))
-  
-  param_extra_a = setdiff(names(formals(objectParam)), "...")
-  param_extra_n = c("ifd","param","bypass","verbose",                       # arguments to objectExtract
-                    "info","mode","export","size","force_width","overwrite")# arguments to objectParam
-  param_extra = names(dots) %in% param_extra_n
-  dots = dots[!param_extra] # remove not allowed param
-  param_extra_a = setdiff(param_extra_a, param_extra_n)
-  param_param = names(dots) %in% param_extra_a
-  dots_param = dots[param_param] # keep param_param for objectParam
-  dots = dots[!param_param]
-  
-  # compute object param
-  # 1: prefer using 'param' if found,
-  # 2: otherwise use 'info' if found,
-  # 3: finally look at fileName
-  if(length(param) == 0) {  
-    if(length(input$info) == 0) { 
-      param = do.call(what = "objectParam",
-                      args = c(list(fileName = fileName,
-                                    export = "matrix",
-                                    mode = mode,
-                                    size = size, 
-                                    force_width = force_width), dots_param))
-    } else {
-      param = do.call(what = "objectParam",
-                      args = c(list(info = quote(input$info),
-                                    export = "matrix",
-                                    mode = mode,
-                                    size = size, 
-                                    force_width = force_width), dots_param))
-    }
-  } else {
-    param = input$param
-    param$export = "matrix"
-    param$mode = mode
-    if(force_width) {
-      param$size[1] <- size[1]
-      param$size[2] <- param$channelwidth
-    } else {
-      param$size <- size
-    }
-  }
-  param$fileName_image = enc2native(param$fileName_image)
+  # precompute param
+  args=list(mode = mode,
+            size = size,
+            force_width = force_width,
+            export = "matrix",
+            overwrite = overwrite)
+  if(!missing(offsets)) args = c(args, list(offsets = offsets))
+  param = do.call(what = dotsParam, args = c(dots, args))
   fileName = param$fileName_image
   title_progress = basename(fileName)
   file_extension = getFileExt(fileName)
   
-  # check input offsets if any
-  compute_offsets = TRUE
-  if(length(offsets) != 0) {
-    if(!("IFC_offset" %in% class(offsets))) {
-      warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
-    } else {
-      if(attr(offsets, "checksum") != param$checksum) {
-        warning("provided 'offsets' do not match with expected ones, 'offsets' will be recomputed", immediate. = TRUE, call. = FALSE)
-      } else {
-        compute_offsets = FALSE
-      }
-    }
-  }
-  if(compute_offsets) {
-    offsets = suppressMessages(getOffsets(fileName = param$fileName_image, fast = fast, display_progress = display_progress, verbose = verbose))
-  }
-  
-  # check objects to extract
-  nobj = as.integer(attr(x = offsets, which = "obj_count"))
-  
+  # check objects
+  nobj = as.integer(param$objcount)
   N = nchar(sprintf("%1.f",abs(nobj-1)))
   if(missing(objects)) {
     objects = as.integer(0:(nobj - 1))
@@ -269,65 +182,25 @@ ExportToNumpy <- function(...,
     }
   }
   
-  # extract objects
-  sel = subsetOffsets(offsets = offsets, objects = objects, image_type = image_type)
-  sel = split(sel, ceiling(seq_along(sel)/20))
-  L=length(sel)
+  # extract images/masks
+  dots=dots[setdiff(names(dots), c("param","mode","objects","display_progress"))]
+  args = list(param = param, mode = mode, objects = objects, display_progress = display_progress)
+  if(!missing(offsets)) args = c(args, list(offsets = offsets))
+  if(image_type == "img") { fun = ExtractImages_toBase64 } else { fun = ExtractMasks_toBase64 }
+  ans = do.call(what = fun, args = c(dots, args))
+  L = length(ans)
   if(L == 0) {
     if(export == "file") {
       warning(paste0("ExportToNumpy: No objects to export, check the objects you provided.\n",
                      "Can't create 'write_to' =", write_to, " from file.\n", param$fileName_image),
               immediate. = TRUE, call. = FALSE)
-      return(invisible(NULL))
+      return(invisible(structure(character(), object_id = structure(numeric(), names = character()))))
     } else {
       warning("ExportToNumpy: No objects to export, check the objects you provided.\n", immediate. = TRUE, call. = FALSE)
-      return(NULL)
+      return(structure(array(NA_real_, dim = c(0,0,3)), object_id = structure(numeric(), names = character())))
     }
   }
-  tryCatch({
-    if(display_progress) {
-      pb = newPB(min = 0, max = L, initial = 0, style = 3)
-      ans = lapply(1:L, FUN = function(i) {
-        setPB(pb, value = i, title = title_progress, label = "exporting objects to numpy")
-        do.call(what = "objectExtract", args = c(list(ifd = structure(lapply(sel[[i]],
-                                                                   FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
-                                                                                                   offset = off,
-                                                                                                   trunc_bytes = 1, 
-                                                                                                   force_trunc = TRUE, 
-                                                                                                   verbose = verbose)),
-                                                      fileName_image = fileName, class = "IFC_ifd_list"),
-                                                      param = param,
-                                                      verbose = verbose,
-                                                      bypass = TRUE),
-                                                 dots))
-        
-      })
-    } else {
-      ans = lapply(1:L, FUN = function(i) {
-        do.call(what = "objectExtract", args = c(list(ifd = structure(lapply(sel[[i]],
-                                                                   FUN = function(off) cpp_getTAGS(fname = param$fileName_image,
-                                                                                                   offset = off,
-                                                                                                   trunc_bytes = 1, 
-                                                                                                   force_trunc = TRUE, 
-                                                                                                   verbose = verbose)),
-                                                      fileName_image = fileName, class = "IFC_ifd_list"),
-                                                      param = param,
-                                                      verbose = verbose,
-                                                      bypass = TRUE),
-                                                 dots))
-      })
-    }
-  }, error = function(e) {
-    stop(e$message, call. = FALSE)
-  }, finally = {
-    if(display_progress) endPB(pb)
-  })
-  channel_id = attr(ans[[1]][[1]], "channel_id")
-  if (L > 1) {
-    ans = do.call(what = "c", args = ans)
-  } else {
-    ans = ans[[1]]
-  }
+  channel_id = attr(ans[[1]], "channel_id")
   channel_names = names(ans[[1]])
   
   # check object_ids

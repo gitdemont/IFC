@@ -10,12 +10,14 @@ ExportToGallery(
   offsets,
   image_type = "img",
   layout,
+  grid,
+  byrow = TRUE,
   export = c("file", "matrix", "base64")[2],
   write_to,
   base64_id = FALSE,
   base64_att = "",
   overwrite = FALSE,
-  main = "",
+  main = character(0),
   add_channels = TRUE,
   add_ids = 1,
   add_lines = 2,
@@ -28,10 +30,10 @@ ExportToGallery(
 )
 }
 \arguments{
-\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of 'ifd' and 'bypass'(=TRUE).\cr
-If 'param' is provided 'mode'(="rgb") and the above parameters will be overwritten.\cr
-If 'offsets' are not provided extra arguments can also be passed with ... \code{\link{getOffsets}}.\cr
-/!\ If not any of 'fileName', 'info' and 'param' can be found in ... then attr(offsets, "fileName_image") will be used as 'fileName' input parameter to pass to \code{\link{objectParam}}.}
+\item{...}{arguments to be passed to \code{\link{objectExtract}} with the exception of \code{'ifd'} and \code{'bypass'}(=\strong{TRUE}).\cr
+If \code{'param'} is provided \code{'mode'}(=\strong{"rgb"}) and the above parameters will be overwritten.\cr
+If \code{'offsets'} are not provided extra arguments can also be passed with \code{...} \code{\link{getOffsets}}.\cr
+\strong{/!\\} If not any of \code{'fileName'}, \code{'info'} and \code{'param'} can be found in \code{'...'} then \code{attr(offsets, "fileName_image")} will be used as \code{'fileName'} input parameter to pass to \code{\link{objectParam}}.}
 
 \item{objects}{integer vector, IDEAS objects ids numbers to use.
 This argument is not mandatory, if missing, the default, all objects will be used.}
@@ -39,82 +41,85 @@ This argument is not mandatory, if missing, the default, all objects will be use
 \item{offsets}{object of class `IFC_offset`. 
 This argument is not mandatory but it may allow to save time for repeated image export on same file.}
 
-\item{image_type}{image_type of desired offsets. Either "img" or "msk". Default is "img".}
+\item{image_type}{image_type of desired offsets. Either \code{"img"} or \code{"msk"}. Default is \code{"img"}.}
 
 \item{layout}{a character vector of [acquired channels + 'composite' images] members to export. Default is missing to export everything.
 Note that members can be missing to be removed from final gallery export.
 Note that members not found will be automatically removed and a warning will be thrown.}
 
+\item{grid}{grid size of the image montage. Default is missing, resulting in a 1-row or 1-column montage depending on \code{'byrow'} argument.}
+
+\item{byrow}{whether montage is filled row-wise or not. Default is \code{FALSE}.}
+
 \item{export}{export format. Either "file", "matrix", "base64". Default is "matrix".}
 
-\item{write_to}{used when 'export' is "file" or "base64" to compute respectively filename or base64 id attribute.
-Exported type will be deduced from this pattern. Allowed export are '.bmp', '.jpg', '.jpeg', '.png', '.tif', '.tiff'.\cr
-'.pdf' can also be used when 'export' is not "base64".
-Note that '.bmp' are faster but not compressed producing bigger data.\cr
+\item{write_to}{used when \code{'export'} is \code{"file"} or \code{"base64"} to compute respectively filename or base64 id attribute.
+Exported file extension and base64 MIME type will be deduced from this pattern. Allowed export are \code{".bmp"}, \code{".jpg"}, \code{".jpeg"}, \code{".png"}, \code{".tif"}, \code{".tiff"}.
+\code{'.pdf'} can also be used when \code{'export'} is not \code{"base64"}.
+Note that \code{".bmp"} are faster but not compressed producing bigger data.\cr
 Placeholders, if found, will be substituted:\cr
--\%d: with full path directory\cr
--\%p: with first parent directory\cr
--\%e: with extension (without leading .)\cr
--\%s: with shortname (i.e. basename without extension)\cr
--\%o: with objects (at most 10, will be collapse with "_", if more than one).\cr
--\%c: with channel_id (will be collapse with "_", if more than one, composite in any will be bracketed).
+-\code{\%d}: with full path directory,\cr
+-\code{\%p}: with first parent directory,\cr
+-\code{\%e}: with extension (without leading .),\cr
+-\code{\%s}: with shortname (i.e. basename without extension),\cr
+-\code{\%o}: with object_id (at most 10, will be collapse with "_", if more than one).\cr
+-\code{\%c}: with channel_id (will be collapse with "_", if more than one, composite if any will be bracketed).
 A good trick is to use:\cr
--"\%d/\%s_gallery_Obj[\%o]_Ch[\%c].tiff", when 'export' is "file"\cr
--"\%s_gallery.bmp", when 'export' is "base64".\cr
-Note that if missing and 'export' is not "file", 'write_to' will be set to "\%s_gallery.bmp".}
+-\code{"\%d/\%s_gallery_Obj[\%o]_Ch[\%c].tiff"}, when \code{'export'} is \code{"file"}\cr
+-\code{"\%s_gallery.bmp"}, when \code{'export'} is \code{"base64"}.\cr
+Note that if missing and \code{'export'} is not \code{"file"}, \code{'write_to'} will be set to \code{"\%s_gallery.bmp"}.}
 
-\item{base64_id}{whether to add id attribute to base64 exported object. Default is TRUE.\cr
-Only applied when 'export' is "base64".}
+\item{base64_id}{whether to add id attribute to base64 exported object. Default is \code{FALSE}.\cr
+Only applied when export is \code{"base64"}.}
 
-\item{base64_att}{attributes to add to base64 exported object. Default is "".\cr
-Only applied when export is "base64". For example, use "class=draggable".\cr
-Note that id (if base64_id is TRUE) and width and height are already used.}
+\item{base64_att}{attributes to add to base64 exported object. Default is \code{""}.\cr
+Only applied when export is \code{"base64"}. For example, use \code{"class='draggable'"}.\cr
+Note that \code{id} (if \code{'base64_id'} is \code{TRUE}) and \code{width} and \code{height} are already used.}
 
-\item{overwrite}{whether to overwrite file or not. Default is FALSE.}
+\item{overwrite}{only apply when \code{'export'} is \code{"file"} whether to overwrite file or not. Default is \code{FALSE}.}
 
 \item{main}{main title that will be displayed on top center of the image.
-If too large it will be clipped.}
+If too large it will be clipped. Default is \code{character(0)}, to produce no main banner at all.}
 
-\item{add_channels}{whether to add channels names. Default is TRUE.}
+\item{add_channels}{whether to add channels names. Default is \code{TRUE}.}
 
-\item{add_ids}{integer, indice of column to mark objects ids number. Default is 1.
+\item{add_ids}{integer, index of column to mark objects ids number. Default is \code{1}.
 If add_ids < 1, no ids are added.}
 
-\item{add_lines}{integer, size of separating lines between objects. Default is 1.
-If add_lines < 1, no separating lines are added.}
+\item{add_lines}{integer vector, size of separating lines between objects, 1st value control horizontal space and 2nd vertical space.
+If only one value is provided it will be used for both. Default is \code{2}.}
 
-\item{bg_color}{background color for main, channels and separating lines. Default is "grey20".}
+\item{bg_color}{background color for main, channels and separating lines. Default is \code{"grey20"}.}
 
-\item{dpi}{integer, the resolution of the image in DPI (dots per inch). Default is 300.\cr
+\item{dpi}{integer, the resolution of the image in DPI (dots per inch). Default is \code{300}.\cr
 Please note that whatever this parameter is final resolution will be 96 dpi.\cr
 However image will be scaled according this parameter and magnification factor will be equal to this parameter divided by 96.}
 
-\item{scale}{a named list whose members are 'size', 'style', 'color', 'xoff', 'yoff'. Default is list() to draw no scale. Otherwise,\cr
--'size' positive integer. Scale's bar size in micro-meter. Default is '7'.\cr
-This parameter can't be lesser than 6px nor higher than image width + scale text.\cr
--'style' a character string. Scale's bar style, either "dash" or "line". Default is "dash".\cr
--'color' a character string. color of the scale. Default is "white".\cr
--'xoff' positive integer. x offset in image to draw scale, starting from bottom left corner.\cr
--'yoff' positive integer. y offset in image to draw scale, starting from bottom left corner.\cr
+\item{scale}{a named list whose members are \code{'size'}, \code{'style'}, \code{'color'}, \code{'xoff'}, \code{'yoff'}. Default is \code{list()} to draw no scale. Otherwise,\cr
+-\code{'size'} positive integer. Scale's bar size in micro-meter. Default is \code{'7'}.\cr
+-\code{'style'} a character string. Scale's bar style, either \code{"dash"} or \code{"line"}. Default is \code{"dash"}.\cr
+-\code{'color'} a character string. color of the scale. Default is \code{"white"}.\cr
+-\code{'xoff'} integer. x offset in image to draw scale, starting from bottom left corner.\cr
+-\code{'yoff'} integer. y offset in image to draw scale, starting from bottom left corner.\cr
 \code{'scale'=TRUE}, can eventually be used to draw scale with default parameters.}
 
-\item{extract_max}{maximum number of objects to extract. Default is 10. Use +Inf to extract all.}
+\item{extract_max}{maximum number of objects to extract. Default is \code{10}. Use \code{+Inf} to extract all.}
 
-\item{sampling}{whether to sample objects or not. Default is FALSE.}
+\item{sampling}{whether to sample objects or not. Default is \code{FALSE}.}
 
-\item{display_progress}{whether to display a progress bar. Default is TRUE.}
+\item{display_progress}{whether to display a progress bar. Default is \code{TRUE}.}
 }
 \value{
-Depending on 'export':\cr
--"matrix", a rgb array,\cr
--"base64", a data-uri string,\cr
--"file", invisibly returns path of exported file.\cr
-with ids attribute corresponding to the objects exported.
+Depending on \code{'export'}:\cr
+-\code{"matrix"}, a rgb array,\cr
+-\code{"base64"}, a data-uri string,\cr
+-\code{"file"}, invisibly returns path of exported file.\cr
+with `object_id` attribute corresponding to the objects exported.
 }
 \description{
 Exports gallery of `IFC_img` / `IFC_msk` objects
 }
 \details{
 arguments of \code{\link{objectExtract}} will be deduced from \code{\link{ExportToGallery}} input arguments.
-TRICK: for exporting only ONE 'objects', set 'add_channels' = FALSE, 'add_ids' >= 1, 'force_width' = FALSE, 'dpi' = 96; this allows generating image with its original size incrusted with its id number.
+\strong{TRICK}: for exporting only ONE \code{'objects'}, set \code{'add_channels'}(=\strong{FALSE}), \code{'add_ids'}(>=\strong{1}), \code{'force_width'}(=\strong{FALSE}), \code{'dpi'}(=\strong{96}); this allows generating image with its original size incrusted with its id number.
 }

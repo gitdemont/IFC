@@ -158,42 +158,6 @@ Rcpp::NumericMatrix hpp_mask (const Rcpp::NumericMatrix A,
   return out;
 }
 
-//' @title Matrix to Matrix Writer According to Mask with Offsets
-//' @name cpp_mark
-//' @description
-//' Writes matrix \code{'B'} in matrix \code{'A'} according to \mask{'mask'}.
-//' @param A a NumericMatrix.
-//' @param B a NumericMatrix.
-//' @param mask a NumericMatrix.
-//' @param xoff x offset in \code{'A'} to start writing \code{'B'}.
-//' @param yoff x offset in \code{'A'} to start writing \code{'B'}.
-//' @param invert a logical. Default is \code{false}.
-//' When \code{false}, the default, values of \code{'B'} are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
-//' When \code{true}, values of '\code{1-B}' are written into \code{'A'} when \code{'mask'} is not \code{0.0}.
-//' @keywords internal
-////' @export
-// [[Rcpp::export(rng = false)]]
-Rcpp::NumericMatrix hpp_mark (const Rcpp::NumericMatrix A,
-                              const Rcpp::NumericMatrix B,
-                              const Rcpp::NumericMatrix mask,
-                              const R_len_t xoff = 0,
-                              const R_len_t yoff = 0,
-                              const bool invert = false) {
-  R_len_t bc = B.ncol();
-  R_len_t br = B.nrow();
-  R_len_t xxoff = xoff < 0 ? 0 : xoff;
-  R_len_t yyoff = yoff < 0 ? 0 : yoff;
-  if((A.ncol() < (bc + xoff)) || (A.nrow() < (br + yoff))) Rcpp::stop("hpp_mark: A should be at least of same dimensions as 'B' + 'offsets'");
-  if((mask.ncol() < bc) || (mask.nrow() < br)) Rcpp::stop("hpp_mark: 'mask' should be at least of same dimensions as 'B'");
-  Rcpp::NumericMatrix out = Rcpp::clone(A);
-  if(invert) {
-    for(R_len_t y = 0; y < br; y++) for(R_len_t x = 0; x < bc; x++) if(mask(y,x)) out(y+yyoff,x+xxoff) = std::fabs(1-B(y,x));
-  } else {
-    for(R_len_t y = 0; y < br; y++) for(R_len_t x = 0; x < bc; x++) if(mask(y,x)) out(y+yyoff,x+xxoff) = B(y,x);
-  }
-  return out;
-}
-
 //' @title Matrix Transformation
 //' @name cpp_transform
 //' @description
