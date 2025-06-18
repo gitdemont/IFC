@@ -451,7 +451,7 @@ ExportToGallery <- function(...,
   dots=dots[setdiff(names(dots), c("param","mode","objects","display_progress"))]
   args = list(param = param, mode = "rgb", objects = objects, display_progress = display_progress)
   if(!missing(offsets)) args = c(args, list(offsets = offsets))
-  if(image_type == "img") { fun = ExtractImages_toBase64 } else { fun = ExtractMasks_toBase64 }
+  if(image_type == "img") { fun = ExtractImages_toMatrix } else { fun = ExtractMasks_toMatrix }
   ans = do.call(what = fun, args = c(dots, args))
   L = length(ans)
   if(L == 0) {

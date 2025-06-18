@@ -121,6 +121,12 @@ ExportToNumpy <- function(...,
             overwrite = overwrite)
   if(!missing(offsets)) args = c(args, list(offsets = offsets))
   param = do.call(what = dotsParam, args = c(dots, args))
+  H = param$size[1]
+  W = param$size[2]
+  C = length(param$chan_to_keep) + length(param$composite_desc)
+  channel_id = c(param$chan_to_keep, param$composite)
+  channel_names = c(sapply(param$chan_to_keep, USE.NAMES = FALSE, FUN = function(x) param$channels$name[param$channels$physicalChannel == as.integer(x)]),param$composite)
+  
   fileName = param$fileName_image
   title_progress = basename(fileName)
   file_extension = getFileExt(fileName)
@@ -139,8 +145,10 @@ ExportToNumpy <- function(...,
     }
   }
 
-  if(length(objects)!=1) if(param$size[2] == 0) stop("'size' width should be provided when 'object' length not equal to one")
-  if(length(objects)!=1) if(param$size[1] == 0) stop("'size' height should be provided when 'object' length not equal to one")
+  if(length(objects)!=1) {
+    if(W == 0) stop("'size' width should be provided when 'object' length not equal to one")
+    if(H == 0) stop("'size' height should be provided when 'object' length not equal to one")
+  }
   
   # check export/write_to
   overwritten = FALSE
@@ -186,7 +194,7 @@ ExportToNumpy <- function(...,
   dots=dots[setdiff(names(dots), c("param","mode","objects","display_progress"))]
   args = list(param = param, mode = mode, objects = objects, display_progress = display_progress)
   if(!missing(offsets)) args = c(args, list(offsets = offsets))
-  if(image_type == "img") { fun = ExtractImages_toBase64 } else { fun = ExtractMasks_toBase64 }
+  if(image_type == "img") { fun = ExtractImages_toMatrix } else { fun = ExtractMasks_toMatrix }
   ans = do.call(what = fun, args = c(dots, args))
   L = length(ans)
   if(L == 0) {
@@ -197,11 +205,16 @@ ExportToNumpy <- function(...,
       return(invisible(structure(character(), object_id = structure(numeric(), names = character()))))
     } else {
       warning("ExportToNumpy: No objects to export, check the objects you provided.\n", immediate. = TRUE, call. = FALSE)
-      return(structure(array(NA_real_, dim = c(0,0,3)), object_id = structure(numeric(), names = character())))
+      return(structure(array(NA_real_, dim = c(0,H,W,C), list("object" = character(0),
+                                                              "height" = NULL,
+                                                              "width" = NULL,
+                                                              "channel" = channel_id)),
+                       object_id = structure(numeric(), names = character()),
+                       offset_id = structure(numeric(), names = character()),
+                       channel_id = channel_id,
+                       channel_names = channel_names))
     }
   }
-  channel_id = attr(ans[[1]], "channel_id")
-  channel_names = names(ans[[1]])
   
   # check object_ids
   if(image_type == "img") { 
@@ -210,24 +223,29 @@ ExportToNumpy <- function(...,
     ids = as.integer(gsub("msk_", "", gsub("img_", "", sapply(ans, attr, which = "offset_id"), fixed = TRUE), fixed = TRUE))
   }
   if(!all(objects == ids)) warning("Extracted object_ids differ from expected ones. Concider running with 'fast' = FALSE", call. = FALSE, immediate. = TRUE)
+  if(length(objects) >= 1) {
+    H = nrow(ans[[1]][[1]])
+    W = ncol(ans[[1]][[1]])
+    C = length(ans[[1]])
+  }
   
   # create array [obj,height,width,channel]
   switch(dtype,
          "uint8" = {
-           ret = aperm(array(as.integer(unlist(ans) * 255), dim = c(nrow(ans[[1]][[1]]), ncol(ans[[1]][[1]]), length(ans[[1]]), length(objects))), perm = c(4,1,2,3))
+           ret = aperm(array(as.integer(unlist(ans, use.names = FALSE) * 255), dim = c(H, W, C, length(objects))), perm = c(4,1,2,3))
          },
          "int16" = {
            if(mode == "raw") {
-             ret = aperm(array(unlist(ans), dim = c(nrow(ans[[1]][[1]]), ncol(ans[[1]][[1]]), length(ans[[1]]), length(objects))), perm = c(4,1,2,3))
+             ret = aperm(array(as.integer(unlist(ans)), dim = c(H, W, C, length(objects))), perm = c(4,1,2,3))
            } else {
-             ret = aperm(array(as.integer(unlist(ans) * 32767), dim = c(nrow(ans[[1]][[1]]), ncol(ans[[1]][[1]]), length(ans[[1]]), length(objects))), perm = c(4,1,2,3))
+             ret = aperm(array(as.integer(unlist(ans, use.names = FALSE) * 32767), dim = c(H, W, C, length(objects))), perm = c(4,1,2,3))
            }
          },
          "uint16" = {
-           ret = aperm(array(as.integer(unlist(ans) * 65535), dim = c(nrow(ans[[1]][[1]]), ncol(ans[[1]][[1]]), length(ans[[1]]), length(objects))), perm = c(4,1,2,3))
+           ret = aperm(array(as.integer(unlist(ans, use.names = FALSE) * 65535), dim = c(H, W, C, length(objects))), perm = c(4,1,2,3))
          },
          {
-           ret = aperm(array(unlist(ans), dim = c(nrow(ans[[1]][[1]]), ncol(ans[[1]][[1]]), length(ans[[1]]), length(objects))), perm = c(4,1,2,3))
+           ret = aperm(array(unlist(ans, use.names = FALSE), dim = c(H, W, C, length(objects))), perm = c(4,1,2,3))
          })
   dimnames(ret) = list("object" = num_to_string(ids),
                        "height" = NULL,
