@@ -96,7 +96,7 @@ Rcpp::LogicalMatrix hpp_OR_M(const Rcpp::List list) {
 Rcpp::LogicalMatrix hpp_NEG_M(const Rcpp::LogicalMatrix mat) {
   Rcpp::LogicalMatrix OUT_M = Rcpp::no_init_matrix(mat.nrow(), mat.ncol());
   for(R_len_t i_col = 0; i_col < mat.ncol(); i_col++) {
-    OUT_M(Rcpp::_, i_col) = !OUT_M(Rcpp::_, i_col);
+    OUT_M(Rcpp::_, i_col) = !mat(Rcpp::_, i_col);
   }
   return OUT_M;
 }
