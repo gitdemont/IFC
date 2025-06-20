@@ -27,7 +27,9 @@ Note that this parameter takes the precedence over \code{input_range}' and \code
 
 \item{gamma}{\code{'gamma'} correction. Default is \code{1}, for no correction.}
 
-\item{color}{a color. Default is \code{"Green"}.}
+\item{color}{a character vector of color(s). Default is \code{"Green"}. A good trick is to use \code{hcl.colors(n = 255, palette = "viridis"))} to display \code{'image'} with "viridis" color palette.\cr
+A length 1 \code{'color'} will map gray values of \code{'image'} to hsv \code{'v'} value parameter of the conversion of \code{rgb2hsv(col2rgb('color'))}.
+Whereas when \code{'color'} is of length > 1, it will be used to bin \code{'image'} into \code{length('color')} intervals and map them to \code{'color'}.}
 
 \item{dpi}{display resolution. Default is \code{300}.}
 }

@@ -31,10 +31,29 @@
 #' @description
 #' Colorizes a [0,1] grayscale image.
 #' @param mat a [0,1] numeric matrix.
-#' @param color a color
-#' @return a 3D array where 3rd dimension is rgb.
+#' @param color a character vector of color(s).
+#' A length 1 \code{'color'} will map gray values of \code{'mat'} to hsv \code{'v'} value parameter of the conversion of \code{rgb2hsv(col2rgb('color'))}.
+#' Whereas when \code{'color'} is of length > 1, it will be used to bin \code{'mat'} into \code{length('color')} intervals and map them to \code{'color'}.
+#' @param as.raster a logical. Default is \code{FALSE}. 
+#' @return depending on \code{'as.raster'}:\cr
+#' -if \code{FALSE}, a 3D array where 3rd dimension is rgb.
+#' -if \code{TRUE}, a `raster` matrix
+#' -if \code{NA}, a color matrix
 #' @keywords internal
-objectColorize <- function(mat, color) {
-  col = rgb2hsv(col2rgb(color)) # this converts named color to hsv
-  return(cpp_M_HSV2RGB(mat, h = col[1], s = col[2]))
+objectColorize <- function(mat, color, as.raster = FALSE) {
+  as.raster = as.logical(as.raster); assert(as.raster, len = 1)
+  assert(color, typ = "character")
+  if(length(color) == 1) {
+    col = rgb2hsv(col2rgb(color))
+    if(is.na(as.raster)) return(matrix(unclass(grDevices::as.raster(cpp_M_HSV2RGB(mat, h = col[1], s = col[2]))), nrow = nrow(mat), byrow = TRUE))
+    if(as.raster) {
+      return(grDevices::as.raster(cpp_M_HSV2RGB(mat, h = col[1], s = col[2])))
+    } else {
+      return(cpp_M_HSV2RGB(mat, h = col[1], s = col[2]))
+    }
+  }
+  lev = level.colors(mat, at = seq(0, 1, length.out = 1 + length(color)), col.regions = color)
+  if(is.na(as.raster)) return(matrix(lev, nrow = nrow(mat), byrow = FALSE))
+  if(as.raster) return(structure(matrix(t(matrix(lev, nrow = nrow(mat), byrow = FALSE)), nrow = nrow(mat), byrow = FALSE), class = "raster"))
+  aperm(array(col2rgb(lev) / 255, dim = c(3, nrow(mat), ncol(mat))), c(2,3,1))
 }

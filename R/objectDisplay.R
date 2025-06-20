@@ -37,7 +37,9 @@
 #' @param force_range if \code{'force_range'} is \code{TRUE}, then \code{'input_range'} will be adjusted to \code{'image'} range in \code{[-4095,+inf]} and \code{'gamma'} forced to \code{1}. Default is \code{FALSE}.\cr
 #' Note that this parameter takes the precedence over \code{input_range}' and \code{full_range}'.
 #' @param gamma \code{'gamma'} correction. Default is \code{1}, for no correction.
-#' @param color a color. Default is \code{"Green"}.
+#' @param color a character vector of color(s). Default is \code{"Green"}. A good trick is to use \code{hcl.colors(n = 255, palette = "viridis"))} to display \code{'image'} with "viridis" color palette.\cr
+#' A length 1 \code{'color'} will map gray values of \code{'image'} to hsv \code{'v'} value parameter of the conversion of \code{rgb2hsv(col2rgb('color'))}.
+#' Whereas when \code{'color'} is of length > 1, it will be used to bin \code{'image'} into \code{length('color')} intervals and map them to \code{'color'}.
 #' @details If \code{'image'} is of class `IFC_img` or `IFC_msk`, then if \code{'input_range'}, \code{'full_range'}, \code{'force_range'}, \code{'gamma'} and/or \code{'color'} parameters is/are missing,
 #' it/they will be extracted from \code{'image'} attributes.\cr
 #' If \code{'image'} is not of one of class `IFC_img` or `IFC_msk`, then \code{'force_range'} will be forced to \code{TRUE}.\cr
@@ -57,25 +59,23 @@ objectDisplay = function(image, input_range = c(0, 4095), full_range = FALSE, fo
     if(missing(force_range)) force_range = attr(image, "force_range")
     if(missing(gamma)) gamma = attr(image, "gamma")
     if(missing(color)) color = attr(image, "color")
-    checkColor(color)
     if("IFC_img" %in% K) {
       if(inherits(input_range, "quantile") && identical(gamma, attr(image, "gamma"))) {
-        foo = objectColorize(objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = 1), color) 
+        foo = objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = 1) 
       } else {
-        foo = objectColorize(objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = gamma), color)
+        foo = objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = gamma)
       }
     } else {
-      foo = objectColorize(objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = 1), color)
+      foo = objectNormalize(attr(image, "raw"), input_range = input_range, full_range = full_range, force_range = force_range, gamma = 1)
     }
   } else {
     if("matrix" %in% K) {
-      checkColor(color)
-      foo = objectColorize(objectNormalize(image, force_range = TRUE), color)
+      foo = objectNormalize(image, force_range = TRUE)
     }
   }
   if(length(foo) == 0) stop("'image' is not compatible with objectDisplay")
   grid.newpage()
-  do.call(what = "grid.raster", args = list(image = foo,
+  do.call(what = "grid.raster", args = list(image = objectColorize(foo, color, as.raster = NA),
                                             width = unit(dpi * d[2] / 96, "points"),
                                             height = unit(dpi * d[1] / 96, "points"),
                                             interpolate = FALSE))

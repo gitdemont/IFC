@@ -4,15 +4,22 @@
 \alias{objectColorize}
 \title{Object Colorizer}
 \usage{
-objectColorize(mat, color)
+objectColorize(mat, color, as.raster = FALSE)
 }
 \arguments{
 \item{mat}{a [0,1] numeric matrix.}
 
-\item{color}{a color}
+\item{color}{a character vector of color(s).
+A length 1 \code{'color'} will map gray values of \code{'mat'} to hsv \code{'v'} value parameter of the conversion of \code{rgb2hsv(col2rgb('color'))}.
+Whereas when \code{'color'} is of length > 1, it will be used to bin \code{'mat'} into \code{length('color')} intervals and map them to \code{'color'}.}
+
+\item{as.raster}{a logical. Default is \code{FALSE}.}
 }
 \value{
-a 3D array where 3rd dimension is rgb.
+depending on \code{'as.raster'}:\cr
+-if \code{FALSE}, a 3D array where 3rd dimension is rgb.
+-if \code{TRUE}, a `raster` matrix
+-if \code{NA}, a color matrix
 }
 \description{
 Colorizes a [0,1] grayscale image.
