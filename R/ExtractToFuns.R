@@ -101,11 +101,12 @@ dotsParam <- function(...,
   
   # define arguments input to param
   param_extra_a = setdiff(names(formals(objectParam)), "...")
+  param_extra_i = setdiff(names(formals(getInfo)), "...")
   param_extra_n = c("ifd","param","bypass","verbose",             # arguments to objectExtract
-                    "info","export","mode","write_to","overwrite")# arguments to objectParam
+                    "fileName","info","export","mode","write_to","overwrite")# arguments to objectParam
   param_extra = names(dots) %in% param_extra_n
   dots = dots[!param_extra] # remove not allowed param
-  param_extra_a = setdiff(param_extra_a, param_extra_n)
+  param_extra_a = setdiff(union(param_extra_a, param_extra_i), param_extra_n)
   param_param = names(dots) %in% param_extra_a
   dots_param = dots[param_param] # keep param_param for objectParam
   dots = dots[!param_param]
