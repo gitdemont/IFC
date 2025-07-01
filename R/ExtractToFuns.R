@@ -216,7 +216,9 @@ polyExtractTo <- function(...,
   display_progress = as.logical(display_progress); assert(display_progress, len = 1, alw = c(TRUE, FALSE))
   
   # precompute param
-  param = do.call(what = dotsParam, args = c(dots, list(mode = mode, export = export)))
+  args = c(dots, list(mode = mode, export = export))
+  if(!missing(offsets)) args = c(args, list(offsets = offsets))
+  param = do.call(what = dotsParam, args = args)
   dots = dots[setdiff(names(dots), c("param","verbose","ifd","bypass"))]
   fileName = param$fileName_image
   title_progress = basename(fileName)
