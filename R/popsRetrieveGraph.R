@@ -115,11 +115,11 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
   foo$GraphRegion = list()
   if(length(R) > 0) foo$GraphRegion = list(list("name" = R[[1]]$label, def = c(R[[1]]$def, names(R)[1])))
   if(length(R) > 1) for(i_reg in 2:length(R)) {
-    defined = sapply(foo$GraphRegion, FUN = function(r) r$name) %in% R[[i_reg]]$label
-    if(any(defined)) {
-      foo$GraphRegion[[defined]] = list("name" = R[[i_reg]]$label, def = c(foo$GraphRegion[[defined]]$def, names(R)[i_reg]))
-    } else {
+    defined = na.omit(which(sapply(foo$GraphRegion, FUN = function(r) r$name) %in% R[[i_reg]]$label))
+    if(length(defined) == 0) {
       foo$GraphRegion = c(foo$GraphRegion, list(list("name" = R[[i_reg]]$label, def = names(R)[i_reg])))
+    } else {
+      foo$GraphRegion[[defined]] = list("name" = R[[i_reg]]$label, def = c(foo$GraphRegion[[defined]]$def, names(R)[i_reg]))
     }
   }
   return(foo)

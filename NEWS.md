@@ -1,4 +1,121 @@
 # NEWS
+## 0.2.1.xxx
+#### Work on FCS
+- handle FCS3.2 files and notably the new behaviour arising from the use of $PnDATATYPE. However, add words on 64bits unsigned integers that could be used according FCS specifications but are not supported in R.
+
+- Only apply gain $PnG for integers as specified by FCS3.2
+
+- fix bug with SUPP text
+
+#### Work on ExtractToFuns
+- hot fix following CRAN submission, when `info` was provided as input [formal argument "info" matched by multiple actual arguments]
+
+- fix issue with `display_progress` which was not honored
+
+- add new **ExtractImages_toMulti**/**ExtractMasks_toMulti** functions
+
+- DRY code: create internal dotsParam notably to retrieve **objectParam** input arguments from callers
+
+- allow to pass arguments of **getInfo**
+
+- [BREAKING] drop dependency on `tiff` package and use internal functions instead
+
+- add software version + names + date (msk or img ids) in metadata in exported files
+
+- add internal functions to handle OME specifications in ome.R
+
+#### Work on Graphs
+- typo preventing setting `par` for y in **plotGraph**
+
+- handle NULL or "" in title, xlab and ylab to allow automatic naming; make use of " " (with a space) to show empty labels
+
+- [BREAKING] **plotGraph** returned object has changed; `f1` and `f2` are returned. A "graph"" attribute being the input graph also appeared. Additional `message` element is provided in case of error. Erroneous or empty graphs are now flagged and should produce a graph when error text displayed.
+
+- better handle device opening/closing
+
+- better handle of par/theme
+
+- fix `adjust_graph` behaviour in **data_rm** functions
+
+- fix density color computation when there are points outside plots limits
+
+- allow feature-based or function transformation for density color computation for `raster` backend
+
+- allow region stats computation in graphs even if corresponding pop does not exist
+
+#### Work on ExportToGallery
+- [BREAKING] modify returned object. When `export` is "file", exported path is invisibly returned. An "object_id" attribute is now attached to returned value.
+
+- add new `grid` and `byrow` arguments to allow grid gallery export
+
+- modify `add_lines` to handle 2 scalars to fit with new `grid` behaviour
+
+- change `main` default value "" to character(0) to allow "" to produce an empty banner and character(0) no banner
+
+- allow export to pdf (if `mode` is not "base64")
+
+- correct scale bar sizing and use `pix` argument instead of `res` which is now removed. set default `scale` value to 7 and handle simple use of TRUE
+
+- DRY code: call ExtractToFuns functions
+
+#### Work on XIF
+- fix issue with offset correction in large xif files
+
+- fix binary chunk extraction error [hpp_readchunk: bad read error]
+
+- fix TIFF tag value extraction in case of endian swap
+
+- add new internal IFDtype function to retrieve xif type from 1st IFD
+
+- enhance XIF subsetting/merging
+
+- fix features extraction in xif files
+
+- [BREAKING] change returned value of **getInfo** by addition of "Origin_rif" and "XIF_type" and removal of "Merge_cif"
+
+- enforce UTF8 and fix bug with parsing non UTF8 file names
+
+#### Work on base64
+- create dedicated base64.hpp file
+
+- add support for url encoding/decoding
+
+- add base64 decoding function
+
+- speed gain
+
+#### Work on Populations/Regions/GatingML
+- handle "0" when parsing color from files; will be interpreted as "Gray82" in R
+
+- fix internal **xml_new_node**
+
+- fix internal boolean parser
+
+- fix error that may arise from bad typo in GatingML which could have prevented correct region extraction 
+
+- handle/improve attributes propagation for pops and regions. Should allow future use of regions/pops syncing
+
+#### Miscellaneous
+- fix "removal" attribute propagation during image/mask extraction when alignment occurs
+
+- use R_finite to test finiteness
+
+- allow progress_bar to be displayed in modules
+
+- fix geomean computation (it is now computed on finite values only)
+
+- [BREAKING] modify how locale are changed/restored and use en_US.UTF-8 (with English.UTF-8 in between some commits) instead of English
+
+- add `prefix` argument to **random_name**
+
+- fix hpp_NEG_M that was not returning a no_init matrix
+
+- handle character vector input for `color` argument of **objectDisplay** allowing color scale display
+
+- fix **popsRetrieveGraph** [attempt to select less than one element in integerOneIndex] error when retrieving GraphRegion
+
+- change deprecated @docType in IFC-package.R to "_PACKAGE" following `roxygen2` update
+
 ## 0.2.1
 - CRAN submission
 

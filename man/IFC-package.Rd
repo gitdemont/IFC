@@ -2,8 +2,8 @@
 % Please edit documentation in R/IFC-package.R
 \docType{package}
 \name{IFC-package}
-\alias{IFC-package}
 \alias{IFC}
+\alias{IFC-package}
 \title{Tools for Imaging Flow Cytometry}
 \description{
 Contains several tools to treat Imaging Flow Cytometry data from ImageStream(R) and FlowSight(R) cytometers (Amnis(R) Cytek(R)). Provides an easy and simple way to read or write .fcs, .rif, .cif and .daf files. Information such as masks, features, regions and populations set within these files can be retrieved for each single cell. In addition, raw data such as images stored can also be accessed. Users, may hopefully increase their productivity thanks to dedicated functions to extract, visualize, manipulate and export IFC data.
@@ -22,6 +22,13 @@ The IFC package provides several categories of functions:\cr
 \code{\link{data_add_features}}, \code{\link{data_add_regions}}, \code{\link{data_add_pops}}, \code{\link{data_rm_features}}, \code{\link{data_rm_regions}}, \code{\link{data_rm_pops}}\cr
 - to allow several coercion:\cr
 \code{\link{buildBatch}}, \code{\link{buildFeature}}, \code{\link{buildGraph}}, \code{\link{buildPopulation}}, \code{\link{buildRegion}}
+}
+\seealso{
+Useful links:
+\itemize{
+  \item Report bugs at \url{https://github.com/gitdemont/IFC/issues}
+}
+
 }
 \author{
 Maintainer: Yohann Demont <git.demont@gmail.com>
