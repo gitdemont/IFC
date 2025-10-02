@@ -263,53 +263,34 @@ toXML2_boolpop_gs <- function(obj, pop, already = character()) {
   }
   
   tree = expand_tree(pop_def)
+  
   # inialize values for recursive loop
-  children = c()
+  op = list()
   ids = c()
-  # group by operation
-  op = lapply(rev(unlist(tree)), FUN = function(x) {
-    ele <- as.character(unlist(x))
-    if(ele %in% c("|", "&", "!")) { # an operator is encountered
+  decomp_bool <- function(x) {
+    xx = unlist(x, recursive = TRUE, use.names = FALSE)
+    if(length(xx) > 3) return(sapply(rev(x), decomp_bool))
+    ans = sapply(xx, as.character)
+    ele = ans[1]
+    if(ele %in% c("!","&", "|")) { # an operator is encountered
       # we generate a random id for the population resulting of the operation
-      id = gen_altnames("foo", n = 8, forbidden = c(ids, names(obj$pops), already), random_seed = SEED)
-      pop_name = children
-      take = 2 # set default number of pop_name we will use for the boolean operation
-      if(length(pop_name) >= 2) {
-        # we have an operator and 2 pop_name eg pop1 & pop2 , pop1 | pop2
-        # already encountered pop_name are flushed
-        children <<- children[-c(1:2)]
-      } else {
-        # we have an operator and no or only one pop
-        # already encountered pop_name are flushed
-        if(length(pop_name) >= 1) children <<- children[-1]
-        if(length(pop_name) == 0) {
-          # we use children if any and add last defined population id
-          pop_name = c(pop_name, ids[1])
-          # we remove last population name from the stack
-          ids <<- ids[-1]
-        }
-        if(ele == "!") {
-          take = 1 # not operation takes only one operand
-        } else { 
-          if(length(pop_name) == 1) {
-            # we have only one name for a 2 side operation (& , |)
-            # we add population name from the stack to have 2 pop_name
-            pop_name = c(pop_name, ids[1])
-            # we remove last population name from the stack
-            ids <<- ids[-1]
-          }
-        }
+      id = gen_altnames("foo", n = 8, forbidden = c(names(op), ids, already), random_seed = SEED)
+      n = ans[-1]
+      if(ele == "!") { # not operation takes only one operand
+        if(length(ans) == 1) { n = tail(ids, 1); ids = ids[-length(ids)] } # we dequeue last population name from the stack
       }
-      # finally new population name defined by the operation is added to the stack
-      ids <<- c(id, ids) 
-      return(list(bool = ele, def = pop_name[1:take], id = id))
+      if(ele %in% c("&", "|")) {
+        if(length(ans) == 1) { n = rev(tail(ids, 2)); ids = ids[-(length(ids) - 0:1)] } # we dequeue last 2 population names from the stack
+        if(length(ans) == 2) { n = rev(c(tail(ids, 1), n)); ids = ids[-length(ids)] } # we dequeue last population name from the stack
+      }
+      op <<- c(op, structure(list(list(bool = ans[1], def = n, id = id)), names = id))
+      ids <<- c(ids, id)
     } else {
-      # no operator found, so this is a children name
-      # children name is added
-      children <<- c(ele, children)
+      ids <<- c(ids, ans) # we add population name(s) to the stack
     }
-    return(NULL)
-  })
+  }
+  decomp_bool(tree)
+  
   op = op[sapply(op, length) != 0]
   # if length(op) is 0 it means that population is an alias of another
   # so as a hack we declare it as being a `and` of this alias
@@ -324,7 +305,7 @@ toXML2_boolpop_gs <- function(obj, pop, already = character()) {
          x=op[[i]]
          bool = switch(x$bool, "|" = "or", "&" = "and", "!" = "not")
          xml_new_node(name = "_ns_gating_ns_BooleanGate", attrs = list("_ns_gating_ns_id" = x$id),
-                      .children = list(xml_new_node(name = "_ns_data-type_ns_custom_info", attrs = list(op=paste0(pop$name,"_",i),pch=pch, colors=pop$colors)),
+                      .children = list(xml_new_node(name = "_ns_data-type_ns_custom_info", attrs = list(op=pop$name, pch=pch, colors=pop$colors)),
                                        xml_new_node(name = paste0("_ns_gating_ns_", bool),
                                                     .children = lapply(x$def, FUN = function(def) {
                                                       xml_new_node(name = "_ns_gating_ns_gateReference", attrs = list("_ns_gating_ns_ref" = def))
@@ -357,7 +338,7 @@ fromXML2_gating  <- function(xml_nodes, type = "rect") {
       } else {
         def = paste0(unname(unlist(node)),collapse=paste0("|",op,"|"))
       }
-      pop = list(name=ids[1], type="C", base="All", definition=def) # TODO find a way to remove intermediate pop so as to use original def = meta$definition
+      pop = list(name=ids[1], type="C", base="All", definition=def, op = meta$op)
       reg = list()
     } else {
       dimension = do.call(what = cbind, args = sapply(node[names(node) == "dimension"], simplify = FALSE, unlist))
@@ -512,6 +493,36 @@ readGatingML <- function(fileName, ...) {
   pops = pops[sapply(pops, length) != 0]
   names(regions) = sapply(regions, FUN = function(x) x$label)
   names(pops) = sapply(pops, FUN = function(x) x$name)
+  op = unique(na.omit(sapply(pops, FUN = function(p) ifelse(length(p$op) == 0, NA_character_, p$op))))
+  class(pops) = "IFC_pops"
+  pops = popsGetAffiliation(pops)
+  
+  recomp_bool <- function(pops, name) {
+    p = pops[[name]]
+    op_names = setdiff(names(which(sapply(pops, FUN = function(p) identical(p$op, name)))), name)
+    pp = pops[op_names]
+    while(length(pp) != 0) {
+      escape = TRUE
+      for(i in seq_along(p$split)) {
+        n = p$split[i] 
+        if(p$split[i] %in% names(pp)) {
+          escape = FALSE
+          beg = head(p$split, i - 1)
+          end = tail(p$split, -i)
+          p$split <- c(beg, "(", pp[[n]]$split, ")", end)
+          pp <- pp[setdiff(names(pp), n)]
+        }
+      }
+      if(escape) break;
+    }
+    if(length(pp) != 0) return(pops)
+    p$definition = paste0(p$split,collapse="|")
+    pops[[name]] <- p
+    pops = pops[setdiff(names(pops), op_names)]
+    pops
+  }
+  for(i in op) pops = recomp_bool(pops, i)
+  pops = sapply(pops, FUN = function(p) p[setdiff(names(p), c("split","names","op"))])
   
   # check for duplicated regions
   dup = unique(names(regions)[duplicated(names(regions))])
