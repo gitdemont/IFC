@@ -159,7 +159,7 @@ applyGatingStrategy = function(obj, gating, keep, display_progress = TRUE, verbo
     class(ans$graphs) <- "IFC_graphs"
     
     ##### computes stats
-    ans$stats = get_pops_stats(ans$pops, ncol(ans$features))
+    ans$stats = get_pops_stats(ans$pops, nrow(ans$features))
   },
   error = function(e) {
     stop("can't apply gating strategy:\n", e$message, call. = FALSE)
