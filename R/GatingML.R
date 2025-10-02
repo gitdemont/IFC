@@ -300,7 +300,7 @@ toXML2_boolpop_gs <- function(obj, pop, already = character()) {
   op[[length(op)]]$id <- pop$name
 
   # create nodes and keep track of already attributed names
-  list(already = ids, 
+  list(already = names(op), 
        xml = lapply(1:length(op), FUN = function(i) {
          x=op[[i]]
          bool = switch(x$bool, "|" = "or", "&" = "and", "!" = "not")
