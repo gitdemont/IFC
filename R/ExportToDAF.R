@@ -259,12 +259,14 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
                  force = FALSE)
       for(i in seq_along(features)) {
         feat = features[[i]]
-        if(verbose) cat(paste0("creating feature: ", feat$name, "\n"))
-        if(feat$name%in%features_daf) {
-          warning(paste0(feat$name, ", not exported: trying to export an already defined feature"), immediate. = TRUE, call. = FALSE)
+        lab = feat$name
+        if(verbose) cat(paste0("creating feature: ", lab, "\n"))
+        feat = sapply(feat, simplify = FALSE, USE.NAMES = TRUE, FUN = function(x) if(is.character(x)) return(escape_entities(x)) else return(x))
+        if(lab%in%features_daf) {
+          warning(paste0(lab, ", not exported: trying to export an already defined feature"), immediate. = TRUE, call. = FALSE)
           next
         }
-        if(length(feat$val) != obj_number) stop(feat$name, "\nbad feature value length, expected: ",  obj_number, ", but is: ", length(feat$val)) # TODO add some lines to allow function to automatically compute feat$val when missing
+        if(length(feat$val) != obj_number) stop(lab, "\nbad feature value length, expected: ",  obj_number, ", but is: ", length(feat$val)) # TODO add some lines to allow function to automatically compute feat$val when missing
         new_node_features_def = sprintf('<UDF name="%s" type="%s" userfeaturetype="%s" def="%s" />', feat[["name"]], feat[["type"]], feat[["userfeaturetype"]], feat[["def"]])
         if(is_binary) {
           # TODO maybe change endianness reading / writing
@@ -289,9 +291,11 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
       reg = regions[[i]]
       A = attr(reg, "sync")
       reg = reg[sapply(reg, length) != 0]
-      if(verbose) cat(paste0("creating region: ", reg$label, "\n"))
-      if(reg$label%in%regions_daf_label) {
-        warning(paste0(reg$label, ", not exported: trying to export an already defined region"), immediate. = TRUE, call. = FALSE)
+      lab = reg$label
+      if(verbose) cat(paste0("creating region: ", lab, "\n"))
+      reg = sapply(reg, simplify = FALSE, USE.NAMES = TRUE, FUN = function(x) if(is.character(x)) return(escape_entities(x)) else return(x))
+      if(lab%in%regions_daf_label) {
+        warning(paste0(lab, ", not exported: trying to export an already defined region"), immediate. = TRUE, call. = FALSE)
         next
       }
       if(length(A) == 1) reg$sync = A
@@ -307,46 +311,48 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
       for(i in 1:length(pops)) {
         pop = pops[[i]]
         pop = pop[sapply(pop, length) != 0]
-        if(verbose) cat(paste0("creating population: ", pop$name, "\n"))
-        if(pop$name%in%pops_daf) {
-          warning(pop$name, ", not exported: trying to export an already defined population", immediate. = TRUE, call. = FALSE)
+        lab = pop$name
+        if(verbose) cat(paste0("creating population: ", lab, "\n"))
+        pop = sapply(pop, simplify = FALSE, USE.NAMES = TRUE, FUN = function(x) if(is.character(x)) return(escape_entities(x)) else return(x))
+        if(lab%in%pops_daf) {
+          warning(lab, ", not exported: trying to export an already defined population", immediate. = TRUE, call. = FALSE)
           next
         }
         if(pop$type=="G") {
           tmp1 = which(regions_daf_label%in%pop$region)
           tmp2 = which(names(regions)%in%pop$region)
-          if(length(tmp1)==0 & length(tmp2)==0) stop(pop$name, ', trying to export a graphical population with a non-defined region: ["', pop$region, '"]', call. = FALSE)
+          if(length(tmp1)==0 & length(tmp2)==0) stop(lab, ', trying to export a graphical population with a non-defined region: ["', pop$region, '"]', call. = FALSE)
           if(length(tmp1)!=0) reg = list("label"=regions_daf_label[tmp1], "type"=regions_daf_type[tmp1])
           if(length(tmp2)!=0) reg = regions[[tmp2[1]]]
-          if(!pop$fx%in%c(features_daf, names(features))) stop(pop$name, ', trying to export a graphical population with an unknown fx ["', pop$fx, '"]', call. = FALSE)
+          if(!pop$fx%in%c(features_daf, names(features))) stop(lab, ', trying to export a graphical population with an unknown fx ["', pop$fx, '"]', call. = FALSE)
           if(length(pop$fy)!=0 & reg$type=="line") {
             pop = pop[-which(names(pop=="fy"))]
-            warning(pop$name, ", trying to export a graphical population based on a region of type 'line' with a fy feature; exported but fy has been automatically removed", immediate. = TRUE, call. = FALSE)
+            warning(lab, ", trying to export a graphical population based on a region of type 'line' with a fy feature; exported but fy has been automatically removed", immediate. = TRUE, call. = FALSE)
           }
-          if(reg$type!="line") if(!(pop$fy%in%c(features_daf, names(features)))) stop(pop$name, ', trying to export a graphical population with an unknown fy ["', pop$fy, '"]', call. = FALSE)
+          if(reg$type!="line") if(!(pop$fy%in%c(features_daf, names(features)))) stop(lab, ', trying to export a graphical population with an unknown fy ["', pop$fy, '"]', call. = FALSE)
           new_node_pop = to_xml_list(pop, name = "Pop")
         }
         if(pop$type=="C") {
           new_node_pop = to_xml_list(pop, name = "Pop")
         }
         if(pop$type=="T") {
-          if(anyNA(pop$obj)) stop(pop$name, ", trying to export a tagged population containing NA/NaN")
+          if(anyNA(pop$obj)) stop(lab, ", trying to export a tagged population containing NA/NaN")
           K = typeof(pop$obj)
           if(length(pop$obj)==0) {
-            warning(pop$name, ", not exported: trying to export a tagged population of length = 0", immediate. = TRUE, call. = FALSE)
+            warning(lab, ", not exported: trying to export a tagged population of length = 0", immediate. = TRUE, call. = FALSE)
             next
           }
           if(K%in%"logical") {
             if(sum(pop$obj)==0) {
-              warning(paste0(pop$name, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
+              warning(paste0(lab, ", not exported: trying to export a tagged population of length = 0"), immediate. = TRUE, call. = FALSE)
               next
             }
-            if(obj_number != length(pop$obj)) stop(pop$name, ", trying to export a tagged population with more element(s) than total number of objects acquired")
+            if(obj_number != length(pop$obj)) stop(lab, ", trying to export a tagged population with more element(s) than total number of objects acquired")
             new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,raw_2020)),
                                        kids = lapply(num_to_string(which(pop$obj)-1), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
           }
           if(K%in% c("double","integer")) {
-            if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(pop$name, ", trying to export a tagged population with element(s) outside of objects acquired")
+            if((obj_number <= max(pop$obj)) | (min(pop$obj) < 0) | any(duplicated(pop$obj))) stop(lab, ", trying to export a tagged population with element(s) outside of objects acquired")
             new_node_pop = to_xml_list(pop[-which(names(pop)%in%c("obj"))], name = "Pop", escape = rawToChar(c(collapse$pops,raw_2020)),
                                        kids = lapply(num_to_string(pop$obj), FUN=function(ob) to_xml_list(name="ob", x=list("O"=ob))))
           }
@@ -364,7 +370,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
       ##### final check to ensure that remaining pops do not depend on a pop that has been removed
       if(any(sapply(pops, FUN = function(pop) {
         if(!(pop$base%in%all_names)) {
-          stop(pop$name, ', trying to export a population with unknown base ["', pop$base, '"]')
+          stop(lab, ', trying to export a population with unknown base ["', pop$base, '"]')
         }
         pop$type == "C"
       }))) {
@@ -372,7 +378,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
         lapply(pops, FUN = function(pop) {
           if("C" %in% pop$type) {
             tmp3 = try(splitn(definition = pop$definition, all_names = all_names, alt_names = alt_names, operators = operators_pop), silent = TRUE)
-            if(inherits(tmp3, "try-error")) stop(pop$name, ', trying to export a population with unknown definition ["', pop$definition, '"]', call. = FALSE)
+            if(inherits(tmp3, "try-error")) stop(lab, ', trying to export a population with unknown definition ["', pop$definition, '"]', call. = FALSE)
           }
           return(NULL)
         })
@@ -429,15 +435,15 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     
     # adds pkg version attribute in XML <ASSAY> node /!\ mandatory to prevent overwriting original file
     pkg_ver = paste0(unlist(packageVersion("IFC")), collapse = ".")
-    pkg_ver = charToRaw(paste0("IFC_version=\"",pkg_ver,"\""))
+    pkg_ver = charToRaw(escape_entities(paste0("IFC_version=\"",pkg_ver,"\"")))
     if(viewing_pop %in% pops_alw) {
       pop_beg = cpp_scanFirst(fileName, charToRaw('population='), start = name_end , end = xmlEND)+nchar("population=")
       pop_end = cpp_scanFirst(fileName, charToRaw(' showMasks='), start = pop_beg , end = xmlEND)-1
-      writeBin(object = c(beg[1:ass_beg], pkg_ver, beg[date_beg:name_beg], charToRaw(cif_name),beg[name_end:pop_beg]), con=towrite, endian = endianness)
-      writeBin(object = c(charToRaw(viewing_pop),beg[(pop_end):length(beg)]), con=towrite, endian = endianness)
+      writeBin(object = c(beg[1:ass_beg], pkg_ver, beg[date_beg:name_beg], charToRaw(escape_entities(cif_name)),beg[name_end:pop_beg]), con=towrite, endian = endianness)
+      writeBin(object = c(charToRaw(escape_entities(viewing_pop)),beg[(pop_end):length(beg)]), con=towrite, endian = endianness)
     } else {
       warning(paste0("can't find: ", viewing_pop, " in population names. Displayed population was not changed."), immediate. = TRUE, call. = FALSE)
-      writeBin(object = c(beg[1:ass_beg], pkg_ver, beg[date_beg:name_beg], charToRaw(cif_name),beg[name_end:length(beg)]), con=towrite, endian = endianness)
+      writeBin(object = c(beg[1:ass_beg], pkg_ver, beg[date_beg:name_beg], charToRaw(escape_entities(cif_name)),beg[name_end:length(beg)]), con=towrite, endian = endianness)
     }
     writeBin(object = new_nodes[[1]], con=towrite , endian = endianness, useBytes = TRUE)
     for(i in 2:length(toskip)) {

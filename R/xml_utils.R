@@ -60,11 +60,11 @@ expand_list = function(x, max = 5) {
 #' @return a character vector where xml entities have been escaped.
 #' @keywords internal
 escape_entities = function(text) {
-  text = gsub("&", "&amp;", text)
-  text = gsub(">", "&gt;", text)
-  text = gsub("<", "&lt;", text)
-  text = gsub("'", "&apos;", text)
-  gsub('"', '&quot;', text)
+  text = gsub("&", "&amp;", text, fixed = TRUE)
+  text = gsub(">", "&gt;", text, fixed = TRUE)
+  text = gsub("<", "&lt;", text, fixed = TRUE)
+  text = gsub("'", "&apos;", text, fixed = TRUE)
+  gsub('"', '&quot;', text, fixed = TRUE)
 }
 
 #' @title XML Node to List Conversion
