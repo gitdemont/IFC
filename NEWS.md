@@ -14,7 +14,9 @@
 
 - add new **ExtractImages_toMulti**/**ExtractMasks_toMulti** functions
 
-- DRY code: create internal dotsParam notably to retrieve **objectParam** input arguments from callers
+- DRY code: create internal **dotsParam** notably to retrieve **objectParam** input arguments from callers
+
+- DRY code: create internal **fromXML2_graphs**, **fromXML2_regions**, and **fromXML2_pops** to avoid repeating same lines in **ExtractFromDAF**, **ExtractFromXIF**, and **readGatingStrategy**
 
 - allow to pass arguments of **getInfo**
 

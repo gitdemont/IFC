@@ -334,78 +334,16 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
       class(features_def) <- c(class(features_def),"IFC_features_def")
       
       ##### extracts graphs information
-      plots=lapply(xml_attrs(xml_find_all(tmp, "//Graph")), FUN=function(x) as.list(x))
-      if(length(plots)!=0) {
-        plots_tmp=lapply(plots, FUN=function(plot) {
-          pat=paste0("//Graph[@xlocation='",plot$xlocation,"'][@ylocation='",plot$ylocation,"']")
-          sapply(c("Legend","BasePop","GraphRegion","ShownPop"), simplify=FALSE, FUN=function(i_subnode){
-            lapply(xml_attrs(xml_find_all(tmp, paste(pat,i_subnode,sep="//"))), FUN=function(x) as.list(x))
-          })
-        })
-        plots=mapply(plots, plots_tmp, FUN = append, SIMPLIFY = FALSE)
-        plots_tmp=c("xlocation","ylocation","scaletype","xmin","xmax","ymin","ymax","axislabelsfontsize","axistickmarklabelsfontsize",
-                    "graphtitlefontsize","regionlabelsfontsize","bincount","histogramsmoothingfactor","xsize","ysize","splitterdistance","maxpoints")
-        plots=lapply(plots, FUN=function(x) {plots_tmp = plots_tmp[plots_tmp %in% names(x)]; replace(x, plots_tmp, lapply(x[plots_tmp], as.numeric))})
-        plot_order=sapply(plots, FUN=function(i_plot) as.numeric(i_plot[c("xlocation", "ylocation")]))
-        plots=plots[order(unlist(plot_order[1,]),unlist(plot_order[2,]))]
-        # plots=plots[order(unlist(plot_order[2,]))]
-        rm(list=c("plots_tmp", "plot_order"))
-      }
+      plots=fromXML2_graphs(tmp)
       
       ##### TODO, add something for ChannelImage, ObjectFeatureControl, StatisticsControl
       
       ##### extracts regions information
-      regions=lapply(xml_attrs(xml_find_all(tmp, "//Region")), FUN=function(x) as.list(x))
-      if(length(regions) != 0) {
-        names(regions)=lapply(regions, FUN=function(x) x$label)
-        regions_tmp=c("cx","cy")
-        regions=lapply(regions, FUN=function(x) {replace(x, regions_tmp, lapply(x[regions_tmp], as.numeric))})
-        regions_tmp=lapply(regions, FUN=function(i_region) {
-          pat=paste0("//Region[@label='",i_region$label,"']//axy")
-          axy=do.call(cbind, args = xml_attrs(xml_find_all(tmp, pat)))
-          nas = is.na(x) | is.na(y)
-          if(any(nas)) warning("ExtractFromXIF: NAs in region['",i_region$label,"'] have been removed", call. = FALSE, immediate. = TRUE)
-          x=x[!nas]; y=y[!nas]
-          if(length(x) < ifelse(identical(i_region$type, "poly"), 1, 2)) stop("invalid vertices length for region['",i_region$label,"']")
-          list(x=x,y=y)
-        })
-        regions=mapply(FUN = append, regions, regions_tmp, SIMPLIFY = FALSE)
-        rm(regions_tmp)
-        ##### changes unknown color names in regions and retrieves sync attribute if any
-        for(i in seq_along(regions)) {
-          sync = regions[[i]]$sync
-          regions[[i]] = regions[[i]][setdiff(names(regions[[i]]), "sync")]
-          attr(regions[[i]], "sync") = sync
-          regions[[i]]$color = map_color(regions[[i]]$color)
-          regions[[i]]$lightcolor = map_color(regions[[i]]$lightcolor)
-        }
-      }
+      regions=fromXML2_regions(tmp, caller = "ExtractFromXIF")
       class(regions) <- "IFC_regions"
       
       ##### extracts populations information
-      pops=lapply(xml_attrs(xml_find_all(tmp, "//Pop")), FUN=function(x) as.list(x))
-      if(length(pops)>0) {
-        names(pops)=lapply(pops, FUN=function(x) x$name)
-        if(display_progress) {
-          pb_pops = newPB(min = 0, max = length(pops), initial = 0, style = 3)
-          tryCatch({
-            pops_=lapply(1:length(pops), FUN=function(i_pop) {
-              setPB(pb_pops, value = i_pop, title = title_progress, label = "extracting tagged population objects")
-              pat=paste0("//Pop[@name='",pops[[i_pop]]$name,"']//ob")
-              list(obj=as.integer(unlist(xml_attrs(xml_find_all(tmp, pat)))))
-            })
-          }, error = function(e) {
-            stop(e$message)
-          }, finally = endPB(pb_pops))
-        } else {
-          pops_=lapply(1:length(pops), FUN=function(i_pop) {
-            pat=paste0("//Pop[@name='",pops[[i_pop]]$name,"']//ob")
-            list(obj=as.integer(unlist(xml_attrs(xml_find_all(tmp, pat)))))
-          })
-        }
-        pops=mapply(FUN = append, pops, pops_, SIMPLIFY = FALSE)
-        rm(pops_)
-      }
+      pops=fromXML2_pops(tmp, title_progress = title_progress, display_progress = display_progress)
       class(pops) <- "IFC_pops"
       
       #####  retrieve name(s) of graphical population created by region applied in graph
