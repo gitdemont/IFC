@@ -435,7 +435,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     
     # adds pkg version attribute in XML <ASSAY> node /!\ mandatory to prevent overwriting original file
     pkg_ver = paste0(unlist(packageVersion("IFC")), collapse = ".")
-    pkg_ver = charToRaw(escape_entities(paste0("IFC_version=\"",pkg_ver,"\"")))
+    pkg_ver = charToRaw(paste0("IFC_version=\"",escape_entities(pkg_ver),"\""))
     if(viewing_pop %in% pops_alw) {
       pop_beg = cpp_scanFirst(fileName, charToRaw('population='), start = name_end , end = xmlEND)+nchar("population=")
       pop_end = cpp_scanFirst(fileName, charToRaw(' showMasks='), start = pop_beg , end = xmlEND)-1
