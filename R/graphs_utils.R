@@ -758,7 +758,7 @@ base_regions=function(obj){
     if(reg$type=="line") {
       Ylim = obj$input$ylim
       cy = na.omit(reg$cy); cy = cy[is.finite(cy)]
-      cy = ifelse(length(cy) < 1, cy = 0.6, cy[1])
+      cy = ifelse(length(cy) < 1, 0.6, cy[1])
       if((cy <= 0.025) || (cy >= 0.975)) cy = 0.6 # allow to show label when it is on the edge
       y = na.omit(coords$y); y = y[is.finite(y)]
       y = ifelse(length(y) < 1, 0.5, y[1])
@@ -1276,7 +1276,7 @@ plot_lattice=function(obj) {
                                 reg$cx = applyTrans(reg$cx, trans_x)
                                 lab =  trunc_string(reg$label, trunc_labels)
                                 cy = na.omit(reg$cy); cy = cy[is.finite(cy)]
-                                cy = ifelse(length(cy) < 1, cy = 0.6, cy[1])
+                                cy = ifelse(length(cy) < 1, 0.6, cy[1])
                                 if((cy <= 0.025) || (cy >= 0.975)) cy = 0.6 # allow to show label when it is on the edge
                                 y = na.omit(coords$y); y = y[is.finite(y)]
                                 y = ifelse(length(y) < 1, 0.5, y[1])
@@ -1306,7 +1306,7 @@ plot_lattice=function(obj) {
                           reg$cx = applyTrans(reg$cx, trans_x)
                           lab = trunc_string(reg$label, trunc_labels)
                           cy = na.omit(reg$cy); cy = cy[is.finite(cy)]
-                          cy = ifelse(length(cy) < 1, cy = 0.6, cy[1])
+                          cy = ifelse(length(cy) < 1, 0.6, cy[1])
                           if((cy <= 0.025) || (cy >= 0.975)) cy = 0.6 # allow to show label when it is on the edge
                           y = na.omit(coords$y); y = y[is.finite(y)]
                           y = ifelse(length(y) < 1, 0.5, y[1])
