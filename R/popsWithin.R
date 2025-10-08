@@ -86,36 +86,45 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
              if(length(pop_pos)!=1) stop(pop$name, ', trying to compute a graphical population with a non-defined region: ["', pop$region, '"]', call. = FALSE)
              fx_pos=which(names(features)==pop$fx)
              if(length(fx_pos)!=1) stop(pop$name, ', trying to compute a graphical population with an unknown fx ["', pop$fx, '"]', call. = FALSE)
-             x=features[,fx_pos]
-             xlim=as.numeric(regions[[pop_pos]]$x)
-             if(regions[[pop_pos]]$type == "line") {
-               xlim=range(xlim)
-               pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & x>=xlim[1] & x<=xlim[2] & !is.na(x)
+             oo = pops[[which(names(pops)==pop$base)]]$obj
+             x=features[oo,fx_pos]
+             reg = regions[[pop_pos]]
+             if(reg$type == "line") {
+               coords=list(x=as.numeric(reg$x), y=as.numeric(reg$y))
+               xlim=range(coords$x, na.rm = TRUE, finite = FALSE)
+               oo[oo] <- x>=xlim[1] & x<=xlim[2] & !is.na(x) 
              } else {
+               xlim=as.numeric(reg$x)
                fy_pos=which(names(features)==pop$fy)
                if(length(fy_pos)!=1) stop(pop$name, ', trying to compute a graphical population with an unknown fy ["', pop$fy, '"]', call. = FALSE)
-               y=features[,fy_pos]
-               ylim=as.numeric(regions[[pop_pos]]$y)
-               Xtrans = regions[[pop_pos]]$xtrans; if(length(Xtrans) == 0) Xtrans = regions[[pop_pos]]$xlogrange
-               trans_x = parseTrans(Xtrans)
-               x = applyTrans(x, trans_x)
-               xlim = applyTrans(xlim, trans_x)
-               Ytrans = regions[[pop_pos]]$ytrans; if(length(Ytrans) == 0) Ytrans = regions[[pop_pos]]$ylogrange
-               trans_y = parseTrans(Ytrans)
-               y = applyTrans(y, trans_y)
-               ylim = applyTrans(ylim, trans_y)
-               switch(regions[[pop_pos]]$type, 
+               y=features[oo,fy_pos]
+               ylim=as.numeric(reg$y)
+               switch(reg$type, 
                       "oval" = {
-                        pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(xlim,ylim), algorithm = 3)
+                        Xtrans=reg$xtrans; if(length(Xtrans) == 0) Xtrans=reg$xlogrange
+                        trans_x=parseTrans(Xtrans)
+                        Ytrans=reg$ytrans; if(length(Ytrans) == 0) Ytrans=reg$ylogrange
+                        trans_y=parseTrans(Ytrans)
+                        oo[oo] <- cpp_pnt_in_gate(pnts=cbind(applyTrans(x, trans_x),applyTrans(y, trans_y)),
+                                                  gate = cbind(applyTrans(xlim, trans_x),applyTrans(ylim, trans_y)),
+                                                  algorithm = 3)
                       },
                       "poly" = {
-                        pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(xlim,ylim), algorithm = pnt_in_poly_algorithm, epsilon = pnt_in_poly_epsilon)
+                        Xtrans=reg$xtrans; if(length(Xtrans) == 0) Xtrans=reg$xlogrange
+                        trans_x=parseTrans(Xtrans)
+                        Ytrans=reg$ytrans; if(length(Ytrans) == 0) Ytrans=reg$ylogrange
+                        trans_y=parseTrans(Ytrans)
+                        oo[oo] <- cpp_pnt_in_gate(pnts=cbind(applyTrans(x, trans_x),applyTrans(y, trans_y)),
+                                                  gate = cbind(applyTrans(xlim, trans_x),applyTrans(ylim, trans_y)),
+                                                  algorithm = pnt_in_poly_algorithm, epsilon = pnt_in_poly_epsilon)
                       },
                       "rect" = {
-                        pops[[i]]$obj=pops[[which(names(pops)==pop$base)]]$obj & cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(xlim,ylim), algorithm = 2)
+                        coords=list(x=xlim, y=ylim)
+                        oo[oo] <- cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(coords$x,coords$y), algorithm = 2)
                       })
              }
-           }, 
+             pops[[i]]$obj=oo
+           },
            "C" = {
              if(any(pop$name %in% pop$names)) stop(pop$name, ", trying to compute a boolean population with recursive \'definition\' ['",pop$definition,"']")
              pop_def_tmp=pop$split
