@@ -1,7 +1,9 @@
 <!-- badges: start -->
-[![R build status](https://github.com/gitdemont/IFC/workflows/R-CMD-check/badge.svg)](https://github.com/gitdemont/IFC/actions)
+<!--[![R build status](https://github.com/gitdemont/IFC/workflows/R-CMD-check/badge.svg)](https://github.com/gitdemont/IFC/actions)-->
 [![](https://img.shields.io/github/last-commit/gitdemont/IFC.svg)](https://github.com/gitdemont/IFC/commits/master)
-[![Dependencies](https://tinyverse.netlify.com/badge/IFC)](https://cran.r-project.org/package=IFC)
+[![runiverse IFC status badge](https://gitdemont.r-universe.dev/IFC/badges/version)](https://gitdemont.r-universe.dev/IFC)
+[![cran-badge](https://www.r-pkg.org/badges/version/IFC)](https://CRAN.R-project.org/package=IFC)
+[![Dependencies](https://tinyverse.netlify.app/badge/IFC)](https://CRAN.R-project.org/package=IFC)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 
 [![](https://img.shields.io/github/languages/code-size/gitdemont/IFC.svg)](https://github.com/gitdemont/IFC)

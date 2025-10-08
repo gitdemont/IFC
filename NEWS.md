@@ -29,7 +29,15 @@
 
 - handle NULL or "" in title, xlab and ylab to allow automatic naming; make use of " " (with a space) to show empty labels
 
-- [BREAKING] **plotGraph** returned object has changed; `f1` and `f2` are returned. A "graph"" attribute being the input graph also appeared. Additional `message` element is provided in case of error. Erroneous or empty graphs are now flagged and should produce a graph when error text displayed.
+- [BREAKING] **plotGraph** returned object has changed; `f1` and `f2` are returned. A "graph" attribute being the input graph also appeared. Additional `message` element is provided in case of error. Erroneous or empty graphs are now flagged and should produce a graph when error text displayed.
+
+- **plotGraph** will return an object of class `error`if a region missing in 'obj' but present in 'graph'. This is important for returning an object of class error that could be used afterwards by **adjustGraph** to determine if "drawable" or not
+
+- fix erroneous stats report in **plotGraph** (**plot_stats**) in histogram
+
+- modify label positioning in graphs `pos=4` -> `adj=c(0.5,0.5)`
+
+- correct line location in histogram when on the edge
 
 - better handle device opening/closing
 
@@ -85,17 +93,35 @@
 - speed gain
 
 #### Work on Populations/Regions/GatingML
+- [BREAKING] handle infinity in regions
+
+- internal modification of **popsWithin** and **cpp_pnt_in_gate**
+
+- **buildRegion** now allow infinite values for coordinates. Before all non finite values were removed. Now infinite values are kept and an error is raised on NA/NaN. An error is raised when 'poly' vertices is < 1 rather than < 2 before
+
+- Import (i.e. reading from file with **ExtractFromDAF**, **ExtractFromXIF**, **readGatingStrategy**) of region will remove NAs/NaN vertices issuing a warning if any. An error is raised when number of vertices is < 2, of < 1 for 'poly' 
+
 - handle "0" when parsing color from files; will be interpreted as "Gray82" in R
 
 - fix internal **xml_new_node**
 
-- fix internal boolean parser
+- fix internal boolean parser when writing GatingML file
+
+- reconstitute boolean pop when reading GatingML file
+
+- add missing `spillover` to returned object of **readGatingStrategy**
+
+- fix erroneous "perc_tot" `stats` returned by **applyGatingStrategy**
 
 - fix error that may arise from bad typo in GatingML which could have prevented correct region extraction 
 
 - handle/improve attributes propagation for pops and regions. Should allow future use of regions/pops syncing
 
 #### Miscellaneous
+- fix **ExportToDAF** that could produce invalid file due to lack of character escape during raw xml export
+
+- renaming of internal **close_polygon** -> **close_poly** in gate.hpp
+
 - fix "removal" attribute propagation during image/mask extraction when alignment occurs
 
 - use R_finite to test finiteness
