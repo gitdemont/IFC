@@ -64,6 +64,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
                      trunc_labels = 38, trans = "asinh", bin, viewport = "ideas", backend="lattice", ...) {
   dots = list(...)
   ret <- list()
+  
   # backup dev.list
   dv <- dev.list()
   
@@ -134,6 +135,10 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     
     base_n = unlist(lapply(g$BasePop, FUN=function(x) x$name))
     reg_n = unlist(lapply(g$GraphRegion, FUN=function(x) x$name))
+    tmp = reg_n %in% names(R)
+    if(!all(tmp)) stop(paste0("trying to display a region not found in obj$regions: ",  paste0(reg_n[!tmp], collapse=", ")))
+    reg_n = reg_n[tmp]                 # TODO if warning instead of stop above
+    g$GraphRegion = g$GraphRegion[tmp] # TODO if warning instead of stop above
     shown_n = unlist(lapply(g$ShownPop, FUN=function(x) x$name))
     graph_n = unlist(lapply(g$GraphRegion, FUN=function(x) x$def))
     
