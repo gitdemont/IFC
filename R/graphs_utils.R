@@ -757,10 +757,15 @@ base_regions=function(obj){
     lab =  trunc_string(reg$label, obj$input$trunc_labels)
     if(reg$type=="line") {
       Ylim = obj$input$ylim
-      if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
-      if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
-      text(x=reg$cx, y=reg$cy*diff(Ylim), col=k, labels=lab, pos=4, cex=lt$add.text$cex)
-      polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
+      cy = na.omit(reg$cy); cy = cy[is.finite(cy)]
+      cy = ifelse(length(cy) < 1, cy = 0.6, cy[1])
+      if((cy <= 0.025) || (cy >= 0.975)) cy = 0.6 # allow to show label when it is on the edge
+      y = na.omit(coords$y); y = y[is.finite(y)]
+      y = ifelse(length(y) < 1, 0.5, y[1])
+      if((y <= 0.025) || (y >= 0.975)) y = 0.5 # allow to show line when on the edge
+      y = rep(y, length.out=2)
+      text(x=reg$cx, y=cy*diff(Ylim), col=k, labels=lab, adj=c(0.5,0.5), cex=lt$add.text$cex)
+      polygon(x=coords$x, y=y*diff(Ylim), col=k, border=k)
     } else {
       trans_y = parseTrans(obj$input$trans_y)
       coords$y = applyTrans(coords$y, trans_y)
@@ -772,7 +777,7 @@ base_regions=function(obj){
       if(reg$type=="oval") {
         coords = toEllipse(coords)
       }
-      text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4, cex=lt$add.text$cex) 
+      text(x=reg$cx, y=reg$cy, col=k, labels=lab, adj=c(0.5,0.5), cex=lt$add.text$cex) 
       polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
     }
   }
@@ -1270,10 +1275,15 @@ plot_lattice=function(obj) {
                                 coords$x = applyTrans(coords$x, trans_x)
                                 reg$cx = applyTrans(reg$cx, trans_x)
                                 lab =  trunc_string(reg$label, trunc_labels)
-                                if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
-                                if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
-                                panel.text(x=reg$cx, y=reg$cy*diff(Ylim), col=col, labels=lab, pos=4)
-                                panel.lines(x=coords$x, y=coords$y*diff(Ylim),col=col)
+                                cy = na.omit(reg$cy); cy = cy[is.finite(cy)]
+                                cy = ifelse(length(cy) < 1, cy = 0.6, cy[1])
+                                if((cy <= 0.025) || (cy >= 0.975)) cy = 0.6 # allow to show label when it is on the edge
+                                y = na.omit(coords$y); y = y[is.finite(y)]
+                                y = ifelse(length(y) < 1, 0.5, y[1])
+                                if((y <= 0.025) || (y >= 0.975)) y = 0.5 # allow to show line when on the edge
+                                y = rep(y, length.out=2)
+                                panel.text(x=reg$cx, y=cy*diff(Ylim), col=col, labels=lab, adj=c(0.5,0.5))
+                                panel.lines(x=coords$x, y=y*diff(Ylim), col=col)
                               })
                             }
                           })
@@ -1295,10 +1305,15 @@ plot_lattice=function(obj) {
                           coords$x = applyTrans(coords$x, trans_x)
                           reg$cx = applyTrans(reg$cx, trans_x)
                           lab = trunc_string(reg$label, trunc_labels)
-                          if(reg$cy == 0) reg$cy = diff(Ylim)*0.6 # allow to show label when it is on the axe
-                          if(coords$y[1] == 0) coords$y = rep(diff(Ylim)*.5, length.out=2) # allow to show line when on the axe
-                          panel.text(x=reg$cx, y=reg$cy*diff(Ylim), col=col, labels=lab, pos=4)
-                          panel.lines(x=coords$x, y=coords$y*diff(Ylim), col=col)
+                          cy = na.omit(reg$cy); cy = cy[is.finite(cy)]
+                          cy = ifelse(length(cy) < 1, cy = 0.6, cy[1])
+                          if((cy <= 0.025) || (cy >= 0.975)) cy = 0.6 # allow to show label when it is on the edge
+                          y = na.omit(coords$y); y = y[is.finite(y)]
+                          y = ifelse(length(y) < 1, 0.5, y[1])
+                          if((y <= 0.025) || (y >= 0.975)) y = 0.5 # allow to show line when on the edge
+                          y = rep(y, length.out=2)
+                          panel.text(x=reg$cx, y=cy*diff(Ylim), col=col, labels=lab, adj=c(0.5,0.5))
+                          panel.lines(x=coords$x, y=y*diff(Ylim), col=col)
                         })
                       })
     }
@@ -1415,7 +1430,7 @@ plot_lattice=function(obj) {
                        coords = toEllipse(coords)
                      }
                      lab =  trunc_string(reg$label, trunc_labels)
-                     panel.text(x=reg$cx, y=reg$cy, col=k, labels=lab, pos=4)
+                     panel.text(x=reg$cx, y=reg$cy, col=k, labels=lab, adj=c(0.5,0.5))
                      panel.polygon(x=coords$x, y=coords$y, border=k, col="transparent", lwd=1, lty=1)
                    })
                  })
@@ -1564,16 +1579,16 @@ plot_stats=function(obj) {
     # no kids_s in 1D graph
     kids_r = lapply(reg_n, FUN=function(r) {
       do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
-        reg = R[[r]]
-        coords = reg["x"]
-        coords$x = applyTrans(coords$x, trans_x)
-        v = which(na.omit(finite_only_x & D[,d]))
+        v = na.omit(which(finite_only_x & D[,d]))
         if(length(v) == 0) {
           foo = structure(rep(NaN, length(coln_stats)), names = coln_stats)
           foo["count"] <- 0
           foo["perc"] <- 0
           return(foo)
         }
+        reg = R[[r]]
+        coords = reg["x"]
+        coords$x = applyTrans(coords$x, trans_x)
         np = sum(D[,d], na.rm = TRUE)
         isin = (D[v,"x2"] >= min(coords$x)) & (D[v,"x2"] <= max(coords$x))
         n = sum(isin, na.rm = TRUE)
