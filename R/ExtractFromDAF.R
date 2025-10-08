@@ -442,7 +442,12 @@ ExtractFromDAF <- function(fileName, extract_features = TRUE, extract_images = T
       regions_tmp=lapply(regions, FUN=function(i_region) {
         pat=paste0("//Region[@label='",i_region$label,"']//axy")
         axy=do.call(cbind, args = xml_attrs(xml_find_all(tmp, pat)))
-        list(x=as.numeric(axy["x",]), y=as.numeric(axy["y",]))
+        x=as.numeric(axy["x",]); y = as.numeric(axy["y",])
+        nas = is.na(x) | is.na(y)
+        if(any(nas)) warning("ExtractFromDAF: NAs in region['",i_region$label,"'] have been removed", call. = FALSE, immediate. = TRUE)
+        x=x[!nas]; y=y[!nas]
+        if(length(x) < ifelse(identical(i_region$type, "poly"), 1, 2)) stop("invalid vertices length for region['",i_region$label,"']")
+        list(x=x,y=y)
       })
       regions=mapply(FUN = append, regions, regions_tmp, SIMPLIFY = FALSE)
       rm(regions_tmp)

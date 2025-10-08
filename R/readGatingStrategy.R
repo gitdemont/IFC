@@ -98,23 +98,27 @@ readGatingStrategy <- function(fileName, ...) {
   regions=lapply(xml_attrs(xml_find_all(tmp, "//Region")), FUN=function(x) as.list(x))
   if(length(regions) != 0) {
     names(regions)=lapply(regions, FUN=function(x) x$label)
-    regions=lapply(regions, FUN=function(x) {
-      N = names(x)
-      ##### changes unknown color names in regions
-      if("color" %in% N) x[["color"]] <- map_color(x[["color"]])
-      if("lightcolor" %in% N) x[["lightcolor"]] <- map_color(x[["lightcolor"]])
-      ##### convert label position to numeric
-      if("cx" %in% N) x[["cx"]] <- as.numeric(x["cx"])
-      if("cy" %in% N) x[["cy"]] <- as.numeric(x["cy"])
-      x
-    })
+    regions_tmp=c("cx","cy")
+    regions=lapply(regions, FUN=function(x) {replace(x, regions_tmp, lapply(x[regions_tmp], as.numeric))})
     regions_tmp=lapply(regions, FUN=function(i_region) {
       pat=paste0("//Region[@label='",i_region$label,"']//axy")
       axy=do.call(cbind, args = xml_attrs(xml_find_all(tmp, pat)))
-      list(x=as.numeric(axy["x",]), y=as.numeric(axy["y",]))
+      nas = is.na(x) | is.na(y)
+      if(any(nas)) warning("readGatingStrategy: NAs vertices in region['",i_region$label,"'] have been removed", call. = FALSE, immediate. = TRUE)
+      x=x[!nas]; y=y[!nas]
+      if(length(x) < ifelse(identical(i_region$type, "poly"), 1, 2)) stop("invalid vertices length for region['",i_region$label,"']")
+      list(x=x,y=y)
     })
     regions=mapply(FUN = append, regions, regions_tmp, SIMPLIFY = FALSE)
     rm(regions_tmp)
+    ##### changes unknown color names in regions and retrieves sync attribute if any
+    for(i in seq_along(regions)) {
+      sync = regions[[i]]$sync
+      regions[[i]] = regions[[i]][setdiff(names(regions[[i]]), "sync")]
+      attr(regions[[i]], "sync") = sync
+      regions[[i]]$color = map_color(regions[[i]]$color)
+      regions[[i]]$lightcolor = map_color(regions[[i]]$lightcolor)
+    }
   }
   class(regions) <- "IFC_regions"
   
@@ -144,7 +148,7 @@ readGatingStrategy <- function(fileName, ...) {
   }
   class(pops) <- "IFC_pops"
   
-  ans = list("graphs"=plots, "pops"=pops, "regions"=regions)
+  ans = list("spillover"=list(), "graphs"=plots, "pops"=pops, "regions"=regions)
   attr(ans, "class") <- c("IFC_gating")
   return(ans)
 }

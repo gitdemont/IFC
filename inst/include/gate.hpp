@@ -40,11 +40,15 @@ using namespace Rcpp;
 //' Pushes 1st row at the end of a matrix.
 //' @param M NumericMatrix.
 //' @keywords internal
-Rcpp::NumericMatrix close_polygon (const Rcpp::NumericMatrix M) {
-  R_len_t i, n = M.nrow();
+Rcpp::NumericMatrix close_poly (const Rcpp::NumericMatrix M) {
+  R_len_t n = M.nrow();
+  if(n == 0) Rcpp::stop("polygon should have at least one row");
+  bool add = false;
+  for(R_len_t i = 0; i < std::min(M.ncol(), 2); i++) if(M(0, i) != M(n - 1, i)) { add = true; break; }
+  if(!add) return Rcpp::clone(M);
   Rcpp::NumericMatrix MM = Rcpp::no_init_matrix(n + 1, M.ncol());
-  for(i = 0; i < n; i++) MM(i, _) = M(i, _);
-  MM(i, _) = M(0, _);
+  for(R_len_t i = 0; i < n; i++) MM(i, _) = M(i, _);
+  MM(n, _) = M(0, _);
   return MM;
 }
 
@@ -153,52 +157,44 @@ Rcpp::LogicalVector hpp_pnt_in_gate (const Rcpp::NumericMatrix pnts,
                                      const Rcpp::NumericMatrix gate,
                                      const int algorithm = 1,
                                      const double epsilon = 0.000000000001 ) {
-  if((algorithm < 0) || (algorithm > 3)) Rcpp::stop("hpp_pnt_in_gate: 'algorithm' should be 1(Trigonometry), 2(Special case = axes-aligned rectangle) or 3(Special case = axes-aligned ellipse)");
-  R_len_t k, n = gate.nrow(), L = pnts.nrow();
-  if((n < 1) || (L < 1) || (gate.ncol() != 2) || (pnts.ncol() != 2)) Rcpp::stop("hpp_pnt_in_gate: Bad dimension in pnt_in_poly inputs");
+  if((algorithm < 0) || (algorithm > 3)) Rcpp::stop("hpp_pnt_in_gate: 'algorithm' should be\n\t-1(Trigonometry),n\t-2(Special case = axes-aligned rectangle)n\t-3(Special case = axes-aligned ellipse)");
+  R_len_t L = pnts.nrow();
+  if(L == 0) return 0;
+  R_len_t n = gate.nrow();
+  if((n < 1) || (gate.ncol() != 2) || (pnts.ncol() != 2)) Rcpp::stop("hpp_pnt_in_gate: Bad dimension in pnt_in_poly inputs");
   Rcpp::NumericMatrix P;
   if( (gate(0,0) == gate(n - 1,0)) && (gate(0,1) == gate(n - 1,1)) ) {
     P = gate;
   } else {
-    P = close_polygon(gate);
+    P = close_poly(gate);
   }
-  Rcpp::NumericVector xran = range(P(_,0));
-  Rcpp::NumericVector yran = range(P(_,1));
+  Rcpp::NumericVector xran = Rcpp::range(Rcpp::na_omit(P(_,0)));
+  Rcpp::NumericVector yran = Rcpp::range(Rcpp::na_omit(P(_,1)));
   Rcpp::LogicalVector C(L, false);
   
   switch(algorithm) {
+  // R_finite(pnts(k,0) is not needed because a non finite pnt can't be <= xran[0] and >= xran[1] so false is always returned unless pnt == xran[0] == xran[1]
   case 1:
-    for(k = 0; k < L; k++) {
+    for(R_len_t k = 0; k < L; k++) {
       if((pnts(k,0) >= xran[0]) && (pnts(k,0) <= xran[1]) && (pnts(k,1) >= yran[0]) && (pnts(k,1) <= yran[1]))
         C[k] = trigo_pnt_in_poly(pnts(k, _), P, epsilon);
     }
     break;
   case 2:
-    for(k = 0; k < L; k++) {
+    for(R_len_t k = 0; k < L; k++) {
       if((pnts(k,0) >= xran[0]) && (pnts(k,0) <= xran[1]) && (pnts(k,1) >= yran[0]) && (pnts(k,1) <= yran[1]))
         C[k] = true;
     }
     break;
-  case 3:
+  case 3: {
     Rcpp::NumericVector ell = hpp_ell_coord(xran, yran);
-    for(k = 0; k < L; k++) {
+    for(R_len_t k = 0; k < L; k++) {
       if((pnts(k,0) >= xran[0]) && (pnts(k,0) <= xran[1]) && (pnts(k,1) >= yran[0]) && (pnts(k,1) <= yran[1]))
         C[k] = pnt_in_ell(pnts(k, _), ell);
     }
+    }
     break;
   }
-  // case 4:
-  //   for(k = 0; k < L; k++) {
-  //     if((pnts(k,0) >= xran[0]) && (pnts(k,0) <= xran[1]) && (pnts(k,1) >= yran[0]) && (pnts(k,1) <= yran[1]))
-  //       C[k] = ray_pnt_in_poly(pnts(k, _), P);
-  //   }
-  //   break;
-  // case 5:
-  //   for(k = 0; k < L; k++) {
-  //     if((pnts(k,0) >= xran[0]) && (pnts(k,0) <= xran[1]) && (pnts(k,1) >= yran[0]) && (pnts(k,1) <= yran[1]))
-  //       C[k] = wn_pnt_in_poly(pnts(k, _), P);
-  //   }
-  //   break;
   return C;
 }
 

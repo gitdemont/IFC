@@ -363,16 +363,21 @@ ExtractFromXIF <- function(fileName, extract_features = TRUE, extract_images = F
         regions_tmp=lapply(regions, FUN=function(i_region) {
           pat=paste0("//Region[@label='",i_region$label,"']//axy")
           axy=do.call(cbind, args = xml_attrs(xml_find_all(tmp, pat)))
-          list(x=as.numeric(axy["x",]), y=as.numeric(axy["y",]))
+          nas = is.na(x) | is.na(y)
+          if(any(nas)) warning("ExtractFromXIF: NAs in region['",i_region$label,"'] have been removed", call. = FALSE, immediate. = TRUE)
+          x=x[!nas]; y=y[!nas]
+          if(length(x) < ifelse(identical(i_region$type, "poly"), 1, 2)) stop("invalid vertices length for region['",i_region$label,"']")
+          list(x=x,y=y)
         })
         regions=mapply(FUN = append, regions, regions_tmp, SIMPLIFY = FALSE)
         rm(regions_tmp)
-        ##### changes unknown color names in regions
-        for(i in 1:length(regions)) {
+        ##### changes unknown color names in regions and retrieves sync attribute if any
+        for(i in seq_along(regions)) {
+          sync = regions[[i]]$sync
+          regions[[i]] = regions[[i]][setdiff(names(regions[[i]]), "sync")]
+          attr(regions[[i]], "sync") = sync
           regions[[i]]$color = map_color(regions[[i]]$color)
           regions[[i]]$lightcolor = map_color(regions[[i]]$lightcolor)
-          if(regions[[i]]$color == "0") regions[[i]]$color <- paletteIFC("to_dark", col = regions[[i]]$lightcolor)[1, "color_R"]
-          if(regions[[i]]$lightcolor == "0") regions[[i]]$lightcolor <- paletteIFC("to_light", col = regions[[i]]$color)[1, "lightModeColor_R"]
         }
       }
       class(regions) <- "IFC_regions"

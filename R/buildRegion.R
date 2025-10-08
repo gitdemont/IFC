@@ -108,11 +108,9 @@ buildRegion <- function(type, label, cx, cy, color, lightcolor, ismarker="false"
   if(missing(y)) stop("'y' can't be missing")
   x = suppressWarnings(as.numeric(x))
   y = suppressWarnings(as.numeric(y))
-  x = x[is.finite(x)]
-  y = y[is.finite(y)]
+  if(anyNA(x) || anyNA(y) || (length(x) != length(y))) stop("'x' and 'y' should be numeric vectors of equal length with noNA values")
   if(type=="poly") {
-    if(length(x) != length(y)) stop("'x' and 'y' should be numeric vectors of equal length with finite values")
-    if(length(x)<2) stop("type='poly' and number of vertices is smaller than 2")
+    if(length(x)<1) stop("type='poly' and number of vertices is smaller than 1")
     if(missing(cx) || missing(cy)) {
       # cent = cpp_poly_centroid(cbind(x,y)) # TODO # for future use
       # if(missing(cx)) cx= cent[1]
@@ -121,8 +119,7 @@ buildRegion <- function(type, label, cx, cy, color, lightcolor, ismarker="false"
       if(missing(cy)) cy=mean(y)
     }
   } else {
-    if(length(x) != 2) stop(paste0("'x' should be a length 2 numeric vector with finite values when type is '",type,"'"))
-    if(length(y) != 2) stop(paste0("'y' should be a length 2 numeric vector with finite values when type is '",type,"'"))
+    if(length(x) != 2) stop(paste0("'x' and 'y' should be a length 2 numeric vector when type is '",type,"'"))
     if(type=="line" && y[1]!=y[2]) stop("'y' values should be identical when type is 'line")
     if(missing(cx) || missing(cy)) {
       if(missing(cx)) cx=mean(x)
