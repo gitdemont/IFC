@@ -195,6 +195,8 @@ toXML2_graphpop_gs <- function(pop, reg, verbose = FALSE) {
                         )))
          },
          "poly" ={
+           if(length(reg[["x"]]) < 3) reg[["x"]] = rep(reg[["x"]],length.out=3) # it is possible to import 'poly' with only 1 vertex but GatingML2.0 requires that PolygonGate have at least 3 vertices
+           if(length(reg[["y"]]) < 3) reg[["y"]] = rep(reg[["y"]],length.out=3)
            xml_new_node(name = "_ns_gating_ns_PolygonGate",
                         attrs = ids_attrs,
                         .children = c(list(info_node,
