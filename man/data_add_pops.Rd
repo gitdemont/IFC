@@ -37,7 +37,7 @@ an IFC_data object with pops added.
 Adds populations to an already existing `IFC_data` object.
 }
 \details{
-A warning will be thrown if a provided population is already existing in 'obj'.\cr
+A warning will be thrown if a provided population is duplicated or already existing in 'obj'.\cr
 In such a case this population will not be added to 'obj'.\cr
 If any input population is not well defined and can't be created then an error will occur.
 }

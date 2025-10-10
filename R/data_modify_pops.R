@@ -63,8 +63,8 @@ data_modify_pops <- function(obj, pops, display_progress = TRUE, ...){
   tmp = sapply(seq_along(mutation), FUN = function(i) any(names(mutation[i]) == names(obj$pops[setdiff(names(obj$pops), mutation[i])])))
   if(any(tmp)) stop("trying to rename population",ifelse(sum(tmp) > 1, "s", ""),
                     " with already existing name",ifelse(sum(tmp) > 1, "s", ""),
-                    " use popsRename() instead:\n\t-",
-                    paste0(names(mutation)[tmp], collapse="\n\t-"))
+                    ":\n\t-",
+                    paste0(unique(names(mutation)[tmp]), collapse="\n\t-"))
   
   # rename pops
   ans = do.call(what = popsRename,

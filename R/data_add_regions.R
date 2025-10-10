@@ -32,9 +32,12 @@
 #' Adds regions to an already existing `IFC_data` object.
 #' @param obj an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
 #' @param regions a list of region(s) to add to obj. Each element of this list will be coerced by \code{\link{buildRegion}}.
-#' @details A warning will be thrown if a provided region is already existing in 'obj'.\cr
-#' In such a case this region will not be added to 'obj'.\cr
-#' If any input population is not well defined and can't be created then an error will occur.
+#' @param create_pops whether population(s) corresponding to \code{'regions'} should be also created. Default is \code{FALSE}.
+#' If \code{TRUE}, at least \code{'base'}, \code{'fx'} and, eventually, \code{'fy'} should be members of sub elements of \code{'regions'}.
+#' Other members, see \code{\link{buildPopulation}}, are not mandatory but can also be provided.
+#' @details A warning will be thrown if a provided region is duplicated or already existing in 'obj'.\cr
+#' In such a case this region, and resulting population when \code{'create_pops'} is \code{TRUE}, will not be added to 'obj'.\cr
+#' If any input region is not well defined, or resulting population when \code{'create_pops'} is \code{TRUE}, and can't be created then an error will occur.
 #' @param ... Other arguments to be passed.
 #' @examples
 #' if(requireNamespace("IFCdata", quietly = TRUE)) {
@@ -58,24 +61,17 @@
 #' }
 #' @return an IFC_data object with regions added.
 #' @export
-data_add_regions <- function(obj, regions, ...) {
+data_add_regions <- function(obj, regions, create_pops = FALSE, ...) {
   assert(obj, cla = "IFC_data")
   
-  # try to coerce regions inputs
-  regions = lapply(regions, keep_attributes, what=buildRegion)
+  # extract regions names
   names(regions) = sapply(regions, FUN=function(x) x$label)
   
   # removes duplicated inputs
   tmp = duplicated(names(regions))
   if(any(tmp)) {
-    warning(paste0("duplicated regions automatically removed: ", names(regions)[tmp]), immediate. = TRUE, call. = FALSE)
+    warning("duplicated regions automatically removed:\n\t-", paste0(unique(names(regions)[tmp]),collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
     regions = regions[!tmp]
-  }
-  
-  # change colors to R compatible
-  for(i in 1:length(regions)) {
-    regions[[i]]$color = map_color(regions[[i]]$color)
-    regions[[i]]$lightcolor = map_color(regions[[i]]$lightcolor)
   }
   
   # removes already defined regions
@@ -86,12 +82,57 @@ data_add_regions <- function(obj, regions, ...) {
     }
     return(TRUE)
   })
-  exported_regions = regions[exported_regions]
-  names(exported_regions) = sapply(exported_regions, FUN=function(x) x$label)
+  regions = regions[exported_regions]
+  
+  # build pops if create_pops is TRUE
+  pops = list()
+  if(create_pops) {
+    pops = lapply(regions, FUN = function(r) {
+      tryCatch({
+        args = list(type = "G",
+                    color = r$color,
+                    lightModeColor = r$lightcolor,
+                    region = r$label)
+        if(any("base" %in% names(r))) {
+          args$base = r$base
+          args$name = ifelse(identical(r$base, "All"), r$label, paste(r$label, r$base, sep = " & "))
+        }
+        if(any("name" %in% names(r))) args$name = r$name
+        if(any(arg$name %in% names(obj$pops))) stop("population ['",arg$name,"' is already defined in 'obj'")
+        if(any("style" %in% names(r))) args$style = r$style
+        if(!any(r$fx %in% names(obj$features))) stop("'fx' is not a feature of 'obj'")
+        if(any("fx" %in% names(r))) args$fx = r$fx
+        if(!identical(r$type, "line")) {
+          if(!any(r$fy %in% names(obj$features))) stop("'fy' is not a feature of 'obj'")
+          args$fy = r$fy
+        }
+        do.call(buildPopulation, args)
+      }, error = function(e) {
+        stop("can't create population for region['",r$label,"']:\n", 
+                e$message, call. = FALSE)
+      })
+    })
+    names(pops) = sapply(pops, FUN = function(p) p$name)
+    tmp = duplicated(c(names(pops), names(obj$pops))) # throw error if creating pop results in already existing pop
+    if(any(tmp)) stop("creating populations will lead to duplicated names (provide another 'name' to solve this):\n\t-", paste0(unique(c(names(pops), names(obj$pops))[tmp]),collapse="\n\t-"))
+  }
+  
+  # try to coerce regions inputs
+  regions = lapply(regions, keep_attributes, what=buildRegion)
+  names(regions) = sapply(regions, FUN=function(x) x$label)
+  tmp = duplicated(c(names(regions), names(obj$regions))) # normally, this should not happen
+  if(any(tmp)) stop("creating regions will lead to duplicated names:\n\t-", paste0(unique(c(names(regions), names(obj$regions))[tmp]),collapse="\n\t-"))
+  
+  # change colors to R compatible
+  for(i in 1:length(regions)) {
+    regions[[i]]$color = map_color(regions[[i]]$color)
+    regions[[i]]$lightcolor = map_color(regions[[i]]$lightcolor)
+  }
   
   K = class(obj$regions)
-  obj$regions = c(obj$regions, exported_regions)
+  obj$regions = c(obj$regions, regions)
   class(obj$regions) = K
   
+  if(length(pops) != 0) return(data_add_pops(obj, pops, ...))
   return(obj)
 }

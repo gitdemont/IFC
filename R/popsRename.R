@@ -42,11 +42,15 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
   assert(obj, cla = "IFC_data")
   assert(old_names, typ="character")
   assert(new_names, typ="character")
+  if(length(old_names) != length(new_names)) stop("'old_names' and 'new_names' should be character vectors of same length")
+  sam = seq_along(old_names, FUN = function(i) identical(old_names[i], new_names[i]))
+  old_names = old_names[!sam]
+  new_names = new_names[!sam]
+  if(length(old_names) == 0) return(obj)
   verbose = as.logical(verbose); assert(verbose, len = 1, alw = c(TRUE, FALSE))
   loops = na.omit(as.integer(loops)); loops = loops[loops > 0]; assert(loops, len = 1, typ="integer")
   if(any(old_names %in% c(character(), "", NA_character_, "All"))) stop("'old_names' should not be NA, \"\", nor \"All\"")
   if(any(new_names %in% c(character(), "", NA_character_, "All"))) stop("'new_names' should not be NA, \"\", nor \"All\"")
-  if(length(old_names) != length(new_names)) stop("'old_names' and 'new_names' should be character vectors of same length")
   ori_names <- names(obj$pops)
   tmp = old_names %in% ori_names
   if(!all(tmp)) warning("can't find population",ifelse(sum(!tmp) > 1, "s", "")," to rename:\n",
@@ -152,6 +156,9 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
       do.call(buildGraph, args = g)
     })
   }
+  # throw error if max allowed number of recursions has been reached
+  if(count >= loops) stop("can't rename population(s), max number of recursive loops reached")
+  
   # modify attributes
   for(i in seq_along(old_names[tmp])) {
     attributes(obj$pops[[new_names[tmp][i]]])[setdiff(names(attributes(obj$pops[[new_names[tmp][i]]])), "names")] <- NULL
@@ -159,11 +166,13 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
       attr(obj$pops[[new_names[tmp][i]]], k) <- attr(P[[old_names[tmp][i]]], k)
     }
   }
+  # throw error if resulting 'obj' has duplicated pops names
+  names(obj$pops) = sapply(obj$pops, FUN = function(p) p$name)
+  tmp = duplicated(names(obj$pops)) 
+  if(any(tmp)) stop("population renaming results in duplicated names:\n\t-", paste0(unique(names(obj$pops)[tmp]),collapse="\n\t-"))
   class(obj$pops) <- Kp
   class(obj$graphs) <- Kg
   
-  if(count >= loops) stop("can't rename population(s), max number of recursive loops reached")
-  if(anyDuplicated(names(obj$pops))) stop("population renaming results in duplicated names")
   if(verbose) {
     if(length(mutation) > 0) {
       message("population",ifelse(length(mutation) > 1,"s have"," has")," been successfully renamed:\n\t- ", paste(old_names, new_names, sep = " -> ", collapse = "\n\t- "))

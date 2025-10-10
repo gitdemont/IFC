@@ -36,7 +36,7 @@
 #' Note that for the moment only 1(Trigonometry) is available.
 #' @param pnt_in_poly_epsilon epsilon to determine if object belongs to a polygon region or not. It only applies when algorithm is 1. Default is 1e-12.
 #' @param display_progress whether to display a progress bar. Default is TRUE.
-#' @details A warning will be thrown if a provided population is already existing in 'obj'.\cr
+#' @details A warning will be thrown if a provided population is duplicated or already existing in 'obj'.\cr
 #' In such a case this population will not be added to 'obj'.\cr
 #' If any input population is not well defined and can't be created then an error will occur.
 #' @param ... Other arguments to be passed.
@@ -76,7 +76,7 @@ data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsi
   # removes duplicated inputs
   tmp = duplicated(names(pops))
   if(any(tmp)) {
-    warning("duplicated pops automatically removed:\n\t-", paste0(names(pops)[tmp], collapse = "\n\t-"), immediate. = TRUE, call. = FALSE)
+    warning("duplicated pops automatically removed:\n\t-", paste0(unique(names(pops)[tmp]),collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
     pops = pops[!tmp]
   }
   

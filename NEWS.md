@@ -97,6 +97,12 @@
 #### Work on Populations/Regions/GatingML
 - [BREAKING] handle infinity in regions
 
+- add `create_pops` argument in **data_add_regions** to facilitate resulting population(s) addition
+
+- avoid population(s) renaming with same name(s) in **popsRename**
+
+- improve documentation, messages, warnings, and errors in **data_modify_pops**, **data_add_regions**, **data_add_pops** and **popsRename**
+
 - internal modification of **popsWithin** and **cpp_pnt_in_gate**
 
 - **buildRegion** now allow infinite values for coordinates. Before all non finite values were removed. Now infinite values are kept and an error is raised on NA/NaN. An error is raised when 'poly' vertices is < 1 rather than < 2 before

@@ -4,12 +4,16 @@
 \alias{data_add_regions}
 \title{Add Region to IFC_data Object}
 \usage{
-data_add_regions(obj, regions, ...)
+data_add_regions(obj, regions, create_pops = FALSE, ...)
 }
 \arguments{
 \item{obj}{an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).}
 
 \item{regions}{a list of region(s) to add to obj. Each element of this list will be coerced by \code{\link{buildRegion}}.}
+
+\item{create_pops}{whether population(s) corresponding to \code{'regions'} should be also created. Default is \code{FALSE}.
+If \code{TRUE}, at least \code{'base'}, \code{'fx'} and, eventually, \code{'fy'} should be members of sub elements of \code{'regions'}.
+Other members, see \code{\link{buildPopulation}}, are not mandatory but can also be provided.}
 
 \item{...}{Other arguments to be passed.}
 }
@@ -20,9 +24,9 @@ an IFC_data object with regions added.
 Adds regions to an already existing `IFC_data` object.
 }
 \details{
-A warning will be thrown if a provided region is already existing in 'obj'.\cr
-In such a case this region will not be added to 'obj'.\cr
-If any input population is not well defined and can't be created then an error will occur.
+A warning will be thrown if a provided region is duplicated or already existing in 'obj'.\cr
+In such a case this region, and resulting population when \code{'create_pops'} is \code{TRUE}, will not be added to 'obj'.\cr
+If any input region is not well defined, or resulting population when \code{'create_pops'} is \code{TRUE}, and can't be created then an error will occur.
 }
 \examples{
 if(requireNamespace("IFCdata", quietly = TRUE)) {
