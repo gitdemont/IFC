@@ -80,7 +80,7 @@ data_add_pops <- function(obj, pops, pnt_in_poly_algorithm = 1, pnt_in_poly_epsi
     pops = pops[!tmp]
   }
   
-  exported_pops = sapply(1:length(pops), FUN=function(i_pop) {
+  exported_pops = sapply(seq_along(pops), FUN=function(i_pop) {
     pop = pops[[i_pop]]
     if(pop$name%in%names(obj$pops)) {
       warning(pop$name, ", not added: trying to add an already defined population", immediate. = TRUE, call. = FALSE)

@@ -75,14 +75,11 @@ data_add_regions <- function(obj, regions, create_pops = FALSE, ...) {
   }
   
   # removes already defined regions
-  exported_regions = sapply(regions, FUN=function(reg) {
-    if(reg$label%in%names(obj$regions)) {
-      warning(paste0(reg$label, "\nnot exported: trying to export an already defined region"), immediate. = TRUE, call. = FALSE)
-      return(FALSE)
-    }
-    return(TRUE)
-  })
-  regions = regions[exported_regions]
+  tmp = sapply(regions, FUN=function(reg) any(reg$label%in%names(obj$regions)))
+  if(any(tmp)) {
+    warning("already defined regions will not be exported:\n\t-", paste0(unique(names(regions)[tmp]),collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
+    regions = regions[!tmp]
+  }
   
   # build pops if create_pops is TRUE
   pops = list()
@@ -98,7 +95,7 @@ data_add_regions <- function(obj, regions, create_pops = FALSE, ...) {
           args$name = ifelse(identical(r$base, "All"), r$label, paste(r$label, r$base, sep = " & "))
         }
         if(any("name" %in% names(r))) args$name = r$name
-        if(any(arg$name %in% names(obj$pops))) stop("population ['",arg$name,"' is already defined in 'obj'")
+        if(any(args$name %in% names(obj$pops))) stop("population ['",args$name,"' is already defined in 'obj'")
         if(any("style" %in% names(r))) args$style = r$style
         if(!any(r$fx %in% names(obj$features))) stop("'fx' is not a feature of 'obj'")
         if(any("fx" %in% names(r))) args$fx = r$fx
@@ -124,7 +121,7 @@ data_add_regions <- function(obj, regions, create_pops = FALSE, ...) {
   if(any(tmp)) stop("creating regions will lead to duplicated names:\n\t-", paste0(unique(c(names(regions), names(obj$regions))[tmp]),collapse="\n\t-"))
   
   # change colors to R compatible
-  for(i in 1:length(regions)) {
+  for(i in seq_along(regions)) {
     regions[[i]]$color = map_color(regions[[i]]$color)
     regions[[i]]$lightcolor = map_color(regions[[i]]$lightcolor)
   }
