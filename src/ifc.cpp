@@ -132,7 +132,8 @@ Rcpp::NumericVector cpp_ell_coord (const Rcpp::NumericVector bound_x,
 //' @param algorithm int, used for computation. Default is 1.\cr
 //' 1: Trigonometry.\cr
 //' 2: Special case = axes-aligned rectangle.\cr
-//' 3: Special case = axes-aligned ellipse.
+//' 3: Special case = axes-aligned ellipse.\cr
+//' 4: Special case = axes-aligned rectangle not including upper limits.
 //' @param epsilon double, epsilon threshold value. Default is 0.000000000001
 //' @keywords internal
 ////' @export

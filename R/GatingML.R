@@ -146,6 +146,8 @@ toXML2_graphs_gs = function(graphs) {
 #' @keywords internal
 toXML2_graphpop_gs <- function(pop, reg, verbose = FALSE) {
   sync = attr(reg, "sync")
+  sync_typ = sync_type(reg)
+  sync_nam = sync_name(reg, sync_typ)
   # color conversion
   reg$colors = paste0(map_color(c(reg$color,reg$lightcolor), FALSE),collapse="|")
   # only keep what is needed
@@ -153,44 +155,90 @@ toXML2_graphpop_gs <- function(pop, reg, verbose = FALSE) {
 
   # nodes creation 
   # TODO add more gates ?
-  ids_attrs = list("_ns_gating_ns_id" = pop$name, "_ns_gating_ns_parent_id" = pop$base)[1:ifelse(pop$base %in% c("","All"), 1, 2)]
+  ids_attrs = list("_ns_gating_ns_id" = ifelse(sync_typ != "", sync_nam, pop$name[1]),
+                   "_ns_gating_ns_parent_id" = pop$base[1])[1:ifelse(pop$base[1] %in% c("","All"), 1, 2)]
   
   # write custom_info
-  info_attrs = list("rtext"=reg$label,
-                    "xtext"=reg$cx,
-                    "ytext"=reg$cy,
-                    "lineat"=reg$y[1],
-                    "rcolors"=reg$colors,
-                    "colors"=pop$colors,
-                    "pch"=map_style(pop$style, toR = FALSE),
-                    "xlog"=reg$xlogrange,
-                    "ylog"=reg$ylogrange)
-  if(length(sync) != 0) info_attrs = c(info_attrs, list("rsync"=sync))
+  info_attrs = list("rtext"=paste0(gsub("|","||",reg$label,fixed=TRUE),collapse="|"),
+                    "xtext"=paste0(reg$cx,collapse="|"),
+                    "ytext"=paste0(reg$cy,collapse="|"),
+                    "lineat"=paste0(reg$y,collapse="|"),
+                    "rcolors"=paste0(reg$colors,collapse="|"),
+                    "colors"=paste0(map_color(c(pop$color,pop$lightModeColor),FALSE),collapse="|"),
+                    "pch"=paste0(map_style(pop$style,FALSE),collapse="|"),
+                    "xlog"=reg$xlogrange[1],
+                    "ylog"=reg$ylogrange[1])
+  if(sync_typ != "") info_attrs = c(info_attrs, list("rsync"=sync_nam))
+  type = reg$type
   
   # only add xtrans/ytrans if they are not empty
-  if(length(reg$xtrans)!=0) info_attrs = c(info_attrs, list("xtrans"=reg$xtrans))
-  if(length(reg$ytrans)!=0) info_attrs = c(info_attrs, list("ytrans"=reg$ytrans))
+  if(length(reg$xtrans)!=0) info_attrs = c(info_attrs, list("xtrans"=reg$xtrans[1]))
+  if(length(reg$ytrans)!=0) info_attrs = c(info_attrs, list("ytrans"=reg$ytrans[1]))
   
-  dim1_node = xml_new_node(name = "_ns_data-type_ns_fcs-dimension", attrs = list("_ns_data-type_ns_name"=pop$fx))
-  if(reg$type != "line") dim2_node = xml_new_node("_ns_data-type_ns_fcs-dimension", attrs = list("_ns_data-type_ns_name"=pop$fy))
+  dim1_node = xml_new_node(name = "_ns_data-type_ns_fcs-dimension", attrs = list("_ns_data-type_ns_name"=pop$fx[1]))
+  if(!any(type %in% c("line", "dual"))) dim2_node = xml_new_node("_ns_data-type_ns_fcs-dimension", attrs = list("_ns_data-type_ns_name"=pop$fy[1]))
   
   info_node = xml_new_node(name = "_ns_data-type_ns_custom_info", attrs = info_attrs)
-  switch(reg$type,
+  if(sync_typ != "") {
+    if(sync_typ == "dual") {
+      type = "dual"
+      dim1_node = list(dim1_node, xml_new_node(name = "_ns_gating_ns_value", text=num_to_string(reg$x[1])))
+    }
+    if(sync_typ == "quad") {
+      type = "quad"
+      dim1_node = list(dim1_node, xml_new_node(name = "_ns_gating_ns_value", text=num_to_string(reg$x[1])))
+      dim2_node = list(dim2_node, xml_new_node(name = "_ns_gating_ns_value", text=num_to_string(reg$y[1])))
+    }
+  }
+  
+  switch(type,
          "line" ={
            xml_new_node(name = "_ns_gating_ns_RectangleGate",
                         attrs = ids_attrs,
                         .children = c(list(info_node,
-                                           xml_new_node(name = "_ns_gating_ns_dimension", attrs = list("_ns_gating_ns_min"=num_to_string(reg[["x"]][1]), "_ns_gating_ns_max"=num_to_string(reg[["x"]][2]), "_ns_gating_ns_compensation-ref"="uncompensated"),
+                                           xml_new_node(name = "_ns_gating_ns_dimension", attrs = list("_ns_gating_ns_min"=num_to_string(reg[["x"]][1]), "_ns_gating_ns_max"=num_to_string(reg[["x"]][2]), "_ns_gating_ns_compensation-ref"="uncompensated")[c(which(is.finite(reg[["x"]][1:2])),3)],
                                                         .children = dim1_node)
                         )))
          },
-         "rect" ={
+         "dual" = {
+           xml_new_node(name = "_ns_gating_ns_QuadrantGate",
+                        attrs = ids_attrs,
+                        .children = c(list(info_node,
+                                           xml_new_node(name = "_ns_gating_ns_divider",
+                                                        attrs = list("_ns_gating_ns_id"=pop$fx[1], "_ns_gating_ns_compensation-ref"="uncompensated"),
+                                                        .children = dim1_node)),
+                                      lapply(1:2, FUN = function(i) {
+                                        xml_new_node(name = "_ns_gating_ns_Quadrant",
+                                                     attrs = list("_ns_gating_ns_id"=pop$name[i]),
+                                                     .children = list(xml_new_node("_ns_gating_ns_position", attrs = list("_ns_gating_ns_divider_ref"=pop$fx[1], "_ns_gating_ns_location"=reg$x[1]+ifelse(i == 1, -1, +1)))))
+                                      })
+                        ))
+         },
+         "quad" = {
+           xml_new_node(name = "_ns_gating_ns_QuadrantGate",
+                        attrs = ids_attrs,
+                        .children = c(list(info_node,
+                                           xml_new_node(name = "_ns_gating_ns_divider",
+                                                        attrs = list("_ns_gating_ns_id"=pop$fx[1], "_ns_gating_ns_compensation-ref"="uncompensated"),
+                                                        .children = dim1_node),
+                                           xml_new_node(name = "_ns_gating_ns_divider",
+                                                        attrs = list("_ns_gating_ns_id"=pop$fy[1], "_ns_gating_ns_compensation-ref"="uncompensated"),
+                                                        .children = dim2_node)),
+                                      lapply(1:4, FUN = function(i) {
+                                        xml_new_node(name = "_ns_gating_ns_Quadrant",
+                                                     attrs = list("_ns_gating_ns_id"=pop$name[i]),
+                                                     .children = list(xml_new_node("_ns_gating_ns_position", attrs = list("_ns_gating_ns_divider_ref"=pop$fx[1], "_ns_gating_ns_location"=reg$x[1]+ifelse(i %in% c(1,4), -1, +1))),
+                                                                      xml_new_node("_ns_gating_ns_position", attrs = list("_ns_gating_ns_divider_ref"=pop$fy[1], "_ns_gating_ns_location"=reg$y[1]+ifelse(i %in% c(3,4), -1, +1)))))
+                                      })
+                        ))
+         },
+         "rect" = {
            xml_new_node(name = "_ns_gating_ns_RectangleGate",
                         attrs = ids_attrs,
                         .children = c(list(info_node,
-                                           xml_new_node(name = "_ns_gating_ns_dimension", attrs = list("_ns_gating_ns_min"=num_to_string(reg[["x"]][1]), "_ns_gating_ns_max"=num_to_string(reg[["x"]][2]), "_ns_gating_ns_compensation-ref"="uncompensated"),
+                                           xml_new_node(name = "_ns_gating_ns_dimension", attrs = list("_ns_gating_ns_min"=num_to_string(reg[["x"]][1]), "_ns_gating_ns_max"=num_to_string(reg[["x"]][2]), "_ns_gating_ns_compensation-ref"="uncompensated")[c(which(is.finite(reg[["x"]][1:2])),3)],
                                                         .children = dim1_node),
-                                           xml_new_node(name = "_ns_gating_ns_dimension", attrs = list("_ns_gating_ns_min"=num_to_string(reg[["y"]][1]), "_ns_gating_ns_max"=num_to_string(reg[["y"]][2]), "_ns_gating_ns_compensation-ref"="uncompensated"),
+                                           xml_new_node(name = "_ns_gating_ns_dimension", attrs = list("_ns_gating_ns_min"=num_to_string(reg[["y"]][1]), "_ns_gating_ns_max"=num_to_string(reg[["y"]][2]), "_ns_gating_ns_compensation-ref"="uncompensated")[c(which(is.finite(reg[["y"]][1:2])),3)],
                                                         .children = dim2_node)
                         )))
          },
@@ -263,7 +311,6 @@ toXML2_boolpop_gs <- function(obj, pop, already = character()) {
     if(inherits(x, "("))  branch = branch[-1]
     lapply(branch, expand_tree)
   }
-  
   tree = expand_tree(pop_def)
   
   # inialize values for recursive loop
@@ -335,43 +382,69 @@ fromXML2_gating  <- function(xml_nodes, type = "rect") {
       op = c("And","Or","Not")[names(node) == c("and", "or", "not")]
       nam = unname(unlist(node))
       if(op=="Not") {
-        if(length(nam) != 1) stop("[not] in BooleanGate can only have one operand") # FIXME check if Not can be chained
+        if(length(nam) != 1) {
+          stop("[not] in BooleanGate can only have one operand") # FIXME check if Not can be chained
+        }
         def = paste0(op,"|",unname(unlist(node)))
       } else {
         def = paste0(unname(unlist(node)),collapse=paste0("|",op,"|"))
       }
-      pop = list(name=ids[1], type="C", base="All", definition=def, op = meta$op)
-      reg = list()
+      return(list(# meta = meta, no need to return meta 
+        region = list(list()),
+        pop = list(list(name=ids[1], type="C", base="All", definition=def, op = meta$op))))
     } else {
-      dimension = do.call(what = cbind, args = sapply(node[names(node) == "dimension"], simplify = FALSE, unlist))
-      names_loc = grep("name", rownames(dimension), value = TRUE)
-      names_dim = unname(dimension[names_loc,])
+      what = ifelse(type == "quadrant","divider","dimension")
+      names_dim = unlist(lapply(node[names(node) == what], FUN = function(x) {
+        v = unlist(x)
+        v = v[grep("name", names(v))]
+        if(length(v) != 1) stop("bad dimensions specification: more than 1 name")
+        return(v)
+      }))
       L = length(names_dim)
       if(L < 1) stop("non compatible dimensions: less than 1")
       if(L > 2) stop("non compatible dimensions: more than 2")
+      if(L != sum(names(node) == what)) stop("bad dimensions specification: length does not equal number of dimension")
       if(L == 1) {
         if(type == "rect") {
           type = "line"
         } else {
-          stop("incompatible type [",type,"] and number of dimension [",L,"]")
+          if(type != "quadrant") stop("incompatible type [",type,"] and number of dimension [",L,"]")
         }
+      }
+      lr_coords <- function(i) {
+        dim = unlist(node[(names(node) == "dimension")][[i]])
+        v = numeric(0)
+        if(any("min" %in% names(dim))) {
+          v = c(v, as.numeric(na.omit(dim["min"])))
+          if(!any("max" %in% names(dim))) v = c(v, +Inf)
+        }
+        if(any("max" %in% names(dim))) {
+          v = c(v, as.numeric(na.omit(dim["max"])))
+          if(!any("min" %in% names(dim))) v = c(-Inf, v)
+        }
+        if(length(v) != 2) stop("can't determine 'min'/'max' from dimension ",i)
+        return(v)
       }
       switch(type,
              "line" = {
-               x = as.numeric(dimension[c("min","max"), ]) # for Range gates only min or max is provided this will generate an error in buildRegion wich expects at least 2 finite values
-               if(length(meta$lineat) == 0) {              # one trick would be to define Inf at 10^100 for example ?
-                 y = c(0,0)
-               } else {
-                 y = rep(as.numeric(meta$lineat), length.out = 2)
-               }
+               x = lr_coords(1)
+               y = c(0.5,0.5)
              },
              "rect" = {
-               x = as.numeric(dimension[c("min","max"), 1]) # for Range gates only min or max is provided this will generate an error in buildRegion wich expects at least 2 finite values
-               y = as.numeric(dimension[c("min","max"), 2]) # for Range gates only min or max is provided this will generate an error in buildRegion wich expects at least 2 finite values
+               x = lr_coords(1)
+               y = lr_coords(2)
              },
              "oval" = {
-               mu = unlist(node[names(node) == "mean"])
-               covarianceMatrix = matrix(sapply(unlist(node[names(node) == "covarianceMatrix"]), as.numeric), 2)
+               mu = as.numeric(unlist(node[names(node) == "mean"]))
+               mu = na.omit(mu[is.finite(mu)])
+               if(length(mu) != L) stop("wrong ellipse center coordinates")
+               covarianceMatrix = matrix(sapply(node[names(node) == "covarianceMatrix"], FUN = function(x) {
+                 v = unlist(x)
+                 v = as.numeric(v[names(v) == "row.entry.value"])
+                 v = na.omit(v[is.finite(v)])
+                 if(length(v) != 2 * L) stop("wrong covariance matrix specification")
+                 return(v)
+               }), L)
                eig = eigen(covarianceMatrix)
                eig_val = sqrt(eig$values)
                if(!all(abs(diag(eig$vectors))==1)) stop("can't deal with rotated ellipse")
@@ -379,37 +452,108 @@ fromXML2_gating  <- function(xml_nodes, type = "rect") {
                y = c(-1,1) * eig_val[2] + as.numeric(mu[2])
              },
              "poly" = {
+               if(!identical(unique(sapply(node[names(node) == "vertex"], length)), L)) stop("number vertices coordinates should be identical to dimensions number")
                vertices = matrix(unlist(node[names(node) == "vertex"]), ncol = L, byrow = TRUE)
                x = as.numeric(vertices[, 1])
                y = as.numeric(vertices[, 2])
+             },
+             "quadrant" = {
+               coords = do.call(cbind, lapply(node[names(node) == "divider"], FUN = function(x) {
+                 xx = unlist(x, recursive = TRUE, use.names = TRUE)
+                 v = xx[grep("value",names(xx),fixed=TRUE)]
+                 n = xx[grep( "name",names(xx),fixed=TRUE)]
+                 if(!(length(n) == 1) && (length(v) == 1)) stop("can't deal with multi divider QuadrantGate")
+                 structure(data.frame(as.numeric(v), row.names = NULL), names = n)
+               }))
+               names_dim = names(coords)
+               L = ncol(coords)
+               quadrants = do.call(cbind, lapply(node[names(node) == "Quadrant"], FUN = function(x) {
+                 xx = unlist(x, use.names = FALSE, recursive = TRUE)
+                 if(length(xx) !=  (L * 2 + 1)) stop("only 'dual' and 'quad' QuadrantGate are supported")
+                 xx
+               }))
+               loc = do.call(rbind, lapply(seq_len(2 * L), FUN = function(i) {
+                 d = as.data.frame(do.call(cbind, lapply(seq_len(L), FUN = function(j) as.numeric(quadrants[2 * j + 1, i]))))
+                 colnames(d) = sapply(seq_len(L), FUN = function(j) quadrants[2 * j, i])
+                 d
+               }))
+               if(!identical(sort(names(coords)), sort(names(loc)))) stop("mismatch between 'divider' and 'quadrant' names in QuadrantGate [",ids[1],"]")
+               ord = match(1 + apply(loc, 1, FUN = function(i) {
+                 sum(sapply(seq_along(names_dim), FUN = function(j) {
+                   n = names_dim[j]
+                   j * (i[n] < coords[n])
+                 }))
+               }), c(2L, 1L, 3L, 4L))
+               colnames(quadrants) <- ord
+               x = coords[1]
+               y = c(0.5,0.5)
+               if(L == 1) { 
+                 if(!identical(sort(ord), c(1L,2L))) stop("Quadrant should not overlap")
+                 type <- "dual"
+               }
+               if(L == 2) {
+                 if(!identical(sort(ord), c(1L,2L,3L,4L))) stop("Quadrant should not overlap")
+                 type <- "quad"
+                 y = coords[2]
+               }
              })
-      reg_label = ifelse(length(meta$rtext)==0,ids[1],meta$rtext)
-      reg = list(label=reg_label, type=type, x=x, y=y, xlogrange="P", ylogrange="P")
-      if(length(meta$rcolors) != 0) {
-        meta$rcolors = map_color(strsplit(meta$rcolors, split="|", fixed=TRUE)[[1]], toR = TRUE)
-        reg$color = meta$rcolors[1]
-        reg$lightcolor = meta$rcolors[length(meta$rcolors)]
+      reg = list(label=random_name(special = NULL, prefix = ids[1]), type=type, x=x, y=y, xlogrange="P", ylogrange="P")
+      if(what == "divider") {
+        regs = sync_create(reg) 
+      } else {
+        attr(reg, "sync") <- meta$rsync
+        regs = list(reg)
       }
-      attr(reg, "sync") <- meta$rsync
-      reg = keep_attributes(reg, what=buildRegion)
-      if(length(meta$xtext) != 0) reg$cx = as.numeric(meta$xtext)
-      if(length(meta$ytext) != 0) reg$cy = as.numeric(meta$ytext)
-      if(length(meta$xlog) != 0) reg$xlogrange = meta$xlog
-      if(length(meta$ylog) != 0) reg$ylogrange = meta$ylog
-      if(length(meta$xtrans) != 0) reg$xtrans = meta$xtrans
-      if(length(meta$ytrans) != 0) reg$ytrans = meta$ytrans
-      pop = list(name=ids[1], type="G", base=ids[2], region=reg_label, fx=names_dim[1])
-      if(L == 2) pop = c(pop, list(fy = names_dim[2]))
-    }
-    if(length(meta$pch) != 0) pop$style = meta$pch
-    if(length(meta$colors) != 0) {
-      meta$colors = map_color(strsplit(meta$colors, split="|", fixed=TRUE)[[1]], toR = TRUE)
-      pop$color = meta$colors[1]
-      pop$lightModeColor = meta$colors[length(meta$colors)]
+      if(length(meta$rtext) != 0) {
+        alt = random_name(special = NULL)
+        while(grepl(alt,meta$rtext,fixed=TRUE)) { alt = random_name(special = NULL) }
+        meta$rtext = gsub("||",alt,meta$rtext,fixed=TRUE)
+        meta$rtext = strsplit(meta$rtext,split="|",fixed=TRUE)[[1]]
+        meta$rtext = gsub(alt,"|",meta$rtext,fixed=TRUE) 
+      }
+      if(length(meta$xtext) != 0) meta$xtext = as.numeric(strsplit(meta$xtext, split="|", fixed=TRUE)[[1]])
+      if(length(meta$ytext) != 0) meta$ytext = as.numeric(strsplit(meta$ytext, split="|", fixed=TRUE)[[1]])
+      if(length(meta$rcolors) != 0) meta$rcolors = map_color(strsplit(meta$rcolors, split="|", fixed=TRUE)[[1]], toR = TRUE)
+      if(length(meta$pch) != 0) meta$pch = strsplit(meta$pch,split="|",fixed=TRUE)[[1]]
+      if(length(meta$colors) != 0) meta$colors = map_color(strsplit(meta$colors,split="|",fixed=TRUE)[[1]], toR = TRUE)
+      if(length(meta$lineat) != 0) meta$lineat = as.numeric(strsplit(meta$lineat,split="|",fixed=TRUE)[[1]])
+      
+      regs = lapply(seq_along(regs), FUN = function(i) {
+        reg = regs[[i]]
+        if(reg$type == "line") {
+          if(length(meta$lineat) != 0) reg$y = na.omit(meta$lineat[2 * (i - 1) + (1:2)])
+          reg$y = rep(reg$y, length.out = 2)
+        }
+        if(length(meta$rtext) != 0) reg$label = meta$rtext[i]
+        if(length(meta$rcolors) != 0) {
+          reg$color = meta$rcolors[i]
+          reg$lightcolor = meta$rcolors[length(regs) + i]
+        }
+        if(length(meta$xtext) != 0) reg$cx = meta$xtext[i]
+        if(length(meta$ytext) != 0) reg$cy = meta$ytext[i]
+        if(length(meta$xlog) != 0) reg$xlogrange = meta$xlog
+        if(length(meta$ylog) != 0) reg$ylogrange = meta$ylog
+        if(length(meta$xtrans) != 0) reg$xtrans = meta$xtrans
+        if(length(meta$ytrans) != 0) reg$ytrans = meta$ytrans
+        keep_attributes(reg, what=buildRegion)
+      })
+      
+      pops = lapply(seq_along(regs), FUN = function(i) {
+        pop = list(name=ids[1], type="G", base=ids[2], region=regs[[i]]$label, fx=names_dim[1])
+        if(what == "divider") pop$name = quadrants[1,ord[i]]
+        if(L == 2) pop = c(pop, list(fy = names_dim[2]))
+        if(length(meta$pch) != 0) pop$style = meta$pch[i]
+        if(length(meta$colors) != 0) {
+          pop$color = meta$colors[i]
+          pop$lightModeColor = meta$colors[length(regs) + i]
+        }
+        keep_attributes(pop, what=buildPopulation)
+      })
+      
     }
     return(list(# meta = meta, no need to return meta 
-      region = reg,
-      pop = keep_attributes(pop, what=buildPopulation)))
+      region = regs,
+      pop = pops))
   })
 }
 
@@ -464,9 +608,9 @@ readGatingML <- function(fileName, ...) {
   }
   
   # types from GatingML specification
-  gates_type = c("gating:RectangleGate", "gating:EllipsoidGate", "gating:PolygonGate", "gating:BooleanGate", "gating:QuadrantGate")
+  gates_type = c("gating:RectangleGate", "gating:EllipsoidGate", "gating:PolygonGate", "gating:QuadrantGate","gating:BooleanGate")
   gates = sapply(gates_type, simplify = FALSE, xml_find_all, x = gating)
-  foo = sapply(gates_type[1:4], simplify = FALSE, FUN = function(type) {
+  foo = sapply(gates_type[1:5], simplify = FALSE, FUN = function(type) {
     switch(type, 
            "gating:RectangleGate" = {
              fromXML2_gating(xml_nodes = gates[[type]], type = "rect")
@@ -476,6 +620,9 @@ readGatingML <- function(fileName, ...) {
            },
            "gating:PolygonGate" = {
              fromXML2_gating(xml_nodes = gates[[type]], type = "poly")
+           },
+           "gating:QuadrantGate" = {
+             fromXML2_gating(xml_nodes = gates[[type]], type = "quadrant")
            },
            "gating:BooleanGate" = {
              fromXML2_gating(xml_nodes = gates[[type]], type = "bool")
@@ -487,9 +634,9 @@ readGatingML <- function(fileName, ...) {
   })
   
   # convert pops and regions to IFC compatible
-  for(i in gates_type[1:4]) {
-    regions = c(regions, lapply(foo[[i]], FUN = function(k) k$region))
-    pops = c(pops, lapply(foo[[i]], FUN = function(k) k$pop))
+  for(i in gates_type[1:5]) {
+    regions = c(regions, unlist(lapply(foo[[i]], FUN = function(k) k$region), recursive = FALSE, use.names = FALSE))
+    pops = c(pops, unlist(lapply(foo[[i]], FUN = function(k) k$pop), recursive = FALSE, use.names = FALSE))
   }
   regions = regions[sapply(regions, length) != 0]
   pops = pops[sapply(pops, length) != 0]

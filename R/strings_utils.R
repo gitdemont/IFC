@@ -157,43 +157,6 @@ protectn <- function(name) {
   }), collapse = "|"),")")
 }
 
-#' @title Attributes Keeper
-#' @description 
-#' Helper to keep attributes while using IFC build functions.
-#' @param x list to pass to \code{'what'}.
-#' @param what a build function.
-#' @details all attributes of \code{'x'} will be used with the exception of "names", "dims", and "dimnames".
-#' @return result of applying \code{'what'} on \code{'x'} with preserved attributes from \code{'x'}.
-#' @keywords internal
-keep_attributes <- function(x, what) {
-  ans <- do.call(what, x)
-  for(k in setdiff(names(attributes(x)),c("names","dim","dimnames"))) { attr(ans, k) <- attr(x, k) }
-  ans
-}
-
-#' @title Sync Name Decomposition
-#' @description
-#' Helper that will split text into chunks.
-#' @param x string
-#' @param name whether to return name only. Default is \code{TRUE}.
-#' @param split string used for splitting. Default is \code{"|"}.
-#' @details \code{'x'} is supposed to be a string composed of a \code{'name'} followed by \code{'split'} and ending with a string that does not contain \code{'split'}.
-#' @return when \code{'x'} is of length 0, \code{""} is returned. Otherwise, the \code{'name'} when \code{'name'} is \code{TRUE} or the \code{'split'} non-containing remaining string when \code{FALSE}.
-#' @keywords internal
-splits <- function(x, name = TRUE, split = "|") {
-  if(length(x) == 0) return("")
-  if(length(x) != 1) stop("'x' should be scalar")
-  if(length(split) != 1) stop("'split' should be scalar")
-  if(!grepl(split, x, fixed = TRUE)) stop("can't find 'split' in 'x'")
-  s = strsplit(x, split, fixed = TRUE)[[1]]
-  if(name) {
-    if(substr(x, nchar(x), nchar(x)) == split) return(substr(x, 1, nchar(x) - 1))
-    return(paste0(head(s, -1), collapse = split))
-  }
-  if(substr(x, nchar(x), nchar(x)) == split) return(character())
-  return(tail(s, 1))
-}
-
 #' @title String Decomposition with Operators
 #' @description
 #' Helper that will split definition into chunks of names and operators.

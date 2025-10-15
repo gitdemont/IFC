@@ -59,7 +59,6 @@ popsNetwork = function(obj, hierarchical=TRUE, color_mode="white", highlight=NUL
   if(!("IFC_data"%in%class(obj))) stop("'obj' is not of class `IFC_data`")
   if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
   flatten = as.logical(flatten); assert(flatten, len=1, alw=c(TRUE,FALSE))
-  color_mode=which(c("black","white")%in%color_mode)
   if(flatten) {
     if(length(obj$stats) == 0) obj$stats = get_pops_stats(obj$pops, as.integer(obj$description$ID$objcount))
     tree = popsTree(obj$pops)
@@ -78,7 +77,8 @@ popsNetwork = function(obj, hierarchical=TRUE, color_mode="white", highlight=NUL
   if(!is.null(seed)) {seed=na.omit(as.integer(seed)); assert(seed, len=1, typ="integer")}
   hierarchical = as.logical(hierarchical); assert(hierarchical, len=1, alw=c(TRUE,FALSE))
   weighted = as.logical(weighted); assert(weighted, len=1, alw=c(TRUE,FALSE))
-
+  assert(color_mode, len=1, alw=c("white","black"))
+  color_mode=which(c("black","white")%in%color_mode)
   assert(direction, len=1, alw=c("UD", "DU", "LR", "RL"))
 
   # determine levels for hierarchical layout

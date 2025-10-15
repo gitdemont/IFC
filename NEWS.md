@@ -104,6 +104,10 @@
 - enhance documentation
 
 #### Work on Populations/Regions/GatingML
+- Handle bimodal gate "dual" and quadrant gate "quad". Note that points on upper limit(s) will be considered outside.
+"dual" is a set of two "line" regions sharing same 1st "x" coordinates and with same 'sync' attribute ID in the form `line_ID|v` v being 1 for left or 2 for right side
+"quad" is a set of four "rect" regions sharing same 1st "x" and "y" coordinates and with same 'sync' attribute ID in the form `quad_ID|v` v being 1 for upper-left, 2 for upper-right, 3 bottom-right, and 4 bottom-left quadrant
+
 - [BREAKING] handle infinity in regions
 
 - avoid useless recursion(s) in **popsOrderNodes**
@@ -139,6 +143,10 @@
 - handle/improve attributes propagation for pops and regions. Should allow future use of regions/pops syncing
 
 #### Miscellaneous
+- "sync_utils.R" has been creating to gather functions used for "dual" and "quad" regions
+
+- internal **splits** and **keep_attributes** have been moved from "string_utils.R" to "sync_utils.R"
+
 - fix **ExportToDAF** that could produce invalid file due to lack of character escape during raw xml export
 
 - renaming of internal **close_polygon** -> **close_poly** in gate.hpp

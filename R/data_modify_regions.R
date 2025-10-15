@@ -72,10 +72,60 @@ data_modify_regions <- function(obj, regions, display_progress = TRUE, ...) {
   N = names(ans$regions)
   K = class(ans$regions)
   ans$regions[mutation] = lapply(seq_along(mutation), FUN = function(i) {
-    x = ans$regions[mutation][[i]]
-    for(k in setdiff(names(attributes(x)),c("names","dim","dimnames"))) { attr(R[[i]], k) <- attr(x, k) }
+    x = obj$regions[mutation][[i]]
+    for(k in setdiff(names(attributes(x)),c("names","dim","dimnames"))) {
+      if(!identical(attr(x, k), attr(R[[i]], k))) {
+        if(!is.null(attr(R[[i]], k))) warning("modification of attribute['",k,"'] is not allowed for ", x$label, call. = FALSE, immediate. = TRUE)
+        attr(R[[i]], k) <- attr(x, k)
+      }
+    }
+    for(k in setdiff(names(attributes(R[[i]])),c("names","dim","dimnames"))) { 
+      if(is.null(attr(x, k)) && !is.null(attr(R[[i]], k))) {
+        warning("creation of attribute['",k,"'] is not allowed for ", x$label, call. = FALSE, immediate. = TRUE) 
+        attr(R[[i]], k) <- NULL
+      }
+    }
     R[[i]]
   })
+  sync_names = sync_parse(ans$regions)
+  sync_mut = structure(lapply(obj$regions[mutation], sync_name), names = mutation)
+  for(s in unlist(setdiff(na.omit(sync_mut), ""))) {
+    tmp = sapply(sync_names, identical, s)
+    if(any(tmp))
+    ans$regions[tmp] = lapply(ans$regions[tmp], FUN = function(r) {
+      found = names(na.omit(which(s == sync_mut)))
+      if(length(found) == 0) return(r)
+      sync_typ = sync_type(r)
+      sync_num = sync_part(r, sync_typ)
+      if(length(found) != 1) {
+        x = sapply(obj$regions[found], FUN = function(r) r$x[1])
+        y = sapply(obj$regions[found], FUN = function(r) r$y[1])
+        xx = sapply(regions[found], FUN = function(r) r$x[1])
+        yy = sapply(regions[found], FUN = function(r) r$y[1])
+        if((identical(sync_typ, "dual") && (length(unique(xx[xx != x])) > 1)) ||
+           (identical(sync_typ, "quad") && (length(unique(xx[xx != x | yy != y])) > 1 || length(unique(yy[xx != x| yy != y])) > 1)) ) {
+          stop("data_modify_regions: trying to set disparate coordinates for 'sync' regions:\n\t-",
+               paste0(paste(found, sapply(regions[found], FUN = function(r) r$label), sep = " -> "), collapse="\n\t-"))
+        }
+      }
+      if(sync_num != "") {
+        coords = list(x = rep(regions[[found[1]]]$x[1], 2), y = rep(regions[[found[1]]]$y[1], 2))
+        coords = switch(sync_typ,
+                        "dual" = {
+                          coords$y = rep(r$y[1], 2)
+                          dual_coords(coords, sync_num)
+                        },
+                        "quad" = quad_coords(coords, sync_num),
+                        coords)
+        r$x <- coords$x
+        r$y <- coords$y
+      }
+      return(r)
+    })
+  }
+  tryCatch({
+    ans$regions = sync_validate(ans$regions, quietly = FALSE, caller = "data_modify_regions")
+  }, warning = function(w) stop(w$message))
   names(ans$regions) = sapply(ans$regions, FUN = function(r) r$label)
   class(ans$regions) <- K
   

@@ -63,7 +63,7 @@ fromXML2_regions <- function(xml_doc, caller = character(0), title_progress = ""
       regions[[i]]$color = map_color(regions[[i]]$color)
       regions[[i]]$lightcolor = map_color(regions[[i]]$lightcolor)
     }
-    return(regions)
+    return(sync_validate(regions, quietly = FALSE, caller = caller))
   }
   return(list())
 }

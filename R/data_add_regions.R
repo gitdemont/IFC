@@ -64,21 +64,64 @@
 data_add_regions <- function(obj, regions, create_pops = FALSE, ...) {
   assert(obj, cla = "IFC_data")
   
+  # add potential sync regions # TODO the main problem here is to determine cx/cy
+  regions = unlist(lapply(regions, FUN = function(r) {
+    xlim = NULL # xlim = r$xlim # TODO ? it is certainly best to provide fx rather than xlim, notably to be in line with `create_pops` doc that use buildPopulation and xlim is not an argument of buildPopulation contrary to fx
+    ylim = NULL # ylim = r$ylim 
+    if(length(xlim) == 0 && any(r$fx %in% names(obj$features))) xlim = cpp_fast_range(obj$features[[r$fx]])
+    if(length(ylim) == 0 && any(r$fy %in% names(obj$features))) ylim = cpp_fast_range(obj$features[[r$fy]])
+    sync_create(r, xlim, ylim, forbidden = unique(c(sync_parse(obj$regions), sync_parse(regions))))
+  }), recursive = FALSE)
+  
   # extract regions names
   names(regions) = sapply(regions, FUN=function(x) x$label)
   
   # removes duplicated inputs
   tmp = duplicated(names(regions))
   if(any(tmp)) {
-    warning("duplicated regions automatically removed:\n\t-", paste0(unique(names(regions)[tmp]),collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
+    warning("duplicated regions automatically removed:\n\t-", paste0(names(regions[tmp]),collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
+    sync_torem = setdiff(unique(sync_parse(regions[tmp])), "")
     regions = regions[!tmp]
+    if(length(sync_torem) != 0) {
+      to_rem = unique(unlist(use.names=FALSE, recursive=TRUE, lapply(sync_torem, FUN = function(n) names(regions)[sapply(regions, FUN = function(r) identical(sync_name(r), n))])))
+      if(length(to_rem) != 0) {
+       warning("duplicated regions removal caused removal of 'sync' regions:\n\t-", paste0(to_rem,collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
+       regions = regions[setdiff(names(regions), to_rem)] 
+      }
+    }
   }
   
   # removes already defined regions
   tmp = sapply(regions, FUN=function(reg) any(reg$label%in%names(obj$regions)))
   if(any(tmp)) {
-    warning("already defined regions will not be exported:\n\t-", paste0(unique(names(regions)[tmp]),collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
+    warning("already defined regions will not be exported:\n\t-", paste0(names(regions[tmp]),collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
+    sync_torem = setdiff(unique(sync_parse(regions[tmp])), "")
     regions = regions[!tmp]
+    if(length(sync_torem) != 0) {
+      to_rem = unique(unlist(use.names=FALSE, recursive=TRUE, lapply(sync_torem, FUN = function(n) names(regions)[sapply(regions, FUN = function(r) identical(sync_name(r), n))])))
+      if(length(to_rem) != 0) {
+        warning("removal of already defined regions prevents export of 'sync' regions:\n\t-", paste0(to_rem,collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
+        regions = regions[setdiff(names(regions), to_rem)] 
+      }
+    }
+  }
+  
+  # removes regions with non-unique sync name
+  to_rem = sync_check(regions)
+  if(nrow(to_rem) != 0) {
+    dup = strsplit(to_rem$error, split="|", fixed = TRUE)
+    dup = sapply(dup, FUN = function(x) any("3" %in% x))
+    warning("regions with non-unique 'sync' attribute removed:\n\t-", paste0(to_rem$name[dup],collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
+    regions = regions[setdiff(names(regions), to_rem$name[dup])]
+    if(length(to_rem$name[!dup]) != 0) stop("invalid 'sync' attribute for regions:\n\t-", paste0(paste(to_rem$name[!dup], " code[",to_rem$error[!dup],"]",sep=""),collapse="\n\t-"))
+  }
+  
+  # removes regions with same sync name than in 'obj'
+  to_rem = sync_check(c(obj$regions, regions))
+  to_rem = to_rem[to_rem$name %in% names(regions), ]
+  if(nrow(to_rem) != 0) {
+    warning("regions with already defined 'sync' attribute will not be exported:\n\t-", paste0(to_rem$name,collapse="\n\t-"), immediate. = TRUE, call. = FALSE)
+    regions = regions[setdiff(names(regions), to_rem$name)]
   }
   
   # build pops if create_pops is TRUE
@@ -126,6 +169,7 @@ data_add_regions <- function(obj, regions, create_pops = FALSE, ...) {
     regions[[i]]$lightcolor = map_color(regions[[i]]$lightcolor)
   }
   
+  # merge obj$regions and regions
   K = class(obj$regions)
   obj$regions = c(obj$regions, regions)
   class(obj$regions) = K

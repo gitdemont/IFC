@@ -148,7 +148,8 @@ Rcpp::NumericVector hpp_ell_coord (const Rcpp::NumericVector bound_x,
 //' @param algorithm int, used for computation. Default is 1.\cr
 //' 1: Trigonometry.\cr
 //' 2: Special case = axes-aligned rectangle.\cr
-//' 3: Special case = axes-aligned ellipse.
+//' 3: Special case = axes-aligned ellipse.\cr
+//' 4: Special case = axes-aligned rectangle not including upper limits.
 //' @param epsilon double, epsilon threshold value. Default is 0.000000000001
 //' @keywords internal
 ////' @export
@@ -157,7 +158,7 @@ Rcpp::LogicalVector hpp_pnt_in_gate (const Rcpp::NumericMatrix pnts,
                                      const Rcpp::NumericMatrix gate,
                                      const int algorithm = 1,
                                      const double epsilon = 0.000000000001 ) {
-  if((algorithm < 0) || (algorithm > 3)) Rcpp::stop("hpp_pnt_in_gate: 'algorithm' should be\n\t-1(Trigonometry),n\t-2(Special case = axes-aligned rectangle)n\t-3(Special case = axes-aligned ellipse)");
+  if((algorithm < 0) || (algorithm > 4)) Rcpp::stop("hpp_pnt_in_gate: 'algorithm' should be\n\t-1(Trigonometry),n\t-2(Special case = axes-aligned rectangle)n\t-3(Special case = axes-aligned ellipse),n\t-4(Special case = axes-aligned rectangle not including upper limits)");
   R_len_t L = pnts.nrow();
   if(L == 0) return 0;
   R_len_t n = gate.nrow();
@@ -192,6 +193,12 @@ Rcpp::LogicalVector hpp_pnt_in_gate (const Rcpp::NumericMatrix pnts,
       if((pnts(k,0) >= xran[0]) && (pnts(k,0) <= xran[1]) && (pnts(k,1) >= yran[0]) && (pnts(k,1) <= yran[1]))
         C[k] = pnt_in_ell(pnts(k, _), ell);
     }
+    }
+    break;
+  case 4:
+    for(R_len_t k = 0; k < L; k++) {
+      if((pnts(k,0) >= xran[0]) && (pnts(k,0) < xran[1]) && (pnts(k,1) >= yran[0]) && (pnts(k,1) < yran[1]))
+        C[k] = true;
     }
     break;
   }

@@ -748,29 +748,34 @@ base_axes=function(obj){
 #' @keywords internal
 base_regions=function(obj){
   lt = obj$input$par.settings
+  Xlim = obj$input$xlim
+  Ylim = obj$input$ylim
   for(reg in obj$input$regions) {
     k = reg[c("color","lightcolor")][[obj$input$mode]]
     coords = reg[c("x","y")]
     trans_x = parseTrans(obj$input$trans_x)
+    trans_y = parseTrans(obj$input$trans_y)
     coords$x = applyTrans(coords$x, trans_x)
     reg$cx = applyTrans(reg$cx, trans_x)
     lab =  trunc_string(reg$label, obj$input$trunc_labels)
     if(reg$type=="line") {
-      Ylim = obj$input$ylim
       cy = na.omit(reg$cy); cy = cy[is.finite(cy)]
       cy = ifelse(length(cy) < 1, 0.6, cy[1])
       if((cy <= 0.025) || (cy >= 0.975)) cy = 0.6 # allow to show label when it is on the edge
       y = na.omit(coords$y); y = y[is.finite(y)]
       y = ifelse(length(y) < 1, 0.5, y[1])
       if((y <= 0.025) || (y >= 0.975)) y = 0.5 # allow to show line when on the edge
-      y = rep(y, length.out=2)
+      coords$y = rep(y, length.out=2)
+      dual_num = sync_part(reg, "dual")
+      coords = dual_coords(coords, dual_num, applyTrans(Xlim, trans_x), applyTrans(Ylim, trans_y))
       text(x=reg$cx, y=cy*diff(Ylim), col=k, labels=lab, adj=c(0.5,0.5), cex=lt$add.text$cex)
-      polygon(x=coords$x, y=y*diff(Ylim), col=k, border=k)
+      polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
     } else {
-      trans_y = parseTrans(obj$input$trans_y)
       coords$y = applyTrans(coords$y, trans_y)
       reg$cy = applyTrans(reg$cy, trans_y)
       if(reg$type=="rect") {
+        quad_num = sync_part(reg, "quad")
+        coords = quad_coords(coords, quad_num, applyTrans(Xlim, trans_x), applyTrans(Ylim, trans_y)) 
         coords$x=c(coords$x[1],coords$x[1],coords$x[2],coords$x[2])
         coords$y=c(coords$y[1],coords$y[2],coords$y[2],coords$y[1])
       }
@@ -1281,9 +1286,11 @@ plot_lattice=function(obj) {
                                 y = na.omit(coords$y); y = y[is.finite(y)]
                                 y = ifelse(length(y) < 1, 0.5, y[1])
                                 if((y <= 0.025) || (y >= 0.975)) y = 0.5 # allow to show line when on the edge
-                                y = rep(y, length.out=2)
+                                coords$y = rep(y, length.out=2)
+                                dual_num = sync_part(reg, "dual")
+                                coords = dual_coords(coords, dual_num, applyTrans(Xlim, trans_x), applyTrans(Ylim, trans_y))
                                 panel.text(x=reg$cx, y=cy*diff(Ylim), col=col, labels=lab, adj=c(0.5,0.5))
-                                panel.lines(x=coords$x, y=y*diff(Ylim), col=col)
+                                panel.lines(x=coords$x, y=coords$y*diff(Ylim), col=col)
                               })
                             }
                           })
@@ -1311,9 +1318,11 @@ plot_lattice=function(obj) {
                           y = na.omit(coords$y); y = y[is.finite(y)]
                           y = ifelse(length(y) < 1, 0.5, y[1])
                           if((y <= 0.025) || (y >= 0.975)) y = 0.5 # allow to show line when on the edge
-                          y = rep(y, length.out=2)
+                          coords$y = rep(y, length.out=2)
+                          dual_num = sync_part(reg, "dual")
+                          coords = dual_coords(coords, dual_num, applyTrans(Xlim, trans_x), applyTrans(Ylim, trans_y))
                           panel.text(x=reg$cx, y=cy*diff(Ylim), col=col, labels=lab, adj=c(0.5,0.5))
-                          panel.lines(x=coords$x, y=y*diff(Ylim), col=col)
+                          panel.lines(x=coords$x, y=coords$y*diff(Ylim), col=col)
                         })
                       })
     }
@@ -1423,6 +1432,8 @@ plot_lattice=function(obj) {
                      coords$y = applyTrans(coords$y, trans_y)
                      reg$cy = applyTrans(reg$cy, trans_y)
                      if(reg$type=="rect") {
+                       quad_num = sync_part(reg, "quad")
+                       coords = quad_coords(coords, quad_num, applyTrans(Xlim, trans_x), applyTrans(Ylim, trans_y))
                        coords$x=c(coords$x[1],coords$x[1],coords$x[2],coords$x[2])
                        coords$y=c(coords$y[1],coords$y[2],coords$y[2],coords$y[1])
                      }
@@ -1587,10 +1598,16 @@ plot_stats=function(obj) {
           return(foo)
         }
         reg = R[[r]]
-        coords = reg["x"]
+        coords = reg[c("x","y")]
         coords$x = applyTrans(coords$x, trans_x)
+        dual_num = sync_part(reg, "dual")
+        if(dual_num != "") coords = dual_coords(coords, dual_num)
         np = sum(D[,d], na.rm = TRUE)
-        isin = (D[v,"x2"] >= min(coords$x)) & (D[v,"x2"] <= max(coords$x))
+        if(dual_num != "") {
+          isin = (D[v,"x2"] >= min(coords$x)) & (D[v,"x2"] < max(coords$x)) 
+        } else {
+          isin = (D[v,"x2"] >= min(coords$x)) & (D[v,"x2"] <= max(coords$x))
+        }
         n = sum(isin, na.rm = TRUE)
         vv = summary(D[v,"x1"][isin])
         vv[!is.finite(vv)] <- NaN
@@ -1634,10 +1651,13 @@ plot_stats=function(obj) {
       alg = 1
       reg = R[[r]]
       coords = reg[c("x","y")]
+      quad_num = sync_part(reg, "quad")
+      if(quad_num != "") coords = quad_coords(coords, quad_num)
       coords$x = applyTrans(coords$x, trans_x)
       coords$y = applyTrans(coords$y, trans_y)
       if(reg$type=="oval") alg = 3
       if(reg$type=="rect") alg = 2
+      if(quad_num != "") alg = 4
       do.call(what = rbind, args = lapply(base_n, FUN=function(d) {
         v = na.omit(which(finite_only_x & finite_only_y & D[, d]))
         if(length(v) == 0) {

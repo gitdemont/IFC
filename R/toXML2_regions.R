@@ -41,9 +41,23 @@ toXML2_regions = function(regions, verbose = FALSE) {
   if(length(regions)==0) return(xml_new_node(name = "Regions", text = ""))
   xml_new_node(name = "Regions", .children = lapply(regions, FUN=function(i_reg) {
     A = attr(i_reg, "sync")
+    sync_typ = sync_type(i_reg)
+    sync_num = sync_part(i_reg, sync_typ)
     i_reg = i_reg[sapply(i_reg, length) != 0] # to remove empty values (e.g. xtrans, ytrans)
     i_reg$color = map_color(i_reg$color, FALSE)
     i_reg$lightcolor = map_color(i_reg$lightcolor, FALSE)
+    coords = i_reg[c("x","y")]
+    if(sync_num != "") {
+      coords = switch(sync_typ,
+                      # For "dual", it looks like IDEAS crashes when xlim exceeds axis range by more than 1e9 when a region is drawn
+                      "dual"=dual_coords(coords, sync_num),
+                      # For "quad", values higher than 1e49 produce empty graph with [-3,+3] axis
+                      # In addition, plot is drawn without crash, regions are not displayed although they appear to be present/computed
+                      "quad"=quad_coords(coords, sync_num),
+                      coords)
+    }
+    i_reg$x = coords$x
+    i_reg$y = coords$y
     if(length(A) == 1) i_reg$sync = A
     xml_new_node(name = "Region",
                attrs = i_reg[!grepl("^x$|^y$", names(i_reg))],

@@ -74,7 +74,7 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
   foo$title = paste0(unique(c(parent1, parent2)), collapse = ", ")
   Xtrans = foo$xtrans; if(length(Xtrans) == 0) Xtrans = foo$xlogrange
   if(length(P[[1]]$fy) == 0) {
-    xran = range(c(obj$features[SUB, foo$f1], unlist(lapply(R, FUN=function(r) c(r$x, r$cx)))), na.rm = TRUE)
+    xran = range(c(obj$features[SUB, foo$f1], unlist(lapply(R, FUN=function(r) sync_clip(c(r$x, r$cx))))), na.rm = TRUE) # exclude -Inf,Inf
     trans_x = parseTrans(Xtrans)
     xran = applyTrans(xran, trans_x)
     xran = xran + diff(xran) * c(-0.07,0.07)
@@ -91,7 +91,7 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
     })))
     if(yran[1] == yran[2]) yran = yran[1] + c(0,0.07)
   } else {
-    xran = range(c(obj$features[SUB, foo$f1], unlist(lapply(R, FUN=function(r) c(r$x, r$cx)))), na.rm = TRUE)
+    xran = range(c(obj$features[SUB, foo$f1], unlist(lapply(R, FUN=function(r) sync_clip(c(r$x, r$cx))))), na.rm = TRUE) # exclude -Inf,Inf
     trans_x = parseTrans(Xtrans)
     xran = applyTrans(xran, trans_x)
     xran = xran + diff(xran) * c(-0.07,0.07)
@@ -99,7 +99,7 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
     foo$ylogrange = R[[1]]$ylogrange
     foo$ytrans = R[[1]]$ytrans
     Ytrans = foo$ytrans; if(length(Ytrans) == 0) Ytrans = foo$ylogrange
-    yran = range(c(obj$features[SUB, foo$f2], unlist(lapply(R, FUN=function(r) c(r$y,r$cy)))), na.rm = TRUE)
+    yran = range(c(obj$features[SUB, foo$f2], unlist(lapply(R, FUN=function(r) sync_clip(c(r$y, r$cy))))), na.rm = TRUE) # exclude -Inf,Inf
     trans_y = parseTrans(Ytrans)
     yran = applyTrans(yran, trans_y)
     yran = yran + diff(yran) * c(-0.07,0.07)
@@ -122,5 +122,6 @@ popsRetrieveGraph = function(obj, pops, vis2D = "density", all_siblings = FALSE)
       foo$GraphRegion[[defined]] = list("name" = R[[i_reg]]$label, def = c(foo$GraphRegion[[defined]]$def, names(R)[i_reg]))
     }
   }
-  return(foo)
+  foo = foo[!grepl("order", names(foo), fixed = TRUE)]
+  return(do.call(buildGraph, foo))
 }

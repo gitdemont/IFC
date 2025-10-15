@@ -91,8 +91,14 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
              reg = regions[[pop_pos]]
              if(reg$type == "line") {
                coords=list(x=as.numeric(reg$x), y=as.numeric(reg$y))
+               dual_num=sync_part(reg, "dual")
+               if(dual_num != "") coords=dual_coords(coords, dual_num)
                xlim=range(coords$x, na.rm = TRUE, finite = FALSE)
-               oo[oo] <- x>=xlim[1] & x<=xlim[2] & !is.na(x) 
+               if(dual_num == "") {
+                 oo[oo] <- x>=xlim[1] & x<=xlim[2] & !is.na(x) 
+               } else {
+                 oo[oo] <- x>=xlim[1] & x<xlim[2] & !is.na(x)
+               }
              } else {
                xlim=as.numeric(reg$x)
                fy_pos=which(names(features)==pop$fy)
@@ -120,7 +126,13 @@ popsWithin <- function(pops, regions, features, pnt_in_poly_algorithm = 1, pnt_i
                       },
                       "rect" = {
                         coords=list(x=xlim, y=ylim)
-                        oo[oo] <- cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(coords$x,coords$y), algorithm = 2)
+                        quad_num=sync_part(reg, "quad")
+                        if(quad_num != "") {
+                          coords=quad_coords(coords, quad_num)
+                          oo[oo] <- cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(coords$x,coords$y), algorithm = 4)
+                        } else {
+                          oo[oo] <- cpp_pnt_in_gate(pnts=cbind(x,y), gate = cbind(coords$x,coords$y), algorithm = 2)
+                        }
                       })
              }
              pops[[i]]$obj=oo

@@ -187,7 +187,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         regx = sapply(reg_n, FUN=function(r) {
           reg = R[[r]] 
           coords = reg[["x"]]
-          return(c(reg$cx, coords))
+          return(sync_clip(c(reg$cx, coords))) # exclude -Inf,Inf
         })
         Xlim = cpp_fast_range(c(D[,"x1", drop=TRUE], unlist(regx)))
         Xlim = applyTrans(Xlim, trans_x)
@@ -243,7 +243,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         regx = sapply(reg_n, FUN=function(r) {
           reg = R[[r]] 
           coords = reg[["x"]]
-          return(c(reg$cx, coords))
+          return(sync_clip(c(reg$cx, coords))) # exclude -Inf,Inf
         })
         Xlim = cpp_fast_range(c(D[,"x1", drop=TRUE], unlist(regx)))
         Xlim = applyTrans(Xlim, trans_x)
@@ -251,7 +251,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         regy = sapply(reg_n, FUN=function(r) {
           reg = R[[r]] 
           coords = reg[["y"]]
-          return(c(reg$cy, coords))
+          return(sync_clip(c(reg$cy, coords))) # exclude -Inf,Inf
         })
         Ylim = cpp_fast_range(c(D[,"y1", drop=TRUE], unlist(regy)))
         Ylim = applyTrans(Ylim, trans_y)

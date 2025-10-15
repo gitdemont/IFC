@@ -44,9 +44,9 @@ See Josef Spidlen et al. Cytometry A 87 683-687 (2015). \doi{10.1002/cyto.a.2269
 GatingML is partly implemented because:\cr
 -Tagged population are not part of GatingML gates\cr
 -IDEAS/INSPIRE regions are different from the collection of gates listed in GatingML. Notably,\cr
---only 1 or 2 dimensions gates will be used,
---range gates and quadrant gates are absent from IDEAS/INSPIRE
---ellipse gates exist in IDEAS/INSPIRE but are axis aligned and not rotated.
+--only 1 or 2 dimensions gates will be used,\cr
+--quadrant gates are absent from IDEAS/INSPIRE\cr
+--ellipse gates exist in IDEAS/INSPIRE but are axis aligned and not rotated.\cr
 -Transformation applied in \pkg{IFC} is not part of GatingML.
 Nonetheless, when possible additional information are provided in dedicated custom_info field.
 }

@@ -52,9 +52,9 @@
 #' GatingML is partly implemented because:\cr
 #' -Tagged population are not part of GatingML gates\cr
 #' -IDEAS/INSPIRE regions are different from the collection of gates listed in GatingML. Notably,\cr
-#' --only 1 or 2 dimensions gates will be used,
-#' --range gates and quadrant gates are absent from IDEAS/INSPIRE
-#' --ellipse gates exist in IDEAS/INSPIRE but are axis aligned and not rotated.
+#' --only 1 or 2 dimensions gates will be used,\cr
+#' --quadrant gates are absent from IDEAS/INSPIRE\cr
+#' --ellipse gates exist in IDEAS/INSPIRE but are axis aligned and not rotated.\cr
 #' -Transformation applied in \pkg{IFC} is not part of GatingML.
 #' Nonetheless, when possible additional information are provided in dedicated custom_info field.
 #' @return It invisibly returns full path of exported file.
@@ -144,19 +144,27 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   custom_plots = xml_find_first(root, "_ns_data-type_ns_custom_info//plots")
   
   # fill general custom info node with info nodes
-  custom_info %>% xml_add_child(xml_new_node(name = "IFC", attrs = list(IFC_version = pkg_ver,
-                                                                        date = now, 
-                                                                        IDEAS_version = obj$description$Assay$IDEAS_version, 
-                                                                        objcount = obj$description$ID$objcount, 
-                                                                        All = paste0(c(map_style(obj$pops[["All"]]$style, toR=FALSE),
-                                                                                       map_color(c(obj$pops[["All"]]$color, obj$pops[["All"]]$lightModeColor), toR = FALSE)), collapse="|"))))
+  custom_info %>% xml_add_child(
+    xml_new_node(
+      name = "IFC",
+      attrs = list(
+        IFC_version = pkg_ver,
+        date = now, 
+        IDEAS_version = obj$description$Assay$IDEAS_version, 
+        objcount = obj$description$ID$objcount, 
+        All = paste0(c(map_style(obj$pops[["All"]]$style, toR=FALSE),
+                       map_color(c(obj$pops[["All"]]$color, obj$pops[["All"]]$lightModeColor), toR = FALSE)), collapse="|"))))
   
   # fill general custom info node with tagged pop nodes
   tagged_nodes = lapply(obj$pops[is_tagged], FUN = function(pop) {
-    custom_tagged %>% xml_add_child(xml_new_node(name = "pop", attrs = list(name=pop$name,
-                                                                            colors=paste0(map_color(c(pop$color,pop$lightModeColor), FALSE),collapse="|"), 
-                                                                            pch=map_style(pop$style, toR=FALSE), 
-                                                                            obj=paste0(which(pop$obj) - 1L, collapse = "|"))))
+    custom_tagged %>% xml_add_child(
+      xml_new_node(
+        name = "pop",
+        attrs = list(
+          name=pop$name,
+          colors=paste0(map_color(c(pop$color,pop$lightModeColor), FALSE),collapse="|"), 
+          pch=map_style(pop$style, toR=FALSE), 
+          obj=paste0(which(pop$obj) - 1L, collapse = "|"))))
   })
   
   # fill general custom info node with graph nodes
@@ -168,27 +176,44 @@ writeGatingStrategy = function(obj, write_to, overwrite = FALSE,
   if(length(obj$description$spillraw) != 0) gatingML_comp = c(gatingML_comp, list(toXML2_spillover_gs(obj$description$spillraw, name = "spillraw")))
   if(length(obj$description$spillover) != 0) gatingML_comp = c(gatingML_comp, list(toXML2_spillover_gs(obj$description$spillover, name = "spillover")))
   lapply(gatingML_comp, FUN = function(gatingML_node) xml_add_child(gating, gatingML_node))
+  merge_list <- function(A, B) { sapply(names(A), simplify = FALSE, FUN = function(n) A[[n]] = c(A[[n]], B[[n]])) }
   
   # keep track of already used ids
   already = character()
+  # keep track of quadrants already done
+  quadrant = character()
   # Now, we fill GatingML with Boolean and Graphical pop + regions (C and G) in gating node
   pop_nodes = lapply(obj$pops, FUN = function(pop) {
+    if(any(pop$name %in% quadrant)) return()
     # color conversion
     pop$colors = paste0(map_color(c(pop$color,pop$lightModeColor), FALSE),collapse="|")
     # only keep what is need
     pop = pop[!(names(pop) %in% c("color","lightModeColor","names"))]
-    gatingML_node = switch(pop$type, 
-                           "C" = {
-                             pop = pop[!(names(pop) %in% "obj")]
-                             foo = toXML2_boolpop_gs(obj, pop, already)
-                             already <<- c(already, foo[["already"]])
-                             foo[["xml"]]
-                           },
-                           "G" = {
-                             pop = pop[!(names(pop) %in% "obj")]
-                             reg = obj$regions[[pop$region]]
-                             toXML2_graphpop_gs(pop, reg)
-                           })
+    gatingML_node = switch(
+      pop$type, 
+      "C" = {
+        pop = pop[!(names(pop) %in% "obj")]
+        foo = toXML2_boolpop_gs(obj, pop, already)
+        already <<- c(already, foo[["already"]])
+        foo[["xml"]]
+      },
+      "G" = {
+        pop = pop[!(names(pop) %in% "obj")]
+        reg = obj$regions[[pop$region]]
+        sync_typ = sync_type(reg)
+        if(sync_typ != "") {
+          sync_nam = sync_name(reg, sync_typ)
+          reg = obj$regions[sapply(obj$regions, FUN = function(r) identical(sync_nam, sync_name(r, sync_typ)))]
+          reg = reg[order(sapply(reg, sync_part, sync_typ))]
+          reg = Reduce(merge_list, reg )
+          pop = obj$pops[unlist(sapply(reg$label, FUN = function(n) sapply(obj$pops, FUN = function(p) if(identical(p$region, n)) return(p$name))))]
+          pop = Reduce(merge_list, pop)
+          quadrant <<- c(quadrant, pop$name)
+          reg$type = reg$type[1]
+          attr(reg, "sync") = paste0(sync_nam, "|1")
+        }
+        toXML2_graphpop_gs(pop, reg)
+      })
     if(inherits(gatingML_node, "xml_node")) {
       gating %>% xml_add_child(gatingML_node) 
     } else {

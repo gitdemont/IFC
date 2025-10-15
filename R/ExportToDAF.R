@@ -146,6 +146,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
     if(length(pops_daf)==0) stop("No population found in ", fileName) # should not append, at least 'All' population should be there
     regions_daf_label = xml_attr(xml_find_all(xml_tmp, "//Region"), attr = "label") # what happens if empty ?
     regions_daf_type = xml_attr(xml_find_all(xml_tmp, "//Region"), attr = "type") # what happens if empty ?
+    regions_daf_sync = xml_attr(xml_find_all(xml_tmp, "//Region"), attr = "sync")
     features_daf = xml_attr(xml_find_all(xml_tmp, "//UDF"), attr = "name")
     fid = length(features_daf)
     channels_daf = xml_attr(xml_find_all(xml_tmp, "//image"), attr = "name")
@@ -298,7 +299,34 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
         warning(paste0(lab, ", not exported: trying to export an already defined region"), immediate. = TRUE, call. = FALSE)
         next
       }
-      if(length(A) == 1) reg$sync = A
+      if(length(A) >= 2) {
+        warning(paste0(paste0(A), ", attribute not set: trying to export a region with an invalid 'sync' attribute for ", lab), immediate. = TRUE, call. = FALSE)
+      } else {
+        if(length(A) == 1) {
+          if(any(A%in%regions_daf_sync)) {
+            warning(paste0(paste0(A), ", attribute not set: trying to export a region with a 'sync' attribute already existing ",lab), immediate. = TRUE, call. = FALSE)
+          } else {
+            sync_typ = sync_type(reg)
+            sync_num = sync_part(reg, sync_typ)
+            coords = reg[c("x","y")]
+            if(sync_num != "") {
+              coords = switch(sync_typ,
+                              # For "dual", it looks like IDEAS crashes when xlim exceeds axis range by more than 1e9 when a region is drawn
+                              "dual"=dual_coords(coords, sync_num),
+                              # For "quad", values higher than 1e49 produce empty graph with [-3,+3] axis
+                              # In addition, plot is drawn without crash, regions are not displayed although they appear to be present/computed
+                              "quad"=quad_coords(coords, sync_num),
+                              coords)
+            }
+            reg$x <- coords$x
+            reg$y <- coords$y
+            reg$sync <- A
+            # } else {
+            #   warning(paste0(A, ", attribute not set: trying to export a region with an invalid 'sync' for ",r$label), immediate. = TRUE, call. = FALSE)
+            # }
+          }
+        }
+      }
       new_nodes$regions = c(new_nodes$regions,
                             raw_2020,
                             charToRaw(to_xml_list(reg[-which(names(reg)%in%c("x","y"))], name = "Region", escape = rawToChar(c(collapse$regions,raw_2020)),
@@ -333,6 +361,7 @@ ExportToDAF <- function(fileName, write_to, pops = list(), regions = list(), fea
           new_node_pop = to_xml_list(pop, name = "Pop")
         }
         if(pop$type=="C") {
+          
           new_node_pop = to_xml_list(pop, name = "Pop")
         }
         if(pop$type=="T") {

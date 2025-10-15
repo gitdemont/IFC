@@ -40,6 +40,12 @@ get_pop_style <- function(x) {
     "B"="\u25a0",    #"■"
     "T"="\u29bf",    #"⦿"
     "C"="\u2bba",    #"⮺"
+    "dual1"="\u21a4",#"↤"
+    "dual2"="\u21a6",#"↦"
+    "quad1"="\u25f0",#"◰"
+    "quad2"="\u25f3",#"◳"
+    "quad3"="\u25f2",#"◲"
+    "quad4"="\u25f1",#"◱"
     "line" ="\u21ff",#"⇿"
     "rect" ="\u25ad",#"▭"
     "poly" ="\u23e2",#"⏢"
@@ -56,6 +62,16 @@ get_pop_style <- function(x) {
 #' @keywords internal
 popsStyle <- function(obj) {
   sapply(obj$pops, simplify = FALSE, FUN = function(p) {
-    get_pop_style(ifelse(identical(p$type,"G"),ifelse(any(p$region %in% names(obj$regions)), obj$regions[[p$region]]$type,""), p$type))
+    sty = p$type
+    if(identical(p$type,"G")) {
+      if(any(p$region %in% names(obj$regions))) {
+        r = obj$regions[[p$region]]
+        sync_typ = sync_type(r)
+        sty = ifelse(sync_typ == "", r$type, paste0(sync_typ, sync_part(r,sync_typ)))
+      } else {
+        sty = ""
+      }
+    }
+    get_pop_style(sty)
   })
 }

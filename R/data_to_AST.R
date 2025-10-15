@@ -147,7 +147,7 @@ data_to_AST = function(obj, write_to, viewing_pop = "All", overwrite = FALSE,
   
   sub_nodes = c(sub_nodes, list(toXML2_features_def(obj$features_def, verbose = verbose),
                                 xml_new_node(name = "Classifiers"),
-                                toXML2_regions(obj$regions, verbose = verbose),
+                                toXML2_regions(sync_validate(obj$regions, quietly = FALSE, caller = "data_to_AST"), verbose = verbose),
                                 toXML2_pops(obj$pops, verbose = verbose, display_progress = display_progress, title_progress = title_progress),
                                 xml_new_node(name = "StatisticsReports")))
   
