@@ -10,6 +10,6 @@ popsOrderNodes(pops)
 \item{pops}{list of populations.}
 }
 \description{
-Helper that sort populations so that populations that depend from other are placed after.
+Helper to sort populations so that populations that depend from other(s) are placed after.
 }
 \keyword{internal}

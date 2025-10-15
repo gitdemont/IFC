@@ -97,7 +97,11 @@
 #### Work on Populations/Regions/GatingML
 - [BREAKING] handle infinity in regions
 
+- avoid useless recursion(s) in **popsOrderNodes**
+
 - add `create_pops` argument in **data_add_regions** to facilitate resulting population(s) addition
+
+- fix index error **data_add_regions** and **data_add_pops** due to use of 1:n rather than seq_along() seq_len() in loops when final export is 0-length following duplicated and already existing `regions` or `populations` removal
 
 - avoid population(s) renaming with same name(s) in **popsRename**
 
