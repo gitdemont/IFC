@@ -94,6 +94,15 @@
 
 - speed gain
 
+#### Work on Network
+- add `flatten` parameter to **popsNetwork** to allow flat hierarchical tree extraction
+
+- add internal **popsStyle** and **popsTree** to facilitate printing of population hierarchy
+
+- add `fun` argument to **popsGetLevels**
+
+- enhance documentation
+
 #### Work on Populations/Regions/GatingML
 - [BREAKING] handle infinity in regions
 

@@ -43,7 +43,7 @@ popsRename <- function(obj, old_names = character(), new_names = character(), lo
   assert(old_names, typ="character")
   assert(new_names, typ="character")
   if(length(old_names) != length(new_names)) stop("'old_names' and 'new_names' should be character vectors of same length")
-  sam = seq_along(old_names, FUN = function(i) identical(old_names[i], new_names[i]))
+  sam = sapply(seq_along(old_names), FUN = function(i) identical(old_names[i], new_names[i]))
   old_names = old_names[!sam]
   new_names = new_names[!sam]
   if(length(old_names) == 0) return(obj)

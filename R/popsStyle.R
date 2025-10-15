@@ -1,6 +1,6 @@
 ################################################################################
 # This file is released under the GNU General Public License, Version 3, GPL-3 #
-# Copyright (C) 2020 Yohann Demont                                             #
+# Copyright (C) 2025 Yohann Demont                                             #
 #                                                                              #
 # It is part of IFC package, please cite:                                      #
 # -IFC: An R Package for Imaging Flow Cytometry                                #
@@ -27,22 +27,35 @@
 # along with IFC. If not, see <http://www.gnu.org/licenses/>.                  #
 ################################################################################
 
-#' @title IFC_pops Levels Dependency Determination
+#' @title Population Style
+#' @name get_pop_style
 #' @description
-#' Helper that extract population levels.
-#' @param pops list of populations.
-#' @param fun function called to compute levels.
+#' Gets population style
+#' @param x type of population.
+#' @return a named UTF-8 character
 #' @keywords internal
-popsGetLevels <- function(pops, fun = max) {
-  assert(pops, cla = c("IFC_pops","Affiliated","Ordered"))
-  l = length(pops)
-  lev = rep(1, l)
-  names(lev) = names(pops)
-  if(l > 1) { 
-    for(i in 2:l) {
-      pop = pops[[i]]
-      lev[i] = lev[i] + do.call(fun, list(lev[setdiff(c(pop$base, pop$names), "")]))
-    }
-  }
-  return(lev)
+get_pop_style <- function(x) {
+  structure(switch(
+    x,
+    "B"="\u25a0",    #"■"
+    "T"="\u29bf",    #"⦿"
+    "C"="\u2bba",    #"⮺"
+    "line" ="\u21ff",#"⇿"
+    "rect" ="\u25ad",#"▭"
+    "poly" ="\u23e2",#"⏢"
+    "oval" ="\u2b2f",#"⬯"
+    "\ufeff"         #""
+  ),names=x)
+}
+
+#' @title IFC_pops Style
+#' @description
+#' Helper to extract population style.
+#' @param obj an `IFC_data` object extracted by ExtractFromDAF(extract_features = TRUE) or ExtractFromXIF(extract_features = TRUE).
+#' @return a named list of UTF-8 characters.
+#' @keywords internal
+popsStyle <- function(obj) {
+  sapply(obj$pops, simplify = FALSE, FUN = function(p) {
+    get_pop_style(ifelse(identical(p$type,"G"),ifelse(any(p$region %in% names(obj$regions)), obj$regions[[p$region]]$type,""), p$type))
+  })
 }

@@ -4,10 +4,12 @@
 \alias{popsGetLevels}
 \title{IFC_pops Levels Dependency Determination}
 \usage{
-popsGetLevels(pops)
+popsGetLevels(pops, fun = max)
 }
 \arguments{
 \item{pops}{list of populations.}
+
+\item{fun}{function called to compute levels.}
 }
 \description{
 Helper that extract population levels.

@@ -12,29 +12,32 @@ popsNetwork(
   seed = NULL,
   direction = "LR",
   weighted = TRUE,
+  flatten = FALSE,
   ...
 )
 }
 \arguments{
 \item{obj}{an `IFC_data` object extracted with features extracted.}
 
-\item{hierarchical}{whether to display network using a hierarchical layout or not. Default is TRUE.}
+\item{hierarchical}{whether to display network using a hierarchical layout or not. Default is \code{TRUE}, and will be forced to \code{TRUE} when \code{'flatten'} is \code{TRUE}.}
 
-\item{color_mode}{Whether to extract colors from 'obj' in "white" or "black" mode. Default is "white".}
+\item{color_mode}{Whether to extract colors from \code{'obj'} in \code{"white"} or \code{"black"} mode. Default is \code{"white"}, only apply when \code{'flatten'} is \code{FALSE}.}
 
-\item{highlight}{population to permanently highlight. If found in 'obj', this population will be displayed with its color. Default is NULL.}
+\item{highlight}{population to permanently highlight. If found in \code{'obj'}, this population will be displayed with its color. Default is \code{NULL}, only apply when \code{'flatten'} is \code{FALSE}.}
 
-\item{seed}{If you provide a seed manually, the layout will be the same every time. Default is NULL.}
+\item{seed}{If you provide a seed manually, the layout will be the same every time. Default is \code{NULL}, , only apply when \code{'flatten'} is \code{FALSE}.}
 
-\item{direction}{The direction of the hierarchical layout. Default is 'LR'.\cr
-The available options are: 'UD', 'DU', 'LR', 'RL'. To simplify: up-down, down-up, left-right, right-left.}
+\item{direction}{The direction of the hierarchical layout. Default is \code{'LR'} and will be forced to \code{'UD'} when \code{'flatten'} is \code{TRUE}.\cr
+The available options are: \code{'UD'}, \code{'DU'}, \code{'LR'}, \code{'RL'}. To simplify: up-down, down-up, left-right, right-left.}
 
-\item{weighted}{whether to scale population's node size according to count. Default is TRUE.}
+\item{weighted}{whether to scale population's node size according to count. Default is \code{TRUE}, only apply when \code{'flatten'} is \code{FALSE}.}
+
+\item{flatten}{whether to return a flatten data.frame of stats whose row.names represent the hierarchy tree. Default is \code{FALSE}.}
 
 \item{...}{other argument to be passed.}
 }
 \value{
-a \pkg{visNetwork} object.
+a \pkg{visNetwork} object or a data.frame if \code{'flatten'} is \code{TRUE}.
 }
 \description{
 Builds and displays populations network.
