@@ -2,19 +2,26 @@
 % Please edit documentation in R/strings_utils.R
 \name{map_style}
 \alias{map_style}
+\alias{map_utf8}
 \title{Style Mapping}
 \usage{
 map_style(style, toR = FALSE)
+
+map_utf8(style, toUTF8 = TRUE)
 }
 \arguments{
-\item{style}{a pch (converted to integer) or a character vector. Default is missing.}
+\item{style}{a character vector. Default is missing.}
 
-\item{toR}{whether to convert color toR or back. Default is FALSE.}
+\item{toR}{whether to convert \code{'style'} to UTF8 or back. Default is \code{FALSE}.}
 }
 \value{
-an integer vector when toR is TRUE or a character vector.
+an integer vector when \code{'toR'} is \code{TRUE} or a character vector.
+
+a character vector.
 }
 \description{
-Converts IDEAS/INSPIRE style toR and inversely
+Converts IDEAS/INSPIRE style to R and inversely
+
+Converts style to UTF8 and inversely
 }
 \keyword{internal}

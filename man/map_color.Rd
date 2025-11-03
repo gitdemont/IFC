@@ -9,12 +9,12 @@ map_color(color, toR = TRUE)
 \arguments{
 \item{color}{a character vector Default is missing.}
 
-\item{toR}{whether to convert color toR or back. Default is TRUE.}
+\item{toR}{whether to convert \code{'color'} to R or back. Default is \code{TRUE}.}
 }
 \value{
 a character vector.
 }
 \description{
-Converts IDEAS/INSPIRE colors toR and inversely
+Converts IDEAS/INSPIRE color to R and inversely
 }
 \keyword{internal}

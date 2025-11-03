@@ -73,7 +73,7 @@ splits <- function(x, name = TRUE, split = "|") {
 #' @description
 #' Sync Limits.
 #' @param lims limits. Default is \code{c(-Inf,Inf)}.
-#' @value \code{range(lims,na.rm=TRUE)}
+#' @return \code{range(lims,na.rm=TRUE)}
 #' @keywords internal
 sync_lims <- function(lims = c(-Inf, Inf)) {
   return(suppressWarnings(range(lims, na.rm=TRUE)))

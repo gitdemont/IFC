@@ -50,6 +50,21 @@ setloc <- function(locale = getloc()) {
   return(cur_loc)
 }
 
+resize_string = function(s, n, justify = "none") {
+  w = nchar(s)
+  if(n > w) {
+    pad = rep(" ", n - w)
+    switch(pmatch(justify, c("left","right","centre","none")),
+           paste0(s, paste0(pad, collapse = "")),
+           paste0(paste0(pad, collapse = ""), s),
+           paste0(paste0(head(pad, length(pad) / 2), collapse = ""), s, paste0(tail(pad, length(pad) / 2), collapse = "")),
+           s
+    )
+  } else {
+    substr(s, 1, stop = n)
+  }
+}
+
 #' @title String Truncation
 #' @description Truncates character strings
 #' @param x a string
@@ -344,66 +359,132 @@ toCapFirstOnly <- function(text) {
   paste0(toupper(substr(x,1,1)), tolower(substr(x,2,nchar(x))))
 }
 
+#' @title Set Mapping
+#' @name map_set
+#' @description
+#' Converts vector from one set of matching value to the other
+#' @param x a vector. Default is missing.
+#' @param to whether to \code{'x'} from \code{'set1'} to \code{'set2'} or inversely. Default is \code{TRUE}.
+#' @param set1,set2 a vector. Default is \code{c()}.
+#' @param nomatch whether no match should produce an error. Default is \code{FALSE}.
+#' @details only values found will be replaced; if not found, value is kept as is.
+#' @return a vector with values replacement.
+#' @keywords internal
+map_set <- function(x, to = TRUE, set1 = c(), set2 = c(), nomatch = FALSE) {
+  if(to) { seta = set1; setb = set2 } else  { setb = set1; seta = set2 }
+  xx = suppressWarnings(do.call(what = paste0("as.",typeof(seta)), list(x)))
+  foo = xx %in% seta
+  if(nomatch) if(!all(foo)) stop("can't match value(s):\n\t-", paste0(x[!foo], collapse="\n\t-"))
+  if(any(foo)) {
+    bar = sapply(xx[foo], FUN = function(v) which(seta %in% v))
+    xx[foo] <- setb[bar]
+  }
+  return(suppressWarnings(do.call(what = paste0("as.",typeof(setb)), list(xx))))
+}
+
 #' @title Color Mapping
 #' @name map_color
 #' @description
-#' Converts IDEAS/INSPIRE colors toR and inversely
+#' Converts IDEAS/INSPIRE color to R and inversely
 #' @param color a character vector Default is missing.
-#' @param toR whether to convert color toR or back. Default is TRUE.
+#' @param toR whether to convert \code{'color'} to R or back. Default is \code{TRUE}.
 #' @return a character vector.
 #' @keywords internal
 map_color <- function(color, toR = TRUE) {
-  set1 = c("Teal", "Green", "Lime", "Control", "0")
-  set2 = c("Cyan4", "Green4", "Chartreuse", "Gray81", "Gray82")
-  if(toR) {
-    foo = color %in% set1
-    if(any(foo)) {
-      bar = sapply(color[foo], FUN = function(x) which(set1 %in% x))
-      color[foo] <- set2[bar]
-    }
-  } else {
-    foo = color %in% set2
-    if(any(foo)) {
-      bar = sapply(color[foo], FUN = function(x) which(set2 %in% x))
-      color[foo] <- set1[bar]
-    }
-  }
-  return(color)
+  map_set(
+    x = color,
+    to = toR,
+    set1 = c("Teal", "Green", "Lime", "Control", "0"),
+    set2 = c("Cyan4", "Green4", "Chartreuse", "Gray81", "Gray82"))
 }
 
 #' @title Style Mapping
 #' @name map_style
 #' @description
-#' Converts IDEAS/INSPIRE style toR and inversely
+#' Converts IDEAS/INSPIRE style to R and inversely
 #' @param style a pch (converted to integer) or a character vector. Default is missing.
-#' @param toR whether to convert color toR or back. Default is FALSE.
-#' @return an integer vector when toR is TRUE or a character vector.
+#' @param toR whether to convert \code{'style'} to R or back. Default is \code{FALSE}.
+#' @return an integer vector when \code{'toR'} is \code{TRUE} or a character vector.
 #' @keywords internal
 map_style <- function(style, toR = FALSE) {
-  set1 = c("Simple Dot", "Cross", "Plus",
-           "Empty Circle", "Empty Diamond", "Empty Square",
-           "Empty Triangle", "Solid Diamond", "Solid Square",
-           "Solid Triangle")
-  set2 = c(20, 4, 3, 1, 5, 0, 2, 18, 15, 17)
-  if(toR) {
-    foo = style %in% set1
-    if(any(foo)) {
-      bar = sapply(style[foo], FUN = function(x) which(set1 %in% x))
-      style[foo] <- set2[bar]
-    }
-    if(!all(style %in% set2)) stop("not supported 'style'")
-    style = as.integer(style)
-  } else {
-    style_ = suppressWarnings(as.integer(style))
-    foo = style_ %in% set2
-    if(any(foo)) {
-      bar = sapply(style_[foo], FUN = function(x) which(set2 %in% x))
-      style[foo] <- set1[bar]
-    }
-    if(!all(style %in% set1)) stop("not supported 'style'")
-  }
-  return(style)
+  map_set(
+    x = style,
+    to = toR,
+    set1 = c("Cross", "Plus",
+             "Empty Circle", "Empty Diamond", "Empty Square", "Empty Triangle",
+             "Simple Dot",   "Solid Diamond", "Solid Square", "Solid Triangle"),
+    set2 = as.integer(c(4, 3,
+                        1, 5, 0, 2, 
+                        20, 18, 15, 17)),
+    nomatch = TRUE)
 }
+
+#' @title UTF8 Style Mapping
+#' @name map_style
+#' @description
+#' Converts style to UTF8 and inversely
+#' @param style a character vector. Default is missing.
+#' @param toR whether to convert \code{'style'} to UTF8 or back. Default is \code{FALSE}.
+#' @return a character vector.
+#' @keywords internal
+map_utf8 <- function(style, toUTF8 = TRUE) {
+  map_set(
+    x = style,
+    to = toUTF8,
+    set1 = c("Cross", "Plus",
+           "Empty Circle", "Empty Diamond", "Empty Square", "Empty Triangle",
+           "Simple Dot",   "Solid Diamond", "Solid Square", "Solid Triangle"),
+    set2 = c("\u0058", "\ufe62",
+             "\u25cb", "\u25c7", "\u25fb", "\u25b3",
+             "\u00b7", "\u25c6", "\u25fc", "\u25b2"),
+    nomatch = TRUE)
+}
+
+#' @title ANSI Color Mapping
+#' @name map_ansi
+#' @description
+#' Converts R color to ANSI and inversely
+#' @param color a character vector Default is missing.
+#' @param toANSI whether to convert color to ANSI or back. Default is \code{TRUE}.
+#' @return an integer vector when \code{'toANSI'} is \code{TRUE} or a character vector.
+#' @keywords internal
+map_ansi <- function(color, toANSI = TRUE) {
+  # TODO improve
+  # darkturquoise 37 44
+  # gold 221 220
+  # chartreuse 118 154
+  # sandybrown 173 215
+  # pink 224 218
+  # plum 176 182
+  # darkorchid 128 92 134
+  map_set(
+    x = color,
+    to = toANSI,
+    set1 = c("white","lightskyblue","cornflowerblue","mediumslateblue","blue",
+             "aquamarine","mediumspringgreen","cyan","darkturquoise","cyan4",
+             "yellow","gold","darkkhaki","chartreuse","green4",
+             "wheat","sandybrown","orange","tomato","red",
+             "pink","hotpink","plum","magenta","darkorchid",
+             "lightcoral","indianred","lightgray","gray81","gray82",
+             "gray","black","darkorange","deeppink"),
+    set2 = as.integer(c(15,117,69,99,20,
+                        122,48,51,44,30,
+                        226,221,143,154,28,
+                        223,215,214,203,196,
+                        218,205,176,201,128,
+                        210,167,252,251,251,
+                        250,16,208,198)),
+    nomatch = TRUE)
+}
+
+# @title ANSI Decorators
+# x a string
+# col,bg,fg color value
+ansi_underline <-function(x) paste0("\033[4m",enc2native(x),"\033[24m")
+ansi_bold <-function(x) paste0("\033[1m",enc2native(x),"\033[22m")
+ansi_foreground <- function(x, col) paste0("\033[38;5;",col,"m",enc2native(x),"\033[39m")
+ansi_background <- function(x, col) paste0("\033[48;5;",col,"m",enc2native(x),"\033[49m")
+ansi_colorize <- function(x, bg = 8, fg = 15) ansi_background(ansi_foreground(x, fg), bg)
 
 #' @title Random Name Generator
 #' @name random_name

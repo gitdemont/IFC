@@ -9,6 +9,9 @@ sync_lims(lims = c(-Inf, Inf))
 \arguments{
 \item{lims}{limits. Default is \code{c(-Inf,Inf)}.}
 }
+\value{
+\code{range(lims,na.rm=TRUE)}
+}
 \description{
 Sync Limits.
 }
