@@ -371,15 +371,17 @@ toCapFirstOnly <- function(text) {
 #' @return a vector with values replacement.
 #' @keywords internal
 map_set <- function(x, to = TRUE, set1 = c(), set2 = c(), nomatch = FALSE) {
-  if(to) { seta = set1; setb = set2 } else  { setb = set1; seta = set2 }
-  xx = suppressWarnings(do.call(what = paste0("as.",typeof(seta)), list(x)))
-  foo = xx %in% seta
+  if(to) { seta = set1; setb = set2 } else { setb = set1; seta = set2 }
+  f = paste0("as.",typeof(seta))
+  xx = unlist(use.names = FALSE, recursive = FALSE, lapply(x, FUN = function(v) {
+    bar = na.omit(which(seta %in% suppressWarnings(do.call(what = f, list(v)))))
+    if(length(bar) == 0) return(v)
+    return(setb[bar[1]])
+  }))
+  xx = suppressWarnings(do.call(what = paste0("as.",typeof(setb)), list(xx)))
+  foo = xx %in% setb
   if(nomatch) if(!all(foo)) stop("can't match value(s):\n\t-", paste0(x[!foo], collapse="\n\t-"))
-  if(any(foo)) {
-    bar = sapply(xx[foo], FUN = function(v) which(seta %in% v))
-    xx[foo] <- setb[bar]
-  }
-  return(suppressWarnings(do.call(what = paste0("as.",typeof(setb)), list(xx))))
+  return(xx)
 }
 
 #' @title Color Mapping
