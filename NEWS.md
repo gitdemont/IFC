@@ -53,7 +53,7 @@
 
 - allow region stats computation in graphs even if corresponding pop does not exist
 
-- fix density plot drawing with 0 value
+- fix density plot drawing with 0 length value
 
 - use default values for density colors when graph values are set to ""
 

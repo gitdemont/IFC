@@ -577,7 +577,7 @@ plot_default_args=function(obj = list()) {
   # limits
   if(inherits(obj, c("error","empty"))) {
     Xlim = try(suppressWarnings(applyTrans(range(range(xlim, na.rm = TRUE, finite = TRUE)), trans = trans_x)), silent = TRUE)
-    Ylim = try(suppressWarnings(applyTrans(range(range(ylim, na.rm = TRUE, finite = TRUE)), trans = trans_x)), silent = TRUE)
+    Ylim = try(suppressWarnings(applyTrans(range(range(ylim, na.rm = TRUE, finite = TRUE)), trans = trans_y)), silent = TRUE)
   } else {
     Xlim = try(suppressWarnings(range(range(xlim, na.rm = TRUE, finite = TRUE))), silent = TRUE)
     Ylim = try(suppressWarnings(range(range(ylim, na.rm = TRUE, finite = TRUE))), silent = TRUE)
