@@ -745,10 +745,11 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
       pdf(file=write_to, height=3*nrow(lay)*nrow(selection)*2.54, width=3*ncol(lay)*ncol(selection)*2.54,
           family = "sans",
           onefile=TRUE, pagecentre=TRUE, useDingbats=FALSE)
-      if(!missing(main)) args=c(args, top=main)
       # no reason to have newpage = TRUE unless pdf is not open
       args = list(newpage=names(dev.cur()) != "pdf",
                   layout_matrix=lay, as.table=FALSE)
+      # if(!missing(main)) args=c(args, top=textGrob(paste0("\n",main,"\n"), gp=gpar(fontsize=18, font=2, col="skyblue4", lineheight=0.5))) # TODO not working ?
+      if(!missing(main)) args=c(args, top=main)
       tryCatch(do.call(what=grid.arrange, args=c(list(grobs=quote(grobs)), args)), 
                error = function(e) { stop(e$message, call.=FALSE) },
                finally = dev.off())

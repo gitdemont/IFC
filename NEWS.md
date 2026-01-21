@@ -53,6 +53,12 @@
 
 - allow region stats computation in graphs even if corresponding pop does not exist
 
+- fix density plot drawing with 0 value
+
+- use default values for density colors when graph values are set to ""
+
+- fix `empty` or `error` plot drawing error with axis computation
+
 #### Work on ExportToGallery
 - [BREAKING] modify returned object. When `export` is "file", exported path is invisibly returned. An "object_id" attribute is now attached to returned value.
 
@@ -170,6 +176,8 @@
 - fix **popsRetrieveGraph** [attempt to select less than one element in integerOneIndex] error when retrieving GraphRegion
 
 - change deprecated @docType in IFC-package.R to "_PACKAGE" following `roxygen2` update
+
+- make use of `main` in **BatchReport**. Still wip to set fontsize and color.
 
 ## 0.2.1
 - CRAN submission

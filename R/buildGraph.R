@@ -246,6 +246,7 @@ buildGraph <- function(type=c("histogram","scatter","density")[3], xlocation=0, 
       densitymax = na.omit(as.integer(BasePop_default$densitymax)); assert(densitymax, len=1, alw = 0:10)
       # checks that density colors are correct
       lapply(BasePop_name_alw[7:9], FUN=function(i) {
+        if(BasePop_default[[i]] == "") BasePop_default[[i]] <<- "-16776961|-13447886|-256|-23296|-65536|"
         denscols = colConv(BasePop_default[[i]])
         assert(denscols, len=5, typ="character")
       })
