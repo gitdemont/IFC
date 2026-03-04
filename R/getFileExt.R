@@ -35,6 +35,7 @@
 #' @return the file extension in lower case if found. Otherwise, "".
 #' @keywords internal
 getFileExt <- function (x) {
+  Encoding(x) <- "bytes"
   pos <- regexpr("\\.([[:alnum:]]+)$", x)
   tolower(ifelse(pos > -1L, substring(x, pos + 1L), ""))
 }

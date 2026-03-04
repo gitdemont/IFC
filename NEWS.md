@@ -149,6 +149,8 @@
 - handle/improve attributes propagation for pops and regions. Should allow future use of regions/pops syncing
 
 #### Miscellaneous
+- better handle file extension extraction
+
 - "sync_utils.R" has been creating to gather functions used for "dual" and "quad" regions
 
 - internal **splits** and **keep_attributes** have been moved from "string_utils.R" to "sync_utils.R"
