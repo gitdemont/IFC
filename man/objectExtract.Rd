@@ -82,7 +82,7 @@ Only applied when export is \code{"base64"}. For example, use \code{"class='drag
 Note that \code{id} (if \code{'base64_id'} is \code{TRUE}) and \code{width} and \code{height} are already used.}
     \item{\code{overwrite}}{only apply when \code{'export'} is \code{"file"} whether to overwrite file or not. Default is \code{FALSE}.}
     \item{\code{composite}}{character vector of image composite. Default is \code{""}, for no image composite.\cr
-Should be like \code{"1.05/2.4/4.55"} for a composition of 5 perc. of channel 1, 40 perc. of channel 2 and 50 perc. of channel 55.\cr
+Should be like \code{"1.05/2.4/4.55"} for a composition of 5 perc. of channel 1, 40 perc. of channel 2 and 55 perc. of channel 4.\cr
 Note that channels should have been acquired and final image composition should be 100 perc., otherwise an error is thrown.\cr
 Note that each composite will be appended after \code{'selection'}.\cr
 Note that composite will be forced to \code{""} when \code{'export'} is \code{"multi"}.}

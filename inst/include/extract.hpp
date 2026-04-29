@@ -206,10 +206,10 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
   if(type == 3) { // a mask is detected parameters are forced
     Rcpp::NumericVector msk_range = Rcpp::NumericVector::create(0.0, 3.0);
     if((removal[0] == "none") || (removal[0] == "raw")) {
-      foo = hpp_align_img(mat, spatialX, spatialY);
-      foo.attr("mask") = hpp_align_msk(msk, spatialX, spatialY);
+      foo = hpp_align_img(mat, spatialX, spatialY, false, 0.0, 0.0);
+      foo.attr("mask") = hpp_align_msk(msk, spatialX, spatialY, false, 0.0, 0.0);
     } else {
-      foo = hpp_cleanse(hpp_align_img(mat, spatialX, spatialY), hpp_align_msk(msk, spatialX, spatialY), false, 0.0, 0.0);
+      foo = hpp_cleanse(hpp_align_img(mat, spatialX, spatialY, false, 0.0, 0.0), hpp_align_msk(msk, spatialX, spatialY,false, 0.0, 0.0), false, 0.0, 0.0);
     } 
     foo = hpp_resize(foo, size[0], size[1], false, 0.0, 0.0);
     if(mode != "raw") {
@@ -253,11 +253,11 @@ Rcpp::NumericVector hpp_transform(const Rcpp::NumericMatrix mat,
       sd_2 = sd;
     }
     if((removal[0] == "none") || (removal[0] == "raw")) {
-      foo = hpp_align_img(mat, spatialX, spatialY);
-      foo.attr("mask") = hpp_align_msk(msk, spatialX, spatialY);
+      foo = hpp_align_img(mat, spatialX, spatialY, add_noise, bg_2, sd_2);
+      foo.attr("mask") = hpp_align_msk(msk, spatialX, spatialY, false, 0.0, 0.0);
     } else {
-      foo = hpp_cleanse(hpp_align_img(mat, spatialX, spatialY), hpp_align_msk(msk, spatialX, spatialY), add_noise, bg_2, sd_2);
-    } 
+      foo = hpp_cleanse(hpp_align_img(mat, spatialX, spatialY, add_noise, bg_2, sd_2), hpp_align_msk(msk, spatialX, spatialY, false, 0.0, 0.0), add_noise, bg_2, sd_2);
+    }
     foo = hpp_resize(foo, size[0], size[1], add_noise, bg_2, sd_2);
     Rcpp::NumericVector img_range = input_range;
     double img_gamma = gamma;

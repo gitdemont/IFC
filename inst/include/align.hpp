@@ -39,6 +39,10 @@ using namespace Rcpp;
 //' @param mat, a NumericMatrix.
 //' @param dx, a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
 //' @param dy, a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
+//' Rcpp::rnorm() function is used. Default is true.
+//' @param bg double, mean value of the background added if add_noise is true. Default is 0.0.
+//' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0.
 //' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
 //' See William E. Ortyn et al. Sensitivity Measurement and Compensation in Spectral Imaging. Cytometry A 69 852-862 (2006).
 //' \doi{10.1002/cyto.a.20306}
@@ -48,7 +52,10 @@ using namespace Rcpp;
 // [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix hpp_align_img(const Rcpp::NumericMatrix mat,
                                   const double dx = NA_REAL,
-                                  const double dy = NA_REAL) {
+                                  const double dy = NA_REAL,
+                                  const bool add_noise = true, 
+                                  const double bg = 0.0,
+                                  const double sd = 0.0) {
   if(any(is_na(Rcpp::NumericVector::create(dx, dy)))) {
     if(all(is_na(Rcpp::NumericVector::create(dx, dy)))) {
       return(Rcpp::clone(mat));
@@ -97,6 +104,10 @@ Rcpp::NumericMatrix hpp_align_img(const Rcpp::NumericMatrix mat,
 //' @param msk, a IntegerMatrix.
 //' @param dx, a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
 //' @param dy, a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
+//' Rcpp::rnorm() function is used. Default is true.
+//' @param bg double, mean value of the background added if add_noise is true. Default is 0.0.
+//' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0.
 //' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
 //' See William E. Ortyn et al. Sensitivity Measurement and Compensation in Spectral Imaging. Cytometry A 69 852-862 (2006).
 //' \doi{10.1002/cyto.a.20306}
@@ -106,7 +117,10 @@ Rcpp::NumericMatrix hpp_align_img(const Rcpp::NumericMatrix mat,
 // [[Rcpp::export(rng = false)]]
 Rcpp::IntegerMatrix hpp_align_msk(const Rcpp::IntegerMatrix msk,
                                   const double dx = NA_REAL,
-                                  const double dy = NA_REAL) {
+                                  const double dy = NA_REAL,
+                                  const bool add_noise = true, 
+                                  const double bg = 0.0,
+                                  const double sd = 0.0) {
   if(any(is_na(Rcpp::NumericVector::create(dx, dy)))) {
     if(all(is_na(Rcpp::NumericVector::create(dx, dy)))) {
       return(Rcpp::clone(msk));
@@ -159,6 +173,10 @@ Rcpp::IntegerMatrix hpp_align_msk(const Rcpp::IntegerMatrix msk,
 //' @param mat, a NumericMatrix.
 //' @param dx, a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
 //' @param dy, a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
+//' Rcpp::rnorm() function is used. Default is true.
+//' @param bg double, mean value of the background added if add_noise is true. Default is 0.0.
+//' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0.
 //' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
 //' See William E. Ortyn et al. Sensitivity Measurement and Compensation in Spectral Imaging. Cytometry A 69 852-862 (2006).
 //' \doi{10.1002/cyto.a.20306}
@@ -168,7 +186,10 @@ Rcpp::IntegerMatrix hpp_align_msk(const Rcpp::IntegerMatrix msk,
 // [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix hpp_align(const Rcpp::NumericMatrix mat,
                               const double dx = NA_REAL,
-                              const double dy = NA_REAL) {
+                              const double dy = NA_REAL,
+                              const bool add_noise = true, 
+                              const double bg = 0.0,
+                              const double sd = 0.0) {
   Rcpp::NumericMatrix out = hpp_align_img(mat, dx, dy);
   if(mat.hasAttribute("mask")) {
     IntegerMatrix foo = mat.attr("mask");

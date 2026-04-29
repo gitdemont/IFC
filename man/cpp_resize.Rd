@@ -4,11 +4,11 @@
 \alias{cpp_resize}
 \title{Matrix Resizing}
 \arguments{
-\item{mat}{a numeric matrix.}
+\item{mat}{Matrix (Raw, Integer, Logical or Numeric).}
 
-\item{new_height}{an unsigned integer, giving the new height of returned mat. Default is 0 for no change.}
+\item{new_height}{a R_len_t, giving the new height of returned mat. Default is 0 for no change. Negative values will remove rows from mat.}
 
-\item{new_width}{an unsigned integer, giving the new width of returned mat. Default is 0 for no change.}
+\item{new_width}{a R_len_t, giving the new width of returned mat. Default is 0 for no change. Negative values will remove cols from mat.}
 
 \item{add_noise}{logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
 Rcpp::rnorm() function is used. Default is true.}
@@ -16,6 +16,8 @@ Rcpp::rnorm() function is used. Default is true.}
 \item{bg}{double, mean value of the background added if add_noise is true. Default is 0.}
 
 \item{sd}{double, standard deviation of the background added if add_noise is true. Default is 0.}
+
+\item{front}{a bool, whether to apply cropping from front. Default is false.}
 }
 \value{
 a resized matrix with padding background if new_height or new_width is larger than original mat dimensions.

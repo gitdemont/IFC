@@ -4,11 +4,13 @@
 \alias{cpp_crop}
 \title{Matrix Cropping}
 \arguments{
-\item{mat}{a numeric matrix.}
+\item{mat}{Matrix (Raw, Integer, Logical or Numeric).}
 
-\item{new_height}{an unsigned integer, giving the new height of returned mat. Default is 0 for no change.}
+\item{new_height}{a R_len_t, giving the new height of returned mat. Default is 0 for no change. Negative values will remove rows from mat.}
 
-\item{new_width}{an unsigned integer, giving the new width of returned mat. Default is 0 for no change.}
+\item{new_width}{a R_len_t, giving the new width of returned mat. Default is 0 for no change. Negative values will remove cols from mat.}
+
+\item{front}{a bool, whether to apply cropping from front. Default is false.}
 }
 \value{
 a cropped matrix.

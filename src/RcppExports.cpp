@@ -20,14 +20,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_align
-Rcpp::NumericMatrix cpp_align(const Rcpp::NumericMatrix mat, const double dx, const double dy);
-RcppExport SEXP _IFC_cpp_align(SEXP matSEXP, SEXP dxSEXP, SEXP dySEXP) {
+Rcpp::NumericMatrix cpp_align(const Rcpp::NumericMatrix mat, const double dx, const double dy, const bool add_noise, const double bg, const double sd);
+RcppExport SEXP _IFC_cpp_align(SEXP matSEXP, SEXP dxSEXP, SEXP dySEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type mat(matSEXP);
     Rcpp::traits::input_parameter< const double >::type dx(dxSEXP);
     Rcpp::traits::input_parameter< const double >::type dy(dySEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_align(mat, dx, dy));
+    Rcpp::traits::input_parameter< const bool >::type add_noise(add_noiseSEXP);
+    Rcpp::traits::input_parameter< const double >::type bg(bgSEXP);
+    Rcpp::traits::input_parameter< const double >::type sd(sdSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_align(mat, dx, dy, add_noise, bg, sd));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -545,30 +548,32 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_crop
-Rcpp::NumericMatrix cpp_crop(Rcpp::NumericMatrix mat, const R_len_t new_height, const R_len_t new_width);
-RcppExport SEXP _IFC_cpp_crop(SEXP matSEXP, SEXP new_heightSEXP, SEXP new_widthSEXP) {
+SEXP cpp_crop(SEXP mat, const R_len_t new_height, const R_len_t new_width, const bool front);
+RcppExport SEXP _IFC_cpp_crop(SEXP matSEXP, SEXP new_heightSEXP, SEXP new_widthSEXP, SEXP frontSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type mat(matSEXP);
     Rcpp::traits::input_parameter< const R_len_t >::type new_height(new_heightSEXP);
     Rcpp::traits::input_parameter< const R_len_t >::type new_width(new_widthSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_crop(mat, new_height, new_width));
+    Rcpp::traits::input_parameter< const bool >::type front(frontSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_crop(mat, new_height, new_width, front));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_resize
-Rcpp::NumericMatrix cpp_resize(const Rcpp::NumericMatrix mat, const R_len_t new_height, const R_len_t new_width, const bool add_noise, const double bg, const double sd);
-RcppExport SEXP _IFC_cpp_resize(SEXP matSEXP, SEXP new_heightSEXP, SEXP new_widthSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP) {
+SEXP cpp_resize(SEXP mat, const R_len_t new_height, const R_len_t new_width, const bool add_noise, const double bg, const double sd, const bool front);
+RcppExport SEXP _IFC_cpp_resize(SEXP matSEXP, SEXP new_heightSEXP, SEXP new_widthSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP, SEXP frontSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type mat(matSEXP);
     Rcpp::traits::input_parameter< const R_len_t >::type new_height(new_heightSEXP);
     Rcpp::traits::input_parameter< const R_len_t >::type new_width(new_widthSEXP);
     Rcpp::traits::input_parameter< const bool >::type add_noise(add_noiseSEXP);
     Rcpp::traits::input_parameter< const double >::type bg(bgSEXP);
     Rcpp::traits::input_parameter< const double >::type sd(sdSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_resize(mat, new_height, new_width, add_noise, bg, sd));
+    Rcpp::traits::input_parameter< const bool >::type front(frontSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_resize(mat, new_height, new_width, add_noise, bg, sd, front));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -748,7 +753,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_getBits", (DL_FUNC) &_IFC_cpp_getBits, 0},
-    {"_IFC_cpp_align", (DL_FUNC) &_IFC_cpp_align, 3},
+    {"_IFC_cpp_align", (DL_FUNC) &_IFC_cpp_align, 6},
     {"_IFC_cpp_assert", (DL_FUNC) &_IFC_cpp_assert, 6},
     {"_IFC_cpp_ell_coord", (DL_FUNC) &_IFC_cpp_ell_coord, 2},
     {"_IFC_cpp_pnt_in_gate", (DL_FUNC) &_IFC_cpp_pnt_in_gate, 4},
@@ -793,8 +798,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_as_nativeRaster", (DL_FUNC) &_IFC_cpp_as_nativeRaster, 1},
     {"_IFC_cpp_draw", (DL_FUNC) &_IFC_cpp_draw, 6},
     {"_IFC_cpp_raster", (DL_FUNC) &_IFC_cpp_raster, 4},
-    {"_IFC_cpp_crop", (DL_FUNC) &_IFC_cpp_crop, 3},
-    {"_IFC_cpp_resize", (DL_FUNC) &_IFC_cpp_resize, 6},
+    {"_IFC_cpp_crop", (DL_FUNC) &_IFC_cpp_crop, 4},
+    {"_IFC_cpp_resize", (DL_FUNC) &_IFC_cpp_resize, 7},
     {"_IFC_cpp_decomp", (DL_FUNC) &_IFC_cpp_decomp, 9},
     {"_IFC_cpp_rawdecomp", (DL_FUNC) &_IFC_cpp_rawdecomp, 8},
     {"_IFC_cpp_normalize", (DL_FUNC) &_IFC_cpp_normalize, 5},

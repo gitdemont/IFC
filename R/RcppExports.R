@@ -16,6 +16,10 @@ NULL
 #' @param mat, a NumericMatrix.
 #' @param dx, a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
 #' @param dy, a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
+#' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
+#' Rcpp::rnorm() function is used. Default is true.
+#' @param bg double, mean value of the background added if add_noise is true. Default is 0.0.
+#' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0.
 #' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
 #' See William E. Ortyn et al. Sensitivity Measurement and Compensation in Spectral Imaging. Cytometry A 69 852-862 (2006).
 #' \doi{10.1002/cyto.a.20306}
@@ -533,9 +537,10 @@ NULL
 #' @name cpp_crop
 #' @description
 #' Crops mat according to new_height and new_width parameters.
-#' @param mat a numeric matrix.
-#' @param new_height an unsigned integer, giving the new height of returned mat. Default is 0 for no change.
-#' @param new_width an unsigned integer, giving the new width of returned mat. Default is 0 for no change.
+#' @param mat Matrix (Raw, Integer, Logical or Numeric).
+#' @param new_height a R_len_t, giving the new height of returned mat. Default is 0 for no change. Negative values will remove rows from mat.
+#' @param new_width a R_len_t, giving the new width of returned mat. Default is 0 for no change. Negative values will remove cols from mat.
+#' @param front a bool, whether to apply cropping from front. Default is false.
 #' @return a cropped matrix.
 #' @keywords internal
 NULL
@@ -544,13 +549,14 @@ NULL
 #' @name cpp_resize
 #' @description
 #' Resizes mat according to new_height and new_width parameters.
-#' @param mat a numeric matrix.
-#' @param new_height an unsigned integer, giving the new height of returned mat. Default is 0 for no change.
-#' @param new_width an unsigned integer, giving the new width of returned mat. Default is 0 for no change.
+#' @param mat Matrix (Raw, Integer, Logical or Numeric).
+#' @param new_height a R_len_t, giving the new height of returned mat. Default is 0 for no change. Negative values will remove rows from mat.
+#' @param new_width a R_len_t, giving the new width of returned mat. Default is 0 for no change. Negative values will remove cols from mat.
 #' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
 #' Rcpp::rnorm() function is used. Default is true.
 #' @param bg double, mean value of the background added if add_noise is true. Default is 0.
 #' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
+#' @param front a bool, whether to apply cropping from front. Default is false.
 #' @return a resized matrix with padding background if new_height or new_width is larger than original mat dimensions.
 #' @keywords internal
 NULL
@@ -802,8 +808,8 @@ cpp_getBits <- function() {
     .Call(`_IFC_cpp_getBits`)
 }
 
-cpp_align <- function(mat, dx = NA_real_, dy = NA_real_) {
-    .Call(`_IFC_cpp_align`, mat, dx, dy)
+cpp_align <- function(mat, dx = NA_real_, dy = NA_real_, add_noise = TRUE, bg = 0.0, sd = 0.0) {
+    .Call(`_IFC_cpp_align`, mat, dx, dy, add_noise, bg, sd)
 }
 
 cpp_assert <- function(x, len = NULL, cla = NULL, typ = NULL, alw = NULL, fun = "stop") {
@@ -982,12 +988,12 @@ cpp_raster <- function(width, height, obj, bg_ = NULL) {
     .Call(`_IFC_cpp_raster`, width, height, obj, bg_)
 }
 
-cpp_crop <- function(mat, new_height = 0L, new_width = 0L) {
-    .Call(`_IFC_cpp_crop`, mat, new_height, new_width)
+cpp_crop <- function(mat, new_height = 0L, new_width = 0L, front = FALSE) {
+    .Call(`_IFC_cpp_crop`, mat, new_height, new_width, front)
 }
 
-cpp_resize <- function(mat, new_height = 0L, new_width = 0L, add_noise = TRUE, bg = 0.0, sd = 0.0) {
-    .Call(`_IFC_cpp_resize`, mat, new_height, new_width, add_noise, bg, sd)
+cpp_resize <- function(mat, new_height = 0L, new_width = 0L, add_noise = TRUE, bg = 0.0, sd = 0.0, front = FALSE) {
+    .Call(`_IFC_cpp_resize`, mat, new_height, new_width, add_noise, bg, sd, front)
 }
 
 cpp_decomp <- function(fname, offset, nbytes, imgWidth = 1L, imgHeight = 1L, nb_channels = 1L, removal = 0L, compression = 30818L, verbose = FALSE) {

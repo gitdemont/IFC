@@ -34,57 +34,63 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-//' @title Header for Matrix Cropping
-//' @name cpp_crop
-//' @description
-//' Crops mat according to new_height and new_width parameters.
-//' @param mat a numeric matrix.
-//' @param new_height an unsigned integer, giving the new height of returned mat. Default is 0 for no change.
-//' @param new_width an unsigned integer, giving the new width of returned mat. Default is 0 for no change.
-//' @return a cropped matrix.
-//' @keywords internal
-////' @export
-// [[Rcpp::export(rng = false)]]
-Rcpp::NumericMatrix hpp_crop (Rcpp::NumericMatrix mat,
-                              const R_len_t new_height = 0,
-                              const R_len_t new_width = 0) {
+template <int RTYPE>  
+Rcpp::Matrix<RTYPE> crop_T(Rcpp::Matrix<RTYPE> mat,
+                           const R_len_t new_height = 0,
+                           const R_len_t new_width = 0,
+                           const bool front = false) {
   R_len_t img_c, img_r;
   img_c = mat.ncol();
   img_r = mat.nrow();
+  R_len_t new_h = new_height < 0 ? std::max(0, img_r + new_height) : new_height;
+  R_len_t new_w = new_width < 0 ? std::max(0, img_c +new_width) : new_width;  
+  
   // new dimensions are larger than original dimensions, no need to crop
-  if((img_c <= new_width) && (img_r <= new_height)) return mat;
-  // new width is larger than original width and new_height is 0, no need to crop
-  if((img_c <= new_width) && (new_height == 0)) return mat;
-  // new height is larger than original height and new_width is 0, no need to crop
-  if((img_r <= new_height) && (new_width == 0)) return mat;
+  if((img_c <= new_w) && (img_r <= new_h)) return mat;
+  // new width is larger than original width and new_h is 0, no need to crop
+  if((img_c <= new_w) && (new_h == 0)) return mat;
+  // new height is larger than original height and new_w is 0, no need to crop
+  if((img_r <= new_h) && (new_w == 0)) return mat;
   
   R_len_t ori_c, ori_r, crop_c, crop_r;
   // height resizing
-  if((new_height > 0) && (new_height < img_r)) {
+  if((new_h > 0) && (new_h < img_r)) {
     // compute same amount of rows to remove on top-bottom
-    ori_r = (img_r - new_height) >> 1;
-    crop_r = new_height;
+    ori_r = (img_r - new_h) >> 1;
+    if(front) {
+      crop_r = img_r - ori_r - 1;
+      if((img_r - new_h) % 2) ori_r++;
+    } else {
+      crop_r = new_h + ori_r - 1;
+    }
   } else { // no height resizing
     ori_r = 0;
-    crop_r = img_r;
+    crop_r = img_r - 1;
   }
   // width resizing
-  if((new_width > 0) && (new_width < img_c)) {
+  if((new_w > 0) && (new_w < img_c)) {
     // compute same amount of cols to remove on right-left
-    ori_c = (img_c - new_width) >> 1;
-    crop_c = new_width;
+    ori_c = (img_c - new_w) >> 1;
+    if(front) {
+      crop_c = img_c - ori_c - 1;
+      if((img_c - new_w) % 2) ori_c++;
+    } else {
+      crop_c = new_w + ori_c - 1;
+    }
   } else { // no width resizing
     ori_c = 0;
-    crop_c = img_c;
+    crop_c = img_c - 1;
   }
-  return mat( Rcpp::Range(ori_r,crop_r + ori_r - 1) , Rcpp::Range(ori_c,crop_c + ori_c - 1) );
+  return mat( Rcpp::Range(ori_r, crop_r) , Rcpp::Range(ori_c, crop_c));
 }
 
 // function to expand matrix without adding noise
-Rcpp::NumericMatrix hpp_expand_no_noise (const Rcpp::NumericMatrix mat,
-                                         const R_len_t new_height = 0,
-                                         const R_len_t new_width = 0,
-                                         const double bg = 0.0) {
+template <int RTYPE> 
+SEXP expand_no_noise_T(Rcpp::Matrix<RTYPE> mat,
+                       const R_len_t new_height = 0,
+                       const R_len_t new_width = 0,
+                       const double bg = 0.0,
+                       const bool front = false) {
   R_len_t img_r, img_c;
   img_r = mat.nrow();
   img_c = mat.ncol();
@@ -101,23 +107,36 @@ Rcpp::NumericMatrix hpp_expand_no_noise (const Rcpp::NumericMatrix mat,
   ori_c = (fin_width-img_c) >> 1;
   
   // create output matrix with expanded dimension and fill with bg
-  Rcpp::NumericMatrix out = Rcpp::no_init(fin_height, fin_width);
+  Rcpp::Matrix<RTYPE> out = Rcpp::no_init(fin_height, fin_width);
   out.fill(bg);
   
   // write mat into center of output matrix
-  for(i_col = 0; i_col < img_c; i_col++) {
-    i_out = (i_col + ori_c) * fin_height + ori_r;
-    for(i_row = 0; i_row < img_r; i_row++) {
-      out[i_out++] = mat(i_row, i_col);
+  if(front) {
+    if((fin_height-img_r) % 2) ori_r++;
+    if((fin_width-img_c) % 2) ori_c++;
+    for(i_col = img_c - 1 + ori_c, i_out = mat.size() - 1; i_col >= ori_c; i_col--) {
+      for(i_row = img_r - 1 + ori_r; i_row >= ori_r; i_row--) {
+        out(i_row, i_col) = mat[i_out--];
+      }
+    }
+  } else {
+    for(i_col = 0; i_col < img_c; i_col++) {
+      i_out = (i_col + ori_c) * fin_height + ori_r;
+      for(i_row = 0; i_row < img_r; i_row++) {
+        out[i_out++] = mat(i_row, i_col);
+      }
     }
   }
   return out;
 }
 
 // function to expand matrix with new rows adding noisy padding bg
-Rcpp::NumericMatrix hpp_expand_row (const Rcpp::NumericMatrix mat,
-                                    const R_len_t new_height = 0,
-                                    const double bg = 0.0, const double sd = 0.0) {
+template <int RTYPE> 
+SEXP expand_row_T(Rcpp::Matrix<RTYPE> mat,
+                  const R_len_t new_height = 0,
+                  const double bg = 0.0,
+                  const double sd = 0.0,
+                  const bool front = false) {
   R_len_t img_r = mat.nrow();
   // new dimensions are smaller than original dimensions, no need to expand
   if(img_r >= new_height) return mat;
@@ -126,9 +145,10 @@ Rcpp::NumericMatrix hpp_expand_row (const Rcpp::NumericMatrix mat,
   img_c = mat.ncol();
   // compute row padding
   ori_r = (new_height-img_r) >> 1;
+  if(front) if((new_height-img_r) % 2) ori_r++;
   
   // create output matrix with expanded rows
-  Rcpp::NumericMatrix out = Rcpp::no_init(new_height, img_c);
+  Rcpp::Matrix<RTYPE> out = Rcpp::no_init(new_height, img_c);
   
   // write top padding
   for(i = 0; i < ori_r; i++) out(i, Rcpp::_) = Rcpp::rnorm(img_c, bg, sd);
@@ -140,9 +160,12 @@ Rcpp::NumericMatrix hpp_expand_row (const Rcpp::NumericMatrix mat,
 }
 
 // function to expand matrix with new columns adding noisy padding bg
-Rcpp::NumericMatrix hpp_expand_col (const Rcpp::NumericMatrix mat,
-                                    const R_len_t new_width = 0,
-                                    const double bg = 0.0, const double sd = 0.0) {
+template <int RTYPE> 
+SEXP expand_col_T(Rcpp::Matrix<RTYPE> mat,
+                  const R_len_t new_width = 0,
+                  const double bg = 0.0,
+                  const double sd = 0.0,
+                  const bool front = false) {
   R_len_t img_c = mat.ncol();
   // new dimensions are smaller than original dimensions, no need to expand
   if(img_c >= new_width) return mat;
@@ -151,9 +174,10 @@ Rcpp::NumericMatrix hpp_expand_col (const Rcpp::NumericMatrix mat,
   img_r = mat.nrow();
   // compute row padding
   ori_c = (new_width-img_c) >> 1;
+  if(front) if((new_width-img_c) % 2) ori_c++;
   
   // create output matrix with expanded rows
-  Rcpp::NumericMatrix out = Rcpp::no_init(img_r, new_width);
+  Rcpp::Matrix<RTYPE> out = Rcpp::no_init(img_r, new_width);
   
   // write left padding
   for(i = 0; i < ori_c; i++) out(Rcpp::_, i) = Rcpp::rnorm(img_r, bg, sd);
@@ -166,43 +190,93 @@ Rcpp::NumericMatrix hpp_expand_col (const Rcpp::NumericMatrix mat,
 }
 
 // function to expand matrix with padding noisy bg
-Rcpp::NumericMatrix hpp_expand_w_noise (const Rcpp::NumericMatrix mat, 
-                                        const R_len_t new_height = 0,
-                                        const R_len_t new_width = 0,
-                                        const double bg = 0.0, const double sd = 0.0) {
-  Rcpp::NumericMatrix M0 = hpp_expand_col(mat, new_width, bg, sd);
-  return hpp_expand_row(M0, new_height, bg, sd);
+template <int RTYPE> 
+SEXP expand_w_noise_T(Rcpp::Matrix<RTYPE> mat,
+                      const R_len_t new_height = 0,
+                      const R_len_t new_width = 0,
+                      const double bg = 0.0,
+                      const double sd = 0.0,
+                      const bool front = false) {
+  Rcpp::Matrix<RTYPE> M0 = expand_col_T(mat, new_width, bg, sd, front);
+  return expand_row_T(M0, new_height, bg, sd, front);
+}
+
+template <int RTYPE> 
+SEXP resize_T(Rcpp::Matrix<RTYPE> mat,
+              const R_len_t new_height = 0,
+              const R_len_t new_width = 0,
+              const bool add_noise = true,
+              const double bg = 0.0,
+              const double sd = 0.0,
+              const bool front = false) {
+  Rcpp::Matrix<RTYPE> crop = crop_T(mat, new_height, new_width, front);
+  Rcpp::Matrix<RTYPE> out;
+  if(add_noise) {
+    out = expand_w_noise_T(crop, new_height, new_width, bg, sd, front);
+  } else {
+    out = expand_no_noise_T(crop, new_height, new_width, bg, front);
+  }
+  if(mat.hasAttribute("mask")) out.attr("mask") = mat.attr("mask");
+  return out;
+}
+
+//' @title Header for Matrix Cropping
+//' @name cpp_crop
+//' @description
+//' Crops mat according to new_height and new_width parameters.
+//' @param mat Matrix (Raw, Integer, Logical or Numeric).
+//' @param new_height a R_len_t, giving the new height of returned mat. Default is 0 for no change. Negative values will remove rows from mat.
+//' @param new_width a R_len_t, giving the new width of returned mat. Default is 0 for no change. Negative values will remove cols from mat.
+//' @param front a bool, whether to apply cropping from front. Default is false.
+//' @return a cropped matrix.
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+SEXP hpp_crop (SEXP mat,
+               const R_len_t new_height = 0,
+               const R_len_t new_width = 0, 
+               const bool front = false) {
+  switch(TYPEOF(mat)) {
+  // case NILSXP : return mat;
+  case RAWSXP : return crop_T<RAWSXP>(mat, new_height, new_width, front);
+  case LGLSXP : return crop_T<LGLSXP>(mat, new_height, new_width, front);
+  case INTSXP : return crop_T<INTSXP>(mat, new_height, new_width, front);;
+  case REALSXP : return crop_T<REALSXP>(mat, new_height, new_width, front);
+  default: Rcpp::stop("hpp_crop: not supported type in 'mat'");
+  }
 }
 
 //' @title Header for Matrix Resizing
 //' @name cpp_resize
 //' @description
 //' Resizes mat according to new_height and new_width parameters.
-//' @param mat a numeric matrix.
-//' @param new_height an unsigned integer, giving the new height of returned mat. Default is 0 for no change.
-//' @param new_width an unsigned integer, giving the new width of returned mat. Default is 0 for no change.
+//' @param mat Matrix (Raw, Integer, Logical or Numeric).
+//' @param new_height a R_len_t, giving the new height of returned mat. Default is 0 for no change. Negative values will remove rows from mat.
+//' @param new_width a R_len_t, giving the new width of returned mat. Default is 0 for no change. Negative values will remove cols from mat.
 //' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
 //' Rcpp::rnorm() function is used. Default is true.
 //' @param bg double, mean value of the background added if add_noise is true. Default is 0.
 //' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
+//' @param front a bool, whether to apply cropping from front. Default is false.
 //' @return a resized matrix with padding background if new_height or new_width is larger than original mat dimensions.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-Rcpp::NumericMatrix hpp_resize (const Rcpp::NumericMatrix mat, 
-                                const R_len_t new_height = 0, 
-                                const R_len_t new_width = 0,
-                                const bool add_noise = true, 
-                                const double bg = 0.0, const double sd = 0.0) {
-  Rcpp::NumericMatrix crop = hpp_crop(mat, new_height, new_width);
-  Rcpp::NumericMatrix out;
-  if(add_noise) {
-    out = hpp_expand_w_noise(crop, new_height, new_width, bg, sd);
-  } else {
-    out = hpp_expand_no_noise(crop, new_height, new_width, bg);
+SEXP hpp_resize (SEXP mat,
+                 const R_len_t new_height = 0, 
+                 const R_len_t new_width = 0,
+                 const bool add_noise = true, 
+                 const double bg = 0.0,
+                 const double sd = 0.0,
+                 const bool front = false) {
+  switch(TYPEOF(mat)) {
+  // case NILSXP : return mat;
+  case RAWSXP : return resize_T<RAWSXP>(mat, new_height, new_width, add_noise, bg, sd, front);
+  case LGLSXP : return resize_T<LGLSXP>(mat, new_height, new_width, add_noise, bg, sd, front);
+  case INTSXP : return resize_T<INTSXP>(mat, new_height, new_width, add_noise, bg, sd, front);
+  case REALSXP : return resize_T<REALSXP>(mat, new_height, new_width, add_noise, bg, sd, front);
+  default: Rcpp::stop("hpp_resize: not supported type in 'mat'");
   }
-  if(mat.hasAttribute("mask")) out.attr("mask") = mat.attr("mask");
-  return out;
 }
 
 #endif

@@ -70,6 +70,10 @@ unsigned int cpp_getBits () {
 //' @param mat, a NumericMatrix.
 //' @param dx, a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
 //' @param dy, a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
+//' Rcpp::rnorm() function is used. Default is true.
+//' @param bg double, mean value of the background added if add_noise is true. Default is 0.0.
+//' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0.
 //' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
 //' See William E. Ortyn et al. Sensitivity Measurement and Compensation in Spectral Imaging. Cytometry A 69 852-862 (2006).
 //' \doi{10.1002/cyto.a.20306}
@@ -79,8 +83,11 @@ unsigned int cpp_getBits () {
 // [[Rcpp::export(rng = false)]]
 Rcpp::NumericMatrix cpp_align(const Rcpp::NumericMatrix mat,
                               const double dx = NA_REAL,
-                              const double dy = NA_REAL) {
-  return hpp_align(mat, dx, dy);
+                              const double dy = NA_REAL,
+                              const bool add_noise = true, 
+                              const double bg = 0.0,
+                              const double sd = 0.0) {
+  return hpp_align(mat, dx, dy, add_noise, bg, sd);
 }
 // END align
 
@@ -860,40 +867,44 @@ Rcpp::IntegerVector cpp_raster (const uint16_t width,
 //' @name cpp_crop
 //' @description
 //' Crops mat according to new_height and new_width parameters.
-//' @param mat a numeric matrix.
-//' @param new_height an unsigned integer, giving the new height of returned mat. Default is 0 for no change.
-//' @param new_width an unsigned integer, giving the new width of returned mat. Default is 0 for no change.
+//' @param mat Matrix (Raw, Integer, Logical or Numeric).
+//' @param new_height a R_len_t, giving the new height of returned mat. Default is 0 for no change. Negative values will remove rows from mat.
+//' @param new_width a R_len_t, giving the new width of returned mat. Default is 0 for no change. Negative values will remove cols from mat.
+//' @param front a bool, whether to apply cropping from front. Default is false.
 //' @return a cropped matrix.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
-Rcpp::NumericMatrix cpp_crop (Rcpp::NumericMatrix mat,
-                              const R_len_t new_height = 0,
-                              const R_len_t new_width = 0) {
-  return hpp_crop(mat, new_height, new_width);
+SEXP cpp_crop (SEXP mat,
+               const R_len_t new_height = 0,
+               const R_len_t new_width = 0,
+               const bool front = false) {
+  return hpp_crop(mat, new_height, new_width, front);
 }
 
 //' @title Matrix Resizing
 //' @name cpp_resize
 //' @description
 //' Resizes mat according to new_height and new_width parameters.
-//' @param mat a numeric matrix.
-//' @param new_height an unsigned integer, giving the new height of returned mat. Default is 0 for no change.
-//' @param new_width an unsigned integer, giving the new width of returned mat. Default is 0 for no change.
+//' @param mat Matrix (Raw, Integer, Logical or Numeric).
+//' @param new_height a R_len_t, giving the new height of returned mat. Default is 0 for no change. Negative values will remove rows from mat.
+//' @param new_width a R_len_t, giving the new width of returned mat. Default is 0 for no change. Negative values will remove cols from mat.
 //' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
 //' Rcpp::rnorm() function is used. Default is true.
 //' @param bg double, mean value of the background added if add_noise is true. Default is 0.
 //' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
+//' @param front a bool, whether to apply cropping from front. Default is false.
 //' @return a resized matrix with padding background if new_height or new_width is larger than original mat dimensions.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export]]
-Rcpp::NumericMatrix cpp_resize (const Rcpp::NumericMatrix mat, 
-                                const R_len_t new_height = 0, 
-                                const R_len_t new_width = 0,
-                                const bool add_noise = true, 
-                                const double bg = 0.0, const double sd = 0.0) {
-  return hpp_resize(mat, new_height, new_width, add_noise, bg, sd);
+SEXP cpp_resize (SEXP mat,
+                 const R_len_t new_height = 0,
+                 const R_len_t new_width = 0,
+                 const bool add_noise = true,
+                 const double bg = 0.0, const double sd = 0.0,
+                 const bool front = false) {
+  return hpp_resize(mat, new_height, new_width, add_noise, bg, sd, front);
 }
 // END resize
 
