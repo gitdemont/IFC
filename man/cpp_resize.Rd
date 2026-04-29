@@ -10,8 +10,7 @@
 
 \item{new_width}{a R_len_t, giving the new width of returned mat. Default is 0 for no change. Negative values will remove cols from mat.}
 
-\item{add_noise}{logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
-Rcpp::rnorm() function is used. Default is true.}
+\item{add_noise}{logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions. Rcpp::rnorm() function is used. Default is true.}
 
 \item{bg}{double, mean value of the background added if add_noise is true. Default is 0.}
 

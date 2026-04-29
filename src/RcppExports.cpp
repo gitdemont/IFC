@@ -34,6 +34,40 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cpp_upscale
+Rcpp::NumericMatrix cpp_upscale(SEXP mat, const double scale, const bool resize, const uint8_t interpolation, const bool add_noise, const double bg, const double sd);
+RcppExport SEXP _IFC_cpp_upscale(SEXP matSEXP, SEXP scaleSEXP, SEXP resizeSEXP, SEXP interpolationSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< const double >::type scale(scaleSEXP);
+    Rcpp::traits::input_parameter< const bool >::type resize(resizeSEXP);
+    Rcpp::traits::input_parameter< const uint8_t >::type interpolation(interpolationSEXP);
+    Rcpp::traits::input_parameter< const bool >::type add_noise(add_noiseSEXP);
+    Rcpp::traits::input_parameter< const double >::type bg(bgSEXP);
+    Rcpp::traits::input_parameter< const double >::type sd(sdSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_upscale(mat, scale, resize, interpolation, add_noise, bg, sd));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_downscale
+Rcpp::NumericMatrix cpp_downscale(SEXP mat, const double scale, const bool resize, const uint8_t interpolation, const bool add_noise, const double bg, const double sd);
+RcppExport SEXP _IFC_cpp_downscale(SEXP matSEXP, SEXP scaleSEXP, SEXP resizeSEXP, SEXP interpolationSEXP, SEXP add_noiseSEXP, SEXP bgSEXP, SEXP sdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mat(matSEXP);
+    Rcpp::traits::input_parameter< const double >::type scale(scaleSEXP);
+    Rcpp::traits::input_parameter< const bool >::type resize(resizeSEXP);
+    Rcpp::traits::input_parameter< const uint8_t >::type interpolation(interpolationSEXP);
+    Rcpp::traits::input_parameter< const bool >::type add_noise(add_noiseSEXP);
+    Rcpp::traits::input_parameter< const double >::type bg(bgSEXP);
+    Rcpp::traits::input_parameter< const double >::type sd(sdSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_downscale(mat, scale, resize, interpolation, add_noise, bg, sd));
+    return rcpp_result_gen;
+END_RCPP
+}
 // cpp_assert
 Rcpp::LogicalVector cpp_assert(const RObject x, const Rcpp::Nullable<Rcpp::IntegerVector> len, const Rcpp::Nullable<Rcpp::CharacterVector> cla, const Rcpp::Nullable<Rcpp::CharacterVector> typ, const RObject alw, const Rcpp::CharacterVector fun);
 RcppExport SEXP _IFC_cpp_assert(SEXP xSEXP, SEXP lenSEXP, SEXP claSEXP, SEXP typSEXP, SEXP alwSEXP, SEXP funSEXP) {
@@ -754,6 +788,8 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_getBits", (DL_FUNC) &_IFC_cpp_getBits, 0},
     {"_IFC_cpp_align", (DL_FUNC) &_IFC_cpp_align, 6},
+    {"_IFC_cpp_upscale", (DL_FUNC) &_IFC_cpp_upscale, 7},
+    {"_IFC_cpp_downscale", (DL_FUNC) &_IFC_cpp_downscale, 7},
     {"_IFC_cpp_assert", (DL_FUNC) &_IFC_cpp_assert, 6},
     {"_IFC_cpp_ell_coord", (DL_FUNC) &_IFC_cpp_ell_coord, 2},
     {"_IFC_cpp_pnt_in_gate", (DL_FUNC) &_IFC_cpp_pnt_in_gate, 4},

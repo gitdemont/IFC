@@ -30,6 +30,7 @@
 #define IFC_ALIGN_HPP
   
 #include <Rcpp.h>
+#include "affine.hpp"
 using namespace Rcpp;
 
 //' @title Spatial Offsets Image Correction for Image
@@ -37,10 +38,9 @@ using namespace Rcpp;
 //' @description
 //' This function uses bilinear interpolation to apply spatial offset correction on image
 //' @param mat, a NumericMatrix.
-//' @param dx, a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
-//' @param dy, a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
-//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
-//' Rcpp::rnorm() function is used. Default is true.
+//' @param dx, a double x spatial offset. Default is NA_REAL for no change.
+//' @param dy, a double y spatial offset. Default is NA_REAL for no change.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions. Rcpp::rnorm() function is used. Default is true.
 //' @param bg double, mean value of the background added if add_noise is true. Default is 0.0.
 //' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0.
 //' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
@@ -61,40 +61,12 @@ Rcpp::NumericMatrix hpp_align_img(const Rcpp::NumericMatrix mat,
       return(Rcpp::clone(mat));
     }
     Rcpp::stop("hpp_align_img: bad offset value");
-  } 
-  if((std::abs(dx) >= 1.0) || (std::abs(dy) >= 1.0)) Rcpp::stop("hpp_align_img: offset should be ]-1,+1[");
-  R_len_t mat_r = mat.nrow();
-  R_len_t mat_c = mat.ncol();
-  Rcpp::NumericMatrix out = Rcpp::no_init_matrix(mat_r, mat_c);
-  if((dx == 0.0) && (dy == 0.0)) {
-    for(R_len_t i_col = 1; i_col < mat_c - 1; i_col++) {
-      for(R_len_t i_row = 1; i_row < mat_r - 1; i_row++) {
-        out(i_row, i_col) = mat(i_row, i_col);
-      }
-    }
-    return out(Rcpp::Range(1, mat_r - 2), Rcpp::Range(1, mat_c  - 2)); 
-  } else {
-    double sx = dx, sy = dy, ssx, ssy;
-    uint8_t deltax = 0, deltay = 0;
-    if(dx < 0) {
-      sx = 1 - std::abs(dx);
-      deltax = 1;
-    }
-    if(dy < 0) {
-      sy = 1 - std::abs(dy);
-      deltay = 1;
-    }
-    ssx = 1 - sx;
-    ssy = 1 - sy;
-    for(R_len_t i_col = 0; i_col < mat_c - 1; i_col++) {
-      for(R_len_t i_row = 0; i_row < mat_r - 1; i_row++) {
-        out(i_row, i_col) = (mat(i_row    , i_col) * ssx + mat(i_row    , i_col + 1) * sx) * ssy +
-                            (mat(i_row + 1, i_col) * ssx + mat(i_row + 1, i_col + 1) * sx) * sy;
-      }
-    }
-    return out(Rcpp::Range(1 - deltay, mat_r - 2 - deltay), Rcpp::Range(1 - deltax, mat_c  - 2 - deltax));
   }
-  return R_NilValue;
+  if(dx == 0.0 && dy == 0.0) return(mat);
+  // if((std::abs(dx) >= 1.0) || (std::abs(dy) >= 1.0)) Rcpp::stop("hpp_align_img: offset should be ]-1,+1[");
+  Rcpp::NumericMatrix tr = Rcpp::no_init_matrix(2, 3);
+  tr[0] = 1.0; tr[1] = 0.0; tr[2] = 0.0; tr[3] = 1.0; tr[4] = dx; tr[5] = dy;
+  return affine_T(mat, tr, Rcpp::IntegerVector::create(0,0), 2, add_noise, bg, sd);
 }
 
 //' @title Spatial Offsets Image Correction for Mask
@@ -102,10 +74,9 @@ Rcpp::NumericMatrix hpp_align_img(const Rcpp::NumericMatrix mat,
 //' @description
 //' This function uses bilinear interpolation to apply spatial offset correction on mask
 //' @param msk, a IntegerMatrix.
-//' @param dx, a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
-//' @param dy, a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
-//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
-//' Rcpp::rnorm() function is used. Default is true.
+//' @param dx, a double x spatial offset. Default is NA_REAL for no change.
+//' @param dy, a double y spatial offset. Default is NA_REAL for no change.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions. Rcpp::rnorm() function is used. Default is true.
 //' @param bg double, mean value of the background added if add_noise is true. Default is 0.0.
 //' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0.
 //' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
@@ -126,44 +97,14 @@ Rcpp::IntegerMatrix hpp_align_msk(const Rcpp::IntegerMatrix msk,
       return(Rcpp::clone(msk));
     }
     Rcpp::stop("hpp_align_msk: bad offset value");
-  } 
-  if((std::abs(dx) >= 1.0) || (std::abs(dy) >= 1.0)) Rcpp::stop("hpp_align_msk: offset should be ]-1,+1[");
-  R_len_t mat_r = msk.nrow();
-  R_len_t mat_c = msk.ncol();
-  Rcpp::IntegerMatrix out = Rcpp::no_init_matrix(mat_r, mat_c);
-  if((dx == 0.0) && (dy == 0.0)) {
-    for(R_len_t i_col = 1; i_col < mat_c - 1; i_col++) {
-      for(R_len_t i_row = 1; i_row < mat_r - 1; i_row++) {
-        out(i_row, i_col) = msk(i_row, i_col);
-      }
-    }
-    Rcpp::IntegerMatrix ans = out(Rcpp::Range(1, mat_r - 2), Rcpp::Range(1, mat_c  - 2));
-    if(msk.hasAttribute("removal")) ans.attr("removal") = msk.attr("removal");
-    return ans;
-  } else {
-    double sx = dx, sy = dy, ssx, ssy;
-    uint8_t deltax = 0, deltay = 0;
-    if(dx < 0) {
-      sx = 1 - std::abs(dx);
-      deltax = 1;
-    }
-    if(dy < 0) {
-      sy = 1 - std::abs(dy);
-      deltay = 1;
-    }
-    ssx = 1 - sx;
-    ssy = 1 - sy;
-    for(R_len_t i_col = 0; i_col < mat_c - 1; i_col++) {
-      for(R_len_t i_row = 0; i_row < mat_r - 1; i_row++) {
-        out(i_row, i_col) = (msk(i_row    , i_col) * ssx + msk(i_row    , i_col + 1) * sx) * ssy +
-                            (msk(i_row + 1, i_col) * ssx + msk(i_row + 1, i_col + 1) * sx) * sy;
-      }
-    }
-    Rcpp::IntegerMatrix ans = out(Rcpp::Range(1 - deltay, mat_r - 2 - deltay), Rcpp::Range(1 - deltax, mat_c  - 2 - deltax));
-    if(msk.hasAttribute("removal")) ans.attr("removal") = msk.attr("removal");
-    return ans;
   }
-  return R_NilValue;
+  if(dx == 0.0 && dy == 0.0) return(msk);
+  // if((std::abs(dx) >= 1.0) || (std::abs(dy) >= 1.0)) Rcpp::stop("hpp_align_msk: offset should be ]-1,+1[");
+  Rcpp::NumericMatrix tr = Rcpp::no_init_matrix(2, 3);
+  tr[0] = 1.0; tr[1] = 0.0; tr[2] = 0.0; tr[3] = 1.0; tr[4] = dx; tr[5] = dy;
+  Rcpp::IntegerMatrix foo = affine_T(msk, tr, Rcpp::IntegerVector::create(0,0), 2, add_noise, bg, sd);
+  if(msk.hasAttribute("removal")) foo.attr("removal") = msk.attr("removal");
+  return foo;
 }
 
 //' @title Spatial Offsets Image Correction
@@ -171,10 +112,9 @@ Rcpp::IntegerMatrix hpp_align_msk(const Rcpp::IntegerMatrix msk,
 //' @description
 //' This function uses bilinear interpolation to apply spatial offset correction on image
 //' @param mat, a NumericMatrix.
-//' @param dx, a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
-//' @param dy, a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
-//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
-//' Rcpp::rnorm() function is used. Default is true.
+//' @param dx, a double x spatial offset. Default is NA_REAL for no change.
+//' @param dy, a double y spatial offset. Default is NA_REAL for no change.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions. Rcpp::rnorm() function is used. Default is true.
 //' @param bg double, mean value of the background added if add_noise is true. Default is 0.0.
 //' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0.
 //' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
@@ -190,10 +130,10 @@ Rcpp::NumericMatrix hpp_align(const Rcpp::NumericMatrix mat,
                               const bool add_noise = true, 
                               const double bg = 0.0,
                               const double sd = 0.0) {
-  Rcpp::NumericMatrix out = hpp_align_img(mat, dx, dy);
+  Rcpp::NumericMatrix out = hpp_align_img(mat, dx, dy, add_noise, bg, sd);
   if(mat.hasAttribute("mask")) {
     IntegerMatrix foo = mat.attr("mask");
-    Rcpp::IntegerMatrix MM = hpp_align_msk(foo, dx, dy);
+    Rcpp::IntegerMatrix MM = hpp_align_msk(foo, dx, dy, add_noise, bg, sd);
     if(foo.hasAttribute("removal")) MM.attr("removal") = foo.attr("removal");
     out.attr("mask") = MM;
   }

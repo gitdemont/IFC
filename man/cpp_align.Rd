@@ -6,12 +6,11 @@
 \arguments{
 \item{mat, }{a NumericMatrix.}
 
-\item{dx, }{a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.}
+\item{dx, }{a double x spatial offset. Default is NA_REAL for no change.}
 
-\item{dy, }{a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.}
+\item{dy, }{a double y spatial offset. Default is NA_REAL for no change.}
 
-\item{add_noise}{logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
-Rcpp::rnorm() function is used. Default is true.}
+\item{add_noise}{logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions. Rcpp::rnorm() function is used. Default is true.}
 
 \item{bg}{double, mean value of the background added if add_noise is true. Default is 0.0.}
 

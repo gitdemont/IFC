@@ -31,6 +31,7 @@
 #define STRICT_R_HEADERS
 #include <Rcpp.h>
 #include "../inst/include/align.hpp"
+#include "../inst/include/affine.hpp"
 #include "../inst/include/assert.hpp"
 #include "../inst/include/base64.hpp"
 #include "../inst/include/gate.hpp"
@@ -68,10 +69,9 @@ unsigned int cpp_getBits () {
 //' @description
 //' This function uses bilinear interpolation to apply spatial offset correction on image
 //' @param mat, a NumericMatrix.
-//' @param dx, a double x spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
-//' @param dy, a double y spatial offset. It has to be within ]-1,+1[. Default is NA_REAL for no change.
-//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
-//' Rcpp::rnorm() function is used. Default is true.
+//' @param dx, a double x spatial offset. Default is NA_REAL for no change.
+//' @param dy, a double y spatial offset. Default is NA_REAL for no change.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions. Rcpp::rnorm() function is used. Default is true.
 //' @param bg double, mean value of the background added if add_noise is true. Default is 0.0.
 //' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0.
 //' @details It is intended to be applied on raw images matrices from .rif files so has to generate spatial offset corrected image matrices.\cr
@@ -90,6 +90,57 @@ Rcpp::NumericMatrix cpp_align(const Rcpp::NumericMatrix mat,
   return hpp_align(mat, dx, dy, add_noise, bg, sd);
 }
 // END align
+
+// FROM affine
+//' @title Image Upscaling
+//' @name cpp_upscale
+//' @description
+//' Function that upscales mat according to scale.
+//' @param mat Matrix (Raw, Integer Logical or Numeric).
+//' @param scale double, giving the scaling factor. Default is 1.0 for no change.
+//' @param resize bool, whether to resize upscaled mat to its original dimension. Default is false.
+//' @param interpolation uint8_t, type of interpolation applied on output (2 = "bilinear", 3 = "bicubic" a = -0.5). Default is 2. Values other than 2 or 3 will result in nearest neighbor interpolation.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions. Rcpp::rnorm() function is used. Default is true.
+//' @param bg double, mean value of the background added if add_noise is true. Default is 0.0.
+//' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0.
+//' @return a rescaled matrix.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix cpp_upscale (SEXP mat,
+                                 const double scale = 1.0,
+                                 const bool resize = false,
+                                 const uint8_t interpolation = 2,
+                                 const bool add_noise = true,
+                                 const double bg = 0.0,
+                                 const double sd = 0.0) {
+  return hpp_upscale(mat, scale, resize, interpolation, add_noise, bg, sd);
+}
+//' @title Image Downscaling
+//' @name cpp_downscale
+//' @description
+//' Function that downscales mat according to scale.
+//' @param mat Matrix (Raw, Integer Logical or Numeric).
+//' @param scale double, giving the scaling factor. Default is 1.0 for no change.
+//' @param resize bool, whether to resize downscaled mat to its original dimension. Default is false.
+//' @param interpolation uint8_t, type of interpolation applied on output (2 = "bilinear", 3 = "bicubic" a = -0.5). Default is 2. Values other than 2 or 3 will result in nearest neighbor interpolation.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions. Rcpp::rnorm() function is used. Default is true.
+//' @param bg double, mean value of the background added if add_noise is true. Default is 0.0.
+//' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.0.
+//' @return a rescaled matrix.
+//' @keywords internal
+////' @export
+// [[Rcpp::export]]
+Rcpp::NumericMatrix cpp_downscale (SEXP mat,
+                                   const double scale = 1.0,
+                                   const bool resize = false,
+                                   const uint8_t interpolation = 2,
+                                   const bool add_noise = true,
+                                   const double bg = 0.0,
+                                   const double sd = 0.0) {
+  return hpp_downscale(mat, scale, resize, interpolation, add_noise, bg, sd);
+}
+// END affine
 
 // FROM assert
 //' @title Input Parameters Assertive Tool
@@ -889,8 +940,7 @@ SEXP cpp_crop (SEXP mat,
 //' @param mat Matrix (Raw, Integer, Logical or Numeric).
 //' @param new_height a R_len_t, giving the new height of returned mat. Default is 0 for no change. Negative values will remove rows from mat.
 //' @param new_width a R_len_t, giving the new width of returned mat. Default is 0 for no change. Negative values will remove cols from mat.
-//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
-//' Rcpp::rnorm() function is used. Default is true.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions. Rcpp::rnorm() function is used. Default is true.
 //' @param bg double, mean value of the background added if add_noise is true. Default is 0.
 //' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
 //' @param front a bool, whether to apply cropping from front. Default is false.

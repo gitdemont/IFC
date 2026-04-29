@@ -253,8 +253,7 @@ SEXP hpp_crop (SEXP mat,
 //' @param mat Matrix (Raw, Integer, Logical or Numeric).
 //' @param new_height a R_len_t, giving the new height of returned mat. Default is 0 for no change. Negative values will remove rows from mat.
 //' @param new_width a R_len_t, giving the new width of returned mat. Default is 0 for no change. Negative values will remove cols from mat.
-//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions 
-//' Rcpp::rnorm() function is used. Default is true.
+//' @param add_noise logical, if true adds normal noise when at least one new dimension is larger than original mat dimensions. Rcpp::rnorm() function is used. Default is true.
 //' @param bg double, mean value of the background added if add_noise is true. Default is 0.
 //' @param sd double, standard deviation of the background added if add_noise is true. Default is 0.
 //' @param front a bool, whether to apply cropping from front. Default is false.
