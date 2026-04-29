@@ -42,15 +42,12 @@
 addText <- function(image, text, color, xoff = 0, yoff = 0, corner = "TL") {
   # several checks
   if(missing(text) || (length(text) == 0)) return(image)
-  color = na.omit(as.character(color))
-  assert(color, len = 1, typ = "character")
   xoff = na.omit(as.integer(xoff)); xoff = xoff[xoff>=0]
   assert(xoff, len = 1, typ = "integer")
   yoff = na.omit(as.integer(yoff)); yoff = yoff[yoff>=0]
   assert(yoff, len = 1, typ = "integer")
   corner = na.omit(as.character(corner))
   assert(corner, len = 1, alw = c("TL", "TR", "BL", "BR"))
-  checkColor(color)
   
   # dim + check
   di = dim(image)
@@ -80,6 +77,9 @@ addText <- function(image, text, color, xoff = 0, yoff = 0, corner = "TL") {
   # place text in image
   invert = FALSE
   if(is.na(di[3])) return(cpp_mark(A = image, B = txt_msk, mask = txt_msk, xoff = xoff, yoff = yoff, invert = invert))
+  color = na.omit(as.character(color))
+  assert(color, len = 1, typ = "character")
+  checkColor(color)
   color = tolower(color)
   if(color=="black") invert = TRUE
   txt_img = objectColorize(txt_msk,color)
@@ -104,10 +104,6 @@ addText2 <- function (image, text, color,
                       xoff = 0, yoff = 0, anchor = c(1,0),
                       vjust = c("T","M","B")[1], hjust = c("L","C","R")[1]) {
   if (missing(text) || (length(text) == 0)) return(image)
-  color = na.omit(as.character(color))
-  assert(color, len = 1, typ = "character")
-  checkColor(color)
-  
   anchor = na.omit(as.numeric(anchor))
   anchor = anchor[anchor >= 0 & anchor <= 1]
   assert(anchor, len = 2, typ = "numeric")
@@ -137,6 +133,9 @@ addText2 <- function (image, text, color,
   
   invert = FALSE
   if (is.na(di[3])) return(cpp_mark2(A = image, B = txt_msk, mask = txt_msk, xoff = XX, yoff = YY, invert = invert))
+  color = na.omit(as.character(color))
+  assert(color, len = 1, typ = "character")
+  checkColor(color)
   color = tolower(color)
   txt_img = objectColorize(txt_msk, color)
   return(

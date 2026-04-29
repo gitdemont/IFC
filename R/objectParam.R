@@ -59,7 +59,7 @@
 #' Note that \code{id} (if \code{'base64_id'} is \code{TRUE}) and \code{width} and \code{height} are already used.
 #' @param overwrite only apply when \code{'export'} is \code{"file"} whether to overwrite file or not. Default is \code{FALSE}.
 #' @param composite character vector of image composite. Default is \code{""}, for no image composite.\cr
-#' Should be like \code{"1.05/2.4/4.55"} for a composition of 5 perc. of channel 1, 40 perc. of channel 2 and 50 perc. of channel 55.\cr
+#' Should be like \code{"1.05/2.4/4.55"} for a composition of 5 perc. of channel 1, 40 perc. of channel 2 and 55 perc. of channel 4.\cr
 #' Note that channels should have been acquired and final image composition should be 100 perc., otherwise an error is thrown.\cr
 #' Note that each composite will be appended after \code{'selection'}.\cr
 #' Note that composite will be forced to \code{""} when \code{'export'} is \code{"multi"}.
@@ -231,17 +231,25 @@ objectParam <- function(...,
   
   # add spatial correction information
   if(spatial_correction) {
-    if(getFileExt(info$fileName_image) == "rif") {
+    if(getFileExt(info$fileName_image) == "rif")  {
       mag = switch(as.character(info$magnification), "20" = "20x", "40" = "", "60" = "60x")
-      ASSISTDb = getASSIST(info$fileName_image)
-      spa_off = sapply(c("X","Y"), FUN = function(off) {
-        as.numeric(strsplit(ASSISTDb[[paste0(off, "Offsets", mag, "_Gen2_0_11")]], split = " ", fixed = TRUE)[[1]])
-      })
-      channels[, "spatial_X"] <- spa_off[, "X"][chan_to_extract]
-      channels[, "spatial_Y"] <- spa_off[, "Y"][chan_to_extract]
+      spa_off = try(
+        {
+          ASSISTDb = getASSIST(info$fileName_image)
+          sapply(c("X","Y"), FUN = function(off) {
+            as.numeric(strsplit(ASSISTDb[[paste0(off, "Offsets", mag, "_Gen2_0_11")]], split = " ", fixed = TRUE)[[1]])
+          })
+        }, silent = TRUE)
+      if(inherits(spa_off, "try-error")) {
+        spa_off = cbind("X" = rep(NA_real_, 12), "Y" = rep(NA_real_, 12))
+        warning("'spatial_correction' can't be retrieved")
+      }
     } else {
+      spa_off = cbind("X" = rep(NA_real_, 12), "Y" = rep(NA_real_, 12))
       warning("'spatial_correction' can only be applied on .rif file")
     }
+    channels[, "spatial_X"] <- spa_off[channels$physicalChannel, "X", drop = TRUE]
+    channels[, "spatial_Y"] <- spa_off[channels$physicalChannel, "Y", drop = TRUE]
   }
   
   ##### build ans
