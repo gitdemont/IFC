@@ -233,12 +233,17 @@ FCS_check_keywords <- function(text, delimiter, version = 3.0, encoding = "UTF-8
         }
       }
     }
-    gain = na.omit(suppressWarnings(as.numeric(text[[PnG]])))
-    if(length(gain) != 0) {
-      if((version >= 3.2) && !identical(TYPE, "I")) msg = c(msg, paste0(PnG,"[",text[[PnG]],"] shall be used for integer type only not $DATATYPE[",TYPE,"]"))
-      if(length(text[[PnE]]) != 0) {
-        trans = na.omit(suppressWarnings(as.numeric(strsplit(text[[PnE]], split = ",", fixed = TRUE)[[1]])))
-        if((length(trans) == 2) && (gain != 1) && ((trans[1] != 0) || (trans[2] != 0))) msg = c(msg, paste0(PnG,"[",text[[PnG]],"] should not be used with logarithmic amplification ($PnE != \"0,0\")",PnE,"[",text[[PnE]],"]"))
+    if(length(text[[PnG]]) != 0) {
+      gain = na.omit(suppressWarnings(as.numeric(text[[PnG]])))
+      if(length(gain) != 0) {
+        if(gain <= 0) msg = c(msg, paste0(PnG,"[",text[[PnG]],"] should be > 0")) # no mention of this before 3.1?
+        if((version >= 3.2) && !identical(TYPE, "I")) msg = c(msg, paste0(PnG,"[",text[[PnG]],"] shall be used for integer type only not $DATATYPE[",TYPE,"]")) # no mention of this before 3.2?
+        if(length(text[[PnE]]) != 0) {
+          trans = na.omit(suppressWarnings(as.numeric(strsplit(text[[PnE]], split = ",", fixed = TRUE)[[1]])))
+          if((length(trans) == 2) && (gain != 1) && ((trans[1] != 0) || (trans[2] != 0))) msg = c(msg, paste0(PnG,"[",text[[PnG]],"] should not be used with logarithmic amplification ($PnE != \"0,0\")",PnE,"[",text[[PnE]],"]"))
+        }
+      } else {
+        msg = c(msg, paste0(PnG,"[",text[[PnG]],"] is invalid"))
       }
     }
     return(paste0(msg, collapse="|"))
@@ -534,6 +539,7 @@ readFCStext <- function(fileName, delimiter, start = 0, end = 0, encoding = "UTF
 #' @param ... other arguments to be passed.
 #' @keywords internal
 readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRUE, display_progress = TRUE, ...) {
+  dots = list(...)
   if(missing(fileName)) stop("'fileName' can't be missing")
   assert(fileName, len=1)
   fileName = enc2native(normalizePath(fileName, winslash = "/", mustWork = FALSE))
@@ -846,7 +852,7 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
     
     if(inherits(data, "try-error")) {
       warning(attr(data, "condition")$message, "\n", "retrying to parse FCS3.2", call. = FALSE, immediate. = TRUE)
-      data = readFCSdata(fileName = fileName, text = text, version = 0, start = start, end = end, scale = scale, display_progress = display_progress)
+      data = readFCSdata(fileName = fileName, text = text, version = 0, start = start, end = end, scale = scale, display_progress = display_progress, .version = version)
     }
   }
   
@@ -859,29 +865,31 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
   }))
   data = structure(data.frame(data, check.names = FALSE), names = feat_names)
   
-  # scale data only for type I, ISAC spe mentions:
-  # When linear scale is used, $PnE/0,0/ shall be entered if the floating point data type is used i.e. "F" or "D"
-  # meaning that no scaling shall be used for type "F" and "D". Besides type "A" is deprecated
+  if(length(dots$.version) != 0) version = dots$.version
   if(scale) {
-    for(i in seq_len(n_par)) { # log amplification scaling
-      if(!identical(bit_t[i], "I")) next                  # type of value is not integer, SKIP
+    for(i in seq_len(n_par)) {                              # log amplification scaling
+      # log scaling data only for type I, ISAC spe mentions:
+      # When linear scale is used, $PnE/0,0/ shall be entered if the floating point data type is used i.e. "F" or "D"
+      # meaning that no scaling shall be used for type "F" and "D". Besides type "A" is deprecated
+      if(!identical(bit_t[i], "I")) next                    # type of value is not integer, SKIP
       PnE = paste0("$P",i,"E")
       PnR = paste0("$P",i,"R")
       trans = text[[PnE]]
       ran = na.omit(suppressWarnings(as.numeric(text[[PnR]])))
-      if((length(trans) == 0) || (length(ran) == 0)) next # no scaling info, SKIP
+      if((length(trans) == 0) || (length(ran) == 0)) next   # no scaling info, SKIP
       trans = na.omit(suppressWarnings(as.numeric(strsplit(trans, split = ",", fixed = TRUE)[[1]])))
       # FIXME should we detect and force range to max range ? in case of mismatch with PnR and actual data range ?
-      if(length(trans) != 2 || trans[1] == 0) next        # invalid PnE info, SKIP
-      if(trans[2] == 0) trans[2] <- 1                     # invalid PnE info, but we apply correction
+      if(length(trans) != 2 || trans[1] == 0) next          # invalid PnE info, SKIP
+      if(trans[2] == 0) trans[2] <- 1                       # invalid PnE info, but we apply correction
       data[,i] <- trans[2] * 10^(trans[1] * data[,i] / ran)
     }
-    for(i in seq_len(n_par)) {   # gain scaling
-      if((version >= 3.2) && !identical(bit_t[i], "I")) next# gain scaling only apply to "I" in FCS3.2
+    for(i in seq_len(n_par)) {                               # gain scaling
+      if((version >= 3.2) && !identical(bit_t[i], "I")) next # gain scaling only apply to "I" in FCS3.2
       PnE = paste0("$P",i,"E")
       PnG = paste0("$P",i,"G")
       gain = na.omit(suppressWarnings(as.numeric(text[[PnG]])))
-      if(length(gain) == 0) next # no scaling info, SKIP
+      if(length(gain) == 0) next                             # no scaling info, SKIP
+      if(gain <= 0) next                                     # invalid gain value, SKIP
       trans = "0,0"
       if(length(text[[PnE]]) != 0) trans = text[[PnE]]
       trans = na.omit(suppressWarnings(as.numeric(strsplit(trans, split = ",", fixed = TRUE)[[1]])))
