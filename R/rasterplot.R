@@ -182,6 +182,7 @@ rasterplot = function(x, y = NULL,
     } else {
       data[[1]]$col = rgba
     }
+    if(!pntsonedge) data[[1]]$col = data[[1]]$col[,attr(data[[1]]$coords, "subset")]
   } else {
     if(missing(rgba)) { # we draw every combinations with its color argument (one only !)
       d = data.frame(x = x, y = y, pch = pch, size = size, col = col) 
@@ -205,13 +206,16 @@ rasterplot = function(x, y = NULL,
         g = group(d[, 3:4], keepNAlevels = FALSE) 
       }
       data = lapply(seq_along(g), FUN = function(i) {
-        list(size = d$size[g[[i]][1]],
-             pch = d$pch[g[[i]][1]],
-             lwd = lwd,
-             col = rgba[, g[[i]], drop = FALSE],
-             coords = coord_to_px(coord=data.frame(x = d$x[g[[i]]], y = d$y[g[[i]]]), coordmap = coordmap, pntsonedge = pntsonedge),
-             blur_size = blur_size,
-             blur_sd = blur_sd)
+        ans = list(
+          size = d$size[g[[i]][1]],
+          pch = d$pch[g[[i]][1]],
+          lwd = lwd,
+          col = rgba[, g[[i]], drop = FALSE],
+          coords = coord_to_px(coord=data.frame(x = d$x[g[[i]]], y = d$y[g[[i]]]), coordmap = coordmap, pntsonedge = pntsonedge),
+          blur_size = blur_size,
+          blur_sd = blur_sd)
+        if(!pntsonedge) ans$col = ans$col[,attr(ans$coords, "subset")]
+        ans
       })
     }
   }

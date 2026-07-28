@@ -486,6 +486,7 @@ Rcpp::NumericMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
   if(x.size() != y.size()) Rcpp::stop("cpp_coord_to_px: 'x' and 'y' should be of same size");
   if(param.size() != 13) Rcpp::stop("cpp_coord_to_px: 'param' is not valid");
   Rcpp::NumericMatrix out = Rcpp::no_init_matrix(x.size(), 2);
+  Rcpp::NumericVector idx = Rcpp::no_init_vector(x.size());
   Rcpp::NumericVector p = Rcpp::clone(param);
   if(p[12]) {
     for(R_len_t i = 0; i < x.size(); i++) {
@@ -510,7 +511,9 @@ Rcpp::NumericMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
         }
       }
       out(i, 1) = (p[9] - (v - p[7]) * p[5]) / p[11];
+      idx[i] = i + 1; 
     }
+    out.attr("subset") = idx;
     return out;
   } else {
     R_len_t n = 0;
@@ -518,14 +521,18 @@ Rcpp::NumericMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
       if((x[i] >= p[0]) && (x[i] <= p[1]) && (y[i] >= p[2]) && (y[i] <= p[3])) {
         out(n, 0) = ((x[i] - p[6]) * p[4] + p[8]) / p[10];
         out(n, 1) = (p[9] - (y[i] - p[7]) * p[5]) / p[11];
+        idx[n] = i + 1;
         n++;
       }
     }
     Rcpp::NumericMatrix sub = Rcpp::no_init_matrix(n, 2);
+    Rcpp::NumericVector kep = Rcpp::no_init_vector(n);
     for(R_len_t i = 0; i < n; i++) {
       sub(i, 0) = out(i, 0);
       sub(i, 1) = out(i, 1);
+      kep[i] = idx[i];
     }
+    sub.attr("subset") = kep;
     return sub;
   }
 }

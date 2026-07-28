@@ -7,6 +7,8 @@
 
 - fix bug with SUPP text
 
+- skip scaling when PnG <= 0 + add warning in such case in with `text_check = TRUE`
+
 #### Work on ExtractToFuns
 - hot fix following CRAN submission, when `info` was provided as input [formal argument "info" matched by multiple actual arguments]
 
@@ -59,6 +61,8 @@
 
 - fix `empty` or `error` plot drawing error with axis computation
 
+- fix undesired color produced by providing clipping limits (xlim or ylim) with `pntsonedge = FALSE` in **rasterplot**. Now returned coords in **hpp_coord_to_px** has gained a `subset` attribute to allow `col` and/or `rgba` subsetting.
+
 #### Work on ExportToGallery
 - [BREAKING] modify returned object. When `export` is "file", exported path is invisibly returned. An "object_id" attribute is now attached to returned value.
 
@@ -90,6 +94,10 @@
 - [BREAKING] change returned value of **getInfo** by addition of "Origin_rif" and "XIF_type" and removal of "Merge_cif"
 
 - enforce UTF8 and fix bug with parsing non UTF8 file names
+
+- fix help for `composite` in **objectParam**
+
+- fix spatial offset extraction in **objectParam**
 
 #### Work on base64
 - create dedicated base64.hpp file
@@ -180,6 +188,12 @@
 - change deprecated @docType in IFC-package.R to "_PACKAGE" following `roxygen2` update
 
 - make use of `main` in **BatchReport**. Still wip to set fontsize and color.
+
+- don't check color in addText for grayscale images
+
+- create templated version of hpp_resize and handle negative values for resizing
+
+- create dedicated affine.hpp and align.hpp files for handling spatial offset correction and interpolation
 
 ## 0.2.1
 - CRAN submission
