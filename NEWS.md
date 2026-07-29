@@ -9,6 +9,16 @@
 
 - skip scaling when PnG <= 0 + add warning in such case in with `text_check = TRUE`
 
+- handle `at` as convenient extra argument passed to `...` in **readFCS**
+
+- create **writeFCS** (yet not exported) as a more generic FCS file writer and use it in `IFC_data` specialized **ExportToFCS** function
+
+- fix bug / handle keywords with `""` value
+
+- add `include.pops = TRUE` argument in **ExportToFCS** to tweak whether pops should be added or not to exported data
+
+- improve doc
+
 #### Work on ExtractToFuns
 - hot fix following CRAN submission, when `info` was provided as input [formal argument "info" matched by multiple actual arguments]
 

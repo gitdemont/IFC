@@ -2,7 +2,7 @@
 % Please edit documentation in R/fcs.R
 \name{ExportToFCS}
 \alias{ExportToFCS}
-\title{FCS File Writer}
+\title{FCS File Export}
 \usage{
 ExportToFCS(
   obj,
@@ -10,6 +10,7 @@ ExportToFCS(
   overwrite = FALSE,
   delimiter = "/",
   cytometer = "Image Stream",
+  include.pops = TRUE,
   ...
 )
 }
@@ -17,22 +18,24 @@ ExportToFCS(
 \item{obj}{an `IFC_data` object extracted with features extracted.}
 
 \item{write_to}{pattern used to export file.
-Placeholders, like "\%d/\%s_fromR.\%e", will be substituted:\cr
--\%d: with full path directory of 'obj$fileName'\cr
--\%p: with first parent directory of 'obj$fileName'\cr
--\%e: with extension of 'obj$fileName' (without leading .)\cr
--\%s: with shortname from 'obj$fileName' (i.e. basename without extension).\cr
+Placeholders, like \code{"\%d/\%s_fromR.\%e"}, will be substituted:\cr
+-\code{\%d}: with full path directory of \code{'obj$fileName'}\cr
+-\code{\%p}: with first parent directory of \code{'obj$fileName'}\cr
+-\code{\%e}: with extension of \code{'obj$fileName'} (without leading \code{.})\cr
+-\code{\%s}: with shortname from \code{'obj$fileName'} (i.e. basename without extension).\cr
 Exported file extension will be deduced from this pattern. Note that it has to be a .fcs.}
 
-\item{overwrite}{whether to overwrite file or not. Default is FALSE.
-Note that if TRUE, it will overwrite exported file if path of 'fileName' and deduced from 'write_to' arguments are different.
+\item{overwrite}{whether to overwrite file or not. Default is \code{FALSE}.
+Note that if \code{TRUE}, it will overwrite exported file if paths of \code{'obj$fileName'} and deduced from \code{'write_to'} arguments are different.
 Otherwise, you will get an error saying that overwriting source file is not allowed.\cr
 Note also that an original file will never be overwritten.}
 
-\item{delimiter}{an ASCII character to separate the FCS keyword-value pairs. Default is : "/".}
+\item{delimiter}{an ASCII character to separate the FCS keyword-value pairs. Default is \code{"/"}.}
 
-\item{cytometer}{string, if provided it will be used to fill $CYT keyword.\cr
-However, when missing $CYT will be filled with obj$description$FCS$instrument if found, or "Image Stream" otherwise.}
+\item{cytometer}{string, if provided it will be used to fill '$CYT' keyword.\cr
+However, when missing '$CYT' will be filled with \code{'obj$description$FCS$instrument'} if found or \code{"Image Stream"}, otherwise.}
+
+\item{include.pops}{logical, whether 'obj$pops' should be included as exported data. Default is \code{TRUE}.}
 
 \item{...}{other arguments to be passed. keyword-value pairs can be passed here.}
 }
@@ -40,5 +43,5 @@ However, when missing $CYT will be filled with obj$description$FCS$instrument if
 invisibly returns full path of exported file.
 }
 \description{
-Writes an `IFC_data` object to a Flow Cytometry Standard (FCS) file.
+Exports an `IFC_data` object to a Flow Cytometry Standard (FCS) file.
 }

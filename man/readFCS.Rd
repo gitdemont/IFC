@@ -55,7 +55,7 @@ Parse data from Flow Cytometry Standard (FCS) compliant files.
 \details{
 'options' may be tweaked according to file type, instrument and software used to generate it.\cr
 Default 'options' should allow to read most files.\cr
-'options' members with the exception of 'header' may be passed thanks to '...'.\cr
+'options' members with the exception of 'header' may be passed thanks to '...' and 'header$start$at' may also be passed using 'at' directly.\cr
 Experimental (as of v0.2.1.300), readFCS could handle FCS 3.2 files. However, it is important to note that R has no native support for 64bits unsigned integers which are defined in the FCS 3.2 standard.
 So, those integers are extracted as double (8 bytes) and precision loss will happen for > 2^53 integers on 64bits platforms.
 }

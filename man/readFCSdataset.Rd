@@ -43,6 +43,6 @@ Helper to parse dataset from Flow Cytometry Standard (FCS) compliant files.
 \details{
 'options' may be tweaked according to file type, instrument and software used to generate it.\cr
 Default 'options' should allow to read most files.\cr
-'options' members with the exception of 'header' may be passed thanks to '...'.
+'options' members with the exception of 'header' may be passed thanks to '...' and 'header$start$at' may also be passed using 'at' directly.
 }
 \keyword{internal}

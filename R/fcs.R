@@ -923,7 +923,7 @@ readFCSdata <- function(fileName, text, version, start = 0, end = 0, scale = TRU
 #' @param ... other arguments to be passed.
 #' @details 'options' may be tweaked according to file type, instrument and software used to generate it.\cr
 #' Default 'options' should allow to read most files.\cr
-#' 'options' members with the exception of 'header' may be passed thanks to '...'.
+#' 'options' members with the exception of 'header' may be passed thanks to '...' and 'header$start$at' may also be passed using 'at' directly.
 #' @return a list containing:\cr
 #' - options, list of 'options' used\cr
 #' - header, list of header information corresponding to 'options'\cr
@@ -952,6 +952,7 @@ readFCSdataset <- function(fileName, options, display_progress = TRUE, ...) {
     }
   }
   # check if we can find options arguments in dots
+  if("at" %in% names(dots)) options$header$start$at <- dots$at
   if("text_only" %in% names(dots)) options$text_only <- dots$text_only
   if("text_check" %in% names(dots)) options$text_check <- dots$text_check
   if("text_empty" %in% names(dots)) options$text_empty <- dots$text_empty
@@ -1158,7 +1159,7 @@ readFCSdataset <- function(fileName, options, display_progress = TRUE, ...) {
 #' @param ... other arguments to be passed.
 #' @details 'options' may be tweaked according to file type, instrument and software used to generate it.\cr
 #' Default 'options' should allow to read most files.\cr
-#' 'options' members with the exception of 'header' may be passed thanks to '...'.\cr
+#' 'options' members with the exception of 'header' may be passed thanks to '...' and 'header$start$at' may also be passed using 'at' directly.\cr
 #' Experimental (as of v0.2.1.300), readFCS could handle FCS 3.2 files. However, it is important to note that R has no native support for 64bits unsigned integers which are defined in the FCS 3.2 standard.
 #' So, those integers are extracted as double (8 bytes) and precision loss will happen for > 2^53 integers on 64bits platforms.
 #' @source Data File Standard for Flow Cytometry, version FCS 3.2 from Spidlen J. et al. available at \doi{10.1002/cyto.a.24225}.
@@ -1584,27 +1585,18 @@ ExtractFromFCS <- function(fileName, ...) {
 
 #' @title FCS File Writer
 #' @description
-#' Writes an `IFC_data` object to a Flow Cytometry Standard (FCS) file.
-#' @param obj an `IFC_data` object extracted with features extracted.
-#' @param write_to pattern used to export file.
-#' Placeholders, like "\%d/\%s_fromR.\%e", will be substituted:\cr
-#' -\%d: with full path directory of 'obj$fileName'\cr
-#' -\%p: with first parent directory of 'obj$fileName'\cr
-#' -\%e: with extension of 'obj$fileName' (without leading .)\cr
-#' -\%s: with shortname from 'obj$fileName' (i.e. basename without extension).\cr
-#' Exported file extension will be deduced from this pattern. Note that it has to be a .fcs.
-#' @param overwrite whether to overwrite file or not. Default is FALSE.
-#' Note that if TRUE, it will overwrite exported file if path of 'fileName' and deduced from 'write_to' arguments are different.
-#' Otherwise, you will get an error saying that overwriting source file is not allowed.\cr
-#' Note also that an original file will never be overwritten.
-#' @param delimiter an ASCII character to separate the FCS keyword-value pairs. Default is : "/".
-#' @param cytometer string, if provided it will be used to fill $CYT keyword.\cr
-#' However, when missing $CYT will be filled with obj$description$FCS$instrument if found, or "Image Stream" otherwise.
-#' @param ... other arguments to be passed. keyword-value pairs can be passed here.
+#' Writes data to a Flow Cytometry Standard (FCS) file.
+#' @param data a data.frame
+#' @param write_to path of exported file. Note that file extension has to be a .fcs.
+#' @param overwrite whether to overwrite file or not. Default is \code{FALSE}.
+#' Note that if \code{TRUE}, it will overwrite exported file, unless it is an original source file (i.e. not written by \pkg{IFC}).\cr
+#' @param delimiter an ASCII character to separate the FCS keyword-value pairs. Default is \code{"/"}.
+#' @param cytometer string, if provided it will be used to fill '$CYT' keyword.Default is \code{"Image Stream"}.
+#' @param keywords keyword-value pairs. Default is \code{list(NULL)}.
 #' @return invisibly returns full path of exported file.
-#' @export
-ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytometer = "Image Stream", ...) {
-  dots = list(...)
+#' @keywords internal
+writeFCS <- function(data, write_to, overwrite = FALSE, delimiter="/", cytometer = "Image Stream", keywords = list(NULL)) {
+  mygsub <- function(...) { v = gsub(...); unlist(sapply(v, FUN = function(vv) ifelse(vv == "", "''", vv))) }
   # change locale
   locale_back <- setloc(c("LC_ALL" = "en_US.UTF-8"))
   enc_back <- options("encoding" = "UTF-8")
@@ -1616,8 +1608,7 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   options("encoding" = "UTF-8")
   
   # check mandatory param
-  assert(obj, cla = "IFC_data")
-  if(length(obj$pops)==0) stop("please use argument 'extract_features' = TRUE with ExtractFromDAF() or ExtractFromXIF() and ensure that features were correctly extracted")
+  assert(data, cla = "data.frame")
   if(missing(write_to)) stop("'write_to' can't be missing")
   assert(write_to, len = 1, typ = "character")
   assert(overwrite, len = 1, alw = c(TRUE, FALSE))
@@ -1629,21 +1620,13 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   delimiter_esc = paste0(delimiter, delimiter)
   
   # tests if file can be written
-  fileName = normalizePath(obj$fileName, winslash = "/", mustWork = FALSE)
-  title_progress = basename(fileName)
-  splitf_obj = splitf(fileName)
-  splitp_obj = splitp(write_to)
-  write_to = formatn(splitp_obj, splitf_obj)
   file_extension = getFileExt(write_to)
   assert(file_extension, len = 1, alw = "fcs")
-  if(any(splitp_obj$channel > 0)) message("'write_to' has %c argument but channel information can't be retrieved with data_to_DAF()")
-  if(any(splitp_obj$object > 0)) message("'write_to' has %o argument but channel information can't be retrieved with data_to_DAF()")
   
   overwritten = FALSE
   if(file.exists(write_to)) {
     write_to = normalizePath(write_to, winslash = "/", mustWork = FALSE)
     if(!overwrite) stop(paste0("file ",write_to," already exists"))
-    if(tolower(fileName) == tolower(write_to)) stop("you are trying to overwrite source file which is not allowed")
     tryCatch({
       fcs = readFCS(fileName = write_to, text_only = TRUE)
     }, error = function(e) {
@@ -1667,7 +1650,6 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   
   # defines some variables
   pkg_ver = paste0(unlist(recursive = FALSE, use.names = FALSE, packageVersion("IFC")), collapse = ".")
-  # is_fcs = length(obj$description$FCS)!=0
   
   # init header
   header = list(version  = "FCS3.0",
@@ -1679,16 +1661,15 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                 anal_beg = "       0",
                 anal_end = "       0")
   
-  # we modify features to add populations
-  features = fastCbind(obj$features[, setdiff(names(obj$features), names(obj$pops)), drop = FALSE],
-                       sapply(names(obj$pops), simplify = FALSE, FUN = function(p) obj$pops[[p]]$obj))
+  features = data
+  
   # need to replace non finite values by something; IDEAS is using 0 so we use 0 also
   # TODO maybe replace -Inf by features min and +Inf by features max ?
   features = as.data.frame(apply(features, 2, cpp_replace_non_finite), stringsAsFactors = TRUE)
   
   # determines length of text_segment2
   # comma (ASCII 0x2C) is not allowed in features names according to fcs specifications so it is replaced by a space
-  feat_names = parseFCSname(gsub(","," ",names(features),fixed=TRUE))
+  feat_names = parseFCSname(mygsub(","," ",names(features),fixed=TRUE))
   N = feat_names$PnN
   tmp = duplicated(toupper(N))
   if(any(tmp)) stop("$PnN should be unique\n\t- ", paste0(N[tmp], collpase="\n\t- "))
@@ -1706,17 +1687,12 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
             paste0("$P",i,"G"), "1",
             paste0("$P",i,"R"), bar)
     if(S[i] != "") foo = c(foo, paste0("$P",i,"S"), S[i])
-    if(any(sapply(foo, FUN = function(x) substr(x,1,1) == delimiter))) stop("keyword-value pairs should not start with 'delimiter'[",delimiter,"]:\n\t- ",
-                                                                            paste0(paste0(foo[rep_len(c(TRUE, FALSE), length(foo))], "[", foo[rep_len(c(FALSE, TRUE), length(foo))], "]"), collapse="\n\t- "))
-    foo = gsub(pattern = delimiter, x = foo, replacement = delimiter_esc, fixed=TRUE)
+    if(any(sapply(foo, FUN = function(x) substr(x,1,1) == delimiter))) stop("keyword-value pairs should not start with 'delimiter'[",delimiter,"]:\n\t- ", paste0(paste0(foo[rep_len(c(TRUE, FALSE), length(foo))], "[", foo[rep_len(c(FALSE, TRUE), length(foo))], "]"), collapse="\n\t- "))
+    foo = mygsub(pattern = delimiter, x = foo, replacement = delimiter_esc, fixed=TRUE)
     foo = charToRaw(paste(c("", foo), collapse = delimiter))
     text2_length <<- text2_length + length(foo)
     return(foo)
   })
-  cyt = obj$description$FCS$instrument
-  if((length(cyt) == 0 ) || (cyt == "")) cyt = "Image Stream"
-  if(!missing(cytometer)) cyt = cytometer
-  if(length(obj$fileName_image) == 0) obj$fileName_image = ""
   
   # init text segment with mandatory + custom parameters #* = mandatory
   text_segment1 = list("$BEGINSTEXT" = "0",                                                      #*
@@ -1727,26 +1703,24 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                        "$DATATYPE" = "F",                                                        #*
                        "$MODE" = "L",                                                            #*
                        "$NEXTDATA" = "0",                                                        #*
-                       "$TOT" = num_to_string(obj$description$ID$objcount),                      #*
+                       "$TOT" = num_to_string(nrow(features)),                                   #*
                        "$PAR" = L,                                                               #*
                        #* BEGINDATA and ENDDATA are also mandatory and will be added afterwards
                        #* PnB, PnE, PnN, and PnR are also mandatory and are part of text_segment2
                        #* PnG is not mandatory but will be filled in part 2
-                       "$CYT" = cyt,
-                       "@IFC_fileName" = obj$fileName,
-                       "@IFC_fileName_image" = obj$fileName_image,
+                       "$CYT" = cytometer,
                        "@IFC_version" = pkg_ver,
                        "@IFC_date" = now
   )
   
   # gather keywords in priority order 
-  text_segment1 = c(text_segment1, dots, obj$Keywords)
-  # removes keywords whose values are NULL
-  text_segment1 = text_segment1[sapply(text_segment1, length) != 0]
+  text_segment1 = c(text_segment1, keywords)
+  # removes keywords whose values are not of length 1
+  text_segment1 = text_segment1[sapply(text_segment1, length) == 1]
   # removes duplicated keywords (priority order is important here)
   text_segment1 = text_segment1[!duplicated(toupper(names(text_segment1)))]
   # removes not allowed keywords (e.g. in text_segment2 ($PnN, $PnS, $PnB, $PnE, $PnG, $PnR) or "")
-  text_segment1 = text_segment1[setdiff(names(text_segment1),c(""))]
+  text_segment1 = text_segment1[setdiff(names(text_segment1),c("","$BEGINDATA","$ENDDATA"))]
   text_segment1 = text_segment1[!grepl("^\\$P\\d+[N|S|B|E|G|R]$", names(text_segment1), ignore.case = TRUE)]
   
   # determines length of data
@@ -1758,13 +1732,11 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
                        nchar("$ENDDATA"),   2, # 2 for additional delimiters, there is already one at the beg of text2
                        sapply(seq_along(text_segment1), FUN = function(i) {
                          foo = c(N[i], text_segment1[[i]])
-                         if(any(sapply(foo, FUN = function(x) substr(x,1,1) == delimiter))) stop("keyword-value pairs should not start with 'delimiter' [",delimiter,"]:\n\t- ",
-                                                                                                 paste0(foo[1],"[",foo[2],"]"))
-                         v = charToRaw(gsub(delimiter, delimiter_esc, N[i], fixed=TRUE))
-                         if(any(v < 0x20 | v >= 0x7F)) stop("keyword contains invalid ASCII character, valid are [0x20-0x7E (32-126)]\n\t- ",
-                                                            N[i], "[",paste0(paste0("0x",v), collapse = ","),"]")
-                         length(charToRaw(gsub(delimiter, delimiter_esc, text_segment1[[i]], fixed=TRUE))) +
-                           length(v) + 2 # 2 for additional delimiters
+                         if(any(sapply(foo, FUN = function(x) substr(x,1,1) == delimiter))) stop("keyword-value pairs should not start with 'delimiter' [",delimiter,"]:\n\t- ", paste0(foo[1],"[",foo[2],"]"))
+                         v = charToRaw(mygsub(delimiter, delimiter_esc, N[i], fixed=TRUE))
+                         if(any(v < 0x20 | v >= 0x7F)) stop("keyword contains invalid ASCII character, valid are [0x20-0x7E (32-126)]\n\t- ", N[i], "[",paste0(paste0("0x",v), collapse = ","),"]")
+                         length(charToRaw(mygsub(delimiter, delimiter_esc, text_segment1[[i]], fixed=TRUE))) +
+                         length(v) + 2 # 2 for additional delimiters
                        }), text2_length,
                        nchar(paste0(header, collapse = ""))
   ))
@@ -1806,8 +1778,8 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
     N = names(text_segment1)
     lapply(seq_along(text_segment1), FUN = function(i) {
       writeBin(object = charToRaw(paste(c("", 
-                                          gsub(delimiter, delimiter_esc, N[i], fixed=TRUE),
-                                          gsub(delimiter, delimiter_esc, text_segment1[i], fixed=TRUE)),
+                                          mygsub(delimiter, delimiter_esc, N[i], fixed=TRUE),
+                                          mygsub(delimiter, delimiter_esc, text_segment1[i], fixed=TRUE)),
                                         collapse = delimiter)), con = towrite)
     })
     
@@ -1846,3 +1818,56 @@ ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytomet
   message(mess)
   return(invisible(write_to))
 }
+
+#' @title FCS File Export
+#' @description
+#' Exports an `IFC_data` object to a Flow Cytometry Standard (FCS) file.
+#' @param obj an `IFC_data` object extracted with features extracted.
+#' @param write_to pattern used to export file.
+#' Placeholders, like \code{"\%d/\%s_fromR.\%e"}, will be substituted:\cr
+#' -\code{\%d}: with full path directory of \code{'obj$fileName'}\cr
+#' -\code{\%p}: with first parent directory of \code{'obj$fileName'}\cr
+#' -\code{\%e}: with extension of \code{'obj$fileName'} (without leading \code{.})\cr
+#' -\code{\%s}: with shortname from \code{'obj$fileName'} (i.e. basename without extension).\cr
+#' Exported file extension will be deduced from this pattern. Note that it has to be a .fcs.
+#' @param overwrite whether to overwrite file or not. Default is \code{FALSE}.
+#' Note that if \code{TRUE}, it will overwrite exported file if paths of \code{'obj$fileName'} and deduced from \code{'write_to'} arguments are different.
+#' Otherwise, you will get an error saying that overwriting source file is not allowed.\cr
+#' Note also that an original file will never be overwritten.
+#' @param delimiter an ASCII character to separate the FCS keyword-value pairs. Default is \code{"/"}.
+#' @param cytometer string, if provided it will be used to fill '$CYT' keyword.\cr
+#' However, when missing '$CYT' will be filled with \code{'obj$description$FCS$instrument'} if found or \code{"Image Stream"}, otherwise.
+#' @param include.pops logical, whether 'obj$pops' should be included as exported data. Default is \code{TRUE}.
+#' @param ... other arguments to be passed. keyword-value pairs can be passed here.
+#' @return invisibly returns full path of exported file.
+#' @export
+ExportToFCS <- function(obj, write_to, overwrite = FALSE, delimiter="/", cytometer = "Image Stream", include.pops = TRUE, ...) {
+  keywords = list(...)
+  
+  fileName = normalizePath(obj$fileName, winslash = "/", mustWork = FALSE)
+  splitf_obj = splitf(fileName)
+  splitp_obj = splitp(write_to)
+  write_to = formatn(splitp_obj, splitf_obj)
+  if(tolower(fileName) == tolower(write_to)) stop("you are trying to overwrite source file which is not allowed")
+  
+  extra = list(
+    "@IFC_fileName" = obj$fileName,
+    "@IFC_fileName_image" = obj$fileName_image)
+  if(length(extra[["$@IFC_fileName_image"]]) == 0) extra[["@IFC_fileName_image"]] = ""
+  dots = c(extra, keywords, obj$Keywords)
+  
+  cyt = obj$description$FCS$instrument
+  if(!missing(cytometer) && (length(cytometer) == 1)) cyt = cytometer
+  if((length(cyt) == 0 ) || (cyt == "")) cyt = "Image Stream"
+  
+  # we modify features to add populations
+  assert(as.logical(include.pops), alw = c(TRUE, FALSE), len = 1)
+  if(include.pops) {
+    data = fastCbind(obj$features[, setdiff(names(obj$features), names(obj$pops)), drop = FALSE],
+                     sapply(names(obj$pops), simplify = FALSE, FUN = function(p) obj$pops[[p]]$obj)) 
+  } else {
+    data = obj$features
+  }
+  writeFCS(data = data, write_to = write_to, overwrite = overwrite, delimiter = delimiter, cytometer = cyt, keywords = dots)
+}
+
