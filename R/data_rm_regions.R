@@ -87,7 +87,7 @@ data_rm_regions <- function(obj, regions, list_only = TRUE, adjust_graph = TRUE,
   to_remove_regions = unique(unlist(use.names = FALSE, lapply(obj$regions[to_remove_regions], FUN = function(r) {
     a = splits(attr(r, "sync"), TRUE)
     if(identical(a, "")) return(r$label)
-    return(names(is_synced == a))
+    return(names(is_synced[is_synced == a]))
   })))
 
   # search pops that depend on input regions
