@@ -210,8 +210,19 @@ splitn <- function(definition, all_names, alt_names, operators = c("And", "Or", 
   
   # we substitute names and operators with random names
   ans = definition
+  # modified on v0.2.1.813 to handle cases where some of all_names match with already replaced strings or operators e.g. like "A" or "N"
+  # for(i in seq_along(to_substitute)) { 
+  #   ans = gsub(pattern = to_substitute[i], replacement = replace_with[i], x = ans, fixed = TRUE)
+  # }
   for(i in seq_along(to_substitute)) { 
-    ans = gsub(pattern = to_substitute[i], replacement = replace_with[i], x = ans, fixed = TRUE)
+    n = nchar(to_substitute[i])
+    # match and replace occurrence(s) of to_substitute surrounded with split
+    ans = gsub(pattern = paste0(split,to_substitute[i],split), replacement = paste0(split,replace_with[i],split), x = ans, fixed = TRUE)
+    # then edge cases when to_substitute[i] is at beginning or end
+    if(substr(ans, start = 1, stop = n + 1) == paste0(to_substitute[i], split)) ans = paste0(replace_with[i], substr(ans, start = n + 1, stop = nchar(ans)))
+    if(substr(ans, start = nchar(ans) - n, stop = nchar(ans)) == paste0(split, to_substitute[i])) ans = paste0(substr(ans, start = 1, stop = nchar(ans) - n), replace_with[i])
+    # final edge case to_substitute[i] is exactly ans
+    if(ans == to_substitute[i]) ans = replace_with[i]
   }
   
   # we can now split the definition since random names we use
