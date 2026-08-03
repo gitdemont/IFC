@@ -73,6 +73,10 @@
 
 - fix undesired color produced by providing clipping limits (xlim or ylim) with `pntsonedge = FALSE` in **rasterplot**. Now returned coords in **hpp_coord_to_px** has gained a `subset` attribute to allow `col` and/or `rgba` subsetting.
 
+- fix use full data rather displayed points for stats computation
+
+- wip allow to pass arguments to `...` in plotGraph (e.g. `maxpoints`)
+
 #### Work on ExportToGallery
 - [BREAKING] modify returned object. When `export` is "file", exported path is invisibly returned. An "object_id" attribute is now attached to returned value.
 

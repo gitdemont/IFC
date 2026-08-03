@@ -533,12 +533,16 @@ plot_default_args=function(obj = list()) {
   assert(obj, cla = "IFC_plot")
   if(inherits(obj, c("error","empty"))) {
     g = as.list(attr(obj, "graph"))
+    pts = try({foo=nrow(g$input$data); bar=sum(g$input$subset,na.rm=TRUE); if(bar == foo) NULL else sprintf("%g/%g",bar,foo)}, silent=TRUE)
+    if(inherits(pts,"try-error")) pts = NULL
     main=g$title;sub=g$BasePop[[1]]$densitytrans;xlab=g$xlabel;ylab=g$ylabel;
     f1=g$f1;f2=g$f2;xlim=c(g$xmin,g$xmax);ylim=c(g$ymin,g$ymax);
     hyper_x=g$xlogrange;hyper_y=g$ylogrange;base=g$BasePop;type=g$type;freq=g$freq;
     color_mode=obj$color_mode;trunc_labels=obj$trunc_labels
   } else {
     g = as.list(obj)
+    pts = try({foo=nrow(g$input$data); bar=sum(g$input$subset,na.rm=TRUE); if(bar == foo) NULL else sprintf("%g/%g",bar,foo)}, silent=TRUE)
+    if(inherits(pts,"try-error")) pts = NULL
     main=g$input$title;sub=g$input$trans;xlab=g$input$xlab;ylab=g$input$ylab;
     f1=g$input$f1;f2=g$input$f2;xlim=g$input$xlim;ylim=g$input$ylim;
     hyper_x=g$input$trans_x;hyper_y=g$input$trans_y;base=g$input$base;type=g$input$type;freq=any(type%in%"percent");
@@ -563,9 +567,12 @@ plot_default_args=function(obj = list()) {
   if((length(ylab) == 0) || any(ylab %in% "")) ylab = " "
   if(inherits(x = try(parseTrans(sub), silent = TRUE), what="try-error")) {
     sub = trunc_string(sub, trunc_labels)
+    sub = paste0(c(sub,pts),collapse=", ")
     if((length(sub) == 0) || any(sub %in% "")) sub = " "
   } else {
-    if((length(sub) == 0) || any(sub %in% "") || any(sub %in% "asinh")) sub = " "
+    if(any(sub %in% "asinh")) sub = NULL
+    sub = paste0(c(sub,pts),collapse=", ")
+    if((length(sub) == 0) || any(sub %in% "")) sub = " "
   }
   
   # transforms
@@ -678,7 +685,7 @@ base_theme=function(obj = list(), color_mode = c("white", "black")[1], lt = NULL
   cols = rep(bg, length(cols_n))
   cols[1] = color_mode
   names(cols) = cols_n
-  return(c(list(xaxs="i", yaxs="i",
+  ans = c(list(xaxs="i", yaxs="i",
                 family = lt$add.text$fontfamily,
                 cex = 1,
                 cex.main = lt$par.main.text$cex,
@@ -692,7 +699,8 @@ base_theme=function(obj = list(), color_mode = c("white", "black")[1], lt = NULL
                 mar = c(5,5,2 * (lt$par.main.text$cex + lt$par.sub.text$cex) * par("lheight"), 2) + 0.1,
                 mgp = c(3,1,0),
                 ask=FALSE),
-           as.list(cols)))
+           as.list(cols))
+  return(ans[sapply(ans, length) != 0])
 }
 
 #' @title `IFC_plot` Base Title Annotation
@@ -914,6 +922,7 @@ plot_base=function(obj) {
   # common plot args
   args_plot = list(xlim = obj$input$xlim, ylim = obj$input$ylim,
                    main = " ",
+                   sub = " ",
                    xlab = " ",
                    ylab = " ",
                    axes = FALSE)
@@ -1244,6 +1253,7 @@ plot_lattice=function(obj) {
   trunc_labels = obj$input$trunc_labels
   labels = plot_default_args(obj)
   main = labels$main
+  sub = labels$sub
   xlab = labels$xlab
   ylab = labels$ylab
 
@@ -1257,7 +1267,7 @@ plot_lattice=function(obj) {
     if(nrow(D) > 0) {
       br = do.breaks(Xlim, nbin)
       foo = histogram(~ D[,"x2"], auto.key=FALSE,
-                      xlim = Xlim, ylim = Ylim, main = main, xlab = xlab,
+                      xlim = Xlim, ylim = Ylim, main = main, sub = sub, xlab = xlab,
                       ylab = ylab,
                       scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)),
                       border = "transparent", nint = nbin, type = type, breaks = br, normalize = normalize,
@@ -1304,7 +1314,7 @@ plot_lattice=function(obj) {
       }
     } else {
       foo = histogram(Ylim ~ Xlim, auto.key=FALSE,
-                      xlim = Xlim, ylim = Ylim, main = main, xlab = xlab,
+                      xlim = Xlim, ylim = Ylim, main = main, sub = sub, xlab = xlab,
                       ylab = ylab,
                       scales =  myScales(x=list(lim = Xlim, "hyper"=Xtrans), y=list(lim = Ylim, "hyper"=Ytrans)), border = "transparent",
                       nint = nbin, type = type, normalize = normalize, Ylim = Ylim,
@@ -1360,7 +1370,7 @@ plot_lattice=function(obj) {
     }
     foo = xyplot(D[,"y2"] ~ D[,"x2"], auto.key=FALSE,
                  xlim = Xlim, ylim = Ylim,
-                 main = main, xlab = xlab, ylab = ylab,
+                 main = main, sub = sub, xlab = xlab, ylab = ylab,
                  xlab.top = xtop,
                  xlab.top.font = lt$par.sub.text$font,
                  groups=groups,
@@ -1500,7 +1510,7 @@ plot_lattice_error=function(obj) {
   obj = as.list(obj)
   do.call(args = list(x = y ~ x, data = data.frame(x = g$xmid, y = g$ymid),
                       xlim = g$Xlim, ylim = g$Ylim,
-                      main = g$main, xlab = g$xlab, ylab = g$ylab,
+                      main = g$main, sub = g$sub, xlab = g$xlab, ylab = g$ylab,
                       scales = g$scales,
                       par.settings = lattice_theme(obj, g$color_mode, obj$input$par.settings),
                       col = "transparent",
@@ -1559,9 +1569,10 @@ plot_stats=function(obj) {
     stats = c("count","perc",stats)
     return(as.table(matrix(NaN, nrow = 1, ncol = length(stats), dimnames = list(setdiff(class(obj), "IFC_plot"), stats))))
   }
-  xy_subset = obj$input$subset
+  # xy_subset = obj$input$subset
   R = obj$input$regions
-  D = obj$input$data[xy_subset,,drop=FALSE]
+  # D = obj$input$data[xy_subset,,drop=FALSE]
+  D = obj$input$data
   basepop = obj$input$base
   Xlim = obj$input$xlim
   Ylim = obj$input$ylim

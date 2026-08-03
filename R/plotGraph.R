@@ -94,6 +94,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     P = obj$pops
     R = obj$regions
     if(missing(graph) || (length(unlist(graph,recursive=TRUE,use.names=FALSE)) == 0)) stop("empty graph")
+    if("maxpoints" %in% names(dots)) graph$maxpoints = dots$maxpoints
     g = do.call(what=buildGraph, args=graph)
     foo = c(g$f1, g$f2)
     tmp = foo %in% names(obj$features)
@@ -294,7 +295,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     }
     
     # define text/points size
-    lt <- lattice_theme(structure(list(), graph=graph), c("black","white")[mode], lt = NULL)
+    lt <- lattice_theme(structure(list(), graph=graph), c("black","white")[mode], lt = dots$lt)
     if(g$type == "histogram") {
       ret_order = c("Object Number","x1","x2",displayed_n)
     } else {
