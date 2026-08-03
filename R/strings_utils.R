@@ -218,6 +218,8 @@ splitn <- function(definition, all_names, alt_names, operators = c("And", "Or", 
     n = nchar(to_substitute[i])
     # match and replace occurrence(s) of to_substitute surrounded with split
     ans = gsub(pattern = paste0(split,to_substitute[i],split), replacement = paste0(split,replace_with[i],split), x = ans, fixed = TRUE)
+    # twice to handle repeated occurrences of to_substitute  e.g. "All|All|All|All|All"
+    ans = gsub(pattern = paste0(split,to_substitute[i],split), replacement = paste0(split,replace_with[i],split), x = ans, fixed = TRUE)
     # then edge cases when to_substitute[i] is at beginning or end
     if(substr(ans, start = 1, stop = n + 1) == paste0(to_substitute[i], split)) ans = paste0(replace_with[i], substr(ans, start = n + 1, stop = nchar(ans)))
     if(substr(ans, start = nchar(ans) - n, stop = nchar(ans)) == paste0(split, to_substitute[i])) ans = paste0(substr(ans, start = 1, stop = nchar(ans) - n), replace_with[i])

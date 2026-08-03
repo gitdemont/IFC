@@ -166,6 +166,8 @@
 
 - handle/improve attributes propagation for pops and regions. Should allow future use of regions/pops syncing
 
+- fix bug when splitting boolean population definition with populations names that can match operators e.g. "A" or "N"
+
 #### Miscellaneous
 - better handle file extension extraction
 
