@@ -780,7 +780,7 @@ base_regions=function(obj){
       if((y <= 0.025) || (y >= 0.975)) y = 0.5 # allow to show line when on the edge
       coords$y = rep(y, length.out=2)
       dual_num = sync_part(reg, "dual")
-      coords = dual_coords(coords, dual_num, applyTrans(Xlim, trans_x), applyTrans(Ylim, trans_y))
+      coords = dual_coords(coords, dual_num, Xlim, Ylim)
       text(x=reg$cx, y=cy*diff(Ylim), col=k, labels=lab, adj=c(0.5,0.5), cex=lt$add.text$cex)
       polygon(x=coords$x, y=coords$y*diff(Ylim), col = k, border = k)
     } else {
@@ -788,7 +788,7 @@ base_regions=function(obj){
       reg$cy = applyTrans(reg$cy, trans_y)
       if(reg$type=="rect") {
         quad_num = sync_part(reg, "quad")
-        coords = quad_coords(coords, quad_num, applyTrans(Xlim, trans_x), applyTrans(Ylim, trans_y)) 
+        coords = quad_coords(coords, quad_num, Xlim, Ylim) 
         coords$x=c(coords$x[1],coords$x[1],coords$x[2],coords$x[2])
         coords$y=c(coords$y[1],coords$y[2],coords$y[2],coords$y[1])
       }
@@ -1303,7 +1303,7 @@ plot_lattice=function(obj) {
                                 if((y <= 0.025) || (y >= 0.975)) y = 0.5 # allow to show line when on the edge
                                 coords$y = rep(y, length.out=2)
                                 dual_num = sync_part(reg, "dual")
-                                coords = dual_coords(coords, dual_num, applyTrans(Xlim, trans_x), applyTrans(Ylim, trans_y))
+                                coords = dual_coords(coords, dual_num, Xlim, Ylim)
                                 panel.text(x=reg$cx, y=cy*diff(Ylim), col=col, labels=lab, adj=c(0.5,0.5))
                                 panel.lines(x=coords$x, y=coords$y*diff(Ylim), col=col)
                               })
@@ -1335,7 +1335,7 @@ plot_lattice=function(obj) {
                           if((y <= 0.025) || (y >= 0.975)) y = 0.5 # allow to show line when on the edge
                           coords$y = rep(y, length.out=2)
                           dual_num = sync_part(reg, "dual")
-                          coords = dual_coords(coords, dual_num, applyTrans(Xlim, trans_x), applyTrans(Ylim, trans_y))
+                          coords = dual_coords(coords, dual_num, Xlim, Ylim)
                           panel.text(x=reg$cx, y=cy*diff(Ylim), col=col, labels=lab, adj=c(0.5,0.5))
                           panel.lines(x=coords$x, y=coords$y*diff(Ylim), col=col)
                         })
@@ -1450,7 +1450,7 @@ plot_lattice=function(obj) {
                      reg$cy = applyTrans(reg$cy, trans_y)
                      if(reg$type=="rect") {
                        quad_num = sync_part(reg, "quad")
-                       coords = quad_coords(coords, quad_num, applyTrans(Xlim, trans_x), applyTrans(Ylim, trans_y))
+                       coords = quad_coords(coords, quad_num, Xlim, Ylim)
                        coords$x=c(coords$x[1],coords$x[1],coords$x[2],coords$x[2])
                        coords$y=c(coords$y[1],coords$y[2],coords$y[2],coords$y[1])
                      }
