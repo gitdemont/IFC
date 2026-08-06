@@ -182,7 +182,7 @@ rasterplot = function(x, y = NULL,
     } else {
       data[[1]]$col = rgba
     }
-    if(!pntsonedge) data[[1]]$col = data[[1]]$col[,attr(data[[1]]$coords, "subset")]
+    if(!pntsonedge && length(x) == length(col)) data[[1]]$col = data[[1]]$col[,attr(data[[1]]$coords, "subset")]
   } else {
     if(missing(rgba)) { # we draw every combinations with its color argument (one only !)
       d = data.frame(x = x, y = y, pch = pch, size = size, col = col) 
