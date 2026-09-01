@@ -111,6 +111,6 @@ rasterplot(x = x, y = y, draw = TRUE, xlim = c(0, 1.5), pntsonedge = TRUE, col =
 col = c("plum", "green", "indianred", "blue", "black")\cr
 rgba = col2rgb(col, alpha = TRUE)\cr
 rgba = t(apply(rgba, 1, FUN = function(x) rep(x, length.out = n_points)))\cr
-rasterplot(x = x, y = y, pch = ".", rgba = rgba, draw = TRUE)
+rasterplot(x = x, y = y, pch = ".", rgba = rgba, draw = TRUE).
 }
 \keyword{internal}

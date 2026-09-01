@@ -77,6 +77,14 @@
 
 - wip allow to pass arguments to `...` in plotGraph (e.g. `maxpoints`)
 
+- enh handle `alpha` in **rasterplot** (previously not used)
+
+- fix generate error on 0-length `x` and when `x` and `y` lengths differ in **rasterplot**
+
+- fix generate error when number of `rgba` columns does not equal `x` length in **rasterplot**
+
+- fix set default `pch`, `size` and `col` when `NULL` is provided in **rasterplot**
+
 #### Work on ExportToGallery
 - [BREAKING] modify returned object. When `export` is "file", exported path is invisibly returned. An "object_id" attribute is now attached to returned value.
 

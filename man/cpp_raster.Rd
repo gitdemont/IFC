@@ -14,9 +14,10 @@
 - color a 4 rows IntegerMatrix (rgba) of the color used to draw the shape.\cr
 - coords, an IntegerMatrix whose rows are points to draw and with:\cr
 -* 1st column being img col coordinate in px,\cr
--* 2nd column being img row coordinate in px.
+-* 2nd column being img row coordinate in px.\cr
 - blur_size an integer controlling the size of the blurring gaussian kernel.\cr
-- blur_sd a double controlling the sd of the blurring gaussian kernel.}
+- blur_sd a double controlling the sd of the blurring gaussian kernel.\cr
+- blend, an integer controlling the method used for overlaying colors.}
 
 \item{bg_}{a Nullable IntegerVector that will be cast to 3D array when not NULL. Default is R_NilValue.\cr
 When not NULL, its dimensions should be the same as required by 'width' and 'height', otherwise an error will be thrown.\cr

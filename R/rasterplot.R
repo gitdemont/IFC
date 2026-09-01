@@ -94,7 +94,7 @@
 #' col = c("plum", "green", "indianred", "blue", "black")\cr
 #' rgba = col2rgb(col, alpha = TRUE)\cr
 #' rgba = t(apply(rgba, 1, FUN = function(x) rep(x, length.out = n_points)))\cr
-#' rasterplot(x = x, y = y, pch = ".", rgba = rgba, draw = TRUE)
+#' rasterplot(x = x, y = y, pch = ".", rgba = rgba, draw = TRUE).
 #' @return an [0, 255] integer array of (height, width, 4) of class `rasterplot`
 #' @keywords internal
 rasterplot = function(x, y = NULL, 
@@ -107,7 +107,9 @@ rasterplot = function(x, y = NULL,
                       blur_size = 9, blur_sd = 3,                             # only for density
                       bg_ = NULL, bg_map = TRUE, ...) {
   dots = list(...)
+  if(length(x) == 0) stop("'x' is empty")
   if(length(y) == 0) y = x
+  if(length(y) != length(x)) stop("'x' and 'y' lengths differ")
   xlim = dots$xlim
   if(length(xlim) == 0) xlim = cpp_fast_range(x)
   ylim = dots$ylim
@@ -118,16 +120,18 @@ rasterplot = function(x, y = NULL,
   if(length(ylab) == 0) ylab = "y"
   main = dots$main
   if(length(main) == 0) main = "Raster Plot"
-  if(missing(rgba)) {
-    if(length(nrow(rgba) != 4) && (ncol(rgba) != nrow(d))) stop("when provided 'rgba' should be a 4 rows matrix of number of columns identical to x length")
+  if(!missing(rgba)) {
+    if(length(nrow(rgba) != 4) && (ncol(rgba) != length(x))) stop("when provided 'rgba' should be a 4 rows matrix of number of columns identical to 'x' length")
   } else {
-    if(length(col) == 0) stop("bad 'col' specification")
+    if(length(col) == 0) col = "black"
   }
   alpha = as.integer(alpha)
   if(length(alpha) != 1) stop("'alpha' should be of length 1")
   if((alpha < 0) || (alpha > 255)) stop("'alpha' should be a [0,255] integer")
+  blend <- ifelse(alpha == 255, 0, 1)
   
   dots = dots[setdiff(names(dots), c("xlim", "ylim", "xlab", "ylab", "main"))]
+  if(is.null(pch)) pch = "."
   pch[pch == "."] <- 27
   pch = suppressWarnings(as.integer(pch))
   has_bg = !missing(bg_) && (length(bg_) != 0)
@@ -136,6 +140,7 @@ rasterplot = function(x, y = NULL,
   if(cex < 0) stop("'cex' should be positive numeric")
   lwd = par("lwd"); if(length(dots$lwd) != 0) lwd = dots$lwd
   if(lwd < 0) stop("'lwd' should be positive integer")
+  if(is.null(size)) size = 7
   size = size * cex
   size[size < 1] <- 1
   
@@ -175,7 +180,8 @@ rasterplot = function(x, y = NULL,
                      lwd = lwd, 
                      coords = coord_to_px(coord=data.frame(x = x, y = y), coordmap = coordmap, pntsonedge = pntsonedge),
                      blur_size = blur_size,
-                     blur_sd = blur_sd))
+                     blur_sd = blur_sd,
+                     blend = blend))
     if(missing(rgba)) {
       data[[1]]$col = col2rgb(col, alpha = TRUE)
       data[[1]]$col[4,] <- alpha
@@ -196,7 +202,8 @@ rasterplot = function(x, y = NULL,
              col = col_,
              coords = coord_to_px(coord=data.frame(x = d$x[g[[i]]], y = d$y[g[[i]]]), coordmap = coordmap, pntsonedge = pntsonedge),
              blur_size = blur_size,
-             blur_sd = blur_sd)
+             blur_sd = blur_sd,
+             blend = blend)
       })
     } else { # with rgba we have a color for each single point
       d = data.frame(x = x, y = y, pch = pch, size = size)
@@ -213,7 +220,8 @@ rasterplot = function(x, y = NULL,
           col = rgba[, g[[i]], drop = FALSE],
           coords = coord_to_px(coord=data.frame(x = d$x[g[[i]]], y = d$y[g[[i]]]), coordmap = coordmap, pntsonedge = pntsonedge),
           blur_size = blur_size,
-          blur_sd = blur_sd)
+          blur_sd = blur_sd,
+          blend = blend)
         if(!pntsonedge) ans$col = ans$col[,attr(ans$coords, "subset")]
         ans
       })

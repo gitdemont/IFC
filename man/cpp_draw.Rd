@@ -17,6 +17,8 @@
 \item{blur_size, }{a R_len_t the size of the gaussian blurring kernel. Default is 9.}
 
 \item{blur_sd, }{a double the sd of the gaussian blurring kernel. Default is 3.0.}
+
+\item{blend, }{an integer controlling the method used for overlaying colors. Allowed are 0=replace, 1=alpha compositing. Default is 0.}
 }
 \value{
 /!\ nothing is returned but img is modified in-place

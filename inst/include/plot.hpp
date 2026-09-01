@@ -425,6 +425,35 @@ Rcpp::NumericMatrix hpp_gaussian(const R_len_t size = 3,
   }
   return out;
 }
+// linearize mask
+// [[Rcpp::export(rng = false)]]
+Rcpp::IntegerMatrix hpp_mask_offset(const Rcpp::NumericMatrix kk) {
+  R_len_t rr = kk.nrow() >> 1;
+  R_len_t rc = kk.ncol() >> 1;
+  R_len_t kc = kk.ncol() % 2;
+  R_len_t kr = kk.nrow() % 2;
+  R_len_t rc_1 = rc + kc;
+  R_len_t rr_1 = rr + kr;
+  R_len_t n = 0;
+  for(R_len_t c = -rc, j = 0; c < rc_1; c++) {
+    for(R_len_t r = -rr; r < rr_1; r++, j++) {
+      if(kk[j] != 0 && R_finite(kk[j])) {
+        n++;
+      }
+    }
+  }
+  Rcpp::IntegerMatrix out(3, n);
+  for(R_len_t c = -rc, i = 0, j = 0; c < rc_1; c++) {
+    for(R_len_t r = -rr; r < rr_1; r++, j++) {
+      if(kk[j] != 0 && R_finite(kk[j])) {
+        out[i++] = c;
+        out[i++] = r;
+        out[i++] = j;
+      }
+    }
+  }
+  return out;
+}
 
 // check and get image array dimensions
 // img is expected to be a non null IntegerVector with dimension attribute [nrow, ncol, 4]
@@ -537,6 +566,34 @@ Rcpp::NumericMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
   }
 }
 
+//' @title RGB color blending
+//' @name hpp_blend
+//' @param A IntegerVector, background color [0,255].
+//' @param B IntegerVector, foreground color [0,255].
+//' @param at R_len_t, pixel position.
+//' @param d R_len_t, 'A' width and height product.
+//' @param blend, an integer controlling the method used for overlaying colors. Allowed are 0=replace, 1=alpha compositing. Default is 0.
+//' @return /!\ nothing is returned but background 'A' is modified in-place
+//' @description
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+void hpp_blend(Rcpp::IntegerVector A,
+               const Rcpp::IntegerVector B,
+               const R_len_t at,
+               const R_len_t d,
+               const int blend = 0) {
+  if(blend == 1) { // simple alpha compositing
+    double a = A[3 * d + at] / 255.0;
+    double b = B[3] / 255.0;
+    double q  = std::max(0.0, std::min(1.0, a + b * (1.0 - a)));
+    for(uint8_t k = 0; k < 3; k++) A[k * d + at] = std::round((A[k * d + at] * a + B[k] * b * (1.0 - a)) / q);
+    A[3 * d + at] = std::round(q * 255.0);
+  } else {          // normal, B replaces A
+    for(uint8_t k = 0; k < 4; k++) A[k * d + at] = B[k];
+  }
+}
+
 //' @title Draw Shape to Image
 //' @name cpp_draw
 //' @description low-level function to add shape on image
@@ -548,6 +605,7 @@ Rcpp::NumericMatrix hpp_coord_to_px(const Rcpp::NumericVector x,
 //' @param color, a 4 rows IntegerMatrix specifying rgba, from 0 to 255.
 //' @param blur_size, a R_len_t the size of the gaussian blurring kernel. Default is 9.
 //' @param blur_sd, a double the sd of the gaussian blurring kernel. Default is 3.0.
+//' @param blend, an integer controlling the method used for overlaying colors. Allowed are 0=replace, 1=alpha compositing. Default is 0.
 //' @details shape according to 'mask' will be drawn on 'img' centered at coordinates coords[, 1], coords[, 0]
 //' and every pixels being part of the shape will be filled with 'color'.
 //' If only one 'color' is provided, this 'color' will be used for each points.
@@ -563,19 +621,23 @@ void hpp_draw(Rcpp::IntegerVector img,
               const Rcpp::LogicalMatrix mask = Rcpp::LogicalMatrix(1),
               const Rcpp::IntegerMatrix color = Rcpp::IntegerMatrix(4,1),
               const R_len_t blur_size = 9,
-              const double blur_sd = 3.0) {
+              const double blur_sd = 3.0,
+              const int blend = 0) {
   if((mask.size() == 0) || (mask.size() >= 3025)) Rcpp::stop("hpp_draw: 'size' argument is not possible with this shape");
-  R_len_t msk_c = mask.ncol() >> 1;
-  R_len_t msk_r = mask.nrow() >> 1;
-  R_len_t msk_c_1 = msk_c + (mask.ncol() % 2);
-  R_len_t msk_r_1 = msk_r + (mask.nrow() % 2);
+  Rcpp::IntegerMatrix shp = hpp_mask_offset(as<NumericMatrix>(mask));
+  R_len_t shp_c = shp.ncol();
   R_len_t col_r = color.nrow();
   R_len_t col_c = color.ncol();
   if(col_r != 4) Rcpp::stop("hpp_draw: bad 'color' specification");
   for(R_len_t i = 0; i < color.size(); i++) if((color[i] < 0) || (color[i] > 255)) Rcpp::stop("hpp_draw: bad 'color' specification, out-of-range [0-255]");
+  if(col_c == 0) {
+    if(coords.nrow() == 0) return;
+    Rcpp::stop("hpp_draw: bad 'color' specification");
+  }
   Rcpp::IntegerVector V = Rcpp::clone(get_dim(img));
   R_len_t W = V[1];
   R_len_t H = V[0];
+  R_len_t d = H * W;
   unsigned short count = 1;
   Rcpp::LogicalMatrix Z = Rcpp::no_init_matrix(H, W); // matrix to record points already drawn so as to skip drawing another point at same xy location
   Z.fill(true);
@@ -589,14 +651,12 @@ void hpp_draw(Rcpp::IntegerVector img,
       R_len_t i_col = coords(i_pt, 0);
       if((i_col < 0) || (i_row < 0) || (i_col >= W) || (i_row >= H)) continue;
       if(Z(i_row, i_col)) {
-        Z(i_row, i_col) = false; // no need to draw same point at same xy location
-        for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
-          for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
-            if(mask[i_msk] && (f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
-              for(R_len_t i_k = 0; i_k < 4; i_k++) {
-                img[i_k * H * W + f_col * H + f_row] = color[i_k];
-              }
-            }
+        Z(i_row, i_col) = blend != 0; // no need to draw same point at same xy location
+        for(R_len_t i_shp = 0; i_shp < shp_c; i_shp++) {
+          R_len_t f_col = i_col + shp(0,i_shp);
+          R_len_t f_row = i_row + shp(1,i_shp);
+          if((f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
+            hpp_blend(img, color, f_col * H + f_row, d, blend);
           }
         }
       }
@@ -612,14 +672,12 @@ void hpp_draw(Rcpp::IntegerVector img,
         R_len_t i_col = coords(i_pt, 0);
         if((i_col < 0) || (i_row < 0) || (i_col >= W) || (i_row >= H)) continue;
         if(Z(i_row, i_col)) {
-          Z(i_row, i_col) = false; // no need to draw same point at same xy location
-          for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
-            for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
-              if(mask[i_msk] && (f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
-                for(R_len_t i_k = 0; i_k < 4; i_k++) {
-                  img[i_k * H * W + f_col * H + f_row] = color[i_k + 4 * i_pt];
-                }
-              }
+          Z(i_row, i_col) = blend != 0; // no need to draw same point at same xy location
+          for(R_len_t i_shp = 0; i_shp < shp_c; i_shp++) {
+            R_len_t f_col = i_col + shp(0,i_shp);
+            R_len_t f_row = i_row + shp(1,i_shp);
+            if((f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
+              hpp_blend(img, color(Rcpp::_, i_pt), f_col * H + f_row, d, blend);
             }
           }
         }
@@ -627,13 +685,11 @@ void hpp_draw(Rcpp::IntegerVector img,
     } else { // colors are provided as a gradient, we compute density
       double den_mx = 0.0;
       Rcpp::NumericMatrix blur = hpp_gaussian(blur_size, blur_sd);
+      Rcpp::IntegerMatrix pbr = hpp_mask_offset(blur);
+      R_len_t pbr_c = pbr.ncol();
       Rcpp::IntegerMatrix grd = Rcpp::no_init_matrix(H, W);
       Rcpp::NumericMatrix den = Rcpp::no_init_matrix(H, W);
       den.fill(den_mx);
-      R_len_t blr_c = blur.ncol() >> 1;
-      R_len_t blr_r = blur.nrow() >> 1;
-      R_len_t blr_c_1 = blr_c + (blur.ncol() % 2);
-      R_len_t blr_r_1 = blr_r + (blur.nrow() % 2);
       double Q = (col_c - 0.001) / 0.8813736;
       for(R_len_t i_pt = 0; i_pt < coords.nrow(); i_pt++) {
         if((count++ % 10000) == 0) {
@@ -642,12 +698,12 @@ void hpp_draw(Rcpp::IntegerVector img,
         }
         R_len_t i_row = coords(i_pt, 1);
         R_len_t i_col = coords(i_pt, 0);
-        for(R_len_t f_col = i_col - blr_c, i_blr = 0; f_col < i_col + blr_c_1; f_col++) {
-          for(R_len_t f_row = i_row - blr_r; f_row < i_row + blr_r_1; f_row++, i_blr++) {
-            if((f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
-              den(f_row, f_col) = den(f_row, f_col) + blur[i_blr];
-              if(den(f_row, f_col) > den_mx) den_mx = den(f_row, f_col);
-            }
+        for(R_len_t i_pbr = 0; i_pbr < pbr_c; i_pbr++) {
+          R_len_t f_col = i_col + pbr(0,i_pbr);
+          R_len_t f_row = i_row + pbr(1,i_pbr);
+          if((f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
+            den(f_row, f_col) = den(f_row, f_col) + blur[pbr(2,i_pbr)];
+            if(den(f_row, f_col) > den_mx) den_mx = den(f_row, f_col);
           }
         }
       }
@@ -663,9 +719,7 @@ void hpp_draw(Rcpp::IntegerVector img,
           if((i_col < 0) || (i_row < 0) || (i_col >= W) || (i_row >= H)) continue; 
           if(Z(i_row, i_col)) {
             Z(i_row, i_col) = false;
-            for(R_len_t i_k = 0; i_k < 4; i_k++) {
-              img[i_k * H * W + i_col * H + i_row] = color(i_k, grd(i_row, i_col));
-            }
+            hpp_blend(img, color(Rcpp::_, grd(i_row, i_col)), i_col * H + i_row, d, blend);
           }
         }
       } else {
@@ -680,20 +734,18 @@ void hpp_draw(Rcpp::IntegerVector img,
           if(Z(i_row, i_col)) {
             Z(i_row, i_col) = false;
             R_len_t v = 0;
-            for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
-              for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
-                if(mask[i_msk] && (f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
-                  if(grd(f_row, f_col) > v) v = grd(f_row, f_col);
-                }
+            for(R_len_t i_shp = 0; i_shp < shp_c; i_shp++) {
+              R_len_t f_col = i_col + shp(0,i_shp);
+              R_len_t f_row = i_row + shp(1,i_shp);
+              if((f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
+                if(grd(f_row, f_col) > v) v = grd(f_row, f_col);
               }
             }
-            for(R_len_t f_col = i_col - msk_c, i_msk = 0; f_col < i_col + msk_c_1; f_col++) {
-              for(R_len_t f_row = i_row - msk_r; f_row < i_row + msk_r_1; f_row++, i_msk++) {
-                if(mask[i_msk] && (f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
-                  for(R_len_t i_k = 0; i_k < 4; i_k++) {
-                    img[i_k * H * W + f_col * H + f_row] = color(i_k, v);
-                  }
-                }
+            for(R_len_t i_shp = 0; i_shp < shp_c; i_shp++) {
+              R_len_t f_col = i_col + shp(0,i_shp);
+              R_len_t f_row = i_row + shp(1,i_shp);
+              if((f_col >= 0) && (f_row >= 0) && (f_col < W) && (f_row < H)) {
+                hpp_blend(img, color(Rcpp::_, v), f_col * H + f_row, d, blend);
               }
             }
           }
@@ -714,9 +766,10 @@ void hpp_draw(Rcpp::IntegerVector img,
 //' - color a 4 rows IntegerMatrix (rgba) of the color used to draw the shape.\cr
 //' - coords, an IntegerMatrix whose rows are points to draw and with:\cr
 //' -* 1st column being img col coordinate in px,\cr
-//' -* 2nd column being img row coordinate in px.
+//' -* 2nd column being img row coordinate in px.\cr
 //' - blur_size an integer controlling the size of the blurring gaussian kernel.\cr
-//' - blur_sd a double controlling the sd of the blurring gaussian kernel.
+//' - blur_sd a double controlling the sd of the blurring gaussian kernel.\cr
+//' - blend, an integer controlling the method used for overlaying colors.
 //' @param bg_ a Nullable IntegerVector that will be cast to 3D array when not NULL. Default is R_NilValue.\cr
 //' When not NULL, its dimensions should be the same as required by 'width' and 'height', otherwise an error will be thrown.\cr
 //' When not NULL, it will serve as a background to draw new points on top of it.
@@ -734,12 +787,14 @@ Rcpp::IntegerVector hpp_raster(const uint16_t width,
                                const uint16_t height,
                                const Rcpp::List obj,
                                const Rcpp::Nullable <Rcpp::IntegerVector> bg_ = R_NilValue) {
-  Rcpp::IntegerVector img(width * height * 4);
+  Rcpp::IntegerVector img = Rcpp::no_init_vector(width * height * 4);
   if(iNotisNULL(bg_)) {
     Rcpp::IntegerVector bg(bg_.get());
     Rcpp::IntegerVector V = Rcpp::clone(get_dim(bg));
     if(!((V[0] == height) && (V[1] == width))) Rcpp::stop("hpp_raster: when provided 'bg' should be of same dimension as current raster");
-    img = Rcpp::clone(bg);
+    std::copy(bg.begin(), bg.end(), img.begin());
+  } else {
+    img.fill(0);
   }
   img.attr("dim") = Rcpp::Dimension(height, width, 4);
   for(R_len_t i_obj = 0; i_obj < obj.size(); i_obj++) {
@@ -834,7 +889,7 @@ Rcpp::IntegerVector hpp_raster(const uint16_t width,
       mask = hpp_square_filled(1);
     break;
     }
-    hpp_draw(img, L["coords"], mask, L["col"], L["blur_size"], L["blur_sd"]);
+    hpp_draw(img, L["coords"], mask, L["col"], L["blur_size"], L["blur_sd"], L["blend"]);
   }
   return img;
 }

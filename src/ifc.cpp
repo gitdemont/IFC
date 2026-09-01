@@ -858,6 +858,7 @@ Rcpp::IntegerMatrix cpp_as_nativeRaster(const Rcpp::IntegerVector x) {
 //' @param color, a 4 rows IntegerMatrix specifying rgba, from 0 to 255.
 //' @param blur_size, a R_len_t the size of the gaussian blurring kernel. Default is 9.
 //' @param blur_sd, a double the sd of the gaussian blurring kernel. Default is 3.0.
+//' @param blend, an integer controlling the method used for overlaying colors. Allowed are 0=replace, 1=alpha compositing. Default is 0.
 //' @details shape according to 'mask' will be drawn on 'img' centered at coordinates coords[, 1], coords[, 0]
 //' and every pixels being part of the shape will be filled with 'color'.
 //' If only one 'color' is provided, this 'color' will be used for each points.
@@ -873,9 +874,10 @@ Rcpp::IntegerVector cpp_draw (const Rcpp::IntegerVector img,
                               const Rcpp::LogicalMatrix mask = Rcpp::LogicalMatrix(1),
                               const Rcpp::IntegerMatrix color = Rcpp::IntegerMatrix(4,1),
                               const R_len_t blur_size = 9,
-                              const double blur_sd = 3.0) {
+                              const double blur_sd = 3.0,
+                              const int blend = 0) {
   Rcpp::IntegerVector out = Rcpp::clone(img);
-  hpp_draw(out, coords, mask, color, blur_size, blur_sd);
+  hpp_draw(out, coords, mask, color, blur_size, blur_sd, blend);
   return out;
 }
 //' @title Raster Image
@@ -889,9 +891,10 @@ Rcpp::IntegerVector cpp_draw (const Rcpp::IntegerVector img,
 //' - color a 4 rows IntegerMatrix (rgba) of the color used to draw the shape.\cr
 //' - coords, an IntegerMatrix whose rows are points to draw and with:\cr
 //' -* 1st column being img col coordinate in px,\cr
-//' -* 2nd column being img row coordinate in px.
+//' -* 2nd column being img row coordinate in px.\cr
 //' - blur_size an integer controlling the size of the blurring gaussian kernel.\cr
-//' - blur_sd a double controlling the sd of the blurring gaussian kernel.
+//' - blur_sd a double controlling the sd of the blurring gaussian kernel.\cr
+//' - blend, an integer controlling the method used for overlaying colors.
 //' @param bg_ a Nullable IntegerVector that will be cast to 3D array when not NULL. Default is R_NilValue.\cr
 //' When not NULL, its dimensions should be the same as required by 'width' and 'height', otherwise an error will be thrown.\cr
 //' When not NULL, it will serve as a background to draw new points on top of it.
