@@ -85,6 +85,8 @@
 
 - fix set default `pch`, `size` and `col` when `NULL` is provided in **rasterplot**
 
+- fix axis tick labels for LinLog tansformations
+
 #### Work on ExportToGallery
 - [BREAKING] modify returned object. When `export` is "file", exported path is invisibly returned. An "object_id" attribute is now attached to returned value.
 

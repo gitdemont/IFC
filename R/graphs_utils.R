@@ -224,105 +224,103 @@ toEllipse=function(gate, theta=2*pi, npoints=100) {
 #' @param trans transformation applied. Defaut is "P".
 #' @param nint positive integer value indicating (approximately) the desired number of intervals. Default is 10.
 #' @keywords internal
-base_axis_constr=function(lim, trans = "P", nint = 10) {
-  nint = na.omit(as.integer(nint)); assert(nint, len = 1, typ = "integer")
+base_axis_constr <- function (lim, trans = "P", nint = 10) {
+  nint = na.omit(as.integer(nint))
+  assert(nint, len = 1, typ = "integer")
   assert(trans, len = 1)
   trans_ = parseTrans(trans)
-  if(trans_$what %in% c("smoothLinLog","smoothAsinh")) {
+  if(trans_$what %in% c("smoothLinLog", "smoothAsinh")) {
     hyper = formals(trans_$what)$hyper
-    if(length(trans_$args$hyper)!=0) hyper = trans_$args$hyper
+    if(length(trans_$args$hyper) != 0) hyper = trans_$args$hyper
     base = formals(trans_$what)$base
     if(length(base) == 0) base = 10
-    if(length(trans_$args$base)!=0) base = trans_$args$base
+    if(length(trans_$args$base) != 0) base = trans_$args$base
     n_ticks = 0
     p_ticks = 0
     neg_log_ticks = 0
     pos_log_ticks = 0
-    # compute range without expansion in original scale
-    if(diff(lim) == 0) lim = c(-1,1)
-    ran = diff(lim) / 1.14 * c(0.07, -0.07) + lim
+    if(diff(lim) == 0) lim = c(-1, 1)
+    ran = diff(lim)/1.14 * c(0.07, -0.07) + lim
     ran = applyTrans(ran, trans_, inverse = TRUE)
     n_ticks = max(ran[1], -hyper)
     p_ticks = min(ran[2], hyper)
-    
-    # identify pos and neg base pow within displayed range
     ran_ = ran + c(hyper, -hyper)
-    ran_ = sign(ran_) * log(abs(ran_) / hyper, base)
+    ran_ = sign(ran_) * log(abs(ran_)/hyper, base)
     if(ran_[1] < 0) neg_log_ticks = floor(ran_[1])
     if(ran_[2] > 0) pos_log_ticks = ceiling(ran_[2])
-    tot = pos_log_ticks - neg_log_ticks + 
-      ifelse((neg_log_ticks <= 0) && (n_ticks >= -hyper), 0.5, 0) + 
-      ifelse((pos_log_ticks >= 0) && (p_ticks <= hyper), 0.5, 0)
+    tot = pos_log_ticks - neg_log_ticks + ifelse((neg_log_ticks <= 0) && (n_ticks >= -hyper), 0.5, 0) + ifelse((pos_log_ticks >= 0) && (p_ticks <= hyper), 0.5, 0)
     if(tot <= 0) tot = 1
-    # create ticks and labels
     ticks_at = c()
     ticks_lab = c()
     if(neg_log_ticks != 0) {
-      at = round(sort(unique(c(outer(1:base, (max(abs(neg_log_ticks),abs(pos_log_ticks))-1):0 + log(hyper, base),
-                               FUN=function(m,p) {-m*base^p}))), decreasing = FALSE),10)
-      at_scaled = applyTrans(at, trans_)
-      at_lab = rep("", length(at_scaled))
-      neg_nint = as.integer(-neg_log_ticks / tot * nint)
+      neg_nint = as.integer(-neg_log_ticks/tot * nint)
       if(neg_nint > 0) {
+        at = round(sort(unique(c(outer(1:base, (max(abs(neg_log_ticks),abs(pos_log_ticks)) - 1):0 + log(hyper, base), 
+                                       FUN = function(m, p) { 
+                                         -m * base^p
+                                       }))), decreasing = FALSE), 10)
+        at = at[at <= hyper]
         if(length(at) < (1 * nint)) {
-          at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = TRUE) 
+          at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = TRUE)
+          at_scaled = applyTrans(at, trans_)
         } else {
           if(base == 10) {
-            pretty_lab = round(-axisTicks(log10(-range(at)), log = TRUE, nint = neg_nint),10)
+            pretty_lab = round(-axisTicks(log10(-range(at)), log = TRUE, nint = neg_nint), 10)
           } else {
-            pretty_lab = round(-base^axisTicks(log(-range(at), base), log = FALSE, nint = neg_nint),10)
+            pretty_lab = round(-base^axisTicks(log(-range(at), base), log = FALSE, nint = neg_nint), 10)
           }
-          # log = log10(-at[at %in% pretty_lab])
-          # tmp = (log - floor(log)) == 0
-          # log[!tmp] <- floor(log[!tmp])
-          # mul = at[at %in% pretty_lab] / 10^log
-          # at_lab[at %in% pretty_lab] <- parse(text=sprintf("%i%%.%%10^~~%i", mul, log))
-          at_lab[at %in% pretty_lab] = formatC(x = at[at %in% pretty_lab] , format = "g", width = -1, digits = 2, drop0trailing = TRUE) 
+          at_lab = pretty_lab
+          at_scaled = applyTrans(at_lab, trans_, inverse = FALSE)
+          at_lab = formatC(x = at_lab, format = "g", width = -1, digits = 4, drop0trailing = TRUE)
         }
+        ticks_at = c(ticks_at, at_scaled)
+        ticks_lab = c(ticks_lab, at_lab)
       }
-      ticks_at = c(ticks_at, at_scaled)
-      ticks_lab = c(ticks_lab, at_lab)
     }
     if(n_ticks >= -hyper) {
-      at = axisTicks(c(n_ticks,0), log = FALSE, nint = ceiling(3*nint*applyTrans(abs(n_ticks), trans_)/diff(lim)/tot))
-      at = at[at > n_ticks]
+      at = axisTicks(c(n_ticks, 0), log = FALSE, nint = ceiling(3 * nint * applyTrans(abs(n_ticks), trans_)/diff(lim)/tot))
+      at = at[at >= n_ticks]
       if(length(at) > 0) {
         at_scaled = applyTrans(at, trans_)
-        at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE) 
+        at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE)
         ticks_at = c(ticks_at, at_scaled)
         ticks_lab = c(ticks_lab, at_lab)
       }
     }
     if(p_ticks <= hyper) {
-      at = axisTicks(c(0,p_ticks), log = FALSE, nint = ceiling(3*nint*applyTrans(abs(p_ticks), trans_)/diff(lim)/tot))
-      at = at[at < p_ticks]
+      at = axisTicks(c(0, p_ticks), log = FALSE, nint = ceiling(3 * nint * applyTrans(abs(p_ticks), trans_)/diff(lim)/tot))
+      at = at[at <= p_ticks]
       if(length(at) > 0) {
         at_scaled = applyTrans(at, trans_)
-        at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE) 
+        at_lab = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE)
         ticks_at = c(ticks_at, at_scaled)
         ticks_lab = c(ticks_lab, at_lab)
       }
     }
     if(pos_log_ticks != 0) {
-      at = round(sort(unique(c(outer(1:base, 0:(max(abs(neg_log_ticks),abs(pos_log_ticks))-1) + log(hyper, base),
-                               FUN=function(m,p) {m*base^p}))), decreasing = FALSE),10)
-      at_scaled = applyTrans(at, trans_)
-      at_lab = rep("", length(at_scaled))
-      pos_nint = as.integer(pos_log_ticks / tot * nint)
+      pos_nint = as.integer(pos_log_ticks/tot * nint)
       if(pos_nint > 0) {
+        at = round(sort(unique(c(outer(1:base, 0:(max(abs(neg_log_ticks), abs(pos_log_ticks)) - 1) + log(hyper, base), 
+                                       FUN = function(m, p) {
+                                         m * base^p
+                                       }))), decreasing = FALSE), 10)
+        at = at[at >= hyper]
         if(length(at) < (1 * nint)) {
-          at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = TRUE) 
+          at_lab = formatC(x = at, format = "g", width = -1, digits = 1, drop0trailing = TRUE)
+          at_scaled = applyTrans(at, trans_)
         } else {
           if(base == 10) {
-            pretty_lab = round(axisTicks(log10(range(at)), log = TRUE, nint = pos_nint),10)
+            pretty_lab = round(axisTicks(log10(range(at)), log = TRUE, nint = pos_nint), 10)
           } else {
-            pretty_lab = round(base^axisTicks(log(range(at), base), log = FALSE, nint = pos_nint),10)
+            pretty_lab = round(base^axisTicks(log(range(at), base), log = FALSE, nint = pos_nint), 10)
           }
-          at_lab[at %in% pretty_lab] = formatC(x = at[at %in% pretty_lab] , format = "g", width = -1, digits = 2, drop0trailing = TRUE) 
+          at_lab = pretty_lab
+          at_scaled = applyTrans(at_lab, trans_)
+          at_lab = formatC(x = at_lab, format = "g", width = -1, digits = 4, drop0trailing = TRUE)
         }
+        ticks_at = c(ticks_at, at_scaled)
+        ticks_lab = c(ticks_lab, at_lab)
       }
-      ticks_at = c(ticks_at, at_scaled)
-      ticks_lab = c(ticks_lab, at_lab)
     }
     keep = (ticks_at >= lim[1]) & (ticks_at <= lim[2])
     dup = duplicated(ticks_at)
@@ -335,17 +333,13 @@ base_axis_constr=function(lim, trans = "P", nint = 10) {
     }
     ticks_lab = ticks_lab[is.finite(ticks_at)]
     ticks_at = ticks_at[is.finite(ticks_at)]
-    # trick to fix 
-    # grid.Call(C_textBounds, as.graphicsAnnot(x$label), x$x, x$y,  : 
-    # polygon edge not found (zero-width or zero-height?)
-    # Calls: <Anonymous> -> heightDetails -> heightDetails.text -> grid.Call
     ticks_lab[ticks_lab == ""] <- " "
     ord = order(ticks_at)
-    return(list("at" = ticks_at[ord], "labels" = ticks_lab[ord]))
+    return(list(at = ticks_at[ord], labels = ticks_lab[ord]))
   } else {
     at = axisTicks(lim, log = FALSE, nint = nint)
     at = at[is.finite(at)]
-    return(list("at" = at, "labels" = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE)))
+    return(list(at = at, labels = formatC(x = at, format = "g", width = -1, digits = 4, drop0trailing = TRUE)))
   }
 }
 
@@ -1164,7 +1158,8 @@ plot_raster=function(obj, pntsonedge = FALSE) {
            lwd = 1,
            coords = coord_to_px(coord=coords[sub_,,drop=FALSE], coordmap=coordmap, pntsonedge=pntsonedge),
            blur_size = bsize,
-           blur_sd = bsize / 6)
+           blur_sd = bsize / 6,
+           blend = 0)
     })
     data = data[sapply(data, length) != 0]
     if(length(data) != 0) {
