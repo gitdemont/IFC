@@ -85,7 +85,15 @@
 
 - fix set default `pch`, `size` and `col` when `NULL` is provided in **rasterplot**
 
-- fix axis tick labels for LinLog tansformations
+- fix axis tick labels for LinLog transformations
+
+- fix axis tick range computation
+
+- add pre-support for biexp and logicle transformations in axis construction
+
+- add more sub ticks in linear region during axis construction
+ 
+- always show +/- `hyper` on axis if in `lim` range
 
 #### Work on ExportToGallery
 - [BREAKING] modify returned object. When `export` is "file", exported path is invisibly returned. An "object_id" attribute is now attached to returned value.
