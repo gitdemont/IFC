@@ -378,28 +378,30 @@ BEGIN_RCPP
 END_RCPP
 }
 // cpp_smoothLinLog
-Rcpp::NumericVector cpp_smoothLinLog(const Rcpp::NumericVector x, const double hyper, const double base, const double lin_comp);
-RcppExport SEXP _IFC_cpp_smoothLinLog(SEXP xSEXP, SEXP hyperSEXP, SEXP baseSEXP, SEXP lin_compSEXP) {
+Rcpp::NumericVector cpp_smoothLinLog(const Rcpp::NumericVector x, const double hyper, const double lin_size, const double base, const double lin_comp);
+RcppExport SEXP _IFC_cpp_smoothLinLog(SEXP xSEXP, SEXP hyperSEXP, SEXP lin_sizeSEXP, SEXP baseSEXP, SEXP lin_compSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type x(xSEXP);
     Rcpp::traits::input_parameter< const double >::type hyper(hyperSEXP);
+    Rcpp::traits::input_parameter< const double >::type lin_size(lin_sizeSEXP);
     Rcpp::traits::input_parameter< const double >::type base(baseSEXP);
     Rcpp::traits::input_parameter< const double >::type lin_comp(lin_compSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_smoothLinLog(x, hyper, base, lin_comp));
+    rcpp_result_gen = Rcpp::wrap(cpp_smoothLinLog(x, hyper, lin_size, base, lin_comp));
     return rcpp_result_gen;
 END_RCPP
 }
 // cpp_inv_smoothLinLog
-Rcpp::NumericVector cpp_inv_smoothLinLog(const Rcpp::NumericVector x, const double hyper, const double base, const double lin_comp);
-RcppExport SEXP _IFC_cpp_inv_smoothLinLog(SEXP xSEXP, SEXP hyperSEXP, SEXP baseSEXP, SEXP lin_compSEXP) {
+Rcpp::NumericVector cpp_inv_smoothLinLog(const Rcpp::NumericVector x, const double hyper, const double lin_size, const double base, const double lin_comp);
+RcppExport SEXP _IFC_cpp_inv_smoothLinLog(SEXP xSEXP, SEXP hyperSEXP, SEXP lin_sizeSEXP, SEXP baseSEXP, SEXP lin_compSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type x(xSEXP);
     Rcpp::traits::input_parameter< const double >::type hyper(hyperSEXP);
+    Rcpp::traits::input_parameter< const double >::type lin_size(lin_sizeSEXP);
     Rcpp::traits::input_parameter< const double >::type base(baseSEXP);
     Rcpp::traits::input_parameter< const double >::type lin_comp(lin_compSEXP);
-    rcpp_result_gen = Rcpp::wrap(cpp_inv_smoothLinLog(x, hyper, base, lin_comp));
+    rcpp_result_gen = Rcpp::wrap(cpp_inv_smoothLinLog(x, hyper, lin_size, base, lin_comp));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -817,8 +819,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_IFC_cpp_getoffsets_wid", (DL_FUNC) &_IFC_cpp_getoffsets_wid, 5},
     {"_IFC_cpp_checksum", (DL_FUNC) &_IFC_cpp_checksum, 1},
     {"_IFC_cpp_M_HSV2RGB", (DL_FUNC) &_IFC_cpp_M_HSV2RGB, 3},
-    {"_IFC_cpp_smoothLinLog", (DL_FUNC) &_IFC_cpp_smoothLinLog, 4},
-    {"_IFC_cpp_inv_smoothLinLog", (DL_FUNC) &_IFC_cpp_inv_smoothLinLog, 4},
+    {"_IFC_cpp_smoothLinLog", (DL_FUNC) &_IFC_cpp_smoothLinLog, 5},
+    {"_IFC_cpp_inv_smoothLinLog", (DL_FUNC) &_IFC_cpp_inv_smoothLinLog, 5},
     {"_IFC_cpp_uint32_to_raw", (DL_FUNC) &_IFC_cpp_uint32_to_raw, 1},
     {"_IFC_cpp_int32_to_uint32", (DL_FUNC) &_IFC_cpp_int32_to_uint32, 1},
     {"_IFC_cpp_uint32_to_int32", (DL_FUNC) &_IFC_cpp_uint32_to_int32, 1},

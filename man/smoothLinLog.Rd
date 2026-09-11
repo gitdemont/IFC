@@ -4,12 +4,14 @@
 \alias{smoothLinLog}
 \title{Smooth LinLog Transformation}
 \usage{
-smoothLinLog(x, hyper = 1000, base = 10, lin_comp = log(base))
+smoothLinLog(x, hyper = 1000, lin_size = 1, base = 10, lin_comp = log(base))
 }
 \arguments{
 \item{x}{A numeric vector.}
 
 \item{hyper}{value where transition between Lin/Log is applied.}
+
+\item{lin_size}{size of the linear region equivalent as multiple of Log base unit.}
 
 \item{base}{base of Log scale.}
 

@@ -8,6 +8,8 @@
 
 \item{hyper}{double, value where transition between Lin/Log is applied.}
 
+\item{lin_size}{double, size of the linear region as multiple of Log base unit.}
+
 \item{base}{double, base of Log scale.}
 
 \item{lin_comp}{double, value that is used to smooth transition between Lin/Log.}

@@ -8,13 +8,15 @@
 
 \item{hyper}{double, value where transition between Lin/Log is applied.}
 
+\item{lin_size}{double, size of the linear region as multiple of Log base unit.}
+
 \item{base}{double, base of Log scale.}
 
 \item{lin_comp}{double, value that is used to smooth transition between Lin/Log.}
 }
 \description{
 Takes a numeric vector and return its transformation:
-- to linear, if abs(x) < log(base) / lin_comp.
-- to exp, if abs(x) > log(base) / lin_comp.
+- to linear, if abs(x) < lin_size * log(base) / lin_comp.
+- to exp, if abs(x) > lin_size * log(base) / lin_comp.
 }
 \keyword{internal}
