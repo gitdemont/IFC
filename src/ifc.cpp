@@ -610,7 +610,6 @@ Rcpp::NumericVector cpp_M_HSV2RGB (const Rcpp::NumericMatrix mat,
 //' - to log, if abs(x) > hyper.
 //' @param x NumericVector.
 //' @param hyper double, value where transition between Lin/Log is applied.
-//' @param lin_size double, size of the linear region as multiple of Log base unit.
 //' @param base double, base of Log scale.
 //' @param lin_comp double, value that is used to smooth transition between Lin/Log.
 //' @keywords internal
@@ -618,21 +617,19 @@ Rcpp::NumericVector cpp_M_HSV2RGB (const Rcpp::NumericMatrix mat,
 // [[Rcpp::export(rng = false)]]
 Rcpp::NumericVector cpp_smoothLinLog (const Rcpp::NumericVector x,
                                       const double hyper = 1000.0,
-                                      const double lin_size = 1.0,
                                       const double base = 10.0,
                                       const double lin_comp = 2.302585) {
-  return hpp_smoothLinLog2 (x, hyper, lin_size, base, lin_comp);
+  return hpp_LinLog(x, hyper, base, lin_comp, 1.0);
 }
 
 //' @title Inverse Smooth LinLog Transformation with Rcpp
 //' @name cpp_inv_smoothLinLog
 //' @description
 //' Takes a numeric vector and return its transformation:
-//' - to linear, if abs(x) < lin_size * log(base) / lin_comp.
-//' - to exp, if abs(x) > lin_size * log(base) / lin_comp.
+//' - to linear, if abs(x) < log(base) / lin_comp.
+//' - to exp, if abs(x) > log(base) / lin_comp.
 //' @param x NumericVector.
 //' @param hyper double, value where transition between Lin/Log is applied.
-//' @param lin_size double, size of the linear region as multiple of Log base unit.
 //' @param base double, base of Log scale.
 //' @param lin_comp double, value that is used to smooth transition between Lin/Log.
 //' @keywords internal
@@ -640,10 +637,49 @@ Rcpp::NumericVector cpp_smoothLinLog (const Rcpp::NumericVector x,
 // [[Rcpp::export(rng = false)]]
 Rcpp::NumericVector cpp_inv_smoothLinLog (const Rcpp::NumericVector x,
                                           const double hyper = 1000.0,
-                                          const double lin_size = 1.0,
                                           const double base = 10.0,
                                           const double lin_comp = 2.302585) {
-  return hpp_inv_smoothLinLog2 (x, hyper, lin_size, base, lin_comp);
+  return hpp_inv_LinLog(x, hyper, base, lin_comp, 1.0);
+}
+
+//' @title Compress LinLog Transformation with Rcpp
+//' @name cpp_compLinLog
+//' @description
+//' Takes a numeric vector and return its transformation:
+//' - to linear, if abs(x) < hyper.
+//' - to log, if abs(x) > hyper.
+//' @param x NumericVector.
+//' @param hyper double, value where transition between Lin/Log is applied.
+//' @param base double, base of Log scale.
+//' @param lin_size double, size of the linear region as multiple of Log base unit.
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+Rcpp::NumericVector cpp_compLinLog (const Rcpp::NumericVector x,
+                                    const double hyper = 1000.0,
+                                    const double base = 10.0,
+                                    const double lin_size = 1.0) {
+  return hpp_LinLog(x, hyper, base, 1.0, lin_size);
+}
+
+//' @title Inverse Compress LinLog Transformation with Rcpp
+//' @name cpp_inv_compLinLog
+//' @description
+//' Takes a numeric vector and return its transformation:
+//' - to linear, if abs(x) < lin_size * log(base).
+//' - to exp, if abs(x) > lin_size * log(base).
+//' @param x NumericVector.
+//' @param hyper double, value where transition between Lin/Log is applied.
+//' @param base double, base of Log scale.
+//' @param lin_size double, size of the linear region as multiple of Log base unit.
+//' @keywords internal
+////' @export
+// [[Rcpp::export(rng = false)]]
+Rcpp::NumericVector cpp_inv_compLinLog (const Rcpp::NumericVector x,
+                                        const double hyper = 1000.0,
+                                        const double base = 10.0,
+                                        const double lin_size = 1.0) {
+  return hpp_inv_LinLog(x, hyper, base, 1.0, lin_size);
 }
 
 //' @title Uint32 to Raw Conversion

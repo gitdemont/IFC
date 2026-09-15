@@ -32,12 +32,26 @@
 #' Transforms values in lin-log
 #' @param x A numeric vector.
 #' @param hyper value where transition between Lin/Log is applied.
-#' @param lin_size size of the linear region equivalent as multiple of Log base unit.
 #' @param base base of Log scale.
 #' @param lin_comp value that is used to smooth transition between Lin/Log. Default is log(base).
 #' @return the smoothLinLog transformation of the input.
 #' @export
-smoothLinLog <- function(x, hyper=1000, lin_size=1, base=10, lin_comp=log(base)) {
-  stopifnot(hyper > 0, base > 0, lin_comp > 0, lin_size > 0)
-  return(cpp_smoothLinLog(x, hyper, lin_size,  base, lin_comp))
+smoothLinLog <- function(x, hyper=1000, base=10, lin_comp=log(base)) {
+  stopifnot(hyper > 0, base > 0, lin_comp > 0)
+  return(cpp_smoothLinLog(x, hyper, base, lin_comp))
 }
+
+#' @title Compress LinLog Transformation
+#' @description
+#' Transforms values in lin-log
+#' @param x A numeric vector.
+#' @param hyper value where transition between Lin/Log is applied.
+#' @param base base of Log scale.
+#' @param lin_size size of the linear region equivalent as multiple of Log base unit. Default is 1.
+#' @return the compLinLog transformation of the input.
+#' @export
+compLinLog <- function(x, hyper=1000, base=10, lin_size=1) {
+  stopifnot(hyper > 0, base > 0, lin_size > 0)
+  return(cpp_compLinLog(x, hyper, base, lin_size))
+}
+

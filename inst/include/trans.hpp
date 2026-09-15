@@ -60,25 +60,25 @@ Rcpp::NumericVector hpp_smoothLinLog (const Rcpp::NumericVector x,
   }
 }
 
-//' @title Smooth LinLog Transformation with Rcpp
-//' @name cpp_smoothLinLog
+//' @title LinLog Transformation with Rcpp
+//' @name cpp_LinLog
 //' @description
 //' Takes a numeric vector and return its transformation:
 //' - to linear, if abs(x) < hyper.
 //' - to log, if abs(x) > hyper.
 //' @param x NumericVector.
 //' @param hyper double, value where transition between Lin/Log is applied.
-//' @param lin_size double, size of the linear region as multiple of Log base unit.
 //' @param base double, base of Log scale.
 //' @param lin_comp double, value that is used to smooth transition between Lin/Log.
+//' @param lin_size double, size of the linear region as multiple of Log base unit.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
-Rcpp::NumericVector hpp_smoothLinLog2 (const Rcpp::NumericVector x,
-                                      const double hyper = 1000.0,
-                                      const double lin_size = 1.0,
-                                      const double base = 10.0,
-                                      const double lin_comp = 2.302585) {
+Rcpp::NumericVector hpp_LinLog (const Rcpp::NumericVector x,
+                                const double hyper = 1000.0,
+                                const double base = 10.0,
+                                const double lin_comp = 2.302585,
+                                const double lin_size = 1.0) {
   if(nNotisNULL(x)) {
     R_len_t L = x.size();
     double K = std::log(base) / lin_comp;
@@ -121,25 +121,25 @@ Rcpp::NumericVector hpp_inv_smoothLinLog (const Rcpp::NumericVector x,
   }
 }
 
-//' @title Inverse Smooth LinLog Transformation with Rcpp
-//' @name cpp_inv_smoothLinLog
+//' @title Inverse LinLog Transformation with Rcpp
+//' @name cpp_inv_LinLog
 //' @description
 //' Takes a numeric vector and return its transformation:
 //' - to linear, if abs(x) < lin_size * log(base) / lin_comp.
 //' - to exp, if abs(x) > lin_size * log(base) / lin_comp.
 //' @param x NumericVector.
 //' @param hyper double, value where transition between Lin/Log is applied.
-//' @param lin_size double, size of the linear region equivalent to one Log base unit.
 //' @param base double, base of Log scale.
 //' @param lin_comp double, value that is used to smooth transition between Lin/Log.
+//' @param lin_size double, size of the linear region equivalent to one Log base unit.
 //' @keywords internal
 ////' @export
 // [[Rcpp::export(rng = false)]]
-Rcpp::NumericVector hpp_inv_smoothLinLog2 (const Rcpp::NumericVector x,
-                                           const double hyper = 1000.0,
-                                           const double lin_size = 1.0, 
-                                           const double base = 10.0, 
-                                           const double lin_comp = 2.302585) {
+Rcpp::NumericVector hpp_inv_LinLog (const Rcpp::NumericVector x,
+                                    const double hyper = 1000.0,
+                                    const double base = 10.0,
+                                    const double lin_comp = 2.302585,
+                                    const double lin_size = 1.0) {
   if(nNotisNULL(x)) {
     R_len_t L = x.size();
     double K = std::log(base) / lin_comp;

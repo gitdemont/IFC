@@ -229,7 +229,7 @@ base_axis_constr <- function (lim, trans = "P", nint = 10) {
   assert(nint, len = 1, typ = "integer")
   assert(trans, len = 1)
   trans_ = parseTrans(trans)
-  if(trans_$what %in% c("smoothLinLog", "smoothAsinh", "biexp", "hyperlog", "logicle", "logarithm")) {
+  if(trans_$what %in% c("smoothLinLog", "compLinLog", "smoothAsinh", "biexp", "hyperlog", "logicle", "logarithm")) {
     hyper = formals(trans_$what)$hyper
     if(length(hyper) == 0) hyper = 100
     if(length(trans_$args$hyper) != 0) hyper = trans_$args$hyper

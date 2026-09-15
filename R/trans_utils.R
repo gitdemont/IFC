@@ -73,6 +73,7 @@ applyTrans <- function(x, trans, inverse = FALSE) {
   alw_trans = c("return",
                 "sqrt", "pow2",
                 "smoothLinLog", "inv_smoothLinLog",
+                "compLinLog", "inv_compLinLog",
                 "smoothAsinh", "inv_smoothAsinh",
                 "asinh", "sinh")
   if(!(trans$what %in% alw_trans)) stop("transformation '",trans$what,"' is not supported.\nAllowed are: '", paste0(alw_trans, collapse="','"),"'")
@@ -82,6 +83,8 @@ applyTrans <- function(x, trans, inverse = FALSE) {
                            "pow2" = "sqrt",
                            "smoothLinLog" = "inv_smoothLinLog",
                            "inv_smoothLinLog" = "smoothLinLog",
+                           "compLinLog" = "inv_compLinLog",
+                           "inv_compLinLog" = "compLinLog",
                            "smoothAsinh" = "inv_smoothAsinh",
                            "inv_smoothAsinh" = "smoothAsinh",
                            "asinh" = "sinh",
