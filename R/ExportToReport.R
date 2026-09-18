@@ -664,9 +664,9 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
   if(!"stats_print" %in% names(dots)) dots$stats_print = FALSE
   plotGraph_args=c(dots, list(color_mode=color_mode, add_key=add_key,
                               precision=precision, trunc_labels=trunc_labels,
-                              viewport=viewport))
+                              trans=trans, display_progress=display_progress,
+                              backend=backend, viewport=viewport))
   if(length(bin) != 0) plotGraph_args = c(plotGraph_args, list(bin=bin))
-  if(!missing(trans)) plotGraph_args = c(plotGraph_args, list(trans=trans))
   
   # layout
   n_tiles = length(fileName)
@@ -711,11 +711,8 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
                           extract_offsets=FALSE, extract_stats=FALSE)
         }
         if(apply_gating) i_obj = applyGatingStrategy(obj=i_obj, gating=gating, display_progress=FALSE)
-        plotGraph_args = c(plotGraph_args, list(obj=i_obj))
-        foo = CreateGraphReport(i_obj, selection, onepage=TRUE,
-                                color_mode=color_mode, add_key=add_key, precision=precision,
-                                trunc_labels=trunc_labels, trans=trans, bin=bin, viewport=viewport,
-                                display_progress=display_progress)
+        plotGraph_args = c(plotGraph_args, list(obj=i_obj, selection=selection, onepage=TRUE))
+        foo = do.call(CreateGraphReport, plotGraph_args)
         if(create_csv) {
           write.table(x=basename(fileName[i_file]), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
           lapply(seq_along(foo$graphs), FUN = function(i) {
