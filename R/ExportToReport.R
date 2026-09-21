@@ -662,6 +662,7 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
   }
   if(!"draw" %in% names(dots)) dots$draw = FALSE
   if(!"stats_print" %in% names(dots)) dots$stats_print = FALSE
+  dots$onepage=TRUE
   plotGraph_args=c(dots, list(color_mode=color_mode, add_key=add_key,
                               precision=precision, trunc_labels=trunc_labels,
                               trans=trans, display_progress=display_progress,
@@ -711,7 +712,7 @@ BatchReport <- function(fileName, obj, selection, write_to, overwrite=FALSE,
                           extract_offsets=FALSE, extract_stats=FALSE)
         }
         if(apply_gating) i_obj = applyGatingStrategy(obj=i_obj, gating=gating, display_progress=FALSE)
-        plotGraph_args = c(plotGraph_args, list(obj=i_obj, selection=selection, onepage=TRUE))
+        plotGraph_args = c(plotGraph_args, list(obj=i_obj, selection=selection))
         foo = do.call(CreateGraphReport, plotGraph_args)
         if(create_csv) {
           write.table(x=basename(fileName[i_file]), file=export_to_csv, append=TRUE, sep=",", col.names = FALSE, row.names = FALSE)
