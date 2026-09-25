@@ -221,7 +221,8 @@ tryReportFileCreation <- function(fileName, write_to, overwrite = FALSE) {
 #' @param viewport Either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
 #' -"ideas" will use same limits as the one defined in ideas.\cr
 #' -"data" will use data to define limits.\cr
-#' -"max" will use data and regions drawn to define limits.
+#' -"max" will use data and regions drawn to define limits.\cr
+#' Alternatively, "x-" or "y-" can be appended to control limits adjustment for each axis separately.
 #' @param backend backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
 #' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
 #' -"base" will produce the plot using \pkg{base},\cr
@@ -406,7 +407,8 @@ CreateGraphReport <- function(obj, selection, onepage=TRUE,
 #' @param viewport Either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
 #' -"ideas" will use same limits as the one defined in ideas.\cr
 #' -"data" will use data to define limits.\cr
-#' -"max" will use data and regions drawn to define limits.
+#' -"max" will use data and regions drawn to define limits.\cr
+#' Alternatively, "x-" or "y-" can be appended to control limits adjustment for each axis separately.
 #' @param backend backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
 #' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
 #' -"base" will produce the plot using \pkg{base},\cr
@@ -595,7 +597,8 @@ DisplayReport = function(obj, display_progress = TRUE, ...) {
 #' @param viewport Either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
 #' -"ideas" will use same limits as the one defined in ideas.\cr
 #' -"data" will use data to define limits.\cr
-#' -"max" will use data and regions drawn to define limits.
+#' -"max" will use data and regions drawn to define limits.\cr
+#' Alternatively, "x-" or "y-" can be appended to control limits adjustment for each axis separately.
 #' @param backend backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
 #' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
 #' -"base" will produce the plot using \pkg{base},\cr

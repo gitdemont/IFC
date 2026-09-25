@@ -95,6 +95,8 @@
  
 - always show +/- `hyper` on axis if in `lim` range
 
+- enh allow control over graph limits for each axis separately through `viewport`
+
 #### Work on ExportToGallery
 - [BREAKING] modify returned object. When `export` is "file", exported path is invisibly returned. An "object_id" attribute is now attached to returned value.
 
@@ -228,6 +230,10 @@
 - create templated version of hpp_resize and handle negative values for resizing
 
 - create dedicated affine.hpp and align.hpp files for handling spatial offset correction and interpolation
+
+- add new internal **compLinLog** / **inv_compLinLog** functions allowing control over linear region size
+
+- fix extra parameters `...` not used by **BatchReport**
 
 ## 0.2.1
 - CRAN submission

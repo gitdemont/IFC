@@ -47,7 +47,8 @@
 #' @param viewport either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
 #' -"ideas" will use same limits as the one defined in ideas.\cr
 #' -"data" will use data to define limits.\cr
-#' -"max" will use data and regions drawn to define limits.
+#' -"max" will use data and regions drawn to define limits.\cr
+#' Alternatively, "x-" or "y-" can be appended to control limits adjustment for each axis separately.
 #' @param backend backend used for drawing. Allowed are "lattice", "base", "raster". Default is "lattice".\cr
 #' -"lattice" is the original one used in \pkg{IFC} using \pkg{lattice},\cr
 #' -"base" will produce the plot using \pkg{base},\cr
@@ -86,7 +87,12 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     assert(trunc_labels, len=1, typ="integer")
     draw = as.logical(draw); assert(draw, len=1, alw=c(TRUE,FALSE))
     stats_print = as.logical(stats_print); assert(stats_print, len=1, alw=c(TRUE,FALSE))
-    assert(viewport, len = 1, alw = c("ideas","data","max"))
+    if(length(viewport) == 1) {
+      assert(viewport, len = 1, alw = c("ideas","data","max"))
+    } else {
+      assert(viewport, len = 2, alw = c("x-ideas","y-ideas","x-data","y-data","x-max","y-max"))
+      if(length(unique(substr(viewport, 0, 1))) != 2) stop("'viewport' should not be repeated for a same axis")
+    }
     assert(backend, len=1, alw=c("lattice","base","raster"))
     
     # shortcuts
@@ -178,13 +184,13 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     Xlim = applyTrans(Xlim, trans_x)
     # computes limits / stats
     if(g$type == "histogram") {
-      if(viewport == "data") {
+      if(any(viewport %in% c("data", "x-data"))) {
         Xlim = cpp_fast_range(D[, "x1", drop=TRUE])
         Xlim = applyTrans(Xlim, trans_x)
         Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
         if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
       }
-      if(viewport == "max") {
+      if(any(viewport %in% c("max", "x-max"))) {
         regx = sapply(reg_n, FUN=function(r) {
           reg = R[[r]] 
           coords = reg[["x"]]
@@ -195,7 +201,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
         if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
       }
-      if(viewport == "ideas") {
+      if(any(viewport %in% c("ideas","x-ideas"))) {
         if(Xlim[1] == Xlim[2]) Xlim = Xlim[1] + c(-0.07,0.07)
         no_nas = !is.na(D[,"x2"])
         D[no_nas & (D[,"x2"] < Xlim[1]), "x2"] <- Xlim[1] # D = D[(D[,"x2"] >= Xlim[1]) & (D[,"x2"] <= Xlim[2]), ]
@@ -216,7 +222,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
       type = "count"
       if(as.logical(g$freq)) type = "percent"
       if(nrow(D) > 0) {
-        if(viewport == "ideas") {
+        if(any(viewport %in% c("ideas","y-ideas"))) {
           Ylim = c(g$ymin, g$ymax)
           if(Ylim[1] == Ylim[2]) Ylim = Ylim[1] + c(0,0.07)
         } else {
@@ -232,7 +238,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
     } else {
       D[,"y2"] = applyTrans(D[,"y1"], trans_y)
       Ylim = applyTrans(Ylim, trans_y)
-      if(viewport == "data") {
+      if(any(viewport %in% c("data", "y-data"))) {
         Xlim = cpp_fast_range(D[,"x1", drop=TRUE])
         Xlim = applyTrans(Xlim, trans_x)
         Xlim = Xlim + c(-0.07,0.07)*diff(Xlim)
@@ -240,7 +246,7 @@ plotGraph = function(obj, graph, draw = FALSE, stats_print = draw,
         Ylim = applyTrans(Ylim, trans_y)
         Ylim = Ylim + c(-0.07,0.07)*diff(Ylim)
       }
-      if(viewport == "max") {
+      if(any(viewport %in% c("max","y-max"))) {
         regx = sapply(reg_n, FUN=function(r) {
           reg = R[[r]] 
           coords = reg[["x"]]

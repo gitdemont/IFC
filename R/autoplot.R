@@ -85,7 +85,8 @@
 #' @param viewport Either "ideas", "data" or "max" defining limits used for the graph. Default is "ideas".\cr
 #' -"ideas" will use same limits as the one defined in ideas.\cr
 #' -"data" will use data to define limits.\cr
-#' -"max" will use data and regions drawn to define limits.
+#' -"max" will use data and regions drawn to define limits.\cr
+#' Alternatively, "x-" or "y-" can be appended to control limits adjustment for each axis separately.
 #' @param precision when graphs is a 2D scatter with population overlay, this argument controls amount of information displayed. Default is "light".\cr
 #' -"light", the default, will only display points of same coordinates that are amoung the other layers.\cr
 #' -"full" will display all the layers.
