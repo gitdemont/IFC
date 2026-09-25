@@ -97,6 +97,8 @@
 
 - enh allow control over graph limits for each axis separately through `viewport`
 
+- enh test if drawable with only very few points
+
 #### Work on ExportToGallery
 - [BREAKING] modify returned object. When `export` is "file", exported path is invisibly returned. An "object_id" attribute is now attached to returned value.
 

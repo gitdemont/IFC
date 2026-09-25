@@ -1793,7 +1793,7 @@ adjustGraph=function(obj, graph, adjust_graph=TRUE, ...) {
     if(inherits(x = g, what = "try-error")) return(list())
     
     # try to draw the graph
-    drawable = plotGraph(obj = obj, graph = g, draw = FALSE, stats_print = FALSE)
+    drawable = plotGraph(obj = obj, graph = g, draw = FALSE, stats_print = FALSE, maxpoints = 10)
     if(inherits(x = drawable, what = c("error","empty"))) return(list())
     return(g)
   }, error = function(e) return(list()))
